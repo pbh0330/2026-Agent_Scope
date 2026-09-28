@@ -114,8 +114,8 @@ input $1.00 / output $5.00 / cacheRead $0.10 / cacheWrite(1시간 TTL) $2.00, �
   실행된 것이다. 호출 사이 간격(약 40~70ms)도 이 설명과 맞는다.
 
 즉 이번 결과는 "이 시스템엔 병렬이 없다"는 뜻이 아니다. **설정상 순차로 강제된
-다중 호출을 batch로 정확히 분류했다**는 뜻이고, 병렬 판정 로직은 아직 실사례로
-검증하지 못한 상태다. 병렬 설정이 켜진 MCP 서버나 기본값이 병렬인 내장 도구를
+다중 호출을 batch로 정확히 분류했다**는 뜻이다. 이 시점에는 병렬 판정 로직을
+아직 실사례로 검증하지 못했다(바로 아래 섹션에서 검증 완료). 병렬 설정이 켜진 MCP 서버나 기본값이 병렬인 내장 도구를
 쓰면 실제 운영 환경에서도 병렬 호출이 충분히 나올 수 있으므로, 병렬 분류 검증은
 생략하면 안 된다.
 
@@ -127,13 +127,49 @@ OpenClaw 설정 문서 — docs.openclaw.ai/gateway/config-extensions, OpenClaw 
 잡혔던 것 포함), 순차 diff 공식도 실사례 9건으로 추가 확인됨 — 전부 음수 없이
 정상 범위의 토큰 수가 나왔다.
 
+## 실제 병렬(parallel) 사례 확보 및 검증 (2026-09-28)
+
+위 원인 분석을 직접 확인하려고 설정 하나만 바꿔서 같은 실험을 다시 했다.
+
+- 바꾼 것: `openclaw.json`의 `mcp.servers.fs`에 `"supportsParallelToolCalls": true`
+  한 줄 추가 → 게이트웨이 재시작. 그 외 조건(모델, 워크스페이스 파일, OTel Collector
+  설정)은 동일.
+- 보낸 프롬프트: "AGENTS.md, IDENTITY.md, SOUL.md, USER.md 4개 파일을 이전 대화
+  내용 말고 지금 새로 다시 읽어서 각각 한 줄로 요약해줘. 4개 파일 읽기 도구 호출을
+  한 번의 응답 안에서 동시에 전부 요청해줘."
+- 캡처 로그: `otel-debug-log-parallel.txt`
+
+**결과 — 실제 parallel 사례 확보, 판정 정확함을 확인**:
+
+```
+[model.call] 14:31:07.723 ~ 14:31:12.366  in=59533 out=263
+[model.call] 14:31:12.856 ~ 14:31:19.676  in=65543 out=401
+[tool.exec ] 14:31:12.498 ~ 14:31:12.577  fs__read_text_file
+[tool.exec ] 14:31:12.501 ~ 14:31:12.654  fs__read_text_file
+[tool.exec ] 14:31:12.502 ~ 14:31:12.654  fs__read_text_file
+[tool.exec ] 14:31:12.503 ~ 14:31:12.654  fs__read_text_file
+→ [parallel] fs__read_text_file × 4건
+```
+
+네 호출이 5ms 안에 거의 동시에 시작해서 실행 구간이 서로 겹친다. 원본 로그의
+`Start time`/`End time` 값을 직접 확인해도 같다. `classify_segments()`는 이 네 건을
+모두 parallel로 분류했다. 설정만 바꿨는데 같은 요청이 batch(순차 실행)에서
+parallel(동시 실행)로 바뀌었으므로, 앞에서 정리한 원인 분석
+(`supportsParallelToolCalls` 미설정 → MCP 도구 순차 등록)도 실험으로 확인된 셈이다.
+
+비교하면 도구 4개 실행에 걸린 전체 시간이 순차일 때 약 220ms(25.189~25.409),
+병렬일 때 약 156ms(12.498~12.654)였다.
+
+이로써 **순차·배치·병렬 세 가지 패턴 판정이 모두 실제 데이터로 검증됐다.** 다만
+병렬·배치 구간의 도구별 토큰 귀속은 여전히 하지 않는다. 한 번의 model.call 입력
+증가분에 여러 도구 결과가 섞여 들어가서 도구별로 나눌 근거가 없으므로,
+duration_ms만 대리 지표로 기록한다.
+
 ## 다음에 할 일
 
 - [x] 실제 병렬/배치 캡처 로그 확보 → batch 사례 확보 및 검증 완료
-- [ ] 병렬(parallel) 실사례 확보 — `openclaw.json`의 `mcp.servers.fs`에
-      `"supportsParallelToolCalls": true`를 추가하고 게이트웨이 재시작 후 같은
-      "파일 4개 읽기" 프롬프트를 다시 보내서, tool.execution 스팬이 실제로 겹치는지와
-      parallel로 분류되는지 확인 (읽기 전용 호출이라 동시 실행해도 안전함)
+- [x] 병렬(parallel) 실사례 확보 → `supportsParallelToolCalls: true` 설정 후
+      재캡처, parallel 사례 확보 및 검증 완료
 - [ ] `pipeline/prometheus/rules.yml`의 단가 placeholder도 `attribution.py`와
       동일하게 "게이트웨이 단가 0 → Anthropic 공식 정가 대체" 로직 반영할지 결정
       (지금은 Prometheus recording rule이라 정적 상수라서 attribution.py처럼

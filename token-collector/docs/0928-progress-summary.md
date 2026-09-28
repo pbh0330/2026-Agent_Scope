@@ -70,8 +70,11 @@
 - **병렬이 안 나온 원인 확인**: OpenClaw(pi-agent-core)는 기본이 병렬 실행이지만,
   MCP 서버 도구는 서버 설정에 `supportsParallelToolCalls: true`가 있을 때만 병렬로
   등록되고 없으면 순차로 등록된다(OpenClaw 소스 `agent-bundle-mcp-materialize.ts`).
-  우리 `fs` 서버엔 이 옵션이 없어서 순차로 강제됐던 것 — parallel 판정 로직은
-  아직 실사례 미검증.
+  우리 `fs` 서버엔 이 옵션이 없어서 순차로 강제됐던 것.
+- **실제 parallel 사례 확보·검증**: `fs` 서버에 `supportsParallelToolCalls: true`만
+  추가하고 같은 요청을 다시 보내자, `fs__read_text_file` 4회 호출이 5ms 안에 동시에
+  시작해 실행 구간이 겹쳤고 `classify_segments()`가 전부 parallel로 분류함. 이로써
+  순차·배치·병렬 세 패턴 판정이 모두 실데이터로 검증됨.
 
 자세한 내용: `docs/week3-accuracy-validation.md`
 
@@ -96,9 +99,7 @@
 
 ## 다음 단계 후보
 
-1. `fs` MCP 서버에 `"supportsParallelToolCalls": true` 설정 후 같은 프롬프트로 재캡처 →
-   parallel 실사례 검증 (3주차 마무리)
-2. `attribution.py` 결과를 Grafana에 연결 (커스텀 exporter 설계 필요)
-3. `pipeline/prometheus/rules.yml`의 단가 placeholder 처리 방식 결정 (Prometheus
+1. `attribution.py` 결과를 Grafana에 연결 (커스텀 exporter 설계 필요)
+2. `pipeline/prometheus/rules.yml`의 단가 placeholder 처리 방식 결정 (Prometheus
    recording rule은 정적 상수라서 attribution.py처럼 런타임 자동 대체가 안 됨)
-4. PR 리뷰/머지 진행 상황 확인
+3. PR 리뷰/머지 진행 상황 확인
