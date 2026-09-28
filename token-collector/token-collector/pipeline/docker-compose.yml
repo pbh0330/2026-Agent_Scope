@@ -1,0 +1,45 @@
+services:
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    command: ["--config=/etc/otelcol-config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otelcol-config.yaml:ro
+      - ./data:/data
+    ports:
+      - "4318:4318"   # OTLP/HTTP — openclaw.json의 diagnostics.otel.endpoint가 이 주소를 가리켜야 함
+      - "9464:9464"   # Prometheus가 긁어가는 /metrics
+    networks: [otel-net]
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/rules.yml:/etc/prometheus/rules.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    depends_on: [otel-collector]
+    networks: [otel-net]
+
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin   # 로컬 검증용 기본값 — 외부에 노출하는 환경이면 반드시 변경할 것
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on: [prometheus]
+    networks: [otel-net]
+
+networks:
+  otel-net:
+    driver: bridge
+
+volumes:
+  prometheus-data:
+  grafana-data:

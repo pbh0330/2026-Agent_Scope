@@ -1,0 +1,47 @@
+# 2주차 파이프라인용 OTel Collector 설정
+# (1주차 마일스톤 0에서 쓴 otel-collector-config.yaml의 후속 버전)
+#
+# 1주차 버전과 다른 점:
+#   - metrics를 Prometheus가 긁어갈 수 있게 `prometheus` 익스포터 추가 (9464 포트)
+#   - traces를 `file` 익스포터로도 내보내서, attribution.py가 사람이 읽는 debug 텍스트
+#     대신 구조화된 OTLP JSON을 파싱하도록 다음 단계에서 바꿀 수 있게 함
+#     (지금 당장은 debug 텍스트 파서를 계속 쓰지만, JSON 라인이 더 안정적이라 옵션으로 남겨둠)
+#   - debug 익스포터는 그대로 유지 — 콘솔에서 눈으로 확인하는 용도는 계속 필요함
+#
+# 실행: 이 폴더의 docker-compose.yml로 otel-collector 서비스가 이 파일을 그대로 마운트해서 씀.
+# 필요 이미지: otel/opentelemetry-collector-contrib (prometheus/file 익스포터가 core 이미지엔 없음)
+
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    timeout: 1s
+
+exporters:
+  debug:
+    verbosity: detailed
+
+  prometheus:
+    endpoint: 0.0.0.0:9464
+    # Sum(monotonic) 메트릭(openclaw.tokens 등)은 Prometheus에서 자동으로
+    # counter 타입(`_total` 접미사)으로 노출됨. 점(.)은 밑줄(_)로 치환됨
+    # 예: openclaw.tokens{openclaw.token="input"} -> openclaw_tokens_total{openclaw_token="input"}
+
+  file:
+    path: /data/otel-spans.jsonl
+    format: json
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [debug, file]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [debug, prometheus]

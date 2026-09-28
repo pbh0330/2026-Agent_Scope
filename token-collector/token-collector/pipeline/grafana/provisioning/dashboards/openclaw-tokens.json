@@ -1,0 +1,90 @@
+{
+  "id": null,
+  "uid": "openclaw-tokens",
+  "title": "OpenClaw 토큰/비용 코어 메트릭",
+  "description": "2주차 파이프라인 구축 결과물 — 도구별 귀속은 안 담음(attribution.py 별도 결과물), 여기서는 Prometheus가 긍어가는 코어 메트릭(토큰총량/근사비용/모델호출 지연)만 다룸.",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "timezone": "browser",
+  "time": { "from": "now-6h", "to": "now" },
+  "refresh": "15s",
+  "tags": ["openclaw", "token-cost"],
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "누적 토큰 총량",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "targets": [
+        {
+          "expr": "openclaw_tokens_total{openclaw_token=\"total\"}",
+          "legendFormat": "total",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "short", "decimals": 0 },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "근사 누적 비용(USD, placeholder 단가)",
+      "description": "prometheus/rules.yml의 recording rule을 쓴 값. 단가가 아직 자리표시자임 — attribution.py의 PRICING_PLACEHOLDER와 동일한 값(input $1.00 / output $5.00 per 1M) 사용 중.",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "targets": [
+        {
+          "expr": "openclaw:cost_usd:total",
+          "legendFormat": "approx cost",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "currencyUSD", "decimals": 4 },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "토큰 사용량 (input / output)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "targets": [
+        {
+          "expr": "sum by (openclaw_token) (openclaw_tokens_total{openclaw_token=~\"input|output\"})",
+          "legendFormat": "{{openclaw_token}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "short" },
+        "overrides": []
+      }
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "model.call 응답시간 p95 (gen_ai.client.operation.duration)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(gen_ai_client_operation_duration_bucket[5m])) by (le))",
+          "legendFormat": "p95",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s" },
+        "overrides": []
+      }
+    }
+  ]
+}
