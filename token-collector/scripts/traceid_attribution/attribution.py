@@ -81,6 +81,25 @@ def classify_segments(runs: dict[str, list[Span]]) -> list[ToolAttribution]:
             continue
         trace_id = group[0].trace_id
 
+        # 3주차 정확도 검증 중 발견: model.call이 하나도 없는 run(도구만 실행되고
+        # 모델을 다시 호출하지 않은 경우, 또는 model.call 스팬 캡처 누락)은 아래
+        # k-루프가 아예 안 돌아서 결과에서 조용히 사라졌었음(=집계 누락 버그).
+        # ToolAttribution.pattern에 "unattributed"가 정의돼 있었는데 실제로는 한 번도
+        # 안 쓰이고 있었음 — 이제 명시적으로 기록해서 "왜 이 도구 호출이 비용 리포트에
+        # 안 잡혔는지" 감사(audit) 가능하게 함.
+        if not model_calls:
+            for tool in tool_execs:
+                tool_name = tool.attrs.get("openclaw.toolName", "unknown")
+                results.append(ToolAttribution(
+                    trace_id=trace_id, run_parent_id=parent_id,
+                    tool_name=tool_name, tool_span_id=tool.span_id,
+                    pattern="unattributed", duration_ms=tool.duration_ms,
+                    approx_tokens=None,
+                    note="이 run에 openclaw.model.call 스팬이 없음 "
+                         "(도구 실행 후 모델 재호출 없이 종료됐거나 스팬 캡처 누락) — 귀속 불가",
+                ))
+            continue
+
         # --- 병렬 판정: 같은 run 안에서 tool.execution 스팬끼리 시간이 겹치는가 ---
         parallel_ids: set[str] = set()
         for i in range(len(tool_execs)):
@@ -107,6 +126,13 @@ def classify_segments(runs: dict[str, list[Span]]) -> list[ToolAttribution]:
             ]
             if not between:
                 continue
+
+            # 3주차 정확도 검증 중 발견: _overlaps()는 start/end 중 하나라도 None이면
+            # 무조건 False를 반환함. 즉 tool.execution 스팬의 타임스탬프가 하나라도
+            # 누락되면 "실제로는 병렬인데 겹침을 못 찾아서 batch로 오분류"될 수 있음.
+            # 순수 개수(len(between)>=2)만으로는 병렬/배치를 구분할 수 없으므로,
+            # 이런 경우엔 자신있게 batch로 단정하지 않고 note로 신뢰도를 낮춰서 표시.
+            missing_ts = [t for t in between if t.start is None or t.end is None]
 
             if any(t.span_id in parallel_ids for t in between):
                 pattern = "parallel"
@@ -144,6 +170,11 @@ def classify_segments(runs: dict[str, list[Span]]) -> list[ToolAttribution]:
                 ))
             else:
                 # 병렬/배치: 도구별 정밀 토큰 귀속은 포기, 대리 지표만 기록
+                base_note = "병렬/배치 구간 — duration_ms만 대리 지표로 기록, 토큰 귀속 안 함"
+                if pattern == "batch" and missing_ts:
+                    base_note += (" | ⚠ 이 구간 도구 스팬 중 일부에 시작/종료 시각이 없어서 "
+                                  "실제로는 병렬인데 batch로 오분류됐을 수 있음 — 원본 로그의 "
+                                  "해당 스팬 캡처 여부 확인 필요")
                 for tool in between:
                     tool_name = tool.attrs.get("openclaw.toolName", "unknown")
                     results.append(ToolAttribution(
@@ -151,7 +182,7 @@ def classify_segments(runs: dict[str, list[Span]]) -> list[ToolAttribution]:
                         tool_name=tool_name, tool_span_id=tool.span_id,
                         pattern=pattern, duration_ms=tool.duration_ms,
                         approx_tokens=None,
-                        note="병렬/배치 구간 — duration_ms만 대리 지표로 기록, 토큰 귀속 안 함",
+                        note=base_note,
                     ))
 
     return results
@@ -167,6 +198,24 @@ def classify_segments(runs: dict[str, list[Span]]) -> list[ToolAttribution]:
 PRICING_PLACEHOLDER: dict[str, dict[str, float]] = {
     "claude-haiku-4-5-20251001": {"input": 1.00, "output": 5.00, "cacheRead": 0.0, "cacheWrite": 0.0},
 }
+
+# 3주차 정확도 검증 중 발견한 것: 실제 openclaw.json(school-gateway 프로바이더)의
+# claude-haiku-4-5-20251001 cost 필드가 input/output/cacheRead/cacheWrite 전부 0임.
+# 즉 load_pricing_from_config()가 "성공"해도 비용 계산 결과가 항상 $0.00이 나옴 —
+# 코드 버그가 아니라 학교 게이트웨이가 학생에게 종량제로 과금하지 않아서 생기는 데이터 자체의 한계.
+# "비용 모니터링" 파트의 숫자가 의미를 가지려면 참고용 정가가 필요해서, Anthropic 공식
+# API 정가(2026-09-28 확인, https://platform.claude.com/docs/en/about-claude/pricing)를
+# 별도로 남겨둠. PRICING_PLACEHOLDER와 우연히 같은 값(input $1.00 / output $5.00)임.
+# cacheWrite는 TTL별로 두 값(5분 $1.25 / 1시간 $2.00)이 있는데, 이 게이트웨이가 어느 TTL을
+# 쓰는지 확인 전이라 더 비싼 쪽(1시간, $2.00)을 보수적으로 채택함 — 실제 게이트웨이 설정
+# 확인되면 교체 필요.
+ANTHROPIC_LIST_PRICING_REFERENCE: dict[str, dict[str, float]] = {
+    "claude-haiku-4-5-20251001": {"input": 1.00, "output": 5.00, "cacheRead": 0.10, "cacheWrite": 2.00},
+}
+
+
+def _rate_is_all_zero(rate: dict[str, float]) -> bool:
+    return all(rate.get(k, 0.0) == 0.0 for k in ("input", "output", "cacheRead", "cacheWrite"))
 
 
 def load_pricing_from_config(openclaw_json_path: str) -> dict[str, dict[str, float]]:
@@ -284,6 +333,19 @@ if __name__ == "__main__":
             pricing_source = f"'{config_path}'에서 로드한 실제 단가"
         except (OSError, ValueError, KeyError) as e:
             print(f"[경고] openclaw.json 단가 로딩 실패 ({e}) — PRICING_PLACEHOLDER로 폴백")
+
+    # 로딩은 성공했는데 단가가 전부 0인 모델이 있으면(=게이트웨이가 종량제 과금을 안 함),
+    # 비용 리포트가 전부 $0.00으로만 찍혀서 "계산이 안 됐다"는 건지 "정말 무료"라는 건지
+    # 구분이 안 됨. Anthropic 공식 정가를 참고용으로 병행 사용하고, 그 사실을 출력에 명시함.
+    zero_rate_models = [m for m, r in pricing_table.items() if _rate_is_all_zero(r)]
+    if zero_rate_models:
+        print(f"[알림] openclaw.json 단가가 0으로 설정된 모델: {zero_rate_models} "
+              f"— 게이트웨이가 학생에게 종량제 과금을 안 하는 것으로 보임. "
+              f"이 모델들은 Anthropic 공식 정가(참고용, 실제 청구액 아님)로 대체함.")
+        for m in zero_rate_models:
+            if m in ANTHROPIC_LIST_PRICING_REFERENCE:
+                pricing_table[m] = ANTHROPIC_LIST_PRICING_REFERENCE[m]
+        pricing_source += " (단, 단가 0인 모델은 Anthropic 공식 정가로 대체 — 참고용, 실제 청구액 아님)"
 
     attributions = run(path)
 
