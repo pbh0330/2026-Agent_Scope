@@ -96,15 +96,32 @@ input $1.00 / output $5.00 / cacheRead $0.10 / cacheWrite(1시간 TTL) $2.00, �
 순서대로 실행됐다 — `classify_segments()`가 이걸 batch로 정확히 분류함, 원본
 데이터와 일치.
 
-**흥미로운 발견 — 이 시스템에서는 병렬(parallel)이 실제로 잘 안 나올 수 있음**:
-한 턴에 여러 도구를 부르도록 유도해도, OpenClaw의 도구 실행기가 그 호출들을
-동시에(concurrent) 처리하지 않고 하나씩 순서대로(sequential) 처리하는 것으로
-보인다 — 그래서 겹치는 타임스탬프(=병렬 판정 조건)가 아예 안 나왔다. 즉 "병렬"
-분류 로직 자체는 아직 실사례로 검증 못 했지만, 이건 이 시스템의 실제 동작 방식이
-그렇다는 뜻일 수 있다 — 병렬 호출이 드물게만 일어난다면, 병렬 오분류 리스크보다
-batch 분류의 정확도가 실무적으로 더 중요하다는 뜻이기도 하다. (네트워크 I/O가
-오래 걸리는 도구, 예: 웹 요청 여러 건을 동시에 시키면 다를 수도 있어서, 그런
-도구가 생기면 한 번 더 테스트해볼 가치는 있음.)
+**왜 병렬(parallel)이 안 나왔나 — 공식 문서·소스로 확인한 원인**:
+
+한 응답 안의 도구 호출 4개가 겹치지 않고 하나씩 실행됐는데, 이건 OpenClaw가 원래
+병렬 실행을 안 해서가 아니라 **우리 환경의 MCP 서버 설정 때문**이었다.
+
+- OpenClaw가 쓰는 에이전트 루프(pi-agent-core)는 **기본이 병렬 실행**이다. 공식
+  README 기준: 기본값 `"parallel"`은 도구 호출들의 사전 검사(preflight)를 순서대로
+  끝낸 뒤 허용된 도구들을 동시에 실행한다. 단, 한 배치 안에 `executionMode:
+  "sequential"`인 도구가 있으면 그 배치는 순차로 실행된다.
+- OpenClaw 소스(`src/agents/agent-bundle-mcp-materialize.ts`)를 보면 MCP 서버에서
+  가져온 도구는 서버 설정에 `supportsParallelToolCalls: true`가 **명시돼 있을 때만**
+  `"parallel"`이고, 그 외에는 전부 `"sequential"`로 등록된다
+  (`server?.supportsParallelToolCalls === true ? "parallel" : "sequential"`).
+- 우리 `openclaw.json`의 `mcp.servers.fs`에는 이 옵션이 없다. 그래서 `fs__*` 도구는
+  전부 sequential로 등록돼 있었고, 4개의 `fs__read_text_file` 호출이 순서대로
+  실행된 것이다. 호출 사이 간격(약 40~70ms)도 이 설명과 맞는다.
+
+즉 이번 결과는 "이 시스템엔 병렬이 없다"는 뜻이 아니다. **설정상 순차로 강제된
+다중 호출을 batch로 정확히 분류했다**는 뜻이고, 병렬 판정 로직은 아직 실사례로
+검증하지 못한 상태다. 병렬 설정이 켜진 MCP 서버나 기본값이 병렬인 내장 도구를
+쓰면 실제 운영 환경에서도 병렬 호출이 충분히 나올 수 있으므로, 병렬 분류 검증은
+생략하면 안 된다.
+
+(근거: pi-agent-core README — github.com/earendil-works/pi/blob/main/packages/agent/README.md,
+OpenClaw 설정 문서 — docs.openclaw.ai/gateway/config-extensions, OpenClaw 소스
+`src/agents/agent-bundle-mcp-materialize.ts` 226~227행)
 
 두 번째 프롬프트도 정상 처리됐고(`ls`×1, `exec`×8이 이미 첫 번째 run에서 sequential로
 잡혔던 것 포함), 순차 diff 공식도 실사례 9건으로 추가 확인됨 — 전부 음수 없이
@@ -113,8 +130,10 @@ batch 분류의 정확도가 실무적으로 더 중요하다는 뜻이기도 �
 ## 다음에 할 일
 
 - [x] 실제 병렬/배치 캡처 로그 확보 → batch 사례 확보 및 검증 완료
-- [ ] 병렬(parallel) 사례는 여전히 못 구함 — 네트워크 I/O형 도구(웹 요청 등)가
-      워크스페이스에 생기면 한 번 더 시도
+- [ ] 병렬(parallel) 실사례 확보 — `openclaw.json`의 `mcp.servers.fs`에
+      `"supportsParallelToolCalls": true`를 추가하고 게이트웨이 재시작 후 같은
+      "파일 4개 읽기" 프롬프트를 다시 보내서, tool.execution 스팬이 실제로 겹치는지와
+      parallel로 분류되는지 확인 (읽기 전용 호출이라 동시 실행해도 안전함)
 - [ ] `pipeline/prometheus/rules.yml`의 단가 placeholder도 `attribution.py`와
       동일하게 "게이트웨이 단가 0 → Anthropic 공식 정가 대체" 로직 반영할지 결정
       (지금은 Prometheus recording rule이라 정적 상수라서 attribution.py처럼
