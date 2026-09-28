@@ -1,0 +1,51 @@
+# otelcol-agentscope(커스텀 Collector) 실행 설정 — 로컬 PC(Windows) 테스트베드용.
+#
+# 실행 (OpenClaw 설정 폴더에서):
+#   .\otelcol-agentscope.exe --config .\otelcol-agentscope-config.yaml
+#
+# 결과 확인: 브라우저에서 http://localhost:9464/metrics
+#   - openclaw_tool_attribution_*   ← 이 커넥터가 만든 도구별 귀속 메트릭
+#   - openclaw_tokens_total 등        ← OpenClaw가 원래 보내던 코어 메트릭(그대로 통과)
+
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318   # OpenClaw diagnostics.otel.endpoint(http://localhost:4318)와 같아야 함
+
+processors:
+  batch:
+    timeout: 1s
+
+connectors:
+  tokenattribution:
+    metrics_flush_interval: 5s
+    grace: 2s
+    run_idle_timeout: 10m
+    # openclaw.json의 모델 단가를 읽는다. 단가가 0(학교 게이트웨이)이면 Anthropic 공식 정가(참고용)로 대체.
+    openclaw_config_path: '${env:USERPROFILE}\.openclaw\openclaw.json'   # Windows 사용자 폴더 기준
+    use_reference_pricing: true
+    exemplars:
+      enabled: true
+      max_per_data_point: 5
+
+exporters:
+  prometheus:
+    endpoint: 0.0.0.0:9464
+    enable_open_metrics: true   # exemplar(traceId)를 /metrics에 같이 싣기 위해 필요
+  debug:
+    verbosity: detailed         # 기존처럼 콘솔(또는 *> 로그파일)로 원본 스팬도 확인 가능
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [tokenattribution, debug]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [prometheus]
+    metrics/attribution:
+      receivers: [tokenattribution]
+      exporters: [prometheus]

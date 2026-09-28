@@ -18,7 +18,8 @@ OpenClaw 공식 텔레메트리는 토큰·비용을 채널/프로바이더/모�
 
 ```
 docs/       개발계획서, 마일스톤 0(exemplar 연결) 검증 로그, 3주차 정확도 검증 결과
-scripts/    traceId+타임스탬프 기반 도구별 토큰/비용 귀속 알고리즘 (Python 프로토타입)
+scripts/    traceId+타임스탬프 기반 도구별 토큰/비용 귀속 알고리즘 (Python 프로토타입, 검증 기준)
+collector/  위 로직을 Go로 옮긴 OTel Collector 커넥터 + 커스텀 Collector 빌드 설정 (실시간 동작)
 pipeline/   OTel Collector + Prometheus + Grafana 관측 파이프라인 (docker-compose)
 ```
 
@@ -46,10 +47,24 @@ pipeline/   OTel Collector + Prometheus + Grafana 관측 파이프라인 (docker
   input/output/cache 전부 0으로 설정돼 있음 — 학교 게이트웨이가 종량제 과금을
   안 하기 때문. Anthropic 공식 정가(참고용, 실제 청구액 아님)를 자동 대체하도록
   `attribution.py`를 고침.
-- **아직 미해결**: 실제 캡처 로그에 병렬/배치 도구 호출 사례가 없어서 그 두 판정
-  로직은 여전히 합성 테스트로만 검증됨. 실사례를 유도하는 테스트 프롬프트 제안함.
+- **실제 batch·parallel 사례 확보·검증**: 웹챗으로 다중 도구 호출을 유도해 batch 사례를
+  얻었고, 병렬이 안 나온 원인(MCP 서버에 `supportsParallelToolCalls` 미설정 시 순차 실행)을
+  OpenClaw 소스로 확인한 뒤 설정을 바꿔 parallel 사례까지 확보. 순차·배치·병렬 판정 모두
+  실데이터로 검증 완료.
 
-자세한 내용: `docs/3주차_정확도검증.md`
+자세한 내용: `docs/week3-accuracy-validation.md`
+
+## 4주차 착수: Go 커넥터로 실시간화 (2026-09-28)
+
+- 귀속 로직을 Go로 옮겨 OTel Collector **커넥터(traces → metrics)** 로 구현하고, 필요한
+  부품만 넣은 커스텀 Collector(`otelcol-agentscope`, 약 37MB)를 OCB로 빌드.
+- 실제 로그 3개로 파이썬 결과와 판정·토큰 수가 일치함을 테스트로 확인하고, 사용자 PC에서
+  실제 OpenClaw 요청으로 도구별 토큰·비용 메트릭이 `/metrics`에 실시간 반영되는 것 확인.
+- 도구별 토큰·비용 메트릭에 트레이스 ID를 exemplar로 붙여서 메트릭 → 트레이스 이동 가능.
+- 이식 중 파이썬 쪽 버그 1건 발견·수정: 마지막 model.call 뒤 도구가 `unattributed`가 아닌
+  `sequential`/`batch`로 잘못 표시되던 문제(회귀 테스트 2건 추가, 총 9건).
+
+자세한 내용: `collector/README.md`
 
 ## 사용법
 
@@ -60,7 +75,10 @@ python3 attribution.py <otel-debug-log.txt> [openclaw.json]   # 단가표 실제
 python3 test_attribution.py                                    # 순차/병렬/배치 분류 로직 단위 테스트
 python3 audit_attribution.py <otel-debug-log.txt>               # 패턴 판정 근거(원본 타임스탬프) 감사용 출력
 
-# 2) Prometheus + Grafana로 코어 메트릭(토큰 총량/근사 비용/응답시간) 상시 모니터링
+# 2) 실시간: 커스텀 Collector 실행 (빌드 방법은 collector/README.md)
+.\otelcol-agentscope.exe --config .\otelcol-agentscope-config.yaml   # http://localhost:9464/metrics
+
+# 3) Prometheus + Grafana로 코어 메트릭(토큰 총량/근사 비용/응답시간) 상시 모니터링
 cd pipeline
 docker compose up -d
 # Grafana: http://localhost:3000 (admin/admin)
@@ -73,7 +91,5 @@ docker compose up -d
 - `pipeline/prometheus/rules.yml`은 여전히 단가 placeholder임 — `attribution.py`처럼
   "게이트웨이 단가 0이면 Anthropic 공식 정가로 자동 대체"하는 로직을 Prometheus
   recording rule(정적 상수)에도 반영할지 결정 필요.
-- 병렬/배치 구간 귀속 로직은 여전히 합성 테스트로만 검증됨 — `docs/3주차_정확도검증.md`의
-  제안 프롬프트로 실제 병렬/배치 캡처 로그를 얻으면 실증 검증 필요.
-- `attribution.py`의 도구별 귀속 결과를 Grafana 대시보드에서 보이게 잇는 작업(예:
-  작은 exporter를 만들어 Prometheus 커스텀 게이지로 올리기)은 아직 설계 전.
+- `pipeline/docker-compose.yml`을 커스텀 Collector(`collector/`)로 바꾸는 Dockerfile 작업과,
+  도구별 토큰·비용 Grafana 패널(exemplar → 트레이스 연결 포함) 추가.

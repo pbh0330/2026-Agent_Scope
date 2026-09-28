@@ -111,6 +111,7 @@ def classify_segments(runs: dict[str, list[Span]]) -> list[ToolAttribution]:
         # --- 순차/배치 판정: 연속된 두 model.call 사이에 tool.execution이 몇 개인가 ---
         # model.call이 하나도 없거나 하나뿐이면(=도구 실행 후 모델을 다시 안 불렀거나,
         # 애초에 비교할 짝이 없으면) 귀속 불가로 표시.
+        assigned: set[str] = set()
         for k in range(len(model_calls)):
             prev = model_calls[k]
             nxt = model_calls[k + 1] if k + 1 < len(model_calls) else None
@@ -125,6 +126,22 @@ def classify_segments(runs: dict[str, list[Span]]) -> list[ToolAttribution]:
                 and (window_end is None or t.start <= window_end)
             ]
             if not between:
+                continue
+            assigned.update(t.span_id for t in between)
+
+            # Go 이식(4주차) 중 발견: 마지막 model.call 뒤에 실행된 도구(=다음 model.call이
+            # 없는 구간)는 원래 코드에서 pattern="sequential"/"batch"에 "병렬/배치 구간"이라는
+            # 잘못된 note가 붙어서 나갔음. 비교할 다음 model.call이 없으니 귀속 불가가 맞음.
+            if nxt is None:
+                for tool in between:
+                    results.append(ToolAttribution(
+                        trace_id=trace_id, run_parent_id=parent_id,
+                        tool_name=tool.attrs.get("openclaw.toolName", "unknown"),
+                        tool_span_id=tool.span_id,
+                        pattern="unattributed", duration_ms=tool.duration_ms,
+                        approx_tokens=None,
+                        note="마지막 model.call 뒤에 실행된 도구 — 다음 model.call이 없어 귀속 불가",
+                    ))
                 continue
 
             # 3주차 정확도 검증 중 발견: _overlaps()는 start/end 중 하나라도 None이면
@@ -184,6 +201,21 @@ def classify_segments(runs: dict[str, list[Span]]) -> list[ToolAttribution]:
                         approx_tokens=None,
                         note=base_note,
                     ))
+
+        # 어느 model.call 구간에도 안 들어간 도구(첫 model.call이 끝나기 전에 시작됨,
+        # 시작 시각 누락 등)도 조용히 빠지지 않게 unattributed로 남김. OpenClaw가 나중에
+        # "모델 응답 도중 도구 실행"(스트리밍 execute-on-parse)을 도입하면 이 경우가 생김.
+        for tool in tool_execs:
+            if tool.span_id in assigned:
+                continue
+            results.append(ToolAttribution(
+                trace_id=trace_id, run_parent_id=parent_id,
+                tool_name=tool.attrs.get("openclaw.toolName", "unknown"),
+                tool_span_id=tool.span_id,
+                pattern="unattributed", duration_ms=tool.duration_ms,
+                approx_tokens=None,
+                note="어느 model.call 구간에도 속하지 않음(모델 응답 도중 시작됐거나 시작 시각 누락) — 귀속 불가",
+            ))
 
     return results
 

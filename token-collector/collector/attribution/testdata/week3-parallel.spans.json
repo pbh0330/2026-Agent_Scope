@@ -1,0 +1,159 @@
+[
+ {
+  "trace_id": "e30df998446bd3d258c129ff14d8f610",
+  "parent_id": "5979f5f38c7d91e1",
+  "span_id": "378d12c534618ed1",
+  "name": "openclaw.model.call",
+  "start_unix_nano": 1790605867723000000,
+  "end_unix_nano": 1790605872366000000,
+  "attrs": {
+   "openclaw.provider": "school-gateway",
+   "openclaw.model": "claude-haiku-4-5-20251001",
+   "gen_ai.system": "school-gateway",
+   "gen_ai.request.model": "claude-haiku-4-5-20251001",
+   "gen_ai.operation.name": "text_completion",
+   "openclaw.model_call.observation_unit": "request",
+   "openclaw.api": "openai-completions",
+   "openclaw.transport": "auto",
+   "openclaw.model_call.prompt.input_messages_count": 34,
+   "openclaw.model_call.prompt.input_messages_chars": 65372,
+   "openclaw.model_call.prompt.system_prompt_chars": 37769,
+   "openclaw.model_call.prompt.tool_definitions_count": 72,
+   "openclaw.model_call.prompt.tool_definitions_chars": 118670,
+   "openclaw.model_call.prompt.total_chars": 221811,
+   "openclaw.model_call.request_bytes": 214358,
+   "openclaw.model_call.response_bytes": 2594,
+   "openclaw.model_call.time_to_first_byte_ms": 1626,
+   "openclaw.model_call.usage.input_tokens": 59533,
+   "openclaw.model_call.usage.output_tokens": 263,
+   "openclaw.model_call.usage.cache_read_input_tokens": 0,
+   "openclaw.model_call.usage.cache_creation_input_tokens": 0,
+   "openclaw.model_call.usage.prompt_tokens": 59533,
+   "openclaw.model_call.usage.total_tokens": 59796,
+   "gen_ai.usage.input_tokens": 59533,
+   "gen_ai.usage.output_tokens": 263,
+   "gen_ai.usage.cache_read.input_tokens": 0,
+   "gen_ai.usage.cache_creation.input_tokens": 0
+  }
+ },
+ {
+  "trace_id": "e30df998446bd3d258c129ff14d8f610",
+  "parent_id": "5979f5f38c7d91e1",
+  "span_id": "f2d58ebb0b26a08c",
+  "name": "openclaw.tool.execution",
+  "start_unix_nano": 1790605872498000000,
+  "end_unix_nano": 1790605872577000000,
+  "attrs": {
+   "openclaw.toolName": "fs__read_text_file",
+   "openclaw.tool.source": "mcp",
+   "gen_ai.tool.name": "fs__read_text_file",
+   "openclaw.tool.owner": "bundle-mcp",
+   "openclaw.tool.params.kind": "object",
+   "gen_ai.operation.name": "execute_tool",
+   "gen_ai.tool.call.id": "toolu_01LtgUGj9AyYDKJVudpFuyrR"
+  }
+ },
+ {
+  "trace_id": "e30df998446bd3d258c129ff14d8f610",
+  "parent_id": "5979f5f38c7d91e1",
+  "span_id": "62f10936e47e631b",
+  "name": "openclaw.tool.execution",
+  "start_unix_nano": 1790605872501000000,
+  "end_unix_nano": 1790605872654000000,
+  "attrs": {
+   "openclaw.toolName": "fs__read_text_file",
+   "openclaw.tool.source": "mcp",
+   "gen_ai.tool.name": "fs__read_text_file",
+   "openclaw.tool.owner": "bundle-mcp",
+   "openclaw.tool.params.kind": "object",
+   "gen_ai.operation.name": "execute_tool",
+   "gen_ai.tool.call.id": "toolu_0163uF6CK7DVJST6steW349q"
+  }
+ },
+ {
+  "trace_id": "e30df998446bd3d258c129ff14d8f610",
+  "parent_id": "5979f5f38c7d91e1",
+  "span_id": "b110d46fbffcbfd5",
+  "name": "openclaw.tool.execution",
+  "start_unix_nano": 1790605872502000000,
+  "end_unix_nano": 1790605872654000000,
+  "attrs": {
+   "openclaw.toolName": "fs__read_text_file",
+   "openclaw.tool.source": "mcp",
+   "gen_ai.tool.name": "fs__read_text_file",
+   "openclaw.tool.owner": "bundle-mcp",
+   "openclaw.tool.params.kind": "object",
+   "gen_ai.operation.name": "execute_tool",
+   "gen_ai.tool.call.id": "toolu_01JCweQwC2bbvQTpkzns4qPZ"
+  }
+ },
+ {
+  "trace_id": "e30df998446bd3d258c129ff14d8f610",
+  "parent_id": "5979f5f38c7d91e1",
+  "span_id": "7b5bdcebc94db41b",
+  "name": "openclaw.tool.execution",
+  "start_unix_nano": 1790605872503000000,
+  "end_unix_nano": 1790605872654000000,
+  "attrs": {
+   "openclaw.toolName": "fs__read_text_file",
+   "openclaw.tool.source": "mcp",
+   "gen_ai.tool.name": "fs__read_text_file",
+   "openclaw.tool.owner": "bundle-mcp",
+   "openclaw.tool.params.kind": "object",
+   "gen_ai.operation.name": "execute_tool",
+   "gen_ai.tool.call.id": "toolu_01CGZFfaQ4YUzqt98nAYSry6"
+  }
+ },
+ {
+  "trace_id": "e30df998446bd3d258c129ff14d8f610",
+  "parent_id": "5979f5f38c7d91e1",
+  "span_id": "995930563769a6ce",
+  "name": "openclaw.model.call",
+  "start_unix_nano": 1790605872856000000,
+  "end_unix_nano": 1790605879676000000,
+  "attrs": {
+   "openclaw.provider": "school-gateway",
+   "openclaw.model": "claude-haiku-4-5-20251001",
+   "gen_ai.system": "school-gateway",
+   "gen_ai.request.model": "claude-haiku-4-5-20251001",
+   "gen_ai.operation.name": "text_completion",
+   "openclaw.model_call.observation_unit": "request",
+   "openclaw.api": "openai-completions",
+   "openclaw.transport": "auto",
+   "openclaw.model_call.prompt.input_messages_count": 39,
+   "openclaw.model_call.prompt.input_messages_chars": 89261,
+   "openclaw.model_call.prompt.system_prompt_chars": 37769,
+   "openclaw.model_call.prompt.tool_definitions_count": 72,
+   "openclaw.model_call.prompt.tool_definitions_chars": 118670,
+   "openclaw.model_call.prompt.total_chars": 245700,
+   "openclaw.model_call.request_bytes": 237262,
+   "openclaw.model_call.response_bytes": 2352,
+   "openclaw.model_call.time_to_first_byte_ms": 1527,
+   "openclaw.model_call.usage.input_tokens": 65543,
+   "openclaw.model_call.usage.output_tokens": 401,
+   "openclaw.model_call.usage.cache_read_input_tokens": 0,
+   "openclaw.model_call.usage.cache_creation_input_tokens": 0,
+   "openclaw.model_call.usage.prompt_tokens": 65543,
+   "openclaw.model_call.usage.total_tokens": 65944,
+   "gen_ai.usage.input_tokens": 65543,
+   "gen_ai.usage.output_tokens": 401,
+   "gen_ai.usage.cache_read.input_tokens": 0,
+   "gen_ai.usage.cache_creation.input_tokens": 0
+  }
+ },
+ {
+  "trace_id": "e30df998446bd3d258c129ff14d8f610",
+  "parent_id": "85460cd125d78c7e",
+  "span_id": "5979f5f38c7d91e1",
+  "name": "openclaw.run",
+  "start_unix_nano": 1790605856494000000,
+  "end_unix_nano": 1790605880882000000,
+  "attrs": {
+   "openclaw.provider": "school-gateway",
+   "openclaw.model": "claude-haiku-4-5-20251001",
+   "openclaw.channel": "webchat",
+   "openclaw.trigger": "user",
+   "openclaw.outcome": "completed"
+  }
+ }
+]

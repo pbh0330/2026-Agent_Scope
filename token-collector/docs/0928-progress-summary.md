@@ -99,7 +99,8 @@
 
 ## 다음 단계 후보
 
-1. `attribution.py` 결과를 Grafana에 연결 (커스텀 exporter 설계 필요)
+1. (진행 중) 귀속 로직을 Go OTel Collector 커넥터로 옮겨 실시간화 — 구현·로컬 검증 완료(`collector/README.md`).
+   남은 것: docker-compose를 커스텀 Collector로 교체, Grafana에 도구별 토큰·비용 패널 추가
 2. `pipeline/prometheus/rules.yml`의 단가 placeholder 처리 방식 결정 (Prometheus
    recording rule은 정적 상수라서 attribution.py처럼 런타임 자동 대체가 안 됨)
 3. PR 리뷰/머지 진행 상황 확인

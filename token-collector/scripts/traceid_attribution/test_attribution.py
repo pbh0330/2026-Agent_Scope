@@ -159,7 +159,39 @@ def test_missing_timestamp_flags_batch_confidence():
     print("test_missing_timestamp_flags_batch_confidence OK ->", results)
 
 
+def test_tool_after_last_model_call_is_unattributed():
+    # 4주차 Go 이식 중 발견한 버그의 회귀 테스트: 마지막 model.call 뒤의 도구는
+    # 비교할 다음 model.call이 없으므로 sequential/batch가 아니라 unattributed여야 함.
+    trace, parent = "trace-tail", "run-tail"
+    spans = [
+        mk_model_call("m1", 0, 2, parent, trace, in_tok=1000, out_tok=50),
+        mk_tool("t1", 2, 3, parent, trace, "toolA"),
+    ]
+    results = classify_segments(group_runs(spans))
+    assert len(results) == 1, results
+    assert results[0].pattern == "unattributed", results
+    assert results[0].approx_tokens is None
+    print("test_tool_after_last_model_call_is_unattributed OK ->", results)
+
+
+def test_tool_started_during_model_call_is_unattributed():
+    # 모델 응답 도중(첫 model.call 종료 전)에 시작한 도구는 어느 구간에도 안 들어감 —
+    # 예전엔 결과에서 조용히 빠졌음. 이제 unattributed로 남아야 함.
+    trace, parent = "trace-early", "run-early"
+    spans = [
+        mk_model_call("m1", 0, 2, parent, trace, in_tok=1000, out_tok=50),
+        mk_tool("t1", 1, 3, parent, trace, "toolA"),
+        mk_model_call("m2", 3, 5, parent, trace, in_tok=1300, out_tok=40),
+    ]
+    results = classify_segments(group_runs(spans))
+    assert len(results) == 1, results
+    assert results[0].pattern == "unattributed", results
+    print("test_tool_started_during_model_call_is_unattributed OK ->", results)
+
+
 if __name__ == "__main__":
+    test_tool_after_last_model_call_is_unattributed()
+    test_tool_started_during_model_call_is_unattributed()
     test_sequential()
     test_parallel()
     test_batch()
