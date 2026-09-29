@@ -1,177 +1,393 @@
-# Agent Scope 스키마 설계 항목 초안
+# Agent Scope 공통 데이터 스키마 — 팀 검토용 초안
 
-> 작성일: 2026-09-24 · 상태: 팀 검토용 제안 v0.1
-> 목적: 어느 부분에 어떤 데이터 계약이 필요한지 정리하고, 스캐너·대시보드·QA가 먼저 합의할 항목을 선정한다. 아래 이름과 필드는 제안이며 확정된 구현 스키마가 아니다.
+> 작성일: 2026-09-29 · 상태: 팀 협의 전 초안
+> 문서 버전: v0.2 · 문서 변경 이력 관리: Notion 예정
+> 데이터 계약 버전: `0.2.0-draft` · 예제의 `schema_version`과 동일
+> 설계 기준 MCP 규격: **2026-07-28**
+> 대상 환경: OpenClaw 기반 테스트베드. 정확한 설치 버전·commit은 담당자가 확인하여 기록한다.
 
-## 1. 설계 기준과 범위
+## 1. 문서 목적과 적용 범위
 
-**가장 먼저 정할 스키마는 스캐너 출력이자 대시보드 입력인 `InventorySnapshot`이다.** 이 안에 자산, 관계, 근거, 경고, 수집 상태를 담고, 각 객체의 세부 형식을 나누어 정의한다. 아래 목록은 논리적인 스키마 구분이며, 각각을 별도 DB 테이블이나 파일로 만들자는 뜻은 아니다.
+이 문서는 **자산 스캐너가 어떤 데이터를 출력하고, 대시보드와 QA가 이를 어떻게 읽을지** 정하기 위한 초안이다. 스키마란 전달 데이터의 필드 이름, 자료형, 필수 여부와 해석 규칙을 뜻한다. 팀원은 이 문서의 필드 표와 JSON 예제를 보고 출력 가능 여부·화면 요구사항·검증 조건을 확인한다.
 
-적용 원칙:
+`2026-07-28`은 MCP 통신 규격의 버전이다. OpenClaw 제품 버전과 프로젝트 데이터 형식의 `schema_version`은 각각 별도로 기록한다. 설계 기준 버전이 정해졌어도 실제 서버가 그 규격을 사용한다고 가정하지 않는다.
 
-1. 직접 수집 정점은 Gateway, Node, MCP Server, Tool, Resource/Prompt, Skill, Plugin의 7종이다.
-2. 공급망(B)과 권한·자격증명(C)은 자산 속성이다. 별도 공격 표면이나 독립 정점으로 늘리지 않는다.
-3. 정적 스냅샷과 잠재 관계를 기록한다. 실제 호출·접근·전송·토큰 사용량은 후속 범위다.
-4. 회의록의 결정란이 비어 있는 논점은 합의 완료로 간주하지 않는다. 특히 광고 목록의 온라인 수집 방식은 결정이 필요하다.
+문서 버전은 설명·표·협의 내용의 변경을 추적하기 위한 값으로 본문에서 관리한다. `schema_version`은 프로그램이 주고받는 데이터 형식의 버전이다. Notion 문구 수정만으로 데이터 계약 버전을 올리지는 않으며, 필드·자료형·의미·필수 조건을 변경할 때 별도로 검토한다.
 
-## 2. 필요한 스키마 전체 목록
+- 직접 수집 대상은 Gateway, Node, MCP Server, Tool, Resource/Prompt, Skill, Plugin의 7종이다. 각 자산의 선언·발견·노출·호출·사용 여부는 6개 상태로 구분한다.
+- MCP 공식 객체는 `mcp.definition`에, OpenClaw 원천 설정은 `product.config`에 구분한다.
+- 프로젝트가 만든 ID·관계·상태 판정·정규화 속성은 공식 필드와 별도로 저장한다.
+- 실제 적용 MCP 버전과 설치 OpenClaw 버전을 설계 기준에서 자동 복사하지 않는다.
+- 사용량·비용 및 위험 경고는 별도 계약으로 연결한다. 여기서 시나리오나 탐지 규칙을 확정하지 않는다.
 
-우선순위는 **P0: 모듈 간 계약을 위해 먼저 정의**, **P1: MVP 탐지·검증 구현 전에 정의**, **P2: 후속 기능 구현 시 정의**로 구분한다. P1도 MVP에 필요한 항목이다.
+공식 MCP 객체의 내부 필드는 해당 규격을 따른다. 이 문서에서 제안하는 최상위 구조, 공통 ID, 관계와 판정 필드는 프로젝트의 추가 구조다. 예제는 실제 수집 결과가 아닌 설명용 가상 데이터다.
 
-| ID | 필요한 부분 | 스키마 제안 | 용도 | 주요 필드 후보 | 우선순위 |
-|---|---|---|---|---|---|
-| SC-01 | 스캐너 → 대시보드·QA | `InventorySnapshot` | 한 번의 수집 결과를 전달하는 공통 최상위 계약 | `schema_version`, `snapshot_id`, `environment_id`, `scan`, `assets`, `relations`, `evidence`, `findings`, `assessment_results`, `collection_results`, `policy_ref` | P0 |
-| SC-02 | 모든 자산의 공통 구조 | `AssetBase` | 7종 자산의 식별·소속·관찰 정보 통일 | `asset_id`, `asset_type`, `asset_subtype`, `name`, `official_identifier`, `owner_ref`, `evidence_refs`, `mcp`, `product`, `project` | P0 |
-| SC-03 | Gateway·Node 수집 | `GatewayNodeDetails` | 서버 선언 위치, 실행 환경, Agent 식별 연결 | `instance_id`, `node_role`, `config_ref`, `agent_refs`, `product_version` | P0 |
-| SC-04 | MCP Server 수집 | `ServerDetails` | 서버 식별, 연결 보안, 규격·capability 표현 | `server_id`, `declaration_owner_ref`, `declaration_ref`, `transport`, `endpoint`, `command`, `args`, `tls_verification`, `protocol_version`, `client_capabilities`, `server_capabilities`, `extensions` | P0 |
-| SC-05 | Tool 수집 | `ToolDefinition` | 공식 정의를 보존하고 서버별 동명 Tool 구별 | `server_id`, `name`, `title`, `description`, `inputSchema`, `outputSchema`, `annotations` | P0 |
-| SC-06 | Resource/Prompt 수집 | `ResourcePromptDefinition` | 한 정점 유형 안에서 두 객체의 필드 구분 | `server_id`, `asset_subtype`; Resource의 `uri`, `mimeType`, `size`; Prompt의 `name`, `arguments`; 공통 `description` | P0 |
-| SC-07 | Skill·Plugin 수집 | `SkillPluginDetails` | 설치 구성요소와 등록 자산 연결 | `package_id`, `installation_ref`, `entry_point`, `execution_type`, `registered_asset_refs`, `hooks`, `dependency_refs` | P0 |
-| SC-08 | 자산의 공급망 속성 | `SupplyChainProfile` | 출처·무결성·업데이트 위험 기록 | `source_type`, `source_uri`, `provider`, `version`, `commit`, `integrity_status`, `modified`, `pinned`, `dependencies`, `update_policy` | P1 |
-| SC-09 | 자산의 권한·인증 속성 | `PermissionProfile` | 권한 범위와 자격증명 공유·격리 표현 | `credentials[]`, `filesystem_permissions`, `network_permissions`, `process_identity`, `sandbox`, `command_permissions`, `data_permissions`, `approval_policy`, `tool_filter` | P1 |
-| SC-10 | Agent별 노출 판정 | `ExposureAssessment` | 선언·발견·노출·잠재 호출 상태와 판정 맥락 기록 | `asset_ref`, `agent_ref`, `declared`, `discovered`, `exposed`, `potentially_callable`, `policy_ref`, `reason`, `evidence_refs` | P0 |
-| SC-11 | 자산 그래프의 관계 | `Relation` + `TargetRef` | 6종 MVP 관계 및 비정점 대상 표현 | `relation_id`, `relation_type`, `source_asset_ref`, `target`, `evidence_refs`, `confidence`, `inference_rule`, `policy_ref` | P0 |
-| SC-12 | 수집·추론 근거 | `Evidence` | 자산·관계·경고에서 원천을 역추적 | `evidence_id`, `evidence_type`, `source_ref`, `field_path`, `observed_at`, `collection_context_ref`, `redaction_status` | P0 |
-| SC-13 | 수집 실행·실패 처리 | `ScanRun` + `CollectionResult` | 미수집과 실제 빈 목록을 구분하고 재현 조건 기록 | `scan_id`, `scanner_version`, `started_at`, `finished_at`, `target_ref`, `layer`, `method`, `status`, `error_code`, `auth_context_ref`, `catalog_hash`, `capability_hash` | P0 |
-| SC-14 | 탐지 기준 입력 | `PolicyBaseline` | 승인 목록·최소 권한·정책의 비교 기준 | `policy_id`, `version`, `approved_servers`, `approved_endpoints`, `trusted_providers`, `allowed_scopes`, `expected_audiences`, `approval_requirements`, `baseline_snapshot_ref` | P1 |
-| SC-15 | 위협 탐지 규칙 | `DetectionRule` | S1~S5의 판정 조건·필수 입력·출력 코드 정의 | `rule_id`, `rule_version`, `scenario_id`, `required_fields`, `condition`, `severity`, `warning_code`, `missing_data_behavior` | P1 |
-| SC-16 | 탐지 실행 결과·경고 | `AssessmentResult` + `Finding` | 평가 불가와 정상 구분, 경고의 근거·영향 자산 표시 | 평가: `rule_ref`, `subject_refs`, `status`, `reason`; 경고: `finding_id`, `warning_code`, `scenario_id`, `severity`, `asset_refs`, `relation_refs`, `evidence_refs`, `confidence`, `message` | P1 |
-| SC-17 | QA 정답 데이터 | `GroundTruthDataset` | 수동 정답과 실제 출력 비교 | `gt_version`, `environment_id`, `baseline_snapshot_ref`, `expected_assets`, `expected_relations`, `expected_findings`, `forbidden_findings`, `id_mapping`, `evidence_refs` | P1 |
-| SC-18 | QA 실행 결과 | `QARunResult` | 재현 조건, 통과 여부, 누락·오탐·지표 기록 | `run_id`, `test_case_id`, `gt_version`, `actual_snapshot_ref`, `versions`, `status`, `missing_items`, `unexpected_items`, `metrics`, `defect_refs` | P1 |
-| SC-19 | 스냅샷 비교·변경 이력 | `SnapshotDiff` | 추가·삭제·정의·권한 변경 기록 | `before_snapshot_ref`, `after_snapshot_ref`, `comparison_context`, `added`, `removed`, `changed`, `field_changes` | P2 |
-| SC-20 | 런타임 관찰·사용량 | `RuntimeEvent` + `UsageRecord` | 실제 호출·접근과 토큰 사용량의 후속 연결 | `event_id`, `trace_id`, `asset_ref`, `method`, `timestamp`, `outcome`, `usage_scope`, `input_tokens`, `output_tokens`, `attribution_method` | P2 |
+### 1.1 데이터를 만드는 쪽과 사용하는 쪽
 
-## 3. 핵심 스키마별 초안 결정 사항
+| 담당 영역 | 이 문서에서 확인할 내용 |
+|---|---|
+| 스캐너 | 원천 설정·목록을 읽어 자산 ID, 관계, 근거, 수집 결과를 출력할 수 있는지 |
+| 대시보드 | 동일 ID로 목록과 그래프를 연결하고, 미확인·실패를 올바르게 표시할 수 있는지 |
+| 테스트베드 | 환경 ID, 설치 버전, 정상 구성과 수집 대상 위치를 제공할 수 있는지 |
+| QA | 정답 목록과 출력의 자산·관계·상태를 같은 기준으로 비교할 수 있는지 |
+| 모니터링 | 이후 사용량을 연결할 때 환경 ID·자산 ID·관측 시각을 참조할 수 있는지 |
 
-### 3.1 공통 출력과 데이터 소유권
+### 1.2 전체 데이터 구조
 
-스캐너·분석기가 만든 `InventorySnapshot`을 대시보드와 QA가 함께 소비하도록 한다. 대시보드는 동일한 자산을 별도 ID로 다시 생성하지 않는다. 화면 좌표·색상·접힘 상태는 화면 설정으로 관리하며 보안 분석의 원본 데이터와 분리한다.
-
-권장 구조는 다음과 같다. 실제 JSON Schema 파일은 이 목록을 검토한 뒤 작성한다.
+스캐너를 한 번 실행해 얻은 결과를 **스냅샷**이라고 부른다. 한 스냅샷에는 이번에 수집한 자산과 관계뿐 아니라 무엇을 근거로 수집했는지, 어느 범위를 수집하지 못했는지도 담는다.
 
 ```text
-InventorySnapshot
-├── schema_version / snapshot_id / environment_id / policy_ref
-├── scan                         # 실행 시각·수집기 버전
-├── assets[]                     # AssetBase + 유형별 세부 구조
-│   ├── mcp                      # 공식 객체가 있는 경우 원래 필드명 보존
-│   ├── product                  # 제품 설정에서 얻은 정보
-│   └── project                  # 공급망·권한·노출 등 프로젝트 정규화 정보
-├── relations[]                  # 직접 정점 또는 비정점 대상 참조
-├── evidence[]                   # 비밀값을 제거한 원천 참조
-├── collection_results[]         # 원천별 성공·부분 성공·실패·미수행
-├── assessment_results[]         # 규칙별 평가 상태
-└── findings[]                   # 탐지된 위험 경고
+InventorySnapshot                    한 번의 수집 결과
+├── 환경·버전·수집기·시각             어느 환경에서 언제 얻은 결과인지
+├── assets[]                         발견·선언된 자산
+│   ├── mcp.definition               MCP 서버가 제공한 공식 객체
+│   ├── product.config               OpenClaw에 저장된 설정
+│   └── project                      상태 판정·자격증명 참조·공급망 해석
+├── relations[]                      자산 연결과 잠재 접근 관계
+├── evidence[]                       설정·응답 등 판단 근거의 참조
+└── collection_results[]             대상별 수집 성공·부분 성공·실패
 ```
 
-공식 객체를 갖지 않는 자산에는 `mcp`를 억지로 채우지 않는다. 원본 객체의 선택 필드는 원본에서 없으면 생략한다. `inputSchema`는 Tool이 받는 입력의 형식이며, 이번에 설계할 인벤토리 전체 스키마와는 다른 대상이다.
+예를 들어 설정에 서버가 등록돼 있고 그 서버의 Tool 목록에서 `search_docs`를 찾았다면, 서버와 Tool을 각각 자산으로 만든다. 서버가 Tool을 광고한다는 관계를 연결하고 설정·목록 응답을 근거로 남긴다. 목록을 얻었다는 사실만으로 Tool 실행 성공까지 판정하지 않는다.
 
-### 3.2 식별자와 자산 유형
+### 1.3 표를 읽는 방법
 
-| 대상 | 식별 기준 제안 | 주의할 점 |
-|---|---|---|
-| Gateway·Node | 환경 ID + 인스턴스 식별자 | 이름만 같다고 같은 장비로 합치지 않음 |
-| MCP Server | 환경 ID + 선언 주체 ID + 정규화된 선언 위치 + 서버 키 | 같은 endpoint를 쓰는 서로 다른 선언은 우선 별도 인스턴스로 보존 |
-| Tool | `server_id + asset_type + name` | 서버가 다르면 동명 Tool도 별도 자산 |
-| Resource | `server_id + asset_type + asset_subtype + uri` | Backend 파일·DB와 혼동하지 않음 |
-| Prompt | `server_id + asset_type + asset_subtype + name` | Resource와 같은 정점 분류여도 공식 객체는 구분 |
-| Skill·Plugin | 환경·설치 위치 + 공급자 + package ID | 버전은 변경 비교가 가능하도록 속성으로 보존하는 안을 제안 |
-
-결합 키는 단순 문자열 이어붙이기로 충돌하지 않도록 정규화한 튜플을 직렬화하거나 해시한다. 알고리즘과 정규화 규칙은 구현 전에 고정한다. 수집 시각은 안정 ID에 넣지 않는다.
-
-`asset_type` 후보는 `gateway`, `node`, `mcp_server`, `tool`, `resource_prompt`, `skill`, `plugin`이다. `resource_prompt`에서는 `asset_subtype`을 `resource` 또는 `prompt`로 필수 지정한다.
-
-### 3.3 관계와 비정점 대상
-
-Agent·Backend Resource·External System은 MVP 직접 수집 정점이 아니지만 관계의 대상이 된다. 따라서 모든 관계에 `target_asset_id`만 요구하면 표현할 수 없는 관계가 생긴다.
-
-`TargetRef`를 다음 중 하나로 정의하는 안을 제안한다.
-
-| `kind` | 필드 후보 | 사용처 |
-|---|---|---|
-| `asset` | `asset_ref` | `DECLARES`, `ADVERTISES`, `ASSOCIATED_WITH` |
-| `agent` | `owner_asset_ref`, `agent_key` | `MAY_EXPOSE_TO` |
-| `backend_resource` | `resource_kind`, `normalized_locator` 또는 `scope_category` | `MAY_ACCESS` |
-| `external_destination` | `destination_kind`, `normalized_endpoint` 또는 `scope_category` | `MAY_SEND_TO` |
-
-`asset` 참조는 반드시 같은 스냅샷의 자산으로 연결되어야 한다. 나머지는 속성 기반 대상이며 7종 자산 수에 포함하지 않는다. 대시보드에서 보조 도형으로 표시하더라도 직접 수집 자산과 시각적으로 구분한다.
-
-정의 문서 10.3의 `CONNECTS_TO`와 10.4의 6종 MVP 관계 목록에는 차이가 있다. **초안에서는 10.4와 QA 범위의 6종만 사용**하고, 실제 연결이 확인된 것처럼 보일 수 있는 `CONNECTS_TO` 추가는 팀 검토 항목으로 남긴다.
-
-### 3.4 권한·자격증명과 정책 기준
-
-`PermissionProfile.credentials[]` 내부에는 `credential_ref`, `reference_namespace`, `auth_type`, `issuer`, `audience`, `resource`, `oauth_scopes`, `expiry_status`, `isolation_scope`, `subject_ref`, `target_ref`, `evidence_refs`를 후보로 둔다. 이 객체는 자산 속성이며 Credential 정점이 아니다.
-
-- 참조 이름이 같아도 서로 다른 저장소·환경의 자격증명일 수 있다. 공유 여부는 namespace를 포함한 정규화된 참조로 판정한다.
-- 참조가 다르다고 실제 비밀값도 다르다고 단정하지 않는다. 실제 비밀값을 읽어 비교하거나 비밀값의 해시를 저장하는 방식은 사용하지 않는다.
-- Tool 권한이 서버에서 상속된다면 `inherited_from_ref`와 적용 정책을 기록한다. 근거 없이 서버 권한을 모든 Tool의 확정 권한으로 복사하지 않는다.
-- scope 과다 판정에는 최소 필요 scope 기준이, audience 불일치 판정에는 기대 대상 API가 필요하다. endpoint 문자열만으로 기대 audience를 단정하지 않는다.
-- 승인 목록이 없으면 미승인 여부는 `unknown`이다. 출처 불명과 명시적 미승인은 구분한다.
-
-비밀값 미수집은 `credentials`에만 적용하지 않는다. `command/args`, URL 쿼리, 설명·스키마의 예시·기본값, 오류 메시지 및 증적에도 적용한다. 원문 보존과 충돌하면 비밀값 제거를 우선하고, 제거된 필드 경로와 처리 상태만 남긴다.
-
-### 3.5 상태·근거·불완전한 수집
-
-| 항목 | 초안 규칙 |
+| 표기 | 뜻 |
 |---|---|
-| 알 수 없는 값 | 프로젝트 정규화 필드의 `null`은 미확인, 필드 생략은 해당 없음으로 정한다. 필요하면 `unknown_reason`을 함께 기록한다. 공식 객체 내부에는 이 규칙을 강제하지 않는다. |
-| 목록 | `[]`는 해당 범위를 정상적으로 수집했지만 항목이 없다는 뜻이다. 수집 실패는 `collection_results`에 기록한다. |
-| 정적 상태 | `declared`, `discovered`, `exposed`, `potentially_callable`을 개별 판정으로 관리한다. 노출·잠재 호출은 Agent·정책별로 기록한다. |
-| 런타임 상태 | MVP가 `CALLABLE`, `USED` 또는 실제 접근·전송을 확정하지 못하도록 검증한다. |
-| 근거 신뢰도 | `confirmed`, `high`, `medium`, `low`를 사용하되, `confirmed`는 그 근거로 확인한 주장에만 적용한다. 서버가 기능을 광고했다는 사실과 기능의 안전성은 다르다. |
-| 평가 결과 | `matched`, `not_matched`, `insufficient_data`, `not_applicable`, `error`를 구분한다. 경고 0개만으로 정상 판정을 하지 않는다. |
-| 시각·버전 | 시각은 시간대가 포함된 문자열로 통일한다. 프로젝트 `schema_version`, 수집기 버전, `protocol_version`, 규칙·정책 버전을 구분한다. |
+| string / number / boolean | 문자열 / 숫자 / true 또는 false |
+| object | 이름과 값을 가진 중첩 객체 |
+| `Asset[]`, `string[]` | 자산 객체 목록, 문자열 목록 |
+| 필수 O | 해당 객체에 반드시 있어야 하는 필드 |
+| 조건부 | 표에 적힌 조건을 충족하면 필요한 필드 |
+| null | 확인할 수 없는 값. 허용한 필드에서만 사용 |
+| `_ref`, `_refs` | 다른 객체나 증적의 ID를 가리키는 참조, 참조 목록 |
 
-광고 목록은 조회 시각, 서버, 자격증명 참조·인가 맥락, 목록 종류, 페이지 수집 완료 여부를 함께 기록한다. 로컬 파일 수집과 서버 접속을 통한 목록 조회를 `collection_mode`로 구분하고, 목록 조회 성공을 Tool 호출 성공으로 해석하지 않는다.
+명시하지 않은 필드는 선택이다. 필수인 객체 안에도 선택 필드가 있을 수 있다. 예를 들어 `project`와 그 안의 `state_assessments` 배열은 필수지만 `supply_chain`은 선택이다.
 
-## 4. S1~S5와 스키마 연결
+## 2. 최상위 InventorySnapshot
 
-| 시나리오 | 필요한 입력 스키마 | 경고 코드 | 필수 판단 기준·주의점 |
+| 필드 | 자료형 | 필수 | 의미 |
 |---|---|---|---|
-| S1 비인가 MCP 서버 등록 및 노출 | Server, Skill/Plugin, SupplyChain, PolicyBaseline, Exposure, Relation, Evidence | `UNAUTHORIZED_MCP_SERVER` | 승인 서버·endpoint 목록과 비교. 신규 여부는 기준 스냅샷이 있어야 판단 가능. Skill/Plugin 연관은 별도 근거로 연결 |
-| S2 과도한 권한 Tool 광고 | ToolDefinition, PermissionProfile, Exposure, PolicyBaseline, Evidence | `HIGH_RISK_TOOL_EXPOSURE` | 위험 입력 필드와 선언 권한·승인 정책을 조합. `path`나 `url`이라는 이름만으로 악성을 확정하지 않음 |
-| S3 Tool 이름 충돌 | AssetBase, ServerDetails, ToolDefinition, SupplyChain, PermissionProfile | `TOOL_NAME_COLLISION` | 서로 다른 서버의 동일 이름을 별도 자산으로 유지. 유사 이름 탐지는 정확 일치 규칙과 분리하고 임계값 기록 |
-| S4 자격증명 과다 노출 | PermissionProfile, PolicyBaseline, Relation, Evidence | `CREDENTIAL_OVEREXPOSURE` | 정규화된 참조 공유, 최소 scope, 기대 audience/API와 격리 기준 필요. 공유만으로 고권한이라고 단정하지 않음 |
-| S5 안전하지 않은 MCP 연결 | ServerDetails, SupplyChain, PermissionProfile, PolicyBaseline | `INSECURE_MCP_CONNECTION` | 원격 연결 여부·TLS 적용·검증 상태 구분. stdio의 TLS 미적용을 평문 원격 연결로 오탐하지 않음 |
+| `schema_version` | string | O | 예제는 `0.2.0-draft` |
+| `snapshot_id` | string | O | 수집 실행마다 새 ID, 재전송은 유지 |
+| `environment_id` | string | O | 테스트베드의 논리 환경 ID |
+| `basis` | object | O | 설계 기준. `mcp_spec_version: "2026-07-28"` |
+| `environment` | object | O | `openclaw_version`, `openclaw_commit`: string 또는 null. 미확인이면 `version_note` 필수 |
+| `producer` | object | O | 수집기 `name`, `version` 문자열 |
+| `generated_at` | string | O | UTC 시각 |
+| `scan` | object | O | `started_at`, `finished_at`, `status` |
+| `assets` | Asset[] | O | 직접 수집 자산 |
+| `relations` | Relation[] | O | 근거가 있는 관계 |
+| `evidence` | Evidence[] | O | 안전하게 보관한 원천 참조 |
+| `collection_results` | CollectionResult[] | O | 실행 대상으로 정한 범위별 수집 결과 |
 
-모든 경고에는 `rule_id/rule_version`, `scenario_id`, 관련 자산, 근거, 신뢰도, 적용 정책 참조를 연결한다. 위험 등급과 근거 신뢰도는 별도 필드다.
+시각은 시간대를 포함한 UTC 문자열이다. 미확인은 허용한 필드에서만 null로 표현한다. 선택 필드 생략은 미제공이며 안전·없음·false를 의미하지 않는다. 빈 배열만으로 정상적인 빈 수집을 판정하지 않는다.
 
-S1의 현재 승인 여부 탐지는 전체 변경 이력 기능 없이 구현할 수 있다. 신규 등록 시점 판정과 Rug Pull 탐지를 포함하는 일반 `SnapshotDiff`는 후속 범위로 둔다. 추후 비교 시 인가 맥락이나 수집 완전성이 다르면 단순 삭제·변경으로 판정하지 않는다.
+## 3. Asset 공통 구조와 7종 매핑
 
-## 5. QA 스키마에서 먼저 정할 것
+| 필드 | 자료형 | 필수 | 규칙 |
+|---|---|---|---|
+| `asset_id` | string | O | 반복 수집 시 유지하는 ID |
+| `asset_type` | string | O | 아래 7종 |
+| `asset_subtype` | string | 조건부 | resource_prompt면 resource 또는 prompt |
+| `name` | string | O | 표시 이름 |
+| `owner_ref` | string | 조건부 | Server는 선언 Gateway/Node, Tool·Resource/Prompt는 소속 Server |
+| `evidence_refs` | string[] | O | 하나 이상의 근거 ID |
+| `mcp` | object | 조건부 | 공식 객체가 수집됐을 때 |
+| `product` | object | 조건부 | OpenClaw 설정·설치 원천이 있을 때 |
+| `project` | object | O | `state_assessments[]` 필수. 선택 정규화 속성 포함 |
 
-`GroundTruthDataset`은 스캐너 출력과 같은 자산·관계 의미를 사용하되, 정답 ID와 출력 ID를 별도로 유지한다. 정답은 스캐너 결과를 그대로 복사하지 않고 설정·manifest·목록 응답을 수동 검토하여 작성한다.
-
-| 비교 대상 | 필요한 규칙 |
-|---|---|
-| 자산 | `GT-A-* → asset_id` 매핑, 유형·소속 서버·공식 식별자 비교, 필수 기대 속성 명시 |
-| 관계 | 시작·대상·관계 유형과 증적 비교. 비정점 대상도 `TargetRef`와 같은 구조로 표현 |
-| 경고 | 시나리오 활성 여부, 기대 경고 코드·대상, 발생하면 안 되는 경고, 기대 평가 상태 |
-| 무결성 | ID 중복, 존재하지 않는 자산·근거 참조, 잘못된 유형 조합, 필수 필드 누락 탐지 |
-| 비밀값 | 출력·로그·증적·대시보드에 테스트 비밀값이 남지 않는지 확인 |
-| 지표 | 분자·분모·값을 함께 기록. 분모 0은 값 `null`과 상태 `not_applicable`로 표현하고 화면에 N/A 표시 |
-
-Ground Truth의 예시 행이나 `TBD`는 실제 정답 집계에서 제외한다. `schema_version`이 다른 출력끼리 비교할 때는 변환 규칙 또는 비교 불가 사유를 남긴다.
-
-## 6. 작성 순서와 팀 검토 항목
-
-1. **공통 계약:** SC-01~07, SC-10~13의 필수 필드·자료형·ID·참조·상태 규칙부터 정한다. 스캐너 담당과 대시보드 담당이 같은 예제 스냅샷을 확인한다.
-2. **탐지 계약:** SC-08~09, SC-14~16으로 공급망·권한·정책 입력과 S1~S5 경고 출력을 정의한다.
-3. **검증 계약:** SC-17~18로 정상·위협·부분 수집 사례의 정답 및 기대 결과를 작성한다. JSON 형식 검증과 참조 무결성·탐지 의미 검증은 구분한다.
-4. **후속 확장:** SC-19~20을 설계한다. 토큰이 세션 총량으로만 수집되면 Tool별 사용량으로 임의 배분하지 않고 관측 단위를 기록한다.
-
-| 결정할 항목 | 초안 제안 | 관련 담당 |
+| asset_type | 원천·저장 내용 | 식별 기준 제안 |
 |---|---|---|
-| 최초 전달 방식 | JSON 스냅샷 파일을 공통 계약으로 시작. API가 필요해지면 동일 객체 재사용 | 김규민·고혜림 |
-| 공식 정보·확장 정보 구분 | `mcp` / `product` / `project` 구조 | 김규민·고혜림 |
-| 광고 목록 수집 범위 | 입력으로 받은 목록 스냅샷과 온라인 조회를 구분하고 허용 모드를 명시 | 김규민·박병하 |
-| 비정점 대상 표현 | `TargetRef` 사용, 수집 정점은 7종 유지 | 김규민·고혜림·정서진 |
-| 선언 인스턴스·설치 자산 ID | 선언 위치·설치 위치를 포함하고 버전 변경은 속성으로 관리 | 김규민·정서진 |
-| `CONNECTS_TO` 포함 여부 | MVP에서는 제외하고 6종 관계 유지 | 김규민·고혜림·정서진 |
-| 승인·최소 권한 기준 관리 | 버전이 있는 `PolicyBaseline`을 테스트베드와 함께 관리 | 박병하·정서진 |
-| 불완전한 수집·평가 표시 | 실패·미확인·정상을 구분해 QA와 화면에서 동일하게 표현 | 김규민·고혜림·정서진 |
-| 런타임 사용량의 관측 단위 | 확보 가능한 데이터에 맞춰 세션·요청·Tool 귀속을 명시 | 이정철·고혜림 |
+| `gateway` | 안전한 Gateway 설정과 인스턴스 정보 | 환경 + 인스턴스 |
+| `node` | Node 설정·식별 정보. 정확한 원천 키는 설치 버전 확인 후 | 환경 + Node 식별자 |
+| `mcp_server` | 선언 위치·서버 설정, 확보한 발견 응답 | 선언 주체 + 선언 위치 + 서버 키 |
+| `tool` | 공식 Tool 객체 | 서버 ID + 유형 + name |
+| `resource_prompt` | 공식 Resource 또는 Prompt 객체 | 서버 ID + 하위 유형 + uri 또는 name |
+| `skill` | 설치·SKILL.md·설정 근거 | 환경 + 설치 위치 + 패키지 식별자 |
+| `plugin` | manifest·설치·설정 근거 | 환경 + 설치 위치 + Plugin ID |
 
-다음 산출물은 **P0 스키마 정의 파일, 정상 스냅샷 예제, S1~S5 위험 스냅샷 예제, 부분 수집 실패 예제, 대응 Ground Truth**로 제안한다. 이 문서는 그 작성을 위한 설계 목록이며 공통 인터페이스 확정이나 구현 완료를 의미하지 않는다.
+ID는 환경·소속·원천 식별자를 일정한 규칙으로 조합해 만든다. 문자열 결합·해시 등 구체적인 생성 방법은 구현 담당과 합의한다. 수집 시각·제품 버전은 자산 ID에 넣지 않는다. 다른 서버의 동명 Tool은 별도 자산이다. 서버를 참조할 때는 서버 자산의 `asset_id`를 사용한다.
 
-> 자료 위치 안내: 내부 자료로 표시한 문서는 이 PR에 포함하지 않았습니다.
+예: `srv-A`의 `search`와 `srv-B`의 `search`는 서로 다른 Tool ID를 갖는다. 같은 환경에서 다시 수집한 `srv-A`의 `search`는 자산 ID를 유지하고, 이번 실행 결과를 구분하는 snapshot_id만 바뀐다. 예제의 `srv-01`, `tool-01`은 설명용 ID다.
+
+## 4. MCP 공식 객체 저장
+
+`mcp` 포장은 프로젝트 필드이며 내부 공식 객체와 구분한다.
+
+| 필드 | 자료형 | 규칙 |
+|---|---|---|
+| `protocol_version` | string 또는 null | 실제 수집에 적용된 규격. null이면 `version_note` 필수 |
+| `definition` | object | Tool·Resource·Prompt의 공식 객체, 해당 자산에서 필수 |
+| `discovery` | object | Server의 공식 발견 결과를 확보했을 때 선택 |
+
+공식 필드 확인표:
+
+| 객체 | 공식 필수 필드 | 선택 필드 예 |
+|---|---|---|
+| Tool | `name`, `inputSchema` | title, description, outputSchema, annotations, icons, _meta |
+| Resource | `name`, `uri` | title, description, mimeType, size, annotations, icons, _meta |
+| Prompt | `name` | title, description, arguments, icons, _meta |
+
+필드명·자료형·중첩 구조를 임의로 바꾸지 않는다. Tool 입력 스키마와 프로젝트 전달 스키마는 다르다. 목록 응답은 개별 definition이 아닌 증적에 보관한다. 페이지별 응답·요청 메타데이터와 인가 맥락을 증적에 연결해 목록의 완전성을 확인한다. 이 표가 공식 선택 필드를 삭제하는 기준은 아니다.
+
+공식 기준은 [MCP 2026-07-28 Schema](https://modelcontextprotocol.io/specification/2026-07-28/schema)다. ResourceTemplate은 URI에 매개변수를 넣어 리소스를 찾는 템플릿이다. 우선 목록 증적으로 보관하며 직접 자산으로 표시할지는 별도로 합의한다.
+
+## 5. OpenClaw 원천 설정 저장·매핑
+
+`product`의 필수 하위 필드는 `name: "openclaw"`, `source_ref`, `config_path`이다. 설정을 수집했을 때 `config`를 포함한다. `config_path`는 안전하게 정규화한 원천 내부 키 경로이며 운영 파일 전체 경로일 필요는 없다. 설치 파일 원천은 해당 문서 내부 위치로 표시한다.
+
+다음 자료형은 프로젝트 수집 계약의 후보다. 설치 버전 검증 전 OpenClaw의 모든 허용 타입을 대체하지 않는다. 값이 명시됐을 때 보존하고 생략된 값을 임의 기본값으로 채우지 않는다.
+
+| OpenClaw 원천 | 저장 위치 | 후보 자료형 | 처리 |
+|---|---|---|---|
+| `mcp.servers.<name>.enabled` | Server `product.config.enabled` | boolean | 명시 값 보존 |
+| `.command`, `.args` | `product.config.command/args` | string, string[] | 비밀값 포함 부분 제거 |
+| `.url`, `.transport` | `product.config.url/transport` | string | 원격 주소·전송 원천 유지 |
+| `.sslVerify` | `product.config.sslVerify` | boolean | 생략을 false로 바꾸지 않음 |
+| `.requestTimeoutMs`, `.connectionTimeoutMs` | 같은 이름 | number | 단위 ms 유지 |
+| `.supportsParallelToolCalls` | 같은 이름 | boolean | 힌트를 실행 사실로 해석하지 않음 |
+| `.auth`, `.oauth.identity`, `.oauth.scope` | 같은 중첩 경로 | string | 선언값 보존, 인증 성공과 구분 |
+| `.toolFilter.include/exclude` | 같은 중첩 경로 | string[] | 정확 이름·패턴 원형 유지 |
+| `.codex.agents`, `.codex.defaultToolsApprovalMode` | 같은 중첩 경로 | string[], string | 해당 런타임에서만 판정에 사용 |
+| `skills.load`, `skills.allowBundled` | 소유 Gateway/Node의 config 하위 원천 경로 | object, string[] | 전역 정책과 개별 Skill 설정 구분 |
+| `skills.entries.<key>.enabled` | Skill config.enabled | boolean | 설치 발견과 활성화 구분 |
+| `plugins.enabled/allow/deny/load` | 소유 Gateway/Node의 config 하위 원천 경로 | boolean/배열/object | 전역 정책 보존 |
+| `plugins.entries.<id>.enabled/hooks/llm` | Plugin config 내부 동일 경로 | boolean/object | 개별 정책 보존 |
+| Header·env·apiKey·clientKey | 원문 config에서 제외, 아래 참조 메타데이터 | — | 실제 값·비밀값 해시 저장 금지 |
+
+제품 원천: [OpenClaw 설정 문서](https://docs.openclaw.ai/gateway/config-extensions). Node 쪽 선언 경로는 별도 검증 전 고정하지 않는다.
+
+표의 `.url`처럼 점으로 시작하는 키는 `mcp.servers.<name>` 아래 항목을 뜻한다. 예를 들어 `mcp.servers.docs.url`의 값을 서버 자산의 `product.config.url`에 저장하고, `product.config_path`에는 `mcp.servers.docs`를 기록한다. 이렇게 하면 저장된 값이 어느 설정에서 왔는지 확인할 수 있다.
+
+`toolFilter`는 도구 목록과 함께 해석한다. 도구가 목록에 있어도 필터나 대상 Agent 정책에 따라 노출되지 않을 수 있다. `codex` 하위 설정은 해당 런타임에만 적용한다. Skill·Plugin은 설치됐다는 사실과 활성화·허용됐다는 사실을 구분한다.
+
+### 5.1 자격증명·공급망 정규화 정보
+
+아래는 `project` 내부 선택 객체이며 OpenClaw 공식 객체가 아니다.
+
+| 객체 | 필드 후보와 자료형 |
+|---|---|
+| `credential_refs[]` | `reference_id: string 또는 null`, `namespace: string`, `source_field: string`, `kind: string`, `presence: boolean 또는 null`, `evidence_refs: string[]` |
+| `supply_chain` | `provider`, `package_id`, `version`, `commit`, `source_uri`: string; `integrity_status`: verified/failed/unknown; `evidence_refs: string[]` |
+| `normalizations[]` | `source_field: string`, `target_field: string`, `rule_id: string`, `evidence_refs: string[]` |
+
+reference_id를 안전하게 알 수 없으면 null과 reason을 남긴다. 같은 환경변수 이름만으로 공유 자격증명이라고 확정하지 않는다. 무결성 verified는 검증 증적이 있을 때만 사용한다. 인증서 경로 등 민감한 식별정보도 필요하면 범주·증적 ID로 치환하고 제거한 필드 경로를 증적에 남긴다.
+
+`endpoint`, `tls_verification` 같은 별칭은 이번 초안에서 추가하지 않고 `url`, `sslVerify` 원천을 유지한다. 나중에 별칭을 추가하면 normalizations에 변환 근거를 남긴다.
+
+## 6. 자산 상태 — 선언부터 실제 사용까지
+
+자산 상태는 “스캐너가 성공했는가”가 아니라 **이 자산에 대해 어디까지 확인했는가**를 나타낸다.
+
+| state | 의미 | 정적 단계 |
+|---|---|---|
+| `DECLARED` | 설정에 선언됨 | 설정 근거로 판정 |
+| `DISCOVERED` | 설치 파일 또는 런타임 응답에서 발견됨 | 파일·목록 응답 근거로 판정 |
+| `EXPOSED` | 특정 Agent/Host에 표시되거나 연결됨 | 대상·정책 확인 가능한 경우 판정 |
+| `POTENTIALLY_CALLABLE` | 정적 조건상 호출 가능성이 있음 | 정적 근거와 추론 규칙으로 판정 |
+| `CALLABLE` | 런타임 검증 결과 실제 호출 가능함 | 미검증 |
+| `USED` | 실행 로그에서 실제 사용이 관찰됨 | 미관찰 |
+
+`project.state_assessments[]`의 구조:
+
+| 필드 | 자료형 | 규칙 |
+|---|---|---|
+| `state` | string | 위 6개 중 하나 |
+| `value` | boolean 또는 null | true/false는 판정 결과, null은 미확인 |
+| `evidence_refs` | string[] | true/false이면 하나 이상 |
+| `reason` | string | null일 때 필수 |
+| `subject_ref` | TargetRef | 대상별 true/false 판정 시 필수 |
+| `policy_ref` | string | 정책 기반 판정 시 필수, 버전을 식별할 수 있어야 함 |
+| `inference_rule` | string | 추론 판정 시 필수 |
+
+비대상 판정은 subject_ref를 생략한다. 대상이 필요한 상태는 EXPOSED·POTENTIALLY_CALLABLE·CALLABLE·USED다. 미평가 상태는 배열에서 생략해도 되며 소비자는 unknown으로 취급한다. 배열이 비어 있으면 전체 미평가다. 이들은 일괄 자동 승격하는 단계가 아니라 근거별 판정이다. 이 정적 계약에서는 CALLABLE·USED에 true/false를 출력하지 않는다.
+
+| 예 | 기록할 값 | 해석 |
+|---|---|---|
+| 설정에 서버 등록 확인 | DECLARED = true | 선언 근거가 있음 |
+| Tool 목록에서 도구 확인 | DISCOVERED = true | 해당 시점 목록에 존재함 |
+| 특정 Agent의 필터가 도구를 제외함을 확인 | 해당 Agent의 EXPOSED = false | 정책과 대상이 확인된 부정 판정 |
+| Agent별 정책을 확인하지 못함 | EXPOSED = null, 사유 기록 | 미확인이므로 false와 다름 |
+| 실제 호출을 검증하지 않음 | CALLABLE = null | 목록 조회 성공과 구분 |
+
+subject_ref는 “누구에게 노출·호출 가능한가”의 대상이다. 같은 Tool도 Agent별로 다른 판정이 가능하므로 상태 하나만 전역으로 덮어쓰지 않는다.
+
+## 7. 관계·근거·수집 결과
+
+### Relation
+
+관계는 그래프의 연결선에 해당한다. source_asset_ref는 시작 자산을, target은 연결 대상을 가리킨다. evidence_refs를 따라가면 그 연결을 만든 근거를 확인할 수 있다.
+
+필수: `relation_id: string`, `relation_type: string`, `source_asset_ref: string`, `target: TargetRef`, `evidence_refs: string[]`(하나 이상), `confidence: confirmed/high/medium/low`. 추론이면 `inference_rule` 필수, 정책 기반이면 `policy_ref` 필수.
+
+| 관계 | 출발 → 대상 |
+|---|---|
+| DECLARES | Gateway/Node → Server |
+| ADVERTISES | Server → Tool/Resource/Prompt |
+| ASSOCIATED_WITH | Skill/Plugin → Server/Tool |
+| MAY_EXPOSE_TO | 관련 자산 → Agent/Host |
+| MAY_ACCESS | 관련 자산 → 접근 자원 |
+| MAY_SEND_TO | 관련 자산 → 외부 목적지 |
+
+TargetRef는 다음 구조 중 하나다. 키의 값은 모두 문자열이다.
+
+- 자산: `kind: asset`, `asset_ref`. Host 대상은 Gateway/Node여야 한다.
+- Agent: `kind: agent`, `owner_asset_ref`, `agent_key`.
+- 접근 자원: `kind: backend_resource`, `resource_kind`, `normalized_locator` 또는 `scope_category`.
+- 외부 목적지: `kind: external_destination`, `destination_kind`, `normalized_endpoint` 또는 `scope_category`.
+
+비정점 대상은 직접 수집 자산 수에 포함하지 않는다. confirmed는 해당 주장에 대한 근거 수준이며 안전성·실행 성공을 뜻하지 않는다.
+
+### Evidence
+
+근거 객체는 설정 파일·manifest·목록 응답의 내용을 어디서 확인할 수 있는지 알려준다. evidence_id는 이 스냅샷에서 근거를 참조하는 ID이고, source_ref는 실제 증적 보관 위치를 찾는 안전한 ID다. collection_ref는 그 증적을 확보한 수집 작업을 가리킨다.
+
+필수: `evidence_id`, `evidence_type`, `source_ref`, `observed_at`, `collection_ref`, `redaction_status`(모두 string).
+
+evidence_type은 config/manifest/protocol/schema/description/manual. redaction_status는 not_needed/redacted. 선택 필드는 `field_path: string`, `redacted_fields: string[]`. 원본에 민감정보가 있으면 안전한 증적으로 바꾸고 변경 위치를 기록한다.
+
+### CollectionResult
+
+수집 결과는 “어느 대상의 어느 범위를 어떤 방식으로 수집했는가”를 기록한다. 서버 설정 읽기와 Tool 목록 조회는 서로 다른 작업으로 남긴다.
+
+| 필드 | 자료형 | 규칙 |
+|---|---|---|
+| `collection_id`, `source_ref`, `scope`, `collected_at` | string | 필수 |
+| `target_ref` | string 또는 null | 필수. 식별 전 실패는 null과 reason |
+| `mode` | string | local_file/online_catalog/imported_catalog |
+| `status` | string | success/partial/failed/not_attempted |
+| `protocol_version` | string 또는 null | MCP 목록·발견 수집 시 필수, 실제 적용 버전 |
+| `auth_context_ref` | string 또는 null | MCP 수집 시 필수. 익명도 명시적 맥락 ID 사용 |
+| `reason` | string | 실패·부분 수집·미수행 또는 null 맥락일 때 필수 |
+| `error_code` | string | 선택 |
+
+scope 후보: gateway_config/node_config/skill_files/plugin_manifest/server_discovery/tools_list/resources_list/prompts_list/resource_templates_list. 하나의 작업이 수집하도록 계획한 페이지를 모두 완료해야 success다.
+
+전체 scan.status는 모두 success이면 success, 일부 완료·확보했지만 실패 또는 미수행이 있으면 partial, 전혀 완료·확보하지 못했으면 failed. 수집 계획이 빈 실행은 거부한다. 정상 완료한 빈 목록은 성공이다. **이 값은 6개 자산 상태와 별개다.**
+
+| 수집 status | 뜻 | 예 |
+|---|---|---|
+| success | 계획한 범위를 모두 수집 | Tool 목록의 마지막 페이지까지 확인 |
+| partial | 일부만 수집 | 첫 페이지는 받았으나 다음 페이지에서 실패 |
+| failed | 해당 범위의 수집 실패 | 목록 요청 시간 초과 |
+| not_attempted | 계획했으나 실행하지 못함 | 선행 연결 실패로 목록 요청을 시도하지 못함 |
+
+상위 scan.status에는 success/partial/failed만 사용한다. 조회를 계획하지 않은 범위는 완료했다고 표시하지 않는다. auth_context_ref는 어떤 인증·사용자 맥락으로 조회했는지 식별하는 안전한 참조이며 토큰 값이 아니다.
+
+## 8. 통합 정상 예제
+
+설정과 Tool 목록만 수집한 예제다. 제품 버전은 미확인, MCP 응답은 기준 버전으로 수집했다는 가정이다. 원본 요청·페이지 응답은 source_ref가 가리키는 가상 증적에 있고 아래 definition은 Tool 객체만 포함한다.
+
+```json
+{
+  "schema_version": "0.2.0-draft",
+  "snapshot_id": "snap-001",
+  "environment_id": "env-test-01",
+  "basis": {"mcp_spec_version": "2026-07-28"},
+  "environment": {"openclaw_version": null, "openclaw_commit": null, "version_note": "Reported as latest; installed version not yet recorded."},
+  "producer": {"name": "asset-scanner", "version": "example"},
+  "generated_at": "2026-09-29T01:00:03Z",
+  "scan": {"started_at": "2026-09-29T01:00:00Z", "finished_at": "2026-09-29T01:00:02Z", "status": "success"},
+  "assets": [
+    {"asset_id": "gw-01", "asset_type": "gateway", "name": "Test Gateway", "evidence_refs": ["ev-config"], "project": {"state_assessments": []}},
+    {
+      "asset_id": "srv-01", "asset_type": "mcp_server", "name": "docs", "owner_ref": "gw-01", "evidence_refs": ["ev-config"],
+      "product": {"name": "openclaw", "source_ref": "fixture-config", "config_path": "mcp.servers.docs", "config": {"url": "https://example.com/mcp", "transport": "streamable-http", "enabled": true, "sslVerify": true, "toolFilter": {"include": ["search_*"], "exclude": ["admin_*"]}}},
+      "project": {"state_assessments": [{"state": "DECLARED", "value": true, "evidence_refs": ["ev-config"]}]}
+    },
+    {
+      "asset_id": "tool-01", "asset_type": "tool", "name": "search_docs", "owner_ref": "srv-01", "evidence_refs": ["ev-tools"],
+      "mcp": {"protocol_version": "2026-07-28", "definition": {"name": "search_docs", "inputSchema": {"type": "object", "properties": {"query": {"type": "string"}}, "required": ["query"]}}},
+      "project": {"state_assessments": [
+        {"state": "DECLARED", "value": null, "evidence_refs": [], "reason": "No independent Tool declaration checked."},
+        {"state": "DISCOVERED", "value": true, "evidence_refs": ["ev-tools"]},
+        {"state": "EXPOSED", "value": null, "evidence_refs": [], "reason": "Effective target policy not resolved."},
+        {"state": "POTENTIALLY_CALLABLE", "value": null, "evidence_refs": [], "reason": "Static call conditions not assessed."},
+        {"state": "CALLABLE", "value": null, "evidence_refs": [], "reason": "Runtime validation outside static collection."},
+        {"state": "USED", "value": null, "evidence_refs": [], "reason": "Runtime usage not observed."}
+      ]}
+    }
+  ],
+  "relations": [
+    {"relation_id": "rel-01", "relation_type": "DECLARES", "source_asset_ref": "gw-01", "target": {"kind": "asset", "asset_ref": "srv-01"}, "evidence_refs": ["ev-config"], "confidence": "confirmed"},
+    {"relation_id": "rel-02", "relation_type": "ADVERTISES", "source_asset_ref": "srv-01", "target": {"kind": "asset", "asset_ref": "tool-01"}, "evidence_refs": ["ev-tools"], "confidence": "confirmed"}
+  ],
+  "evidence": [
+    {"evidence_id": "ev-config", "evidence_type": "config", "source_ref": "fixture-config", "observed_at": "2026-09-29T01:00:01Z", "collection_ref": "collect-config", "redaction_status": "not_needed"},
+    {"evidence_id": "ev-tools", "evidence_type": "protocol", "source_ref": "fixture-tools", "observed_at": "2026-09-29T01:00:02Z", "collection_ref": "collect-tools", "redaction_status": "not_needed"}
+  ],
+  "collection_results": [
+    {"collection_id": "collect-config", "source_ref": "fixture-config", "scope": "gateway_config", "target_ref": "gw-01", "mode": "local_file", "status": "success", "collected_at": "2026-09-29T01:00:01Z"},
+    {"collection_id": "collect-tools", "source_ref": "fixture-tools", "scope": "tools_list", "target_ref": "srv-01", "mode": "online_catalog", "status": "success", "collected_at": "2026-09-29T01:00:02Z", "protocol_version": "2026-07-28", "auth_context_ref": "anonymous-test"}
+  ]
+}
+```
+
+목록 수집은 성공했지만 노출·호출 가능 여부는 미확인이다. 필터에 이름이 맞는 것만으로 EXPOSED나 CALLABLE을 true로 만들지 않았다.
+
+### 예제를 화면과 연결해 읽기
+
+1. `assets`의 세 항목으로 Gateway·Server·Tool을 표시한다.
+2. `relations`의 두 항목으로 Gateway → Server → Tool 연결을 표시한다.
+3. 서버 상세에서는 `product.config`의 주소·전송·TLS·필터 설정을 보여준다.
+4. Tool 상세에서는 `mcp.definition`의 이름·입력 구조를 보여준다.
+5. 상태에는 “발견됨 / 노출 여부 미확인 / 실제 호출 미검증”을 구분해 표시한다.
+6. 근거 보기를 선택하면 `evidence_refs` → `evidence.source_ref`로 연결한다.
+7. 수집 요약에는 설정과 Tool 목록 수집 성공을 표시한다. Resource·Prompt까지 수집했다고 표시하지 않는다.
+
+## 9. 실패·경계 사례의 기대 출력
+
+| 상황 | 출력·표시 규칙 |
+|---|---|
+| 설정 성공, Tool 목록 시간 초과 | 전체 partial. Gateway·Server와 DECLARES만 유지. tools_list는 failed와 TIMEOUT, Tool과 ADVERTISES는 이번 결과에서 생성하지 않음 |
+| 위 실패 후 이전 Tool 존재 | 이전 스냅샷에서 확인 가능. 이번 누락을 삭제로 판정하지 않음 |
+| 정상 조회 후 Tool 빈 목록 | tools_list success와 Tool 0개. 실패와 구분 |
+| 서버 선언이 enabled false | DECLARED는 true 가능. 비활성 근거만으로 모든 범위의 사용 이력 부재를 확정하지 않음 |
+| 동일 이름의 Tool을 다른 서버에서 발견 | 각각 다른 ID와 owner_ref |
+| 실제 MCP 버전이 기준과 다름 | 실제 버전 기록. 해당 버전 어댑터가 없으면 지원 불가로 기록하고 기준 버전 객체로 위장하지 않음 |
+| 민감 필드 제거로 원천 객체가 달라짐 | redacted_fields와 증적 기록. 변환된 사본을 수정 없는 원본이라고 표시하지 않음 |
+
+## 10. 데이터 수용·검증 규칙
+
+1. ID 중복·없는 참조·잘못된 관계 양끝·필수 필드 누락은 계약 오류로 거부한다. 유효한 partial 결과는 수용한다.
+2. project 상태의 true/false에는 근거가 있어야 한다. 정적 출력에서 CALLABLE·USED의 확정을 금지한다.
+3. 제품 원천 이름과 공식 MCP 내부 필드를 보존하고, 정규화에는 변환 근거를 남긴다.
+4. 생산자·대시보드·QA가 같은 정상·실패 예제로 표시와 비교 결과를 확인한다.
+5. 설치 OpenClaw 버전·Node 설정 경로·실제 MCP 지원 버전·ID 생성 알고리즘·증적 저장 위치를 담당자가 확정한다.
+
+계약 오류는 데이터 형식 자체가 잘못된 경우다. 수집 실패는 형식이 올바른 결과 안에 실패 상태가 기록된 경우다. 대시보드는 전자는 오류 위치를 알리고 거부하며, 후자는 수집 한계를 표시하면서 읽는 방식을 제안한다.
+
+## 11. 팀에서 확인하고 결정할 사항
+
+| 결정할 내용 | 초안의 제안 | 확인 담당 | 합의 결과 |
+|---|---|---|---|
+| 필수 출력 묶음 | 자산·관계·근거·수집 상태를 함께 제공 | 스캐너·대시보드·QA | |
+| 최초 전달 방식 | JSON 파일로 먼저 연동 확인 | 스캐너·대시보드 | |
+| ID 생성 규칙 | 환경·소속·원천 식별자 기반으로 재수집 ID 유지 | 스캐너·테스트베드 | |
+| 상태 판정 범위 | 정적 근거로 판정 가능한 상태부터 제공, 미확인은 null | 스캐너·QA | |
+| 실제 버전·설정 위치 | OpenClaw 설치 버전과 Gateway/Node 원천 확인 | 테스트베드·스캐너 | |
+| 증적 보관·조회 | 안전한 증적 ID로 연결, 저장 위치와 조회 방법 지정 | 스캐너·대시보드·QA | |
+| 유형별 수집 가능 필드 | 실제 예제로 필수·선택 필드 조정 | 스캐너 | |
+| 부분 실패 표시 | 최신 결과에 실패 범위를 표시하고 이전 스냅샷은 별도 조회 | 대시보드·QA | |
+| 계약 관리 | 정리 담당·검토 담당·예제 제출일 지정 | 전체 | |
+
+공유할 예제는 정상 수집, Tool 목록 실패, 다른 서버의 동명 Tool 세 가지다. 현재 8절은 정상 수집 예제이며 9절은 실패·경계 사례의 기대 처리 규칙이다. 담당자들은 실제 출력으로 같은 결과가 표현되는지 확인한다.
+
+합의 후에는 필드 명세를 기계 검증용 JSON Schema로 옮기고, 예제와 함께 생산자·소비자·QA에서 검증한다. 아직 원천 예제가 없는 자산 유형의 세부 필수 필드는 확인 필요로 남긴다.
+
+### 11.1 이 문서로 정할 수 있는 범위와 남은 명세
+
+이 문서는 **정적 자산 스캐너와 대시보드·QA 사이의 공통 계약을 정하기 위한 출발안**이다. 프로젝트 전체 모듈의 필드를 빠짐없이 정의한 최종 명세는 아니다.
+
+| 범위 | 현재 준비된 내용 | 확정 전에 필요한 작업 |
+|---|---|---|
+| 공통 전달 구조 | 스냅샷·ID·자산·관계·근거·수집 결과·6개 자산 상태 | 생산자·소비자 검토, 참조·오류·버전 호환 규칙 최종 합의 |
+| 7종 자산 상세 | 공통 필드, 유형별 원천과 식별 기준 | Node·Skill·Plugin 등을 포함한 실제 예제, 상세 필수 조건과 허용값 확정 |
+| MCP 공식 객체 | 공식 정의를 저장할 위치와 주요 필드 | 적용 규격의 전체 중첩 타입을 검증기에 연결 |
+| 제품 설정·분석 속성 | OpenClaw 원천 매핑, 자격증명·공급망 후보 | 설치 버전별 타입·기본값 확인, 파일·네트워크·실행 권한 및 적용 정책의 상세 구조 |
+| 보안 점검 결과 | 자산·근거와 연결할 방향 | 생성 담당, 평가·경고 객체와 규칙·정책 참조 계약 별도 정의 |
+| 사용량·비용 | 환경·자산 ID로 연결할 방향 | 관측 단위, 측정·추정, 귀속·집계·단가 필드 별도 정의 |
+| QA 결과 | 공통 데이터 검증 기준 | 정답·실행 결과·지표·결함 연결의 저장 형식 별도 정의 |
+
+따라서 공통 구조는 이 문서를 보며 합의하고, 각 파트의 실제 예제로 세부 명세를 채운다. 전체 스키마 확정은 필요한 모듈별 계약과 실패·경계 예제까지 검토한 뒤 판단한다.
