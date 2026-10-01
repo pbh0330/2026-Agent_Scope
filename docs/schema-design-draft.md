@@ -1,7 +1,10 @@
 # Agent Scope 공통 데이터 스키마 — 팀 검토용 초안
 
 > 작성일: 2026-09-29 · 상태: 팀 협의 전 초안
-> 문서 버전: v0.3 · 수정일: 2026-10-01
+> 문서 버전: v0.4 · 수정일: 2026-10-01
+> 공유 상태: 팀 검토용 협의안. 구현 계약 확정 전 검토를 위해 공유한다.
+> 검토 기준: 팀 공유 공격표면 v2.0, 자산 식별 스캐너 개발 계획서, Dashboard Design(docs/dashboard, 2026-10-01 확인).
+> 프로젝트 필드·필수 조건·허용값은 모두 제안이며 합의 완료를 뜻하지 않는다. 12절에 생산자·소비자 매핑과 결정 사항을 정리한다.
 > 데이터 계약 버전: `0.3.0-draft` · 예제의 `schema_version`과 동일
 > 설계 기준 MCP 규격: **2026-07-28**
 > 대상 환경: OpenClaw 기반 테스트베드. 정확한 설치 버전·commit은 담당자가 확인하여 기록한다.
@@ -14,7 +17,10 @@
 
 문서 버전은 설명·표·협의 내용의 변경을 추적하기 위한 값으로 본문에서 관리한다. `schema_version`은 프로그램이 주고받는 데이터 형식의 버전이다. Notion 문구 수정만으로 데이터 계약 버전을 올리지는 않으며, 필드·자료형·의미·필수 조건을 변경할 때 별도로 검토한다.
 
-- 직접 수집 대상은 Gateway, Node, MCP Server, Tool, Resource/Prompt, Skill, Plugin의 7종이다. 각 자산의 선언·발견·노출·호출·사용 여부는 6개 상태로 구분한다.
+- 공격표면 A(통신), B(공급망), C(권한·자격증명)를 모두 분석 범위로 유지한다. B·C의 저장 위치와 분석 범위는 별개다.
+- 스캐너 수집 범주는 Server, Tool, Resource/Template/Prompt, Skill, Plugin, 권한·인증 참조, Node다. 수집 범주와 그래프 정점 종류를 동일시하지 않는다.
+- 아래 7종 정점과 6종 관계는 구현 후보이며 확정된 제한이 아니다. Gateway·Host·Client·Agent·Credential의 독립 정점 여부와 자산 집계는 협의한다.
+- 자산 상태는 공유 공격표면 문서의 6개 의미를 유지한다. 저장 구조와 판정 담당은 협의한다.
 - MCP 공식 객체는 `mcp.definition`에, OpenClaw 원천 설정은 `product.config`에 구분한다.
 - 프로젝트가 만든 ID·관계·상태 판정·정규화 속성은 공식 필드와 별도로 저장한다.
 - 실제 적용 MCP 버전과 설치 OpenClaw 버전을 설계 기준에서 자동 복사하지 않는다.
@@ -83,13 +89,13 @@ InventorySnapshot                    한 번의 수집 결과
 
 시각은 시간대를 포함한 UTC 문자열이다. 미확인은 허용한 필드에서만 null로 표현한다. 선택 필드 생략은 미제공이며 안전·없음·false를 의미하지 않는다. 빈 배열만으로 정상적인 빈 수집을 판정하지 않는다.
 
-## 3. Asset 공통 구조와 7종 매핑
+## 3. Asset 공통 구조와 유형 매핑 후보
 
 | 필드 | 자료형 | 필수 | 규칙 |
 |---|---|---|---|
 | `asset_id` | string | O | 반복 수집 시 유지하는 ID |
-| `asset_type` | string | O | 아래 7종 |
-| `asset_subtype` | string | 조건부 | resource_prompt면 resource 또는 prompt |
+| `asset_type` | string | O | 아래 후보. 7종으로 제한하는지 미합의 |
+| `asset_subtype` | string | 조건부 | resource_prompt면 resource/resource_template/prompt 제안 |
 | `name` | string | O | 표시 이름 |
 | `owner_ref` | string | 조건부 | Server는 선언 Gateway/Node, Tool·Resource/Prompt는 소속 Server |
 | `evidence_refs` | string[] | O | 하나 이상의 근거 ID |
@@ -103,7 +109,7 @@ InventorySnapshot                    한 번의 수집 결과
 | `node` | Node 설정·식별 정보. 정확한 원천 키는 설치 버전 확인 후 | 환경 + Node 식별자 |
 | `mcp_server` | 선언 위치·서버 설정, 확보한 발견 응답 | 선언 주체 + 선언 위치 + 서버 키 |
 | `tool` | 공식 Tool 객체 | 서버 ID + 유형 + name |
-| `resource_prompt` | 공식 Resource 또는 Prompt 객체 | 서버 ID + 하위 유형 + uri 또는 name |
+| `resource_prompt` | 공식 Resource·Template·Prompt 객체 | 서버 ID + 하위 유형 + uri/uriTemplate/name |
 | `skill` | 설치·SKILL.md·설정 근거 | 환경 + 설치 위치 + 패키지 식별자 |
 | `plugin` | manifest·설치·설정 근거 | 환경 + 설치 위치 + Plugin ID |
 
@@ -131,7 +137,7 @@ ID는 환경·소속·원천 식별자를 일정한 규칙으로 조합해 만�
 
 필드명·자료형·중첩 구조를 임의로 바꾸지 않는다. Tool 입력 스키마와 프로젝트 전달 스키마는 다르다. 목록 응답은 개별 definition이 아닌 증적에 보관한다. 페이지별 응답·요청 메타데이터와 인가 맥락을 증적에 연결해 목록의 완전성을 확인한다. 이 표가 공식 선택 필드를 삭제하는 기준은 아니다.
 
-공식 기준은 [MCP 2026-07-28 Schema](https://modelcontextprotocol.io/specification/2026-07-28/schema)다. ResourceTemplate은 URI에 매개변수를 넣어 리소스를 찾는 템플릿이다. 우선 목록 증적으로 보관하며 직접 자산으로 표시할지는 별도로 합의한다.
+공식 기준은 [MCP 2026-07-28 Schema](https://modelcontextprotocol.io/specification/2026-07-28/schema)다. ResourceTemplate은 스캐너 계획에 따라 개별 레코드로 보존하는 안을 권장한다. mcp.definition에 실제 응답의 uriTemplate·name·description·mimeType 등을 보존하며 실제 Resource URI로 바꾸지 않는다. resource_template 하위 유형 또는 독립 유형 중 선택은 협의한다.
 
 ## 5. OpenClaw 원천 설정 저장·매핑
 
@@ -216,6 +222,8 @@ subject_ref는 “누구에게 노출·호출 가능한가”의 대상이다. �
 ## 7. 관계·근거·수집 결과
 
 ### Relation
+
+아래 6개 관계는 구체화 과정에서 제안한 후보이며 확정 enum이 아니다. 공유본 관계와 스캐너 결과의 대응은 12절에서 협의한다. MAY_ACCESS·MAY_SEND_TO 등 추론 생성은 스캐너 필수 업무로 확정하지 않는다.
 
 관계는 그래프의 연결선에 해당한다. source_asset_ref는 시작 자산을, target은 연결 대상을 가리킨다. evidence_refs를 따라가면 그 연결을 만든 근거를 확인할 수 있다.
 
@@ -419,6 +427,123 @@ scope 후보: gateway_config/node_config/skill_files/plugin_manifest/server_disc
 
 원천에 없는 권한이나 정책을 Tool 설명만으로 확정하지 않는다. 현재 스냅샷 계약이 위 시나리오의 모든 판정 필드를 제공한다고 가정하지 않으며, 위험 경고·사용량은 별도 계약으로 연결한다. 런타임 사용 상태도 정적 스냅샷의 `CALLABLE`·`USED`를 덮어쓰지 않고 관측 근거·시각·실행 맥락과 함께 연계한다.
 
-### 11.3 이번 개정의 호환성
+### 11.3 합의와 적용
 
-문서 v0.3과 계약 `0.3.0-draft`는 참조 대상, 부분 수집 집계, 페이지 완전성, 자격증명 미확인 사유와 증적 제거 규칙을 명확히 한다. 기존 `0.2.0-draft` 생산자·소비자가 있으면 새 조건을 검토한 뒤 전환한다. 예제의 버전만 바꾸는 것으로 호환성을 보장하지 않는다.
+실제 생산자가 본문의 계약을 지원한다고 가정하지 않는다. 12절의 확장은 협의 중이며, 최종 필드와 예제를 함께 수정한 후 데이터 계약 버전을 정한다. 합의 전에는 초안의 추가 요구만으로 기존 구현을 결함 처리하지 않는다.
+
+## 12. 스캐너·대시보드 출력 형식 조정안
+
+이 절은 스캐너 계획서의 수집 절차·저장 예시와 대시보드의 Asset/Relationship/Diff/Permission 요구를 대응시킨 설계안이다. 실제 스캐너 출력과 화면 코드로 연동 검증한 결과는 아니다. 본문과 예제는 하나의 구현 후보이며 아래 대안 채택 시 함께 변경한다.
+
+### 12.1 전달 파일과 생성 책임
+
+| 산출물 | 내용 | 생성·사용 제안 |
+|---|---|---|
+| snapshot.json | 자산·관계·관측 근거·수집 작업 결과 | 스캐너 → 대시보드·QA |
+| diff.json | 이전/현재 스냅샷의 추가·변경·목록 제거·미관측 | 스캐너 비교 모듈 → 대시보드 |
+| 자산 이력 | 최초·최근 관찰 시각 | 저장 계층이 동일 ID의 관측을 누적. 담당 협의 |
+| 사용량·비용 | 모델·기간·토큰·비용·귀속 상태 | 모니터링 별도 계약으로 연결 |
+
+| 스캐너 계획 | 본문 필드 후보 | 조정 사항 |
+|---|---|---|
+| assets / kind=mcp_tool | assets / asset_type=tool | 키와 enum 하나를 선택. 중복 저장하지 않음 |
+| relations / provides | relations / ADVERTISES | 카탈로그 제공 사실로 대응. 실행 성공 의미 아님 |
+| observations | evidence + project.state_assessments | 출처·시각·조회 문맥과 상태 판정을 분리. 단순 이름 변경 아님 |
+| collection_runs | scan + collection_results | 실행 요약과 대상·범위별 작업 결과로 분리 |
+| profile_id | environment_id + profile_id | 환경과 설치·프로필을 구분. 최상위 profile_id:string 추가 제안 |
+| agent_id / session_key | 조회 context | session_key 원문 대신 안전한 session_ref. 도구 원래 이름과 노출명 분리 |
+
+observations/collection_runs라는 스캐너 계획의 이름을 유지하는 대안도 가능하다. 하나의 정식 출력 이름을 합의하고 표·예제·소비자를 함께 수정한다. 서로 다른 형식을 같은 버전으로 전달하지 않는다.
+
+### 12.2 관측과 정책 레코드
+
+Evidence에 다음 선택 필드를 추가하는 안을 제안한다.
+
+| 필드 | 자료형 | 의미 |
+|---|---|---|
+| asset_ref | string | 관측 대상 자산 ID |
+| source_kind / source_locator | string | mcp_list/gateway_status/local_file 등 출처와 안전한 위치 |
+| context | object | profile_id:string, agent_id/session_ref/auth_context_ref:string 또는 null |
+| advertised | boolean 또는 null | 해당 목록에서 확인한 제공 여부 |
+| exposed_name | string 또는 null | OpenClaw 노출명. 공식 definition.name은 보존 |
+| catalog_status | string | fresh/stale/not_ready/unknown 후보 |
+
+Agent·세션별 조회 결과를 전역 상태로 덮어쓰지 않는다. 노출 조회 실패는 EXPOSED=false가 아니라 미확인이다. 원래 서버·도구 식별이 없는 노드 항목을 이름만으로 연결하지 않는다.
+
+권한 화면에는 snapshot.policies[]를 선택 배열로 제안한다. 각 객체의 필수 후보는 policy_id:string, source_ref:string, source_field:string, target_refs:string[], effect:string(allow/deny/require_approval/unknown), patterns:string[], evidence_refs:string[]다. 대상 미확인으로 target_refs가 비면 reason:string을 기록한다. 선택 필드는 access_scope:object, credential_refs:object[](5.1절 구조), assessment_status:string(declared/evaluated/unknown)이다. target_refs는 같은 스냅샷의 자산 ID를 참조한다.
+
+정책 ID는 [profile_id, 원본 설정 위치, 키] 기반으로 만든다. wildcard와 규칙을 보존하고 완전한 실효 권한으로 단정하지 않는다. Credential 독립 정점화와 정책 저장 방식은 별도 협의하며 정책 수를 자산 수에 자동 합산하지 않는다.
+
+### 12.3 관계 매핑과 근거
+
+| 확인한 사실 | 관계 후보 | 생성 조건·협의 사항 |
+|---|---|---|
+| 설정에 Server 등록 | DECLARES | 프로젝트 추가 후보. 연결 성공인 CONNECTS_TO와 구분 |
+| Server 목록에서 자산 확인 | ADVERTISES | 스캐너 provides에 대응. Template 포함 |
+| 특정 Agent/세션의 노출 목록 확인 | EXPOSES_TO | 대상·조회 문맥·원래 자산이 확인됨 |
+| 설정상 노출·호출 가능성 추정 | MAY_EXPOSE_TO / MAY_CALL | 전자는 추가 후보. 규칙·생성 담당 협의 |
+| Plugin이 Skill을 포함 | CONTAINS 후보 | 선언 경로 근거. 설치·등록 관계로 자동 치환하지 않음 |
+| manifest의 등록·의존 선언 | REGISTERS / DEPENDS_ON | 원천이 보장하는 의미만 사용 |
+| Node가 자산을 제공 | owner_ref 또는 PROVIDED_BY 후보 | node_id·출처 근거. 관계 방향·다중 소속 합의 |
+| 정책 적용 대상 | policies.target_refs | 적용 선언과 실제 권한 부여 구분 |
+| 실제 호출·접근·전송 | CAN_CALL / ACCESSES / SENDS_TO | 현재 스캐너가 확정하지 않음 |
+
+공유본의 HOSTS_CLIENT, CONNECTS_TO, REQUESTS_INPUT_FROM, INSTALLS, USES_CREDENTIAL, GRANTS_ACCESS_TO, CAN_CHAIN_TO도 모델 후보로 유지한다. 모든 관계를 이번에 생성한다는 뜻은 아니다. 관계에 basis_kind:string(declared/observed/inferred)와 observed_at:UTC string을 추가하는 안을 제안한다. confidence만으로 실행 사실을 구분하지 않는다.
+
+Host·Client·Credential 독립 정점을 채택하면 7절 TargetRef와 참조 규칙도 확장해야 한다. 현재 예제의 Gateway/Node 매핑을 전체 모델의 제한으로 해석하지 않는다.
+
+### 12.4 대시보드 요구와 출력 위치
+
+| 화면 요구 | 필드·출처 후보 | 해석 |
+|---|---|---|
+| ID·유형·이름·설명 | asset_id, asset_type, name, mcp.definition.description 또는 project.description | 설명 미제공 허용 |
+| Source·Evidence | product.source_ref, evidence_refs → evidence | 안전한 증적 조회 |
+| Status | project.state_assessments | 6개 상태와 수집 성공 여부 분리 |
+| Version·Provider·Commit | project.supply_chain 및 원천 metadata | 없으면 미확인 |
+| First Seen / Last Seen | first_seen_at / last_seen_at: UTC string 또는 null | 이력 계층 계산. 설치·사용 시각 아님 |
+| Hash | project.content_hash:{algorithm,value,scope,normalization_version} | 값은 string. 변경 확인용이며 자산 ID·검증 결과와 구분 |
+| 관계·신뢰도·관찰 시각 | relations 양끝·relation_type·confidence·observed_at·basis_kind | 근거 없는 간선 생략 |
+| Permission/Auth | policies, project.credential_refs, 원천 정책 | 민감값 제외. 미확인을 권한 없음으로 표시하지 않음 |
+| Skill/Plugin 상세 | supply_chain, product, 아래 선택 필드 | 원천 선언과 실제 로드 상태 분리 |
+| 변경 내역 | diff.json | 수집 실패와 삭제 구분 |
+| 마지막 수집 | scan.finished_at + scan.status | 성공 여부 함께 표시 |
+
+project.supply_chain 추가 선택 필드 후보: install_path:string(안전한 위치), active:boolean 또는 null, dependencies:string[], update_info:object. hash 입력에서 비밀값을 제외하고 정규화 범위를 명시한다. 파일 변경을 악성·서명 검증 실패로 단정하지 않는다. 최초·최근 관찰 이력이 없으면 null이며 현재 시각으로 채우지 않는다.
+
+전체 자산 수는 합의한 asset_type만 집계한다. 권한 레코드나 논리 Host/Client를 표시하는 것과 자산 수에 포함하는 것은 별도 결정이다. Active 요약도 enabled·EXPOSED·USED 중 무엇을 뜻하는지 합의한 뒤 계산한다.
+
+### 12.5 SnapshotDiff 후보
+
+| 필드 | 자료형 | 의미 |
+|---|---|---|
+| schema_version / diff_id / environment_id / profile_id | string | 계약·결과·환경·프로필 식별 |
+| previous_snapshot_id / current_snapshot_id | string | 비교할 두 스냅샷 |
+| generated_at | UTC string | 비교 결과 생성 시각 |
+| comparison_status | string | complete/partial/not_comparable |
+| changes | object[] | 변경 레코드 |
+| limitations | string[] | 비교 불가 범위·실패 사유 |
+
+changes 원소 후보: asset_id:string, change_type:string(added/modified/removed_from_scope/not_observed), changed_fields:string[], detected_at:UTC string, evidence_refs:string[], reason:string. evidence_refs는 current_snapshot_id의 증적을 가리킨다. 이전 값은 previous_snapshot_id의 동일 자산에서 조회한다. 변경 필드 경로는 JSON Pointer를 권장한다.
+
+- added: 비교 가능한 이전 범위에 없던 항목. 이전 범위가 불완전하면 새 설치라고 판단하지 않는다.
+- modified: 같은 ID의 비교 대상 필드 변경. 수집 시각·증적 ID만 달라진 것은 제외한다.
+- removed_from_scope: 같은 출처·범위·인증 맥락을 끝까지 성공적으로 조회했지만 이전 항목이 없음. 설치 삭제를 뜻하지 않는다.
+- not_observed: 실패·부분 수집·문맥 차이로 확인 불가. Removed 수에 포함하지 않는다.
+- detected_at은 발견 시각이다. 실제 변경 시각을 모르면 화면도 ‘변경 감지 시각’으로 표시한다.
+- 최초 스냅샷은 diff를 생략하고 비교 이력 없음으로 표시한다. 비교 필드·정규화 규칙은 담당자가 합의한다.
+
+### 12.6 결정할 항목
+
+| 항목 | 권장안 | 대안·남은 결정 | 담당 |
+|---|---|---|---|
+| 정점·집계 | 수집 자산과 논리·정책 표현 구분 | Gateway·Host·Client·Credential 위치와 집계 | 스캐너·대시보드 |
+| Template | 개별 레코드 + resource_template 하위 유형 | 독립 asset_type | 스캐너·대시보드 |
+| 출력 배열 | evidence/collection_results에 문맥 보완 | observations/collection_runs 유지 후 본문 수정 | 스캐너·대시보드·QA |
+| 관계 | 공유본 의미 유지, 원천 확인 관계부터 제공 | 추가 이름·방향·추론 생성 담당 | 스캐너·분석·대시보드 |
+| 정책 | policies[] + 자산 참조 | 속성 저장 또는 독립 정점 | 스캐너·대시보드 |
+| ID | 스캐너 식별 키 정규 직렬화 후 해시 | 알고리즘·경로 정규화·이동 시 동일성 | 스캐너·QA |
+| Diff | 스캐너 비교 모듈에서 생성 | 저장 계층 생성 시 담당 변경 | 스캐너·대시보드 |
+| 관찰 이력 | 저장 계층이 계산 | 스캐너가 이력까지 관리 | 스캐너·대시보드 |
+| 사용량 | 별도 계약으로 환경·프로필·자산·기간 연결 | 추정·귀속 불가 표시 규칙 | 모니터링·대시보드 |
+
+8절 JSON은 핵심 구조의 가상 예제이며 위 확장 전체를 검증하는 예제가 아니다. 정상·부분 실패·템플릿·정책·변경 비교의 실제 샘플을 교환하고 합의한 후 표·예제·JSON Schema를 함께 확정한다.
