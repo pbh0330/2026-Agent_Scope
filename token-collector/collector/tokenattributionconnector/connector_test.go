@@ -301,3 +301,33 @@ func TestConfigValidate(t *testing.T) {
 		t.Fatal("expected validation error")
 	}
 }
+
+// PR 리뷰 회귀 테스트: 확정·삭제된 run의 스팬이 재전송돼도 호출·토큰·비용이 두 번 더해지면 안 된다.
+func TestConnectorReplayAfterCompletionNotDoubleCounted(t *testing.T) {
+	sink := new(consumertest.MetricsSink)
+	c, clk := newTestConnector(t, createDefaultConfig(), sink)
+	_ = c.ConsumeTraces(context.Background(), loadTraces(t, "week3-sequential-batch"))
+	clk.t = clk.t.Add(5 * time.Second)
+	c.flush(context.Background())
+	before := lastMetrics(t, sink)
+	callsBefore := sumBy(before[metricCalls], attrPattern)
+	tokensBefore := sumBy(before[metricTokens], attrToolName)
+
+	_ = c.ConsumeTraces(context.Background(), loadTraces(t, "week3-sequential-batch")) // 재전송
+	clk.t = clk.t.Add(15 * time.Minute)                                                // idle 만료 이후까지
+	c.flush(context.Background())
+	after := lastMetrics(t, sink)
+	for p, n := range sumBy(after[metricCalls], attrPattern) {
+		if n != callsBefore[p] {
+			t.Errorf("calls[%s] changed after replay: %v -> %v", p, callsBefore[p], n)
+		}
+	}
+	for tool, n := range sumBy(after[metricTokens], attrToolName) {
+		if n != tokensBefore[tool] {
+			t.Errorf("tokens[%s] changed after replay: %v -> %v", tool, tokensBefore[tool], n)
+		}
+	}
+	if d := after[metricDropped].Sum().DataPoints().At(0).IntValue(); d == 0 {
+		t.Error("dropped_spans metric should count the replayed spans")
+	}
+}

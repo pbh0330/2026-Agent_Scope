@@ -92,3 +92,53 @@ func TestTrackerMaxRuns(t *testing.T) {
 		t.Fatalf("oldest run should be evicted, got %+v pending=%d", rs, tr.PendingRuns())
 	}
 }
+
+// PR 리뷰 회귀 테스트: 완료·삭제된 run의 스팬 묶음이 통째로 재전송돼도 다시 집계되면 안 된다.
+// (기존 중복 테스트는 삭제 전 재수신만 확인했음)
+func TestTrackerReplayAfterCompletionIsIgnored(t *testing.T) {
+	for _, name := range fixtures {
+		t.Run(name, func(t *testing.T) {
+			spans := loadFixtureSpans(t, filepath.Join("testdata", name+".spans.json"))
+			tr := NewTracker(TrackerConfig{Grace: time.Second})
+			now := t0
+			var first []Result
+			for _, s := range spans {
+				tr.Add(s, now)
+			}
+			now = now.Add(2 * time.Second)
+			first = tr.Flush(now)
+			if len(first) == 0 || tr.PendingRuns() != 0 {
+				t.Fatalf("first pass: results=%d pending=%d", len(first), tr.PendingRuns())
+			}
+			// 같은 묶음 재전송
+			for _, s := range spans {
+				tr.Add(s, now)
+			}
+			now = now.Add(15 * time.Minute) // 재전송분이 새 run으로 남았다면 idle 만료(10분)로 확정됐을 시점
+			if again := tr.Flush(now); len(again) != 0 {
+				t.Fatalf("replayed spans were counted again: %d results", len(again))
+			}
+			if tr.DroppedSpans() == 0 {
+				t.Fatal("dropped counter should record the replay")
+			}
+		})
+	}
+}
+
+// 보관 기간이 지나면 완료 기록은 지워져 메모리가 계속 늘지 않는다.
+func TestTrackerCompletedRetentionPrunes(t *testing.T) {
+	tr := NewTracker(TrackerConfig{Grace: time.Second, RunIdleTimeout: time.Minute, CompletedRetention: 10 * time.Minute})
+	tr.Add(tool("t1", 0, 1, "toolA"), t0)
+	tr.Flush(t0.Add(2 * time.Minute)) // idle 만료로 완료
+	tr.Add(tool("t1", 0, 1, "toolA"), t0.Add(3*time.Minute))
+	if tr.DroppedSpans() != 1 || tr.PendingRuns() != 0 {
+		t.Fatalf("within retention the span must be dropped: dropped=%d pending=%d", tr.DroppedSpans(), tr.PendingRuns())
+	}
+	tr.Flush(t0.Add(20 * time.Minute))
+	tr.mu.Lock()
+	n := len(tr.completed)
+	tr.mu.Unlock()
+	if n != 0 {
+		t.Fatalf("completed records should be pruned after retention, got %d", n)
+	}
+}

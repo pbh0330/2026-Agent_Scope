@@ -21,6 +21,7 @@ const (
 	metricCost      = "openclaw.tool.attribution.cost_usd"
 	metricAnomalies = "openclaw.tool.attribution.anomalies"
 	metricPending   = "openclaw.tool.attribution.pending_runs"
+	metricDropped   = "openclaw.tool.attribution.dropped_spans"
 )
 
 // 메트릭 속성 키.
@@ -212,7 +213,7 @@ func putExemplars(dst pmetric.ExemplarSlice, exs []exemplar, asInt bool) {
 }
 
 // build는 지금까지의 누적값 전체를 pmetric으로 만든다. exemplar는 내보낸 뒤 비운다.
-func (a *aggregator) build(now time.Time, pendingRuns int) pmetric.Metrics {
+func (a *aggregator) build(now time.Time, pendingRuns int, droppedSpans uint64) pmetric.Metrics {
 	md := pmetric.NewMetrics()
 	rm := md.ResourceMetrics().AppendEmpty()
 	rm.Resource().Attributes().PutStr("service.name", "openclaw-token-attribution")
@@ -271,6 +272,18 @@ func (a *aggregator) build(now time.Time, pendingRuns int) pmetric.Metrics {
 			s.exemplars = nil
 		}
 	}
+
+	dm := sm.Metrics().AppendEmpty()
+	dm.SetName(metricDropped)
+	dm.SetDescription("이미 확정된 run으로 늦게 또는 중복(재전송)으로 들어와 집계에서 제외한 스팬 수")
+	dm.SetUnit("{span}")
+	ds := dm.SetEmptySum()
+	ds.SetIsMonotonic(true)
+	ds.SetAggregationTemporality(pmetric.AggregationTemporalityCumulative)
+	ddp := ds.DataPoints().AppendEmpty()
+	ddp.SetStartTimestamp(start)
+	ddp.SetTimestamp(ts)
+	ddp.SetIntValue(int64(droppedSpans))
 
 	met := sm.Metrics().AppendEmpty()
 	met.SetName(metricPending)

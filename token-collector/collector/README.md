@@ -26,9 +26,11 @@ otelcol-agentscope-config.yaml  로컬 PC(Windows) 실행 설정 예시
    - 그 구간을 닫는 다음 `model.call`이 도착하고 `grace`(기본 2초)가 지났을 때
    - `openclaw.run` 스팬이 도착했을 때(나머지 전부. 마지막 model.call 뒤 도구는 `unattributed`)
    - `run_idle_timeout`(기본 10분) 동안 새 스팬이 없을 때
-3. 판정은 매번 run 전체를 다시 계산하므로 오프라인 분석(파이썬)과 결과가 같다.
+3. 확정이 끝난 run의 식별자는 30분(또는 `run_idle_timeout` 중 큰 값) 동안 기억한다. 그 사이 같은
+   run의 스팬이 재전송되면 새 run으로 세지 않고 버린다(중복 집계 방지, `dropped_spans`로 집계).
+4. 판정은 매번 run 전체를 다시 계산하므로 오프라인 분석(파이썬)과 결과가 같다.
    순차 구간 토큰 = `다음.input - 이전.input - 이전.output` (직전 응답 재편입분 제외).
-4. `metrics_flush_interval`(기본 5초)마다 누적값 전체를 Prometheus 익스포터로 보낸다.
+5. `metrics_flush_interval`(기본 5초)마다 누적값 전체를 Prometheus 익스포터로 보낸다.
 
 도구 실행 후 대시보드 반영까지는 보통 10~40초 걸린다. 다음 model.call이 끝나야
 입력 토큰을 알 수 있는 공식 구조상의 지연 + OpenClaw 전송 주기(5초) + Prometheus 스크랩
@@ -44,6 +46,7 @@ otelcol-agentscope-config.yaml  로컬 PC(Windows) 실행 설정 예시
 | `openclaw_tool_attribution_duration_milliseconds` | 도구 실행 시간 히스토그램(병렬·배치의 대리 지표) | `tool_name`, `attribution_pattern` |
 | `openclaw_tool_attribution_anomalies_total` | 신뢰도 낮은 사례 수 | `reason`(`negative_delta`/`missing_tokens`/`missing_timestamps`) |
 | `openclaw_tool_attribution_pending_runs` | 확정 대기 중인 run 수 | |
+| `openclaw_tool_attribution_dropped_spans_total` | 이미 확정된 run으로 늦게·중복(재전송)으로 들어와 집계에서 뺀 스팬 수 | |
 
 토큰·비용·호출 수 메트릭에는 해당 도구 스팬의 `trace_id`/`span_id`가 **exemplar**로 붙는다
 (`enable_open_metrics: true` 필요). Grafana에서 메트릭 → 트레이스로 바로 이동하는 데 쓴다.

@@ -6,10 +6,10 @@ attribution.py의 패턴 판별 로직(순차/병렬/배치) 단위 테스트.
 classify_segments()가 각각을 올바르게 분류하는지 확인한다.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from otel_log_parser import Span
-from attribution import classify_segments, group_runs
+from attribution import apply_pricing, classify_segments, group_runs
 
 T0 = datetime(2026, 9, 22, 10, 0, 0)
 
@@ -189,7 +189,47 @@ def test_tool_started_during_model_call_is_unattributed():
     print("test_tool_started_during_model_call_is_unattributed OK ->", results)
 
 
+def test_missing_start_with_timezone_aware_times_does_not_crash():
+    # PR 리뷰 회귀 테스트: 실제 파서 결과처럼 UTC 시간대가 붙은 시각 사이에 시작 시각이
+    # 없는 스팬이 하나 섞여도 정렬에서 TypeError가 나면 안 됨 (예전엔 datetime.min과 비교하다 중단).
+    utc = timezone.utc
+    base = datetime(2026, 9, 22, 10, 0, 0, tzinfo=utc)
+    spans = [
+        Span(trace_id="t", parent_id="r", span_id="m1", name="openclaw.model.call",
+             start=base, end=base + timedelta(seconds=2),
+             attrs={"openclaw.model_call.usage.input_tokens": 1000,
+                    "openclaw.model_call.usage.output_tokens": 50}),
+        Span(trace_id="t", parent_id="r", span_id="t1", name="openclaw.tool.execution",
+             start=None, end=base + timedelta(seconds=3), attrs={"openclaw.toolName": "toolA"}),
+        Span(trace_id="t", parent_id="r", span_id="m2", name="openclaw.model.call",
+             start=base + timedelta(seconds=3), end=base + timedelta(seconds=5),
+             attrs={"openclaw.model_call.usage.input_tokens": 1300,
+                    "openclaw.model_call.usage.output_tokens": 40}),
+    ]
+    results = classify_segments(group_runs(spans))
+    assert len(results) == 1 and results[0].pattern == "unattributed", results
+    print("test_missing_start_with_timezone_aware_times_does_not_crash OK ->", results)
+
+
+def test_model_recorded_for_pricing():
+    # PR 리뷰 회귀 테스트: 비용 환산용 모델은 고정값이 아니라 구간을 닫는 다음 model.call의
+    # 모델이어야 함. 다른 모델 단가표로 계산했을 때 그 모델 단가가 적용되는지 확인.
+    trace, parent = "trace-model", "run-model"
+    m1 = mk_model_call("m1", 0, 2, parent, trace, in_tok=1000, out_tok=50)
+    m2 = mk_model_call("m2", 3, 5, parent, trace, in_tok=1300, out_tok=40)
+    m2.attrs["openclaw.model"] = "claude-sonnet-x"
+    m2.attrs["openclaw.provider"] = "anthropic"
+    results = classify_segments(group_runs([m1, mk_tool("t1", 2, 3, parent, trace, "toolA"), m2]))
+    r = results[0]
+    assert (r.model, r.provider) == ("claude-sonnet-x", "anthropic"), r
+    table = {"claude-sonnet-x": {"input": 3.0, "output": 15.0}}
+    assert abs(apply_pricing(r.model, r.approx_tokens, pricing_table=table) - 250 * 3.0 / 1e6) < 1e-12
+    print("test_model_recorded_for_pricing OK ->", r)
+
+
 if __name__ == "__main__":
+    test_missing_start_with_timezone_aware_times_does_not_crash()
+    test_model_recorded_for_pricing()
     test_tool_after_last_model_call_is_unattributed()
     test_tool_started_during_model_call_is_unattributed()
     test_sequential()

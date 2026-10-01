@@ -17,7 +17,11 @@ type TrackerConfig struct {
 	RunIdleTimeout time.Duration
 	// MaxRuns: 동시에 들고 있는 run 수 상한. 넘으면 가장 오래 조용한 run부터 확정·삭제한다.
 	MaxRuns int
-	Options Options
+	// CompletedRetention: 확정·삭제한 run의 식별자를 기억해 두는 시간. 이 안에 같은 run의
+	// 스팬이 다시 들어오면(Collector·SDK 재전송 등) 새 run으로 세지 않고 버린다.
+	// 0이면 RunIdleTimeout과 30분 중 큰 값.
+	CompletedRetention time.Duration
+	Options            Options
 }
 
 // DefaultTrackerConfig는 기본 설정이다.
@@ -47,6 +51,10 @@ type Tracker struct {
 	mu   sync.Mutex
 	cfg  TrackerConfig
 	runs map[RunKey]*runState
+	// completed: 이미 확정·삭제한 run → 삭제 시각. 삭제 후 같은 스팬 묶음이 재전송되면
+	// 새 run으로 다시 집계되던 문제(PR 리뷰)를 막는다.
+	completed map[RunKey]time.Time
+	dropped   uint64 // 완료된 run으로 늦게(또는 중복으로) 들어와 버린 스팬 수
 }
 
 // NewTracker는 Tracker를 만든다. 0인 설정값은 기본값으로 채운다.
@@ -61,7 +69,13 @@ func NewTracker(cfg TrackerConfig) *Tracker {
 	if cfg.MaxRuns <= 0 {
 		cfg.MaxRuns = d.MaxRuns
 	}
-	return &Tracker{cfg: cfg, runs: map[RunKey]*runState{}}
+	if cfg.CompletedRetention <= 0 {
+		cfg.CompletedRetention = 30 * time.Minute
+		if cfg.RunIdleTimeout > cfg.CompletedRetention {
+			cfg.CompletedRetention = cfg.RunIdleTimeout
+		}
+	}
+	return &Tracker{cfg: cfg, runs: map[RunKey]*runState{}, completed: map[RunKey]time.Time{}}
 }
 
 func (t *Tracker) state(k RunKey, now time.Time) *runState {
@@ -78,9 +92,22 @@ func (t *Tracker) state(k RunKey, now time.Time) *runState {
 func (t *Tracker) Add(s Span, now time.Time) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
+	var k RunKey
 	switch s.Name {
 	case SpanModelCall, SpanToolExec:
-		st := t.state(RunKey{TraceID: s.TraceID, RunID: s.ParentID}, now)
+		k = RunKey{TraceID: s.TraceID, RunID: s.ParentID}
+	case SpanRun:
+		k = RunKey{TraceID: s.TraceID, RunID: s.SpanID}
+	default:
+		return
+	}
+	if _, done := t.completed[k]; done {
+		t.dropped++
+		return
+	}
+	switch s.Name {
+	case SpanModelCall, SpanToolExec:
+		st := t.state(k, now)
 		if st.seen[s.SpanID] {
 			return
 		}
@@ -88,7 +115,7 @@ func (t *Tracker) Add(s Span, now time.Time) {
 		st.arrival[s.SpanID] = now
 		st.spans = append(st.spans, s)
 	case SpanRun:
-		st := t.state(RunKey{TraceID: s.TraceID, RunID: s.SpanID}, now)
+		st := t.state(k, now)
 		if st.endedAt.IsZero() {
 			st.endedAt = now
 		}
@@ -106,7 +133,7 @@ func (t *Tracker) Flush(now time.Time) []Result {
 			now.Sub(st.lastSeen) >= t.cfg.RunIdleTimeout
 		out = append(out, t.collect(st, now, done)...)
 		if done {
-			delete(t.runs, k)
+			t.complete(k, now)
 		}
 	}
 
@@ -118,10 +145,36 @@ func (t *Tracker) Flush(now time.Time) []Result {
 		sort.Slice(states, func(i, j int) bool { return states[i].lastSeen.Before(states[j].lastSeen) })
 		for _, st := range states[:over] {
 			out = append(out, t.collect(st, now, true)...)
-			delete(t.runs, st.key)
+			t.complete(st.key, now)
 		}
 	}
+	t.pruneCompleted(now)
 	return out
+}
+
+// complete는 run을 메모리에서 지우고, 재전송에 대비해 식별자를 기억해 둔다.
+func (t *Tracker) complete(k RunKey, now time.Time) {
+	delete(t.runs, k)
+	t.completed[k] = now
+}
+
+// pruneCompleted는 보관 기간이 지난 완료 기록을 지우고, 개수도 MaxRuns 이내로 유지한다.
+func (t *Tracker) pruneCompleted(now time.Time) {
+	for k, at := range t.completed {
+		if now.Sub(at) >= t.cfg.CompletedRetention {
+			delete(t.completed, k)
+		}
+	}
+	if over := len(t.completed) - t.cfg.MaxRuns; over > 0 {
+		keys := make([]RunKey, 0, len(t.completed))
+		for k := range t.completed {
+			keys = append(keys, k)
+		}
+		sort.Slice(keys, func(i, j int) bool { return t.completed[keys[i]].Before(t.completed[keys[j]]) })
+		for _, k := range keys[:over] {
+			delete(t.completed, k)
+		}
+	}
 }
 
 func (t *Tracker) collect(st *runState, now time.Time, done bool) []Result {
@@ -142,6 +195,13 @@ func (t *Tracker) collect(st *runState, now time.Time, done bool) []Result {
 		}
 	}
 	return out
+}
+
+// DroppedSpans는 이미 완료된 run으로 들어와서 버린 스팬 수(누적, 모니터링용).
+func (t *Tracker) DroppedSpans() uint64 {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	return t.dropped
 }
 
 // PendingRuns는 아직 메모리에 있는 run 수(모니터링·테스트용).

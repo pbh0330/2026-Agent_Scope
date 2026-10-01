@@ -179,7 +179,7 @@ func (c *tokenConnector) flush(ctx context.Context) {
 			zap.Int64("tokens", r.ApproxTokens), zap.Bool("has_tokens", r.HasTokens),
 			zap.String("trace_id", r.TraceID), zap.String("note", r.Note))
 	}
-	md := c.agg.build(now, c.tracker.PendingRuns())
+	md := c.agg.build(now, c.tracker.PendingRuns(), c.tracker.DroppedSpans())
 	c.mu.Unlock()
 
 	if err := c.next.ConsumeMetrics(ctx, md); err != nil {

@@ -38,6 +38,10 @@ RUN_SCOPED_NAMES = {"openclaw.model.call", "openclaw.tool.execution"}
 # 1) 스팬 수집: model.call / tool.execution 스팬을 부모(=openclaw.run) 단위로 묶기
 # ---------------------------------------------------------------------------
 
+def _start_sort_key(s: Span) -> tuple:
+    return (0, 0.0) if s.start is None else (1, s.start.timestamp())
+
+
 def group_runs(spans: list[Span]) -> dict[str, list[Span]]:
     """parent_id(=하나의 openclaw.run) 기준으로 model.call/tool.execution 스팬을 묶는다."""
     runs: dict[str, list[Span]] = {}
@@ -45,7 +49,11 @@ def group_runs(spans: list[Span]) -> dict[str, list[Span]]:
         if s.name in RUN_SCOPED_NAMES:
             runs.setdefault(s.parent_id, []).append(s)
     for group in runs.values():
-        group.sort(key=lambda s: s.start or datetime.min)
+        # PR 리뷰 반영: 예전엔 `s.start or datetime.min`을 썼는데, 파서가 만드는 시각은 UTC
+        # 시간대가 붙어 있고 datetime.min은 시간대가 없어서 시작 시각 없는 스팬이 하나만 섞여도
+        # TypeError로 분석 전체가 멈췄음. 누락 여부를 별도 정렬 키로 둬서 비교 자체를 피함.
+        # (누락 스팬은 맨 앞 — 기존 동작, Go 버전의 zero time 정렬과 같음)
+        group.sort(key=_start_sort_key)
     return runs
 
 
@@ -63,6 +71,19 @@ class ToolAttribution:
     duration_ms: Optional[float]
     approx_tokens: Optional[int]     # None when pattern != sequential
     note: str = ""
+    # PR 리뷰 반영: 비용 환산에 쓸 모델/프로바이더. 구간을 닫는 다음 model.call 기준
+    # (다음 호출이 없는 꼬리 구간은 직전 model.call). 귀속 토큰은 그 호출의 입력으로 들어간 것이므로.
+    model: str = ""
+    provider: str = ""
+
+
+def _model_fields(call: Optional[Span]) -> dict:
+    if call is None:
+        return {}
+    return {
+        "model": call.attrs.get("openclaw.model") or call.attrs.get("gen_ai.request.model") or "",
+        "provider": call.attrs.get("openclaw.provider") or call.attrs.get("gen_ai.system") or "",
+    }
 
 
 def _overlaps(a: Span, b: Span) -> bool:
@@ -141,6 +162,7 @@ def classify_segments(runs: dict[str, list[Span]]) -> list[ToolAttribution]:
                         pattern="unattributed", duration_ms=tool.duration_ms,
                         approx_tokens=None,
                         note="마지막 model.call 뒤에 실행된 도구 — 다음 model.call이 없어 귀속 불가",
+                        **_model_fields(prev),
                     ))
                 continue
 
@@ -172,6 +194,7 @@ def classify_segments(runs: dict[str, list[Span]]) -> list[ToolAttribution]:
                         pattern="sequential", duration_ms=tool.duration_ms,
                         approx_tokens=None,
                         note="model.call 스팬에 토큰 속성 누락 — 귀속 불가",
+                        **_model_fields(nxt),
                     ))
                     continue
 
@@ -184,6 +207,7 @@ def classify_segments(runs: dict[str, list[Span]]) -> list[ToolAttribution]:
                     tool_name=tool_name, tool_span_id=tool.span_id,
                     pattern="sequential", duration_ms=tool.duration_ms,
                     approx_tokens=max(delta, 0), note=note,
+                    **_model_fields(nxt),
                 ))
             else:
                 # 병렬/배치: 도구별 정밀 토큰 귀속은 포기, 대리 지표만 기록
@@ -200,6 +224,7 @@ def classify_segments(runs: dict[str, list[Span]]) -> list[ToolAttribution]:
                         pattern=pattern, duration_ms=tool.duration_ms,
                         approx_tokens=None,
                         note=base_note,
+                        **_model_fields(nxt),
                     ))
 
         # 어느 model.call 구간에도 안 들어간 도구(첫 model.call이 끝나기 전에 시작됨,
@@ -386,11 +411,13 @@ if __name__ == "__main__":
     for a in attributions:
         cost_str = ""
         if a.approx_tokens is not None:
-            cost = apply_pricing(
-                "claude-haiku-4-5-20251001", a.approx_tokens, pricing_table=pricing_table
-            )
+            # PR 리뷰 반영: 예전엔 모델을 Haiku로 고정해서 단가를 찾았음. 이제 귀속 결과에
+            # 남겨둔 실제 모델(다음 model.call 기준)로 찾고, 단가가 없으면 그렇다고 표시함.
+            cost = apply_pricing(a.model, a.approx_tokens, pricing_table=pricing_table) if a.model else None
             if cost is not None:
-                cost_str = f"  (~${cost:.6f})"
+                cost_str = f"  (~${cost:.6f}, {a.model})"
+            else:
+                cost_str = f"  (비용 미산출: 모델 '{a.model or '알 수 없음'}' 단가 없음)"
         print(
             f"[{a.pattern:10s}] {a.tool_name:35s} "
             f"duration={a.duration_ms or 0:8.2f}ms "

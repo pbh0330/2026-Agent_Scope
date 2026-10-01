@@ -3,6 +3,9 @@ apiVersion: 1
 
 datasources:
   - name: Prometheus
+    # 대시보드 패널이 전부 uid "Prometheus"로 데이터소스를 찾으므로 uid를 고정한다.
+    # 생략하면 Grafana가 임의 uid를 만들어서 새 환경에서 패널이 데이터소스를 못 찾음(PR 리뷰 반영).
+    uid: Prometheus
     type: prometheus
     access: proxy
     url: http://prometheus:9090
