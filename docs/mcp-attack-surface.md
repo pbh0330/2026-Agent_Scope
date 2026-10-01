@@ -1,14 +1,12 @@
 # AI 에이전트 MCP 공격 표면 정의 v2.0
 
-> **문서 상태: 2026.09.22 회의 검토본**
->
-> 본 문서는 MCP 통신 경계를 핵심 공격 표면으로 정의하고, Skill·Plugin 공급망과 권한·자격증명을 자산 분석 필드로 반영한다. 전체 공격 표면 개념 모델은 보안 관계를 설명하기 위한 논리 모델이며, 1차 스캐너는 회의에서 합의한 7종의 정적 자산만 직접 수집한다. 실제 호출과 데이터 흐름은 후속 런타임 분석 범위로 구분한다.
->
 > 문서 범위: MCP 기반 AI 에이전트의 공격 표면 정의, 분석 경계, 정적 자산·관계 및 최소 수집 기준을 다룬다. 런타임 관찰은 후속 단계로 구분하며, 구체적인 공격 페이로드와 침투 테스트 절차는 제외한다.
->
+> 
+> 
 > 기준 규격: Model Context Protocol `2026-07-28`
->
+> 
 > 검증 기준일: 2026-09-22
+> 
 
 ## 1. 문서 목적
 
@@ -17,7 +15,7 @@
 이 문서는 다음 사항을 명확히 한다.
 
 1. 프로젝트에서 말하는 **MCP 공격 표면의 의미와 판정 기준**
-2. 핵심 공격 표면인 **MCP 통신 경계와 신뢰 경계**
+2. 분석에 포함되는 **세 가지 공격 표면과 신뢰 경계**
 3. 공격 표면을 구성하는 **자산, 데이터 흐름 및 관계**
 4. **공식 규격·제품 정보**와 **프로젝트 확장 정보**의 구분
 5. 현재 수행할 **정적 자산 분석**과 추후 수행할 **런타임 분석**의 구분
@@ -26,14 +24,13 @@
 
 ## 2. MCP 공격 표면 정의
 
-> **본 프로젝트에서 MCP 공격 표면은 MCP Host·Client·Server 사이의 통신 경계를 중심으로, 비신뢰 주체가 입력·변조하거나 악용할 수 있고 현재 구성과 정책상 Agent가 도달 가능한 JSON-RPC 인터페이스, MCP 기능 및 데이터 흐름의 집합이다.**
-
-본 프로젝트의 핵심 공격 표면은 **A: MCP 통신 경계**이다. **B: Skill·Plugin 공급망**과 **C: 권한·자격증명**은 별도의 공격 표면으로 병렬 분석하지 않고, MCP Server·Tool·Skill·Plugin 등 자산의 출처·신뢰도·권한·영향 범위를 설명하는 **자산 분석 축과 필드**로 흡수한다.
+> **본 프로젝트에서 MCP 공격 표면은 MCP Host·Client·Server, Skill·Plugin 및 외부 시스템 사이의 신뢰 경계를 통과하면서, 비신뢰 주체가 입력·변조하거나 악용할 수 있고 현재 구성과 정책상 Agent가 도달 가능한 인터페이스, 실행 기능, 데이터 흐름 및 권한 위임 관계의 집합이다.**
+> 
 
 공격 표면은 단순 자산 목록과 구분한다. 설정이나 카탈로그에서 발견된 모든 자산이 곧 활성 공격 표면인 것은 아니다. 다음 조건을 기준으로 공격 표면 여부와 상태를 판단한다.
 
 | 판정 요소 | 확인 질문 |
-|---|---|
+| --- | --- |
 | 신뢰 경계 | 데이터 또는 명령이 서로 다른 신뢰 수준의 구성요소 사이를 이동하는가? |
 | 통제 가능성 | 외부 서버, 공급자, 사용자 입력 등 비신뢰 주체가 내용을 입력·변경할 수 있는가? |
 | 도달 가능성 | 현재 설정·필터·정책·승인 조건에서 Agent 또는 MCP 구성요소가 해당 자산에 도달할 수 있는가? |
@@ -41,7 +38,7 @@
 
 전체 분석 체계에서는 다음 상태를 구분한다. 현재 정적 자산 단계는 `DECLARED`, `DISCOVERED`와 설정으로 판정 가능한 `EXPOSED`를 우선 다루며, 실제 호출을 확인해야 하는 `CALLABLE`과 `USED`는 후속 런타임 단계에서 검증한다.
 
-```text
+```
 DECLARED    설정에 선언됨
     ↓
 DISCOVERED  설치 파일 또는 런타임 응답에서 발견됨
@@ -59,38 +56,42 @@ USED        실행 로그에서 실제 사용이 관찰됨
 
 ---
 
-## 3. 공격 표면과 자산 분석 축
+## 3. 최상위 분석 범위
 
-본 프로젝트는 A를 핵심 공격 표면으로 분석하고, B와 C는 A에 포함된 자산을 설명하는 보조 분석 축으로 적용한다.
+본 프로젝트는 다음 세 가지 공격 표면을 모두 분석한다.
 
-| ID | 분류 | 프로젝트 내 역할 | 핵심 질문 |
-|---|---|---|---|
-| A | **핵심 공격 표면** | MCP Client와 Server 사이의 JSON-RPC 메시지, 도구 호출 요청·응답 및 양방향 capability가 통과하는 경계 | 누가 어떤 서버와 통신하며, 어떤 입력·기능·데이터가 경계를 통과하는가? |
-| B | **자산 축: 공급망** | Skill·Plugin 파일, manifest·설정, 설치·업데이트 출처 및 서드파티 MCP Server에 관한 자산 필드 | 해당 자산은 어디에서 왔으며 무결성과 변경 상태를 신뢰할 수 있는가? |
-| C | **자산 축: 권한·자격증명** | OAuth 토큰, Header·환경변수, 인증서 및 파일시스템·네트워크·프로세스 권한에 관한 자산 필드 | 해당 자산이 어떤 권한을 사용하며 침해 시 영향 범위는 어디까지인가? |
+| ID | 공격 표면 | 정의 | 핵심 질문 |
+| --- | --- | --- | --- |
+| A | MCP 통신 경계 | MCP Client와 Server 사이의 JSON-RPC 메시지, 도구 호출 요청·응답 및 양방향 capability가 통과하는 경계 | 누가 어떤 서버와 통신하며, 어떤 입력·기능·데이터가 경계를 통과하는가? |
+| B | Skill·Plugin 공급망 | Skill·Plugin 파일, manifest·설정, 설치·업데이트 출처, 포함 코드 및 서드파티 MCP Server로 이어지는 공급 경로 | 어떤 외부 산출물이 설치·변경·실행되며, 그 출처와 무결성을 신뢰할 수 있는가? |
+| C | 권한과 자격증명 | OAuth 토큰, Header·환경변수, 인증서, 파일시스템·네트워크·프로세스 권한 및 승인 정책이 부여되는 경계 | 어떤 주체가 어떤 권한으로 무엇에 접근하며, 침해 시 영향 범위는 어디까지인가? |
 
-A와 B·C의 관계는 다음과 같다.
+세 표면은 독립적인 목록이 아니라 연결된 경로로 분석한다.
 
-```text
-                    [A: 핵심 공격 표면]
-Agent / MCP Host → MCP Client ⇄ MCP Server
-                                    │
-              Tool / Resource / Prompt / Extension
-                                    │
-                                    ▼
-                    Backend / External System
-
-각 자산의 분석 필드
-├── [B: 공급망 축] 출처 · 버전 · 무결성 · 의존성 · 변경 상태
-└── [C: 권한 축] 인증 · scope · secret · 파일 · 네트워크 · 실행 권한
+```
+[B: 공급망]
+Skill / Plugin / Third-party MCP Server
+                  │ 설치·로딩·실행
+                  ▼
+[A: 통신 경계]
+User → Agent / MCP Host → MCP Client ⇄ MCP Server
+                                           │
+                     Tool / Resource / Prompt / Extension
+                                           │
+                                           ▼
+[C: 권한·자격증명]
+OAuth · Secret · Filesystem · Network · Process · Approval
+                                           │
+                                           ▼
+                         Resource / Backend / External System
 ```
 
 ### 3.1 단계별 분석 범위
 
-핵심 공격 표면 A와 이를 설명하는 B·C 자산 필드는 다음 두 단계로 구현한다.
+세 가지 공격 표면 A·B·C는 모두 프로젝트 범위에 포함하되, 구현은 다음 두 단계로 나눈다.
 
 | 단계 | 현재 여부 | 분석 대상 | 제외되는 정보 |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 1단계: 정적 자산 분석 | 현재 범위 | 설정·등록 정보·정의 파일·manifest·선언된 권한을 기반으로 한 자산과 잠재 접근 경로 | 실제 요청 내용, 호출 성공 여부, 실행 중 데이터 흐름 |
 | 2단계: 런타임 분석 | 후속 범위 | JSON-RPC 요청·응답, Tool 호출, 인증 성공·실패, 실제 파일·네트워크 접근 및 데이터 흐름 | 현재 단계에서 구현하지 않음 |
 
@@ -111,7 +112,7 @@ Agent / MCP Host → MCP Client ⇄ MCP Server
 MCP 공식 아키텍처의 Host, Client, Server를 구분한다. OpenClaw Gateway 또는 Agent runtime이 여러 역할을 구현하더라도 자산 모델에서는 논리적 역할을 분리한다.
 
 | 구성요소 | 본 프로젝트에서의 역할 |
-|---|---|
+| --- | --- |
 | User | Tool 실행, 데이터 제공 및 권한 위임의 최종 승인 주체 |
 | Agent | 모델 판단을 바탕으로 MCP 기능 사용을 요청하는 실행 주체 |
 | MCP Host | Client 생성, 연결 허용, 사용자 동의, 정책 및 서버 간 격리를 통제하는 주체 |
@@ -137,7 +138,7 @@ MCP 공식 아키텍처의 Host, Client, Server를 구분한다. OpenClaw Gatewa
 공격 표면 A의 전체 범위는 MCP Client와 Server 사이에서 교환되는 요청, 응답, 알림, 오류, capability 및 확장 메시지이다. 현재 정적 자산 단계에서는 실제 메시지 payload를 수집하지 않고, 설정과 공식 정의에서 확인되는 통신 구조·method·schema·capability를 수집한다.
 
 | 세부 영역 | 분석 대상 |
-|---|---|
+| --- | --- |
 | 연결·발견 | 서버 선언 위치, stdio/HTTP 연결, endpoint, `server/discover`, 프로토콜 버전 |
 | JSON-RPC | 지원·노출된 method와 요청·응답 방향; 실제 메시지는 후속 런타임 범위 |
 | Tool | `tools/list`로 확인한 Tool 이름·description·입출력 스키마·annotation |
@@ -169,7 +170,7 @@ Tool 설명과 annotation을 포함한 서버 제공 메타데이터는 신뢰�
 ### 5.3 자원의 의미 구분
 
 | 유형 | 의미 |
-|---|---|
+| --- | --- |
 | MCP Resource | MCP 인터페이스를 통해 Client에 제공되는 context 또는 data |
 | Backend Resource | Tool 구현이 내부적으로 접근하는 파일, DB, 저장소 또는 내부 API |
 | External Destination | Tool이 데이터나 결과를 전송할 수 있는 외부 API·SaaS·네트워크 대상 |
@@ -178,14 +179,14 @@ Tool이 파일이나 DB에 접근한다고 해서 해당 대상이 반드시 MCP
 
 ---
 
-## 6. 자산 축 B — Skill·Plugin 공급망 필드
+## 6. B — Skill·Plugin 공급망
 
 ### 6.1 포함 범위
 
-Skill·Plugin 공급망은 독립 공격 표면이 아니라 MCP 관련 자산의 출처와 신뢰도를 설명하는 필드로 수집한다. 모든 소스코드를 대상으로 정밀 취약점 분석을 수행하는 것이 아니라, **설치·변경·로딩·실행 및 MCP 연결에 영향을 주는 공급 경로**를 자산 속성으로 기록한다.
+Skill·Plugin 공급망을 정식 공격 표면으로 포함한다. 다만 모든 소스코드를 대상으로 정밀 취약점 분석을 수행하는 것이 아니라, **설치·변경·로딩·실행 및 MCP 연결에 영향을 주는 공급 경로**를 우선 분석한다.
 
 | 세부 영역 | 분석 대상 |
-|---|---|
+| --- | --- |
 | 공급 출처 | 공식 marketplace, Git 저장소, URL, 로컬 경로, 조직 내부 배포처 |
 | 식별·버전 | 이름, 공급자, 버전, commit 또는 배포 식별자 |
 | 무결성 | hash, 서명, lock 정보, 검증 결과, 설치 후 변경 여부 |
@@ -210,14 +211,14 @@ Skill·Plugin 공급망은 독립 공격 표면이 아니라 MCP 관련 자산�
 
 ---
 
-## 7. 자산 축 C — 권한·자격증명 필드
+## 7. C — 권한과 자격증명
 
 ### 7.1 포함 범위
 
-MCP 연결, Tool 실행, Skill·Plugin 및 서드파티 서버가 보유하거나 사용할 수 있는 인증정보와 실행 권한을 독립 공격 표면이 아닌 자산 속성으로 수집한다.
+MCP 연결, Tool 실행, Skill·Plugin 및 서드파티 서버가 보유하거나 사용할 수 있는 인증정보와 실행 권한을 포함한다.
 
 | 세부 영역 | 분석 대상 |
-|---|---|
+| --- | --- |
 | 인증 | OAuth, 정적 Header, 환경변수, API key 전달 방식, mTLS |
 | 자격증명 생명주기 | 발급 주체, 대상 audience/resource, scope, 만료, 저장 위치, 갱신 방식 |
 | 실행 권한 | 프로세스 사용자, command 실행, sandbox, 관리자 권한 |
@@ -238,7 +239,7 @@ MCP 연결, Tool 실행, Skill·Plugin 및 서드파티 서버가 보유하거�
 - Tool 실행 전 사용자 승인 또는 정책 검사가 설정에 선언되어 있는가?
 - 권한 변경과 자격증명 갱신을 추적할 수 있는가?
 
-권한과 자격증명 필드는 침해된 Tool·Server·Plugin이 만들 수 있는 피해 범위와 권한 확대 가능성을 설명한다. 따라서 공격 진입점 자체가 아니라 A의 노출도와 잠재 영향을 해석하는 분석 축으로 사용한다.
+권한과 자격증명은 외부 입력 지점만을 의미하지 않는다. 침해된 Tool·Server·Plugin이 만들 수 있는 피해 범위와 권한 확대 가능성을 결정하는 요인도 포함한다.
 
 ### 7.3 민감정보 수집 원칙
 
@@ -253,7 +254,7 @@ MCP 연결, Tool 실행, Skill·Plugin 및 서드파티 서버가 보유하거�
 
 ### 8.1 포함 범위
 
-아래 항목은 핵심 공격 표면 A와 이를 설명하는 B·C 자산 필드의 전체 분석 범위이다. 현재 단계에서는 각 항목의 설정·등록·정의·선언 정보만 수집하고, 실제 통신과 실행 결과는 후속 런타임 단계에서 수집한다.
+아래 항목은 프로젝트의 전체 분석 범위이다. 현재 단계에서는 각 항목의 설정·등록·정의·선언 정보만 수집하고, 실제 통신과 실행 결과는 후속 런타임 단계에서 수집한다.
 
 - MCP Host·Client·Server의 연결, 발견 및 JSON-RPC 통신
 - Tool·Resource·Prompt, client capability 및 활성 extension
@@ -276,14 +277,12 @@ Prompt Injection과 악성 Tool 설명·Resource·Prompt는 비신뢰 입력의 
 
 ---
 
-## 9. 전체 공격 표면 개념 모델
+## 9. 통합 자산·관계 모델
 
-이 장의 모델은 신뢰 경계와 잠재 공격 경로를 빠짐없이 설명하기 위한 **논리적 보안 모델**이다. 여기에 포함된 모든 정점이 1차 스캐너의 직접 수집 대상이라는 뜻은 아니다. 직접 구현할 정점은 10장의 1차 Scanner Schema에서 별도로 제한한다.
-
-### 9.1 개념 정점
+### 9.1 권장 정점
 
 | 정점 | 식별 기준 | 출처 |
-|---|---|---|
+| --- | --- | --- |
 | User/Identity | 사용자·서비스 계정 식별자 | 제품 설정 + 프로젝트 정규화 |
 | Agent | Agent 식별정보 | OpenClaw 자산 + 프로젝트 정규화 |
 | MCP Host | Host 또는 Gateway 인스턴스 ID | 제품 자산 + 프로젝트 정규화 |
@@ -299,10 +298,10 @@ Prompt Injection과 악성 Tool 설명·Resource·Prompt는 비신뢰 입력의 
 
 서버 이름이나 Tool 이름만 전역 ID로 사용하지 않는다. 서로 다른 서버의 동명 자산 충돌을 방지하기 위해 `server_id + asset_type + official_identifier` 형태의 복합 식별자를 사용한다.
 
-### 9.2 개념 관계
+### 9.2 권장 관계
 
 | 관계 | 의미 |
-|---|---|
+| --- | --- |
 | `HOSTS_CLIENT` | MCP Host가 Client를 생성·관리함 |
 | `CONNECTS_TO` | MCP Client가 특정 MCP Server와 통신함 |
 | `ADVERTISES` | MCP Server가 Tool·Resource·Prompt·capability를 제공함 |
@@ -324,7 +323,7 @@ Prompt Injection과 악성 Tool 설명·Resource·Prompt는 비신뢰 입력의 
 ### 9.3 근거와 신뢰도
 
 | 필드 | 값 예시 |
-|---|---|
+| --- | --- |
 | `evidence_type` | config, manifest, protocol, schema, description, runtime_log, manual |
 | `confidence` | confirmed, high, medium, low |
 | `observed_at` | 관찰 시각 |
@@ -335,88 +334,14 @@ Prompt Injection과 악성 Tool 설명·Resource·Prompt는 비신뢰 입력의 
 
 ---
 
-## 10. 1차 Scanner Schema
-
-### 10.1 구현 범위
-
-1차 스캐너는 회의에서 합의한 다음 **7종의 정적 자산만 직접 정점으로 생성**한다.
-
-| MVP 정점 | 주요 수집 원천 | 역할 |
-|---|---|---|
-| Gateway | OpenClaw 설정·상태 파일 | MCP Server 선언과 정책이 위치하는 Gateway 식별 |
-| Node | OpenClaw Node 설정·상태 파일 | Node-hosted MCP Server 및 실행 위치 식별 |
-| MCP Server | MCP 설정 파일, 등록 Server 목록 | 연결 방식과 제공 자산의 소유 Server 식별 |
-| Tool | MCP 공식 Tool 정의 | `name`, `description`, `inputSchema` 등 기능 정의 수집 |
-| Resource/Prompt | MCP 공식 Resource·Prompt 정의 | 서버가 제공하는 context·data 및 Prompt 정의 수집 |
-| Skill | Skill 파일과 metadata | MCP 사용·등록 여부와 공급망 속성 수집 |
-| Plugin | Plugin manifest·설정 | MCP Server·Tool 등록과 공급망 속성 수집 |
-
-`Resource`와 `Prompt`는 MCP 공식 객체로 수집할 때 각자의 필드와 유형을 보존한다. 다만 MVP 자산 분류와 대시보드의 정점 유형에서는 `Resource/Prompt` 한 종류로 묶고 `asset_subtype`으로 구분할 수 있다.
-
-### 10.2 B·C 자산 필드 흡수
-
-B와 C는 별도 정점 또는 별도 공격 표면으로 구현하지 않고, 관련 MVP 정점의 속성으로 저장한다.
-
-| 자산 축 | 적용 정점 | 대표 필드 |
-|---|---|---|
-| B: 공급망 | MCP Server, Skill, Plugin | `source_type`, `source_uri`, `provider`, `version`, `commit`, `integrity_status`, `modified`, `dependencies`, `update_policy` |
-| C: 권한·자격증명 | Gateway, Node, MCP Server, Tool, Skill, Plugin | `auth_type`, `credential_ref`, `oauth_scopes`, `filesystem_permissions`, `network_permissions`, `process_identity`, `sandbox`, `approval_policy` |
-
-비밀값은 저장하지 않는다. `credential_ref`에는 실제 토큰이나 환경변수 값이 아니라 자격증명의 유형, 참조 이름 또는 비식별 ID만 기록한다.
-
-### 10.3 개념 모델과 MVP 매핑
-
-| 전체 개념 모델 | 1차 Scanner Schema 표현 | 구현 방식 |
-|---|---|---|
-| User/Identity | 관련 자산의 identity·owner 필드 | 별도 정점으로 생성하지 않음 |
-| Agent | Gateway/Node의 agent 식별 필드 | 설정에서 식별 가능할 때만 기록 |
-| MCP Host | Gateway 또는 Node | 제품 구현 역할로 매핑 |
-| MCP Client | Gateway/Node–MCP Server 관계 | 별도 정점 대신 `CONNECTS_TO` 관계로 표현 |
-| MCP Server | MCP Server | 직접 수집 정점 |
-| Tool | Tool | 직접 수집 정점 |
-| MCP Resource | Resource/Prompt | `asset_subtype: resource`로 구분 |
-| Prompt | Resource/Prompt | `asset_subtype: prompt`로 구분 |
-| Skill | Skill | 직접 수집 정점 |
-| Plugin | Plugin | 직접 수집 정점 |
-| Credential | 관련 자산의 권한·자격증명 필드 | 비밀값 없이 참조 정보만 저장 |
-| Backend Resource | Tool의 잠재 접근 대상 필드·추론 관계 | 직접 정점으로 생성하지 않음 |
-| External System | Server/Tool의 endpoint·destination 필드 | 직접 정점으로 생성하지 않음 |
-
-### 10.4 MVP 관계
-
-1차 스캐너가 직접 생성하는 관계도 수집 가능한 정적 근거로 제한한다.
-
-| 관계 | 의미 | 근거 |
-|---|---|---|
-| `DECLARES` | Gateway/Node가 MCP Server를 선언함 | 설정 파일·등록 목록 |
-| `ADVERTISES` | MCP Server가 Tool·Resource·Prompt를 제공한다고 광고함 | MCP 공식 목록 응답의 스냅샷 |
-| `ASSOCIATED_WITH` | Skill·Plugin이 MCP Server 또는 Tool과 연관됨 | manifest·설정·파일 참조 |
-| `MAY_EXPOSE_TO` | 정적 정책상 자산이 Agent에 노출될 가능성이 있음 | filter·정책 설정 |
-| `MAY_ACCESS` | 설명·스키마·설정상 자원 접근 가능성이 있음 | 정적 추론과 근거 수준 |
-| `MAY_SEND_TO` | 설정·스키마상 외부 목적지로 전송할 가능성이 있음 | 정적 추론과 근거 수준 |
-
-`CAN_CALL`, 실제 `ACCESSES`, 실제 `SENDS_TO`와 같은 확정 관계는 1차 스캐너가 생성하지 않는다. 후속 런타임 단계에서 관찰 근거가 확보된 경우에만 개념 모델의 확정 관계로 승격한다.
-
-### 10.5 후속 확장 대상
-
-다음은 전체 개념 모델에는 포함되지만 MVP 구현 범위에서는 제외한다.
-
-- User/Identity, Agent, MCP Client, Credential의 독립 정점화
-- Backend Resource와 External System의 독립 정점화
-- 실제 JSON-RPC 요청·응답과 Tool 호출 추적
-- 실제 자격증명 사용, 파일·DB·API 접근 및 외부 전송 확인
-- 런타임 관찰을 통한 `CALLABLE`, `ACCESSES`, `SENDS_TO` 관계 확정
-
----
-
-## 11. 공식 정보와 프로젝트 확장 정보
+## 10. 공식 정보와 프로젝트 확장 정보
 
 Tool·Resource·Prompt와 MCP 메시지·capability는 MCP `2026-07-28` 공식 스키마의 필드명, 자료형 및 의미를 따른다. 공식 객체를 수집할 때 임의로 필드 의미를 변경하지 않고 원본 표현을 보존한다.
 
 다만 프로젝트의 전체 출력 형식이 하나의 MCP 공식 스키마에 그대로 존재하는 것은 아니다. 제품 설정과 공급망 정보, 자산 간 관계를 함께 표현해야 하므로 다음 세 종류의 정보를 정규화해 통합한다.
 
 | 구분 | 원천 | 대표 정보 |
-|---|---|---|
+| --- | --- | --- |
 | MCP 공식 정보 | MCP `2026-07-28` 규격과 활성 extension | Tool·Resource·Prompt, capability, 요청·응답 필드 |
 | 제품·공급망 정보 | OpenClaw 설정·상태, Skill·Plugin manifest와 설치 metadata | Server 선언, 연결 설정, 정책, 출처, 버전, 의존성 |
 | 프로젝트 확장 정보 | 프로젝트 정규화·분석 로직 | 신뢰 경계, 노출 상태, 관계, 위험 태그, 근거와 신뢰도 |
@@ -425,10 +350,10 @@ OpenClaw 설정 필드는 사용 중인 제품 버전의 실제 스키마와 CLI
 
 프로젝트가 추가한 필드는 별도 namespace 또는 `project_*` 계열로 구분하여 MCP 공식 필드로 오인되지 않게 한다. 공식 스키마에 없는 `exposed`, `callable`, `risk_tags`, 관계와 추론 신뢰도 등은 프로젝트 확장 정보로 명시한다.
 
-### 11.1 정보 계층
+### 10.1 정보 계층
 
 | 계층 | 수집 내용 | 의미 |
-|---|---|---|
+| --- | --- | --- |
 | 선언 계층 | Server, Skill·Plugin, endpoint, 실행 명령, 인증·정책 설정 | 운영자 또는 공급자가 구성한 것 |
 | 공급망 계층 | 출처, 버전, hash·서명, 의존성, 변경 상태 | 설치된 구성요소의 신뢰 근거 |
 | 발견 계층 | 등록 Server 목록, Tool·Resource·Prompt 정의, capability, extension | 특정 시점에 구성요소가 제공한다고 선언·광고한 정적 스냅샷 |
@@ -440,31 +365,32 @@ OpenClaw 설정 필드는 사용 중인 제품 버전의 실제 스키마와 CLI
 
 ---
 
-## 12. MVP 최소 수집 필드
+## 11. 최소 수집 필드
 
 아래 항목은 현재 단계의 정적 자산 최소 수집 필드이다. 실행 이력이 필요한 필드는 포함하지 않는다.
 
-### 12.1 Gateway·Node·MCP Server
+### 11.1 MCP 연결·서버
 
 | 범주 | 최소 필드 |
-|---|---|
-| 식별 | gateway_id/node_id, server_id, 서버 이름, 선언 위치, source path |
+| --- | --- |
+| 식별 | host_id, client_id, server_id, 서버 이름, 선언 위치, source path |
 | 연결 | command/args 또는 endpoint, transport, TLS 검증 여부 |
 | 규격 | protocol_version, client capabilities, server capabilities, extensions |
 | 상태 | declared, discovered, 정적 정책으로 판정한 exposed 및 potentially_callable 여부 |
 | 스냅샷 | collected_at, catalog hash, capability hash |
 
-### 12.2 Tool·Resource/Prompt
+### 11.2 Tool·Resource·Prompt
 
 | 자산 | 최소 필드 |
-|---|---|
+| --- | --- |
 | Tool | server_id, name, title, description, inputSchema, outputSchema, annotations, 정적 exposure state |
-| Resource/Prompt | server_id, asset_subtype, uri 또는 name, description, mimeType·size 또는 arguments, exposure state |
+| Resource | server_id, uri, name, description, mimeType, size, exposure state |
+| Prompt | server_id, name, description, arguments, exposure state |
 
-### 12.3 Skill·Plugin
+### 11.3 Skill·Plugin
 
 | 범주 | 최소 필드 |
-|---|---|
+| --- | --- |
 | 식별 | package_id, name, provider, version/commit |
 | 출처 | source_type, source_uri, registry/marketplace |
 | 무결성 | hash/signature 존재 여부와 검증 결과, modified 상태 |
@@ -472,21 +398,18 @@ OpenClaw 설정 필드는 사용 중인 제품 버전의 실제 스키마와 CLI
 | 확장 | 등록 Server·Tool·hook, dependency 목록 |
 | 업데이트 | pinned 여부, update channel, auto-update 여부, last_updated |
 
-### 12.4 B·C 흡수 필드
+### 11.4 권한·자격증명
 
-| 자산 축 | 범주 | 최소 필드 |
-|---|---|---|
-| B | 공급 출처 | source_type, source_uri, provider, registry/marketplace |
-| B | 버전·무결성 | version/commit, hash/signature 검증 결과, modified, pinned 여부 |
-| B | 의존·업데이트 | dependencies, update channel, auto-update 여부 |
-| C | 인증 | credential reference ID, type, 사용 주체, 대상 Server/API |
-| C | OAuth | issuer, audience/resource, scope, 만료 여부, 사용자별 분리 여부 |
-| C | 실행 | process identity, sandbox, command 권한 |
-| C | 파일 | 읽기·쓰기 범위와 workspace 외부 접근 여부 |
-| C | 네트워크 | 허용 목적지 범주, 내부망·외부망 접근 여부 |
-| C | 정책 | Tool filter, approval mode, 적용 정책과 판정 결과 |
+| 범주 | 최소 필드 |
+| --- | --- |
+| 인증 | credential reference ID, type, 사용 주체, 대상 Server/API |
+| OAuth | issuer, audience/resource, scope, 만료 여부, 사용자별 분리 여부 |
+| 실행 | process identity, sandbox, command 권한 |
+| 파일 | 읽기·쓰기 범위와 workspace 외부 접근 여부 |
+| 네트워크 | 허용 목적지 범주, 내부망·외부망 접근 여부 |
+| 정책 | Tool filter, approval mode, 적용 정책과 판정 결과 |
 
-### 12.5 후속 런타임 수집 필드
+### 11.5 후속 런타임 수집 필드
 
 다음 항목은 전체 공격 표면에는 포함되지만 현재 정적 자산 구현 범위에서는 제외한다.
 
@@ -499,18 +422,15 @@ OpenClaw 설정 필드는 사용 중인 제품 버전의 실제 스키마와 CLI
 
 ---
 
-## 13. 최종 정리
+## 12. 최종 정리
 
-본 프로젝트의 핵심 공격 표면은 **A: MCP 통신 경계**이다. Host·Client·Server 사이에서 어떤 JSON-RPC 요청·응답, Tool·Resource·Prompt 및 양방향 capability가 이동할 수 있는지를 분석한다.
+본 프로젝트는 MCP 공격 표면을 다음 세 영역으로 정의하고 함께 분석한다.
 
-다음 두 항목은 별도 공격 표면이 아니라 MCP 자산을 설명하는 분석 축과 필드로 흡수한다.
+1. **MCP 통신 경계**: Host·Client·Server 사이에서 어떤 JSON-RPC 요청·응답, Tool·Resource·Prompt 및 양방향 capability가 이동하는가
+2. **Skill·Plugin 공급망**: 어떤 외부 파일·설정·코드·서드파티 Server가 어떤 출처와 의존 경로를 통해 설치·변경·실행되는가
+3. **권한과 자격증명**: OAuth 토큰, 환경변수, 파일·네트워크·프로세스 권한 및 승인 정책이 누구에게 어떤 접근을 허용하는가
 
-1. **B: Skill·Plugin 공급망 필드** — 출처, 버전, 무결성, 의존성, 변경 상태 및 서드파티 MCP Server 등록 정보
-2. **C: 권한·자격증명 필드** — OAuth scope, 환경변수·Header 사용, 파일·네트워크·프로세스 권한 및 승인 정책
-
-현재 단계에서는 A의 통신 구조와 B·C 속성을 결합한 **정적 자산 분석**을 수행한다. MCP 설정 파일, 등록된 MCP Server 목록, Tool description·입력 스키마를 포함한 Tool 정의, Skill·Plugin 파일, 권한·자격증명 선언을 MCP 공식 스키마와 제품별 설정 형식에 맞추어 수집한다. 공식 필드는 원래 의미를 보존하고, 노출 상태·자산 관계·위험 태그와 같은 분석 결과만 프로젝트 확장 필드로 분리한다.
-
-전체 공격 표면 개념 모델은 User/Identity, Agent, MCP Host·Client, Credential, Backend Resource 및 External System까지 포함하지만, 이는 보안 관계를 설명하기 위한 범위이다. 1차 스캐너는 **Gateway, Node, MCP Server, Tool, Resource/Prompt, Skill, Plugin의 7종만 직접 정점으로 생성**하고, 나머지 개념은 속성·관계 또는 후속 확장 대상으로 표현한다.
+현재 단계에서는 세 영역 모두에 대해 **정적 자산 분석**을 수행한다. MCP 설정 파일, 등록된 MCP Server 목록, Tool description·입력 스키마를 포함한 Tool 정의, Skill·Plugin 파일, 권한·자격증명 선언을 MCP 공식 스키마와 제품별 설정 형식에 맞추어 수집한다. 공식 필드는 원래 의미를 보존하고, 노출 상태·자산 관계·위험 태그와 같은 분석 결과만 프로젝트 확장 필드로 분리한다.
 
 실제 JSON-RPC 메시지, Tool 호출, 인증 결과, 파일·네트워크 접근 및 데이터 흐름은 후속 런타임 분석에서 수집한다. 따라서 현재 정적 분석에서 `CALLABLE` 또는 실제 접근 관계를 확정하지 않고, 설정과 정의로 확인 가능한 잠재 노출·접근 가능성과 그 근거를 기록한다.
 
@@ -528,22 +448,13 @@ OpenClaw 설정 필드는 사용 중인 제품 버전의 실제 스키마와 CLI
 
 ## 참고 자료
 
-1. Model Context Protocol, **Specification 2026-07-28**  
-   <https://modelcontextprotocol.io/specification/2026-07-28>
-2. Model Context Protocol, **Architecture 2026-07-28**  
-   <https://modelcontextprotocol.io/specification/2026-07-28/architecture>
-3. Model Context Protocol, **Tools 2026-07-28**  
-   <https://modelcontextprotocol.io/specification/2026-07-28/server/tools>
-4. Model Context Protocol, **Resources 2026-07-28**  
-   <https://modelcontextprotocol.io/specification/2026-07-28/server/resources>
-5. Model Context Protocol, **Prompts 2026-07-28**  
-   <https://modelcontextprotocol.io/specification/2026-07-28/server/prompts>
-6. Model Context Protocol, **Extensions**  
-   <https://modelcontextprotocol.io/extensions>
-7. OpenClaw, **MCP CLI overview**  
-   <https://docs.openclaw.ai/cli/mcp>
-8. OpenClaw, **MCP JSON output shapes**  
-   <https://docs.openclaw.ai/cli/mcp/json-output>
-9. OpenClaw, **MCP transports and OAuth**  
-   <https://docs.openclaw.ai/cli/mcp/transports>
+1. Model Context Protocol, **Specification 2026-07-28**https://modelcontextprotocol.io/specification/2026-07-28
+2. Model Context Protocol, **Architecture 2026-07-28**https://modelcontextprotocol.io/specification/2026-07-28/architecture
+3. Model Context Protocol, **Tools 2026-07-28**https://modelcontextprotocol.io/specification/2026-07-28/server/tools
+4. Model Context Protocol, **Resources 2026-07-28**https://modelcontextprotocol.io/specification/2026-07-28/server/resources
+5. Model Context Protocol, **Prompts 2026-07-28**https://modelcontextprotocol.io/specification/2026-07-28/server/prompts
+6. Model Context Protocol, **Extensions**https://modelcontextprotocol.io/extensions
+7. OpenClaw, **MCP CLI overview**https://docs.openclaw.ai/cli/mcp
+8. OpenClaw, **MCP JSON output shapes**https://docs.openclaw.ai/cli/mcp/json-output
+9. OpenClaw, **MCP transports and OAuth**https://docs.openclaw.ai/cli/mcp/transports
 10. OWASP, **Top 10 for Agentic Applications** — Tool Misuse, Identity and Privilege Abuse, Supply Chain Vulnerabilities
