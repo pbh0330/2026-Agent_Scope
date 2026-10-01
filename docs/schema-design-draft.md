@@ -1,8 +1,8 @@
 # Agent Scope 공통 데이터 스키마 — 팀 검토용 초안
 
 > 작성일: 2026-09-29 · 상태: 팀 협의 전 초안
-> 문서 버전: v0.2
-> 데이터 계약 버전: `0.2.0-draft` · 예제의 `schema_version`과 동일
+> 문서 버전: v0.3 · 수정일: 2026-10-01
+> 데이터 계약 버전: `0.3.0-draft` · 예제의 `schema_version`과 동일
 > 설계 기준 MCP 규격: **2026-07-28**
 > 대상 환경: OpenClaw 기반 테스트베드. 정확한 설치 버전·commit은 담당자가 확인하여 기록한다.
 
@@ -68,7 +68,7 @@ InventorySnapshot                    한 번의 수집 결과
 
 | 필드 | 자료형 | 필수 | 의미 |
 |---|---|---|---|
-| `schema_version` | string | O | 예제는 `0.2.0-draft` |
+| `schema_version` | string | O | 예제는 `0.3.0-draft` |
 | `snapshot_id` | string | O | 수집 실행마다 새 ID, 재전송은 유지 |
 | `environment_id` | string | O | 테스트베드의 논리 환경 ID |
 | `basis` | object | O | 설계 기준. `mcp_spec_version: "2026-07-28"` |
@@ -168,7 +168,7 @@ ID는 환경·소속·원천 식별자를 일정한 규칙으로 조합해 만�
 
 | 객체 | 필드 후보와 자료형 |
 |---|---|
-| `credential_refs[]` | `reference_id: string 또는 null`, `namespace: string`, `source_field: string`, `kind: string`, `presence: boolean 또는 null`, `evidence_refs: string[]` |
+| `credential_refs[]` | `reference_id: string 또는 null`, `namespace: string`, `source_field: string`, `kind: string`, `presence: boolean 또는 null`, `evidence_refs: string[]`, `reason: string`(reference_id 또는 presence가 null이면 필수) |
 | `supply_chain` | `provider`, `package_id`, `version`, `commit`, `source_uri`: string; `integrity_status`: verified/failed/unknown; `evidence_refs: string[]` |
 | `normalizations[]` | `source_field: string`, `target_field: string`, `rule_id: string`, `evidence_refs: string[]` |
 
@@ -245,7 +245,7 @@ TargetRef는 다음 구조 중 하나다. 키의 값은 모두 문자열이다.
 
 필수: `evidence_id`, `evidence_type`, `source_ref`, `observed_at`, `collection_ref`, `redaction_status`(모두 string).
 
-evidence_type은 config/manifest/protocol/schema/description/manual. redaction_status는 not_needed/redacted. 선택 필드는 `field_path: string`, `redacted_fields: string[]`. 원본에 민감정보가 있으면 안전한 증적으로 바꾸고 변경 위치를 기록한다.
+evidence_type은 config/manifest/protocol/schema/description/manual. redaction_status는 not_needed/redacted. `field_path: string`은 선택이며, `redacted_fields: string[]`는 redacted일 때 필수다. 원본에 민감정보가 있으면 안전한 증적으로 바꾸고 변경 위치를 기록한다.
 
 ### CollectionResult
 
@@ -254,17 +254,17 @@ evidence_type은 config/manifest/protocol/schema/description/manual. redaction_s
 | 필드 | 자료형 | 규칙 |
 |---|---|---|
 | `collection_id`, `source_ref`, `scope`, `collected_at` | string | 필수 |
-| `target_ref` | string 또는 null | 필수. 식별 전 실패는 null과 reason |
-| `mode` | string | local_file/online_catalog/imported_catalog |
-| `status` | string | success/partial/failed/not_attempted |
+| `target_ref` | string 또는 null | 필수. 같은 스냅샷의 asset_id 참조. 대상 식별 불가는 null과 reason |
+| `mode` | string | 필수. local_file/online_catalog/imported_catalog |
+| `status` | string | 필수. success/partial/failed/not_attempted |
 | `protocol_version` | string 또는 null | MCP 목록·발견 수집 시 필수, 실제 적용 버전 |
 | `auth_context_ref` | string 또는 null | MCP 수집 시 필수. 익명도 명시적 맥락 ID 사용 |
 | `reason` | string | 실패·부분 수집·미수행 또는 null 맥락일 때 필수 |
 | `error_code` | string | 선택 |
 
-scope 후보: gateway_config/node_config/skill_files/plugin_manifest/server_discovery/tools_list/resources_list/prompts_list/resource_templates_list. 하나의 작업이 수집하도록 계획한 페이지를 모두 완료해야 success다.
+scope 후보: gateway_config/node_config/skill_files/plugin_manifest/server_discovery/tools_list/resources_list/prompts_list/resource_templates_list. 목록 수집은 해당 요청·인가 맥락에서 후속 페이지가 없음을 확인해야 success다. 페이지 제한·시간 제한으로 중단하면 확보한 결과가 있어도 partial로 기록한다.
 
-전체 scan.status는 모두 success이면 success, 일부 완료·확보했지만 실패 또는 미수행이 있으면 partial, 전혀 완료·확보하지 못했으면 failed. 수집 계획이 빈 실행은 거부한다. 정상 완료한 빈 목록은 성공이다. **이 값은 6개 자산 상태와 별개다.**
+전체 scan.status는 모든 결과가 success이면 success다. 하나라도 partial이 있거나 success와 failed/not_attempted가 함께 있으면 partial이다. success·partial 없이 failed/not_attempted만 있으면 failed다. 수집 계획이 빈 실행은 거부한다. 정상 완료한 빈 목록은 성공이다. **이 값은 6개 자산 상태와 별개다.**
 
 | 수집 status | 뜻 | 예 |
 |---|---|---|
@@ -275,13 +275,24 @@ scope 후보: gateway_config/node_config/skill_files/plugin_manifest/server_disc
 
 상위 scan.status에는 success/partial/failed만 사용한다. 조회를 계획하지 않은 범위는 완료했다고 표시하지 않는다. auth_context_ref는 어떤 인증·사용자 맥락으로 조회했는지 식별하는 안전한 참조이며 토큰 값이 아니다.
 
+### 참조·증적·시각의 공통 규칙
+
+- `owner_ref`, `source_asset_ref`, `target.asset_ref`, Agent의 `owner_asset_ref`, 수집 결과의 null이 아닌 `target_ref`는 같은 스냅샷의 자산 ID를 참조한다. Agent 소유 주체와 Host 대상은 Gateway/Node로 제한한다.
+- 상태 판정의 `subject_ref`는 Agent 또는 Host를 가리킨다. 접근 자원·외부 목적지는 상태 판정의 주체가 아니라 관계 대상으로 표현한다.
+- `evidence_refs`는 같은 스냅샷의 근거 ID, `collection_ref`는 수집 작업 ID를 참조한다. 자산·관계·근거·수집 작업 ID는 각각 해당 배열 안에서 유일해야 한다.
+- `policy_ref`, `source_ref`, `auth_context_ref`는 외부 정책·증적·인가 맥락을 찾는 안전한 참조이며 자산 ID와 혼용하지 않는다. 조회 방법과 정책 버전 관리 방식은 별도 계약으로 정한다.
+- 비밀값 제거는 제품 설정뿐 아니라 MCP 설명·스키마 기본값·URL 쿼리·명령 인자·오류 메시지·목록 응답에도 적용한다. 공유 증적도 제거된 사본이어야 한다. `redaction_status: redacted`이면 비어 있지 않은 `redacted_fields`에 제거 위치를 기록하고 실제 값이나 비밀값 해시는 남기지 않는다.
+- 필수 식별 정보까지 안전하게 보존할 수 없다면 임의 값으로 정상 객체를 만들지 않고 해당 범위를 부분 수집 또는 실패로 기록한다.
+- `collected_at`은 수집 작업의 결과 상태를 확정한 시각이다. not_attempted에서는 미수행 결정을 기록한 시각이며 실제 관측 시각을 의미하지 않는다. 실제 근거의 관측 시각은 `Evidence.observed_at`에 기록한다.
+- 이전 스냅샷의 자산·증적을 최신 관측값처럼 복사하지 않는다.
+
 ## 8. 통합 정상 예제
 
 설정과 Tool 목록만 수집한 예제다. 제품 버전은 미확인, MCP 응답은 기준 버전으로 수집했다는 가정이다. 원본 요청·페이지 응답은 source_ref가 가리키는 가상 증적에 있고 아래 definition은 Tool 객체만 포함한다.
 
 ```json
 {
-  "schema_version": "0.2.0-draft",
+  "schema_version": "0.3.0-draft",
   "snapshot_id": "snap-001",
   "environment_id": "env-test-01",
   "basis": {"mcp_spec_version": "2026-07-28"},
@@ -343,6 +354,9 @@ scope 후보: gateway_config/node_config/skill_files/plugin_manifest/server_disc
 | 설정 성공, Tool 목록 시간 초과 | 전체 partial. Gateway·Server와 DECLARES만 유지. tools_list는 failed와 TIMEOUT, Tool과 ADVERTISES는 이번 결과에서 생성하지 않음 |
 | 위 실패 후 이전 Tool 존재 | 이전 스냅샷에서 확인 가능. 이번 누락을 삭제로 판정하지 않음 |
 | 정상 조회 후 Tool 빈 목록 | tools_list success와 Tool 0개. 실패와 구분 |
+| 첫 페이지만 확보하고 나머지 조회 실패 | 확보한 Tool·관계·근거는 유지, 해당 작업과 전체 scan.status는 partial |
+| 모든 수집 작업이 partial | 전체 scan.status는 partial |
+| 모든 수집 작업이 미수행 | 각 작업은 not_attempted와 사유, 전체 scan.status는 failed |
 | 서버 선언이 enabled false | DECLARED는 true 가능. 비활성 근거만으로 모든 범위의 사용 이력 부재를 확정하지 않음 |
 | 동일 이름의 Tool을 다른 서버에서 발견 | 각각 다른 ID와 owner_ref |
 | 실제 MCP 버전이 기준과 다름 | 실제 버전 기록. 해당 버전 어댑터가 없으면 지원 불가로 기록하고 기준 버전 객체로 위장하지 않음 |
@@ -391,3 +405,20 @@ scope 후보: gateway_config/node_config/skill_files/plugin_manifest/server_disc
 | QA 결과 | 공통 데이터 검증 기준 | 정답·실행 결과·지표·결함 연결의 저장 형식 별도 정의 |
 
 따라서 공통 구조는 이 문서를 보며 합의하고, 각 파트의 실제 예제로 세부 명세를 채운다. 전체 스키마 확정은 필요한 모듈별 계약과 실패·경계 예제까지 검토한 뒤 판단한다.
+
+### 11.2 시나리오·모니터링 연계 시 보완할 항목
+
+| 대상 | 별도로 구체화할 계약 |
+|---|---|
+| S1 비인가 서버 | 승인 목록·버전, 승인 판정의 자산·정책·근거 연결 |
+| S2 고위험 Tool | 파일·명령·네트워크 권한, 적용 승인 정책과 허용 범위 |
+| S3 동명 Tool | 서버별 ID와 공식 이름을 비교하되 이름 충돌과 악성 판정을 구분하는 점검 결과 |
+| S4 자격증명 공유 | 안전한 참조의 식별 범위, scope·audience·resource·사용 주체와 필요한 최소 권한 기준 |
+| S5 연결 위험 | 실제 전송 방식·TLS 설정과 신뢰 정책의 평가. 미확인·해당 없음 구분 |
+| 사용량·비용 | 관측 단위·기간, 자산 연결 키, 추정·귀속 불가 사유, 단가 출처 |
+
+원천에 없는 권한이나 정책을 Tool 설명만으로 확정하지 않는다. 현재 스냅샷 계약이 위 시나리오의 모든 판정 필드를 제공한다고 가정하지 않으며, 위험 경고·사용량은 별도 계약으로 연결한다. 런타임 사용 상태도 정적 스냅샷의 `CALLABLE`·`USED`를 덮어쓰지 않고 관측 근거·시각·실행 맥락과 함께 연계한다.
+
+### 11.3 이번 개정의 호환성
+
+문서 v0.3과 계약 `0.3.0-draft`는 참조 대상, 부분 수집 집계, 페이지 완전성, 자격증명 미확인 사유와 증적 제거 규칙을 명확히 한다. 기존 `0.2.0-draft` 생산자·소비자가 있으면 새 조건을 검토한 뒤 전환한다. 예제의 버전만 바꾸는 것으로 호환성을 보장하지 않는다.
