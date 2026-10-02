@@ -25,6 +25,10 @@ const (
 	PriceSourceReference = "reference_list_price"
 )
 
+// AnthropicListPricingVersion은 아래 참고 정가표의 불변 버전 식별자다. 표 값을 바꾸면 이 값도 바꾼다
+// (usage.json의 pricing.version으로 나가서, 어느 단가표로 계산했는지 나중에 추적할 수 있게 한다).
+const AnthropicListPricingVersion = "anthropic-list-price@2026-09-28"
+
 // AnthropicListPricingReference는 Anthropic 공식 API 정가(참고용, 실제 청구액 아님).
 // 2026-09-28 확인, https://platform.claude.com/docs/en/about-claude/pricing
 // cacheWrite는 1시간 TTL 기준(보수적으로 더 비싼 쪽).
@@ -45,6 +49,12 @@ func (p Pricing) InputCost(model string, tokens int64) (usd float64, source stri
 		return 0, "", false
 	}
 	return float64(tokens) / 1e6 * rate.Input, src, true
+}
+
+// RateFor는 모델에 실제로 적용되는 단가와 출처(config / reference_list_price)를 돌려준다.
+// InputCost와 같은 규칙(설정 단가가 없거나 전부 0이면 참고 정가)이다.
+func (p Pricing) RateFor(model string) (Rate, string, bool) {
+	return p.rate(model)
 }
 
 func (p Pricing) rate(model string) (Rate, string, bool) {

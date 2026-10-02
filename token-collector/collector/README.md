@@ -14,6 +14,7 @@ attribution/                 핵심 로직(외부 라이브러리 없는 순수 
   pricing.go                   openclaw.json 단가 로딩, 단가 0이면 Anthropic 공식 정가(참고용)로 대체
   testdata/                    실제 캡처 로그 3개(순차·배치·병렬)의 스팬 + 파이썬 결과(비교 기준)
 tokenattributionconnector/   Collector 커넥터(위 로직을 감싸서 스팬 입력 → 누적 메트릭 출력)
+usagereport/                 usage.json 어댑터: 원본 스팬 파일 → 통합 스키마 14절 UsageReport(호출 단위 기록 + 자산 매핑)
 builder-config.yaml          OCB(OpenTelemetry Collector Builder) 빌드 설정
 otelcol-agentscope-config.yaml  로컬 PC(Windows) 실행 설정 예시
 ```
@@ -53,6 +54,12 @@ otelcol-agentscope-config.yaml  로컬 PC(Windows) 실행 설정 예시
 `pricing_source="reference_list_price"`는 학교 게이트웨이 단가가 0이라 Anthropic 공식 정가를
 참고용으로 쓴 값이며 실제 청구액이 아니다.
 
+## usage.json (호출 단위 기록, 대시보드·QA용)
+
+메트릭은 누적값이라 호출별 기록과 자산 매핑을 담을 수 없다. 실행 설정의 `file/traces` 익스포터가 원본
+스팬을 `agentscope-traces.jsonl`로 남기고, `usagereport/`의 `agentscope-usage`가 그 파일로 PR #1 스키마
+14절 형식의 `usage.json`을 만든다. 자세한 내용은 [usagereport/README.md](usagereport/README.md).
+
 ## 빌드
 
 Go 1.26 이상 필요(Collector v0.161.0 요구사항).
@@ -83,6 +90,7 @@ cd C:\Users\<사용자>\.openclaw
 ```bash
 cd attribution && go test ./...                 # 판정 로직 + 실제 로그 3개로 파이썬 결과와 일치 확인
 cd ../tokenattributionconnector && go test ./... # 커넥터: 메트릭 합계·누적·exemplar·단가 로딩
+cd ../usagereport && go test ./...               # usage.json: 파이썬 결과 일치·null 규칙·중복 제거·자산 매핑
 ```
 
 테스트 픽스처를 다시 만들려면 `scripts/traceid_attribution/export_fixtures.py`를 쓴다
@@ -99,6 +107,7 @@ cd ../tokenattributionconnector && go test ./... # 커넥터: 메트릭 합계·
 
 ## 아직 안 한 것
 
+- usage.json의 `schema_version`·집계 API·플러그인 도구 매핑은 팀 합의 대기(usagereport/README.md 참고).
 - `pipeline/docker-compose.yml`은 아직 `otelcol-contrib` 이미지를 쓴다. 이 커스텀 Collector용
   Dockerfile과 Grafana 패널(도구별 토큰·비용, exemplar 연동)은 다음 작업.
 - 캐시 토큰을 input과 따로 보고하는 프로바이더(Anthropic 직접 호출 + 프롬프트 캐싱)라면

@@ -35,13 +35,22 @@ exporters:
     enable_open_metrics: true   # exemplar(traceId)를 /metrics에 같이 싣기 위해 필요
   debug:
     verbosity: detailed         # 기존처럼 콘솔(또는 *> 로그파일)로 원본 스팬도 확인 가능
+  # 원본 스팬을 OTLP JSON 줄로 보관 → usage.json 어댑터(usagereport/agentscope-usage) 입력.
+  # 메트릭은 누적값이라 호출별 기록을 되살릴 수 없어서 원본을 따로 남긴다(스키마 14.2-6).
+  # 실행 폴더(.openclaw)에 생긴다. 폴더를 바꾸려면 그 폴더가 미리 있어야 함(없으면 Collector 시작 실패).
+  # OpenClaw 스팬 속성이 그대로 들어가므로 저장소에 올리지 말 것.
+  file/traces:
+    path: ./agentscope-traces.jsonl
+    rotation:
+      max_megabytes: 50
+      max_backups: 10
 
 service:
   pipelines:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [tokenattribution, debug]
+      exporters: [tokenattribution, debug, file/traces]
     metrics:
       receivers: [otlp]
       processors: [batch]

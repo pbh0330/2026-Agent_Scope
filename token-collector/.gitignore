@@ -9,3 +9,6 @@ otel-debug-log*.txt
 # Go 커스텀 Collector 빌드 산출물(생성 코드·실행 파일)은 커밋하지 않음
 collector/_build/
 *.exe
+# usage.json 어댑터 입력(원본 스팬)과 로컬 빌드 결과물
+agentscope-traces*.jsonl
+collector/usagereport/agentscope-usage
