@@ -238,11 +238,32 @@ func TestConnectorExemplarsCarryTraceIDs(t *testing.T) {
 	if ex.TraceID().IsEmpty() || ex.SpanID().IsEmpty() || ex.IntValue() != dp.IntValue() {
 		t.Fatalf("bad exemplar: trace=%s span=%s val=%d", ex.TraceID(), ex.SpanID(), ex.IntValue())
 	}
-	// 다음 flush에는 새 exemplar가 없어야 한다(한 번만 붙음).
+	// 다음 flush에도 같은 exemplar가 남아 있어야 한다. 비우면 flush 주기(5초)보다 긴 Prometheus 스크랩
+	// 주기(15초) 사이에 사라져 저장되지 않는다.
 	clk.t = clk.t.Add(5 * time.Second)
 	c.flush(context.Background())
-	if n := lastMetrics(t, sink)[metricTokens].Sum().DataPoints().At(0).Exemplars().Len(); n != 0 {
-		t.Fatalf("exemplars should be cleared, got %d", n)
+	again := lastMetrics(t, sink)[metricTokens].Sum().DataPoints().At(0).Exemplars()
+	if again.Len() != 1 || again.At(0).TraceID() != ex.TraceID() || again.At(0).SpanID() != ex.SpanID() {
+		t.Fatalf("exemplar should persist across flushes, got %d", again.Len())
+	}
+}
+
+// exemplar는 시리즈마다 최근 max_per_data_point건만 유지한다(오래된 것부터 밀려남).
+func TestConnectorExemplarsKeepMostRecent(t *testing.T) {
+	sink := new(consumertest.MetricsSink)
+	cfg := createDefaultConfig()
+	cfg.Exemplars.MaxPerDataPoint = 2
+	c, clk := newTestConnector(t, cfg, sink)
+	_ = c.ConsumeTraces(context.Background(), loadTraces(t, "week3-sequential-batch")) // exec 8회(순차)
+	clk.t = clk.t.Add(15 * time.Minute)
+	c.flush(context.Background())
+	m := lastMetrics(t, sink)[metricCalls].Sum().DataPoints()
+	for i := 0; i < m.Len(); i++ {
+		dp := m.At(i)
+		name, _ := dp.Attributes().Get(attrToolName)
+		if name.Str() == "exec" && dp.Exemplars().Len() != 2 {
+			t.Fatalf("exec exemplars = %d, want 2 (most recent)", dp.Exemplars().Len())
+		}
 	}
 }
 

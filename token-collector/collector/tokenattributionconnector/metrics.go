@@ -212,7 +212,11 @@ func putExemplars(dst pmetric.ExemplarSlice, exs []exemplar, asInt bool) {
 	}
 }
 
-// build는 지금까지의 누적값 전체를 pmetric으로 만든다. exemplar는 내보낸 뒤 비운다.
+// build는 지금까지의 누적값 전체를 pmetric으로 만든다.
+// exemplar는 비우지 않고 시리즈마다 최근 maxEx건을 계속 싣는다. Prometheus 익스포터는 가장 최근에 받은
+// 데이터 포인트의 exemplar만 /metrics에 보여주므로, flush(5초)마다 비우면 exemplar가 5초 동안만 보이고
+// 스크랩 주기(15초)에 걸리지 않으면 Prometheus에 저장되지 않는다(docker-compose 연동 시 실측으로 확인).
+// 같은 exemplar가 여러 번 스크랩돼도 Prometheus는 중복으로 저장하지 않는다.
 func (a *aggregator) build(now time.Time, pendingRuns int, droppedSpans uint64) pmetric.Metrics {
 	md := pmetric.NewMetrics()
 	rm := md.ResourceMetrics().AppendEmpty()
@@ -243,7 +247,6 @@ func (a *aggregator) build(now time.Time, pendingRuns int, droppedSpans uint64) 
 				dp.SetDoubleValue(s.dblVal)
 			}
 			putExemplars(dp.Exemplars(), s.exemplars, isInt)
-			s.exemplars = nil
 		}
 	}
 
@@ -269,7 +272,6 @@ func (a *aggregator) build(now time.Time, pendingRuns int, droppedSpans uint64) 
 			dp.ExplicitBounds().FromRaw(durationBounds)
 			dp.BucketCounts().FromRaw(s.counts)
 			putExemplars(dp.Exemplars(), s.exemplars, false)
-			s.exemplars = nil
 		}
 	}
 

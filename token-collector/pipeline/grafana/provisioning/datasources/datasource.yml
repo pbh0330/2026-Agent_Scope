@@ -1,4 +1,4 @@
-# Grafana가 시작할 때 Prometheus 데이터소스를 자동으로 등록 (수동으로 UI에서 안 눌러도 됨)
+# Grafana가 시작할 때 Prometheus·Tempo 데이터소스를 자동으로 등록 (수동으로 UI에서 안 눌러도 됨)
 apiVersion: 1
 
 datasources:
@@ -10,4 +10,18 @@ datasources:
     access: proxy
     url: http://prometheus:9090
     isDefault: true
+    editable: true
+    jsonData:
+      # 메트릭의 exemplar 라벨 trace_id → Tempo 데이터소스(uid: Tempo)로 연결.
+      # 패널에서 Exemplars를 켜면 그래프 위 점을 눌러 해당 요청의 실행 기록을 연다.
+      exemplarTraceIdDestinations:
+        - name: trace_id
+          datasourceUid: Tempo
+
+  - name: Tempo
+    uid: Tempo
+    type: tempo
+    access: proxy
+    url: http://tempo:3200
+    isDefault: false
     editable: true

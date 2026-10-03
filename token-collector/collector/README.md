@@ -51,6 +51,8 @@ otelcol-agentscope-config.yaml  로컬 PC(Windows) 실행 설정 예시
 
 토큰·비용·호출 수 메트릭에는 해당 도구 스팬의 `trace_id`/`span_id`가 **exemplar**로 붙는다
 (`enable_open_metrics: true` 필요). Grafana에서 메트릭 → 트레이스로 바로 이동하는 데 쓴다.
+exemplar는 시리즈마다 최근 `max_per_data_point`(기본 5)건을 계속 유지한다. flush마다 비우면 Prometheus
+스크랩 주기(15초)보다 짧은 5초 동안만 보여서 저장되지 않는 문제가 있었다(10.03 수정).
 `pricing_source="reference_list_price"`는 학교 게이트웨이 단가가 0이라 Anthropic 공식 정가를
 참고용으로 쓴 값이며 실제 청구액이 아니다.
 
@@ -73,6 +75,9 @@ GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o o
 ```
 
 결과물은 약 37MB(otelcol-contrib 386MB 대비). `_build/`와 실행 파일은 커밋하지 않는다.
+
+컨테이너 이미지는 `Dockerfile`이 같은 과정을 이미지 안에서 수행한다. 보통은 `../pipeline/docker-compose.yml`이
+자동으로 빌드하므로 따로 실행할 필요가 없다(Tempo·Prometheus·Grafana 연동 포함, `../pipeline/README.md`).
 
 ## 실행 (Windows 로컬 테스트베드)
 
@@ -108,7 +113,7 @@ cd ../usagereport && go test ./...               # usage.json: 파이썬 결과 
 ## 아직 안 한 것
 
 - usage.json의 `schema_version`·집계 API·플러그인 도구 매핑은 팀 합의 대기(usagereport/README.md 참고).
-- `pipeline/docker-compose.yml`은 아직 `otelcol-contrib` 이미지를 쓴다. 이 커스텀 Collector용
-  Dockerfile과 Grafana 패널(도구별 토큰·비용, exemplar 연동)은 다음 작업.
+- docker-compose(Tempo·Prometheus exemplar·Grafana 연결)는 샌드박스에서 구성요소별로만 검증했다.
+  사용자 PC에서 `docker compose up` 후 Grafana 점 → Tempo 이동을 확인해야 한다(`../pipeline/README.md`).
 - 캐시 토큰을 input과 따로 보고하는 프로바이더(Anthropic 직접 호출 + 프롬프트 캐싱)라면
   `include_cache_in_prompt: true`가 필요할 수 있다. 지금 테스트베드(school-gateway)는 캐시 0이라 미검증.
