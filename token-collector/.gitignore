@@ -1,0 +1,15 @@
+# 로컬에서 생기는 산출물은 커밋하지 않는다.
+# 원본 로그·원본 스팬 파일(대화 메타데이터가 들어감)
+otel-debug-log*.txt
+agentscope-traces*.jsonl
+# Python 귀속 결과(예시는 collector/usagereport/testdata/example.usage.json 참고)
+attribution_report.json
+__pycache__/
+*.pyc
+# docker-compose 데이터 폴더
+pipeline/data/*
+!pipeline/data/.gitkeep
+# Go 빌드 산출물(생성 코드·실행 파일)
+collector/_build/
+collector/usagereport/agentscope-usage
+*.exe
