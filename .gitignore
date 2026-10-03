@@ -1,7 +1,0 @@
-# 로컬에서 생성되는 산출물 (원본 로그, 집계 리포트, 컨테이너 데이터) — 저장소엔 예제만 커밋
-otel-debug-log.txt
-attribution_report.json
-pipeline/data/*
-!pipeline/data/.gitkeep
-__pycache__/
-*.pyc
