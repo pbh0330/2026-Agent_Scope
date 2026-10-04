@@ -9,3 +9,6 @@ pipeline/data/*
 collector/_build/
 collector/usagereport/agentscope-usage
 *.exe
+# 미리 빌드한 Linux 실행 파일(Dockerfile.prebuilt용)
+collector/otelcol-agentscope-linux
+*.zip

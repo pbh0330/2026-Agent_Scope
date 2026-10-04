@@ -79,6 +79,14 @@ GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o o
 컨테이너 이미지는 `Dockerfile`이 같은 과정을 이미지 안에서 수행한다. 보통은 `../pipeline/docker-compose.yml`이
 자동으로 빌드하므로 따로 실행할 필요가 없다(Tempo·Prometheus·Grafana 연동 포함, `../pipeline/README.md`).
 
+디스크·메모리가 부족해 이미지 안 소스 빌드가 실패하는 PC는 `Dockerfile.prebuilt`를 쓴다. 위 방법으로 Linux용 실행 파일을
+`otelcol-agentscope-linux`라는 이름으로 이 폴더에 두면 이미지에는 복사만 한다(실행 파일은 커밋하지 않음).
+
+```bash
+# _build 폴더에서
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o ../otelcol-agentscope-linux .
+```
+
 ## 실행 (Windows 로컬 테스트베드)
 
 ```powershell
@@ -110,10 +118,16 @@ cd ../usagereport && go test ./...               # usage.json: 파이썬 결과 
 - 사용자 PC(Windows)에서 실제 OpenClaw 웹챗 요청으로 실시간 동작 확인: 한 요청 안에서
   목록 조회(sequential, 264토큰) → 파일 2개 동시 읽기(parallel 2건)가 몇 초 안에 반영됨.
 
+## 검증 기록 (2026-10-04, docker-compose 실기동)
+
+- 사용자 PC(Windows, Docker Desktop)에서 `docker-compose.prebuilt.yml`로 4개 서비스 기동, 실제 웹챗 요청으로 확인.
+- 도구 6종이 도구별 시리즈로 표시되고 결과 크기에 따라 값이 다름(같은 `fs__read_text_file`이 1.1KB 파일 608토큰,
+  6.2KB 파일 3,270토큰). 병렬 호출은 토큰 없이 호출 수만 집계.
+- Grafana 점(exemplar) → "Query with Tempo"로 해당 trace가 열리고 model.call → tool.execution → model.call 순서 확인.
+- `pipeline/data/agentscope-traces.jsonl` 생성 확인, 이 파일로 usage.json 12건 생성.
+
 ## 아직 안 한 것
 
 - usage.json의 `schema_version`·집계 API·플러그인 도구 매핑은 팀 합의 대기(usagereport/README.md 참고).
-- docker-compose(Tempo·Prometheus exemplar·Grafana 연결)는 샌드박스에서 구성요소별로만 검증했다.
-  사용자 PC에서 `docker compose up` 후 Grafana 점 → Tempo 이동을 확인해야 한다(`../pipeline/README.md`).
 - 캐시 토큰을 input과 따로 보고하는 프로바이더(Anthropic 직접 호출 + 프롬프트 캐싱)라면
   `include_cache_in_prompt: true`가 필요할 수 있다. 지금 테스트베드(school-gateway)는 캐시 0이라 미검증.

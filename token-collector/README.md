@@ -20,7 +20,7 @@ OpenClaw ─OTLP→ otelcol-agentscope(커스텀 Collector) ─┬─ 도구별 
 | `collector/attribution/` | 귀속 핵심 로직(순수 Go): 순차·병렬·배치·귀속불가 판정, 순차 구간 토큰 공식, 단가 |
 | `collector/tokenattributionconnector/` | OTel Collector 커넥터(traces → metrics). 실시간 도구별 메트릭 |
 | `collector/usagereport/` | usage.json 생성기(`agentscope-usage`). 통합 스키마 14절 UsageReport, 자산 ID 매핑 |
-| `collector/builder-config.yaml`, `Dockerfile` | 커스텀 Collector 빌드(OCB) / 컨테이너 이미지 |
+| `collector/builder-config.yaml`, `Dockerfile`, `Dockerfile.prebuilt` | 커스텀 Collector 빌드(OCB) / 컨테이너 이미지(소스 빌드, 미리 빌드한 실행 파일 복사) |
 | `collector/otelcol-agentscope-config.yaml` | Windows 로컬 단독 실행 설정 |
 | `pipeline/` | docker-compose: 커스텀 Collector + Tempo + Prometheus(exemplar) + Grafana |
 | `docs/` | 개발계획서와 검증 기록(아래 표) |
@@ -43,8 +43,9 @@ Go 테스트의 `collector/attribution/testdata/*.expected.json`이 그 프로�
 # 2) 호출 단위 기록 usage.json (collector/usagereport/README.md)
 .\agentscope-usage.exe --env <environment_id> --profile <profile_id> --input .\agentscope-traces.jsonl --out .\usage.json
 
-# 3) 전체 파이프라인 (Docker 필요, 실제 기동 테스트 필요 — pipeline/README.md)
+# 3) 전체 파이프라인 (Docker 필요, 10.04 실기동 확인 — pipeline/README.md)
 cd pipeline; docker compose up -d --build
+#    디스크 부족 등으로 소스 빌드가 실패하면: docker compose -f docker-compose.yml -f docker-compose.prebuilt.yml up -d --build
 ```
 
 ## 테스트
@@ -66,10 +67,12 @@ cd collector/usagereport && go test ./...                 # usage.json: null 규
 | 10.01 | PR 리뷰 4건 반영(데이터소스 uid, 시간대 정렬, 재전송 중복 집계, 모델별 비용) |
 | 10.02 | usage.json 생성기(자산 ID 매핑, 원본 스팬 파일 저장) |
 | 10.03 | docker-compose를 커스텀 Collector로 교체, Tempo 추가, exemplar가 스크랩 주기에 안 잡히던 문제 수정 |
+| 10.04 | docker-compose 실기동 확인(대시보드 도구별 표시, 점 → Tempo 이동, 원본 스팬 파일·usage.json 생성). 미리 빌드한 실행 파일용 이미지 추가 |
 
 ## 남은 일
 
-- docker-compose 전체 기동 테스트(Docker 있는 PC에서) — 구성요소별 검증만 완료
+- 대시보드 모델 호출 지연 p95 패널 "No data" — 참조 메트릭 이름 확인 후 수정
+- 스캐너 InventorySnapshot으로 usage.json 자산 매핑(matched/ambiguous) 실데이터 확인
 - 환경·Gateway ID를 텔레메트리에 붙이는 방식(`OTEL_RESOURCE_ATTRIBUTES`) 실측 후 usage.json·메트릭에 반영
 - `pipeline/prometheus/rules.yml`의 코어 비용 rule 단가 placeholder 처리 방식 결정
 - usage.json `schema_version`·집계 API·플러그인 도구 매핑 팀 합의
