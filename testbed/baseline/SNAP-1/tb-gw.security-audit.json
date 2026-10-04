@@ -1,0 +1,31 @@
+{
+  "ts": 1791094996048,
+  "summary": {
+    "critical": 1,
+    "warn": 1,
+    "info": 1
+  },
+  "findings": [
+    {
+      "checkId": "summary.attack_surface",
+      "severity": "info",
+      "title": "Attack surface summary",
+      "detail": "groups: open=0, allowlist=0\ntools.elevated: enabled\nhooks.webhooks: disabled\nhooks.internal: disabled\nbrowser control: enabled\ntrust model: personal assistant (one trusted operator boundary), not hostile multi-tenant on one shared gateway. For multiple users or organizations, run one isolated Gateway cell per tenant: https://docs.openclaw.ai/gateway/multi-tenant-hosting"
+    },
+    {
+      "checkId": "gateway.control_ui.allowed_origins_required",
+      "severity": "critical",
+      "title": "Non-loopback Control UI missing explicit allowed origins",
+      "detail": "Control UI is enabled on a non-loopback bind but gateway.controlUi.allowedOrigins is empty. Strict origin policy requires explicit allowed origins for non-loopback deployments.",
+      "remediation": "Set gateway.controlUi.allowedOrigins to full trusted origins (for example https://control.example.com). If your deployment intentionally relies on Host-header origin fallback, set gateway.controlUi.dangerouslyAllowHostHeaderOriginFallback=true."
+    },
+    {
+      "checkId": "gateway.auth_no_rate_limit",
+      "severity": "warn",
+      "title": "No auth rate limiting configured",
+      "detail": "gateway.bind is not loopback but no gateway.auth.rateLimit is configured. Without rate limiting, brute-force auth attacks are not mitigated.",
+      "remediation": "Set gateway.auth.rateLimit (e.g. { maxAttempts: 10, windowMs: 60000, lockoutMs: 300000 })."
+    }
+  ],
+  "secretDiagnostics": []
+}

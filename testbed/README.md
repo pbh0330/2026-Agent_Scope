@@ -2,7 +2,7 @@
 
 > 문서 버전: v1.0 (2026.09.29 사양 확정 기준)
 > 담당: 박병하 (테스트베드 구축)
-> 관련 문서: [테스트베드 사양 확정서](docs/testbed-spec-20260929.md), [정답 목록 형식](ground-truth/README.md)
+> 관련 문서: [테스트베드 사양 확정서](docs/testbed-spec-20260929.md), [SNAP-0/1 구축 기록](docs/build-log-snap0-snap1.md), [정답 목록 형식](ground-truth/README.md)
 
 스캐너·토큰 수집·대시보드·위협 시나리오 검증이 **동일한 기준 환경에서 반복 재현**되도록 격리된 OpenClaw 실행 환경을 제공한다.
 테스트베드는 각 모듈이 검증될 "조건"만 제공하며, 수집·분석·가시화 로직은 담당 범위에 포함하지 않는다.
@@ -67,9 +67,9 @@
 |---|---|---|
 | 역할 | OpenClaw 게이트웨이, 게이트웨이 측 MCP 서버(`mcp.servers`) | 헤드리스 노드 호스트, 노드 측 MCP 서버(`nodeHost.mcp.servers`)·스킬 |
 | OS | Ubuntu 24.04.5 LTS (x86_64) | Ubuntu 24.04.5 LTS (x86_64) |
-| vCPU / RAM / 디스크 | 2 / 6 GB / 150 GB | 2 / 4 GB / 80 GB (제안값) |
+| vCPU / RAM / 디스크 | 2 / 6 GB / 150 GB | 2 / 4 GB / 150 GB (게이트웨이 VM 전체 복제로 디스크 상속) |
 | 네트워크 | VMware NAT(VMnet8), 고정 IP `<TB_GW_IP>` | VMware NAT(VMnet8), 고정 IP `<TB_NODE_IP>` |
-| 상태 | 생성·OS 설치 완료 | 5주차 생성 예정 |
+| 상태 | SNAP-0, SNAP-1 완료 | SNAP-0, SNAP-1 완료 |
 
 ---
 
@@ -140,14 +140,16 @@
 
 ### 5.1 테스트베드가 제공하는 관측 지점 (다른 모듈의 입력)
 
-아래 경로·키는 OpenClaw 공식 문서(09.15 조사) 기준이다. **SNAP-1에서 설치 버전(2026.9.6)으로 실측 확인 후 확정**하며, 차이가 있으면 이 표를 갱신하고 관련 담당자에게 공유한다.
+아래 경로·키는 **SNAP-1(2026.9.6)에서 실측 확인**한 값이다(2026.10.04). 09.15 조사와의 차이는 [구축 기록 5장](docs/build-log-snap0-snap1.md#5-공식-문서0915-조사-대비-실측-차이) 참조.
 
 | 자산 | VM | 관측 지점 | 형식 | 주 사용 모듈 |
 |---|---|---|---|---|
 | 게이트웨이 | tb-gw | `~/.openclaw/openclaw.json` | JSON5 | 스캐너 |
 | 게이트웨이 측 MCP 서버 | tb-gw | `openclaw.json` → `mcp.servers.<name>` | JSON5 | 스캐너 |
-| 노드 | tb-node | `~/.openclaw/node.json` | JSON | 스캐너 |
-| 노드 측 MCP 서버 | tb-node | `openclaw.json` → `nodeHost.mcp.servers.<name>` | JSON5 | 스캐너 |
+| 노드 | tb-node | `~/.openclaw/state/openclaw.sqlite` → `config_machine_state`(`nodeHost.config`), `device_identities`, `device_auth_tokens` (구 `node.json` 폐지) | SQLite | 스캐너 |
+| 노드 (게이트웨이 측 기록) | tb-gw | `openclaw nodes describe --node <id>` (페어링·승인 명령·Caps) | CLI 출력 | 스캐너 |
+| 노드의 게이트웨이 자격증명 | tb-node | `~/.openclaw/node.systemd.env` (`OPENCLAW_GATEWAY_TOKEN`, 평문) | env | 스캐너(S4) |
+| 노드 측 MCP 서버 | tb-node | `openclaw.json` → `nodeHost.mcp.servers.<name>` (도구 호출은 노드 명령 `mcp.tools.call.v1`) | JSON5 | 스캐너 |
 | 도구·리소스·프롬프트 | 양쪽 | 서버 연결 후 광고 목록(`tools/list`, `resources/list`, `prompts/list`) | MCP 2026-07-28 JSON | 스캐너 |
 | 스킬 | 양쪽 | `~/.openclaw/skills/`, 워크스페이스 `skills/`, `skills.load.extraDirs` | `SKILL.md` | 스캐너 |
 | 플러그인 | tb-gw | `~/.openclaw/extensions/`, `plugins.load.paths`, `plugins.entries.<id>` | 디렉터리 + JSON5 | 스캐너 |
@@ -184,7 +186,7 @@
 
 ---
 
-## 6. 현재 구현 현황 (2026.09.29 기준)
+## 6. 현재 구현 현황 (2026.10.04 기준)
 
 | 항목 | 상태 | 비고 |
 |---|---|---|
@@ -192,8 +194,8 @@
 | 사양 확정 (VM 2대, 버전 고정, 스냅샷 체계, 정상군 프로파일) | 완료 | [사양 확정서](docs/testbed-spec-20260929.md) |
 | `tb-gw` 생성 및 Ubuntu 24.04.5 설치 | 완료 | open-vm-tools 동작 확인 |
 | OpenClaw 2026.9.6 및 실행 요구사항(Node.js >= 24.16) 확인 | 완료 | |
-| `tb-node` 생성 | 예정 (5주차) | 게이트웨이와 같은 ISO |
-| SNAP-0 / SNAP-1 | 예정 (~10.05) | |
+| `tb-node` 생성 | 완료 (10.04) | `tb-gw` 전체 복제 후 식별자 재생성, 패키지 목록 해시 동일 |
+| SNAP-0 / SNAP-1 | 완료 (10.04) | OpenClaw 2026.9.6 설치·페어링, 기준선 수집 ([구축 기록](docs/build-log-snap0-snap1.md)) |
 | 정상군 P0/P1/P2, 정답 목록, SNAP-2 | 예정 (~10.12) | |
 | 위협 구성 (S1→S2→S4→S3→S5) | 예정 (10.13~) | |
 
@@ -210,14 +212,19 @@
 | OpenClaw 고정 버전 결정 | npm 최신판 조회 (2026.09.28) | 2026.9.6 |
 | Node.js 요구사항 | OpenClaw 실행 요구사항 확인 | `>=24.16.0 <25` |
 
-OpenClaw 설치 전이므로 스캐너·토큰 수집용 테스트 데이터는 아직 없다.
+| tb-node 생성 | 게이트웨이 VM 전체 복제, machine-id·SSH 호스트 키·MAC 재생성 | 완료, 두 VM 패키지 목록 해시 `7d16c29a4b9aea75` 동일 |
+| OpenClaw 설치 | `npm install -g openclaw@2026.9.6` | `OpenClaw 2026.9.6 (eb377ac)` 양쪽 동일 |
+| 게이트웨이·노드 페어링 | 장치 승인 + 명령 표면 승인 | `paired · connected` |
+| SNAP-1 기준선 | MCP·플러그인·스킬 목록, 내장 보안 감사 | MCP 0건, 사용자 추가 자산 0건(내장 플러그인 63종·스킬 57종), 감사 critical 1 / warn 1 — [baseline/SNAP-1](baseline/SNAP-1/) |
+
+SNAP-1 기준선 원본은 `testbed/baseline/SNAP-1/`에 있다.
 
 ### 7.2 예정된 테스트 데이터
 
 | 데이터 | 생성 시점 | 용도 |
 |---|---|---|
-| SNAP-1 기준선 (자산 0건 기대) | 5주차 | 스캐너 오탐 측정 |
-| `openclaw security audit` 결과 | SNAP-1 | 내장 감사와 스캐너 결과 대조 |
+| SNAP-1 기준선 (사용자 추가 자산 0건) | 완료 | 스캐너 오탐 측정 |
+| `openclaw security audit` 결과 | 완료 | 내장 감사와 스캐너 결과 대조 |
 | 프로파일별 정답 목록 P0/P1/P2 | 6주차 | 스캐너 수집률(S1 선언 계층, S2 광고 계층) 산출 |
 | 위협 구성별 설정 세트와 기대 경고 | 7주차~ | 시나리오 탐지 여부·오탐 측정 |
 
@@ -225,14 +232,15 @@ OpenClaw 설치 전이므로 스캐너·토큰 수집용 테스트 데이터는 
 
 | 스냅샷 | 생성일 | 상태 | 비고 |
 |---|---|---|---|
-| SNAP-0 | - | 미생성 | |
-| SNAP-1 | - | 미생성 | |
+| SNAP-0 | 2026.10.04 | 두 VM 생성 | Ubuntu 24.04.5 (7.0.0-38), Node.js v24.21.0, 자동 업데이트 비활성화 |
+| SNAP-1 | 2026.10.04 | 두 VM 생성 | OpenClaw 2026.9.6 (eb377ac), 페어링 완료, MCP·사용자 자산 0건 |
 
 ---
 
 ## 8. 운영 원칙
 
 - 실제 토큰·API 키는 사용하지 않고 더미 값과 참조 이름만 사용한다(v2.0 민감정보 수집 원칙과 동일).
+- 원격 관리를 위해 두 VM은 SSH 키 인증과 테스트베드 계정 한정 비밀번호 없는 sudo(`/etc/sudoers.d/90-agentscope-testbed`)를 사용한다. VM은 VMnet8 NAT 내부에만 노출된다.
 - 외부 실계정·SaaS에 연결하지 않으며, 원격 서버도 실습망 내부에서만 구동한다.
 - 설정 파일과 정답 목록은 작업 브랜치에서 관리하고 Pull Request를 거쳐 반영한다.
 - 저장소에 올리는 설정·로그의 IP, 사용자명, 토큰은 자리표시자(`<TB_GW_IP>`, `<TB_USER>`, `<DUMMY_TOKEN>`)로 치환한다.
@@ -246,7 +254,10 @@ OpenClaw 설치 전이므로 스캐너·토큰 수집용 테스트 데이터는 
 | 모델 백엔드 | 미정. 백엔드에 따라 토큰 관측 해상도가 달라짐 | 토큰 수집 담당과 협의하여 SNAP-2 전 확정 |
 | 공통 자산 스키마 | `docs/schema-design-draft.md`(PR #1) 기반 합의 진행 중 | 스캐너·대시보드·시나리오 담당 합의 |
 | 노드 VM 자원 | 3.3절 제안값 | 생성 시 게이트웨이 VM 부하를 보고 확정 |
-| 관측 지점 경로·키 | 공식 문서 기준 | SNAP-1 실측 후 5.1절 갱신 |
+| 관측 지점 경로·키 | SNAP-1 실측 반영(10.04) | 노드 식별 정보가 SQLite로 바뀜 → 스캐너 담당과 공유 |
+| "0건" 기준선 정의 | 내장 플러그인 63종·스킬 57종이 기본 로드됨 | 스캐너가 내장 자산을 어떻게 처리할지 스캐너·대시보드 담당과 합의 |
+| 내장 감사 critical/warn | `allowedOrigins`, `auth.rateLimit` 미설정 | 정상군(SNAP-2)에서 보완 여부 결정 |
+| 노드 VM 디스크 | 복제로 150 GB 상속(제안값 80 GB) | 씬 프로비저닝이라 실사용량 영향 없음, 필요 시 축소 |
 
 ---
 
