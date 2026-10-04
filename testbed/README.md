@@ -145,9 +145,10 @@
 | 자산 | VM | 관측 지점 | 형식 | 주 사용 모듈 |
 |---|---|---|---|---|
 | 게이트웨이 | tb-gw | `~/.openclaw/openclaw.json` | JSON5 | 스캐너 |
+| 게이트웨이 식별 정보 | tb-gw | `openclaw gateway call gateway.identity.get --json` → `deviceId`(서명 키쌍에서 파생, 반복 조회해도 동일) | JSON | 스캐너 |
 | 게이트웨이 측 MCP 서버 | tb-gw | `openclaw.json` → `mcp.servers.<name>` | JSON5 | 스캐너 |
-| 노드 | tb-node | `~/.openclaw/state/openclaw.sqlite` → `config_machine_state`(`nodeHost.config`), `device_identities`, `device_auth_tokens` (구 `node.json` 폐지) | SQLite | 스캐너 |
-| 노드 (게이트웨이 측 기록) | tb-gw | `openclaw nodes describe --node <id>` (페어링·승인 명령·Caps) | CLI 출력 | 스캐너 |
+| 노드 식별 정보 | tb-node | `openclaw node identity --json` → `deviceId` (원천: `~/.openclaw/state/openclaw.sqlite`, 구 `node.json` 폐지). 같은 DB에 device token이 있으므로 DB를 직접 열지 않고 CLI 출력만 읽는다 | JSON | 스캐너 |
+| 게이트웨이-노드 페어링 | tb-gw | `openclaw devices list --json` → `paired[]`(`deviceId`, `role`, `remoteIp`, `nodeSurface.commands`·`caps`). `tokens[]`는 role·scopes·생성 시각만 담고 토큰 값은 없음 | JSON | 스캐너 |
 | 노드의 게이트웨이 자격증명 | tb-node | `~/.openclaw/node.systemd.env` (`OPENCLAW_GATEWAY_TOKEN`, 평문) | env | 스캐너(S4) |
 | 노드 측 MCP 서버 | tb-node | `openclaw.json` → `nodeHost.mcp.servers.<name>` (도구 호출은 노드 명령 `mcp.tools.call.v1`) | JSON5 | 스캐너 |
 | 도구·리소스·프롬프트 | 양쪽 | 서버 연결 후 광고 목록(`tools/list`, `resources/list`, `prompts/list`) | MCP 2026-07-28 JSON | 스캐너 |

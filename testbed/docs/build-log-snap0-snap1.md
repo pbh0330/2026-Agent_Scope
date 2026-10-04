@@ -146,7 +146,8 @@ SNAP-1은 "설치 직후 기본 상태" 기준선이므로 위 항목은 보완�
 
 | 항목 | 09.15 조사 / 사양서 | 2026.9.6 실측 |
 |---|---|---|
-| 노드 식별 정보 | `~/.openclaw/node.json` | **폐지**. `~/.openclaw/state/openclaw.sqlite`의 `config_machine_state`(`nodeHost.config`), `device_identities`(`primary`), `device_auth_tokens` |
+| 노드 식별 정보 | `~/.openclaw/node.json` | **폐지**. `~/.openclaw/state/openclaw.sqlite`의 `config_machine_state`(`nodeHost.config`), `device_identities`(`primary`), `device_auth_tokens`. 수집은 `openclaw node identity --json`으로 하며, 출력 `deviceId`가 게이트웨이 페어링 기록(`openclaw devices list --json`)의 노드 ID와 일치함을 확인 |
+| 게이트웨이 식별 정보 | 미조사 | `openclaw gateway call gateway.identity.get --json` → `deviceId`, 반복 조회 시 동일 값 확인 |
 | 노드의 MCP 도구 호출 명령 | `mcp.tools.cll.v1` | `mcp.tools.call.v1` |
 | 노드 자동 업데이트 | 언급 없음 | 헤드리스 노드는 기본값이 매시간 자동 업데이트 → `nodeHost.autoUpdate.enabled: false`로 비활성화 |
 | 노드의 게이트웨이 토큰 | 언급 없음 | `~/.openclaw/node.systemd.env`에 평문 저장(서비스 환경 파일). S4 관측 지점 후보 |
