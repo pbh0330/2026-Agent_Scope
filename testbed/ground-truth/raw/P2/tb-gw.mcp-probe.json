@@ -1,0 +1,41 @@
+{
+  "generatedAt": "2026-10-04T06:49:26.974Z",
+  "servers": {
+    "fs-workspace": {
+      "launch": "mcp-server-filesystem /home/<TB_USER>/workspace",
+      "tools": 2,
+      "codexApprovalMode": "auto",
+      "requestTimeoutMs": 60000,
+      "filteredTools": 12,
+      "listChanged": {
+        "tools": true,
+        "resources": false,
+        "prompts": false
+      }
+    },
+    "inventory-remote": {
+      "launch": "https://tb-node:8443/mcp",
+      "tools": 2,
+      "codexApprovalMode": "auto",
+      "requestTimeoutMs": 60000,
+      "resources": true,
+      "prompts": true,
+      "listChanged": {
+        "tools": true,
+        "resources": true,
+        "prompts": true
+      }
+    }
+  },
+  "tools": [
+    "fs-workspace__list_directory",
+    "fs-workspace__read_text_file",
+    "inventory-remote__inventory_get_host",
+    "inventory-remote__inventory_list_hosts",
+    "inventory-remote__prompts_get",
+    "inventory-remote__prompts_list",
+    "inventory-remote__resources_list",
+    "inventory-remote__resources_read"
+  ],
+  "diagnostics": []
+}
