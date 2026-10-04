@@ -1,0 +1,271 @@
+# 테스트베드 (Testbed)
+
+> 문서 버전: v1.0 (2026.09.29 사양 확정 기준)
+> 담당: 박병하 (테스트베드 구축)
+> 관련 문서: [테스트베드 사양 확정서](docs/testbed-spec-20260929.md), [SNAP-0/1 구축 기록](docs/build-log-snap0-snap1.md), [정답 목록 형식](ground-truth/README.md)
+
+스캐너·토큰 수집·대시보드·위협 시나리오 검증이 **동일한 기준 환경에서 반복 재현**되도록 격리된 OpenClaw 실행 환경을 제공한다.
+테스트베드는 각 모듈이 검증될 "조건"만 제공하며, 수집·분석·가시화 로직은 담당 범위에 포함하지 않는다.
+
+> 민감정보 처리: 이 폴더의 모든 IP·토큰·API 키는 `<TB_GW_IP>`, `<DUMMY_TOKEN>` 같은 자리표시자로 표기한다. 실제 값은 저장소에 올리지 않는다.
+
+---
+
+## 1. 담당 범위
+
+| 구분 | 내용 |
+|---|---|
+| 포함 | OpenClaw 런타임과 MCP 서버가 동작하는 격리 환경의 설계·구축·운영 |
+| 포함 | 정상군(P0/P1/P2)과 위협 구성군(S1~S5) 준비 |
+| 포함 | 스캐너·토큰 수집 모듈이 읽을 자산 관측 지점의 경로·형식 확정 및 제공 |
+| 포함 | 스냅샷 기반 초기화 절차, 프로파일별 정답 목록(ground truth) |
+| 제외 | 스캐너 수집 로직, 토큰 수집·비용 모니터링 로직, 대시보드 구현, 위협 시나리오 각본 |
+
+---
+
+## 2. 요구사항
+
+| ID | 요구사항 | 충족 설계 |
+|---|---|---|
+| R1 격리 | 위협 구성의 실행이 호스트 PC·학교망·실제 계정에 영향을 주지 않아야 한다 | VMware NAT 격리, 더미 자격증명, 실습망 내부 완결 |
+| R2 재현성 | 동일한 초기 상태에서 같은 시나리오를 반복 실행할 수 있어야 한다 | 버전 고정, SNAP-0~3 스냅샷 체계 |
+| R3 공격 표면 3영역 | 통신 경계·공급망·권한/자격증명이 모두 실재해야 한다 | 프로파일 P2(원격 서버·플러그인·서버별 자격증명) |
+| R4 정적 자산 관측 지점 | 스캐너가 읽을 설정 파일이 실제 경로에 존재해야 한다 | 게이트웨이·노드 2대 구성, [5장](#5-입출력-형식) 관측 지점 |
+| R5 사용량 관측 지점 | 자산별 토큰 소비 기록이 남아야 한다 | OpenTelemetry 내보내기, 모델 백엔드 확정(미정) |
+| R6 전송 방식 다양성 | stdio와 원격 HTTP 서버를 모두 포함해야 한다 | P0/P1 stdio, P2 원격 HTTPS |
+| R7 비용 통제 | 호출·인프라 사용이 승인 예산 내에서 이루어져야 한다 | 로컬 VM 우선, 자동 업데이트 비활성화 |
+
+---
+
+## 3. 사용 기술 및 개발 환경
+
+### 3.1 사용 기술
+
+| 분류 | 기술 | 버전 | 비고 |
+|---|---|---|---|
+| 하이퍼바이저 | VMware Workstation | 가상 하드웨어 버전 22 | 스냅샷 기반 롤백 |
+| 게스트 OS | Ubuntu Server | 24.04.5 LTS (x86_64) | 두 VM 모두 동일 ISO |
+| 게스트 도구 | open-vm-tools | 배포판 패키지 | |
+| 에이전트 런타임 | OpenClaw | **2026.9.6** (고정) | 2026.09.28 기준 npm 최신판 |
+| 런타임 | Node.js | 24.x LTS (>= 24.16.0, < 25) | OpenClaw 실행 요구사항 |
+| 프로토콜 | Model Context Protocol | **2026-07-28** | 「MCP 공격 표면 정의 v2.0」 기준 규격과 일치 |
+| MCP 서버 | 공식 참조 서버 filesystem, memory, everything | 설치 시 버전 고정 | + 실습용 원격 서버 1종(자체 제작) |
+| 기준 문서 | openclaw 저장소 `v2026.9.6` 태그의 `docs/` | | 문서·실제 동작 버전 불일치 방지 |
+
+자동 업데이트는 비활성화한다. MCP 설정 지원이 최근 도입된 기능(openclaw 이슈 #43509)이어서 실험 중 버전 변동이 결과를 오염시킬 수 있기 때문이다.
+
+### 3.2 호스트 사양
+
+| 항목 | 사양 |
+|---|---|
+| CPU | Intel Xeon W-2123 (4코어 8스레드) |
+| RAM | 64 GB |
+
+### 3.3 가상머신 사양
+
+| 구분 | 게이트웨이 VM (`tb-gw`) | 노드 VM (`tb-node`) |
+|---|---|---|
+| 역할 | OpenClaw 게이트웨이, 게이트웨이 측 MCP 서버(`mcp.servers`) | 헤드리스 노드 호스트, 노드 측 MCP 서버(`nodeHost.mcp.servers`)·스킬 |
+| OS | Ubuntu 24.04.5 LTS (x86_64) | Ubuntu 24.04.5 LTS (x86_64) |
+| vCPU / RAM / 디스크 | 2 / 6 GB / 150 GB | 2 / 4 GB / 150 GB (게이트웨이 VM 전체 복제로 디스크 상속) |
+| 네트워크 | VMware NAT(VMnet8), 고정 IP `<TB_GW_IP>` | VMware NAT(VMnet8), 고정 IP `<TB_NODE_IP>` |
+| 상태 | SNAP-0, SNAP-1 완료 | SNAP-0, SNAP-1 완료 |
+
+---
+
+## 4. 구현 구조
+
+### 4.1 전체 구성
+
+```text
+호스트 PC (Windows, VMware Workstation)
+│
+└── VMnet8 (NAT, 고정 IP)
+     │
+     ├── tb-gw  : 게이트웨이 VM
+     │    ├── OpenClaw Gateway 2026.9.6
+     │    ├── ~/.openclaw/openclaw.json      ── mcp.servers.<name>
+     │    ├── 게이트웨이 측 MCP 서버 (stdio)
+     │    ├── 워크스페이스 스킬 / 플러그인     (P2)
+     │    └── OpenTelemetry 내보내기          ── 토큰 수집 모듈
+     │
+     └── tb-node : 노드 VM (헤드리스 노드 호스트, 게이트웨이와 페어링)
+          ├── ~/.openclaw/openclaw.json      ── nodeHost.mcp.servers.<name>
+          ├── 노드 측 MCP 서버 (stdio)        (P1~)
+          ├── ~/.openclaw/skills/            ── 노드 스킬 (P1~)
+          └── 원격 HTTPS MCP 서버             (P2, 실습용 CA 인증서)
+
+          ▲ 스캐너가 두 VM의 관측 지점을 모두 읽어야 전체 자산이 수집됨
+```
+
+게이트웨이와 노드를 분리한 이유: OpenClaw는 MCP 서버를 게이트웨이 설정(`mcp.servers`)과 노드 설정(`nodeHost.mcp.servers`) 두 곳에 나누어 선언한다(09.15 조사). VM 1대로는 "설정 한 곳만 수집하면 노드 측 자산이 누락되는" 상황을 재현할 수 없다.
+
+### 4.2 스냅샷 체계
+
+| 스냅샷 | 상태 | 용도 |
+|---|---|---|
+| `SNAP-0` | OS + 기본 패키지 + open-vm-tools + Node.js. OpenClaw 미설치 | 재설치 없이 초기 상태로 복귀 |
+| `SNAP-1` | OpenClaw 2026.9.6 설치, 게이트웨이·노드 페어링 완료. MCP 서버·스킬·플러그인 없음 | 스캐너 "0건" 기준선, 오탐 측정, 내장 보안 감사 실행 |
+| `SNAP-2` | 정상군(P0/P1/P2) 구성 적용 | 위협 시나리오 주입 전 기준 상태 |
+| `SNAP-3~` | 위협 시나리오(S1~S5)별 구성 | 시나리오 검증 |
+
+- 두 VM을 **같은 이름으로 동시에** 생성한다.
+- 전원을 끈 상태에서 생성하여 메모리 상태를 포함하지 않는다.
+
+### 4.3 정상군 프로파일
+
+| 프로파일 | 구성 | 검증 목적 |
+|---|---|---|
+| P0 최소 | 게이트웨이 단독 + filesystem 서버 1종(stdio, `mcp.servers`) | 스캐너 기본 수집 동작 확인 |
+| P1 분산 | P0 + 노드 페어링 + 노드 측 서버 2종(stdio, `nodeHost.mcp.servers`) + 노드 스킬 2종 | 설정이 두 곳에 나뉜 상태 재현, 도구·리소스·프롬프트 광고 수집 |
+| P2 전체 | P1 + 원격 HTTPS 서버 1종(노드 VM에서 구동, 게이트웨이에 선언) + 서버별 자격증명 + 플러그인 1종 + 게이트웨이 워크스페이스 스킬 1종 | 7종 자산(게이트웨이·노드·MCP 서버·도구·리소스/프롬프트·스킬·플러그인) 전부 포함, S1~S5 정상 기준 |
+
+`everything` 서버는 도구·리소스·프롬프트를 모두 광고하므로 광고 계층 수집 검증에 사용한다.
+
+### 4.4 정상군 기준 (위협 시나리오 초안의 "정상 상태")
+
+| 시나리오 | 정상 상태 | 정상군 구성 |
+|---|---|---|
+| S1 | 승인된 Skill·Plugin만 허용된 서버를 등록 | 승인 서버 목록(allowlist)을 문서화하고 해당 서버만 선언 |
+| S2 | 조회용 Tool은 제한된 자원만 접근, 고위험 기능은 승인·필터 적용 | filesystem 서버는 작업 디렉터리로 한정, `toolFilter.include` 적용 |
+| S3 | Tool이 서버별로 고유하게 식별됨 | 서버 간 동명 Tool이 없도록 구성하고 목록으로 확인 |
+| S4 | 서버별 최소 범위 자격증명 분리 | 서버마다 별도 자격증명 참조(더미 값, `.env` 참조) |
+| S5 | 신뢰된 HTTPS 연결, TLS 검증 활성화 | 원격 서버는 실습용 CA 인증서로 HTTPS, `sslVerify` 활성화 |
+
+위협 구성은 구현 우선순위 S1 → S2 → S4 → S3 → S5 순으로 7주차 이후 준비한다.
+
+---
+
+## 5. 입출력 형식
+
+### 5.1 테스트베드가 제공하는 관측 지점 (다른 모듈의 입력)
+
+아래 경로·키는 **SNAP-1(2026.9.6)에서 실측 확인**한 값이다(2026.10.04). 09.15 조사와의 차이는 [구축 기록 5장](docs/build-log-snap0-snap1.md#5-공식-문서0915-조사-대비-실측-차이) 참조.
+
+| 자산 | VM | 관측 지점 | 형식 | 주 사용 모듈 |
+|---|---|---|---|---|
+| 게이트웨이 | tb-gw | `~/.openclaw/openclaw.json` | JSON5 | 스캐너 |
+| 게이트웨이 식별 정보 | tb-gw | `openclaw gateway call gateway.identity.get --json` → `deviceId`(서명 키쌍에서 파생, 반복 조회해도 동일) | JSON | 스캐너 |
+| 게이트웨이 측 MCP 서버 | tb-gw | `openclaw.json` → `mcp.servers.<name>` | JSON5 | 스캐너 |
+| 노드 식별 정보 | tb-node | `openclaw node identity --json` → `deviceId` (원천: `~/.openclaw/state/openclaw.sqlite`, 구 `node.json` 폐지). 같은 DB에 device token이 있으므로 DB를 직접 열지 않고 CLI 출력만 읽는다 | JSON | 스캐너 |
+| 게이트웨이-노드 페어링 | tb-gw | `openclaw devices list --json` → `paired[]`(`deviceId`, `role`, `remoteIp`, `nodeSurface.commands`·`caps`). `tokens[]`는 role·scopes·생성 시각만 담고 토큰 값은 없음 | JSON | 스캐너 |
+| 노드의 게이트웨이 자격증명 | tb-node | `~/.openclaw/node.systemd.env` (`OPENCLAW_GATEWAY_TOKEN`, 평문) | env | 스캐너(S4) |
+| 노드 측 MCP 서버 | tb-node | `openclaw.json` → `nodeHost.mcp.servers.<name>` (도구 호출은 노드 명령 `mcp.tools.call.v1`) | JSON5 | 스캐너 |
+| 도구·리소스·프롬프트 | 양쪽 | 서버 연결 후 광고 목록(`tools/list`, `resources/list`, `prompts/list`) | MCP 2026-07-28 JSON | 스캐너 |
+| 스킬 | 양쪽 | `~/.openclaw/skills/`, 워크스페이스 `skills/`, `skills.load.extraDirs` | `SKILL.md` | 스캐너 |
+| 플러그인 | tb-gw | `~/.openclaw/extensions/`, `plugins.load.paths`, `plugins.entries.<id>` | 디렉터리 + JSON5 | 스캐너 |
+| 사용량(토큰·도구 실행) | tb-gw | OpenTelemetry 내보내기 (`openclaw.tool.execution.duration_ms`, `openclaw.skill.used` 등, 모델 호출 span의 토큰 속성) | OTLP | 토큰 수집 |
+| 내장 보안 감사 | tb-gw | `openclaw security audit` 실행 결과 | CLI 출력 | 스캐너(대조용) |
+
+### 5.2 MCP 서버 선언 예시 (P0, 초안)
+
+실제 적용 전 초안이다. 키 이름은 SNAP-1 실측 후 확정한다. 비밀값은 실제 값 대신 참조 이름만 쓴다.
+
+```json5
+// tb-gw : ~/.openclaw/openclaw.json (발췌)
+{
+  mcp: {
+    servers: {
+      "fs-workspace": {
+        command: "npx",
+        args: ["-y", "@modelcontextprotocol/server-filesystem@<PINNED_VERSION>", "/home/<TB_USER>/workspace"],
+        toolFilter: { include: ["read_file", "list_directory"] },
+        enabled: true,
+      },
+    },
+  },
+}
+```
+
+### 5.3 테스트베드 산출물 (출력)
+
+| 산출물 | 형식 | 위치 |
+|---|---|---|
+| 프로파일별 설정 세트 | JSON5 (민감정보 자리표시자 처리) | `testbed/profiles/<P0\|P1\|P2>/` (6주차) |
+| 정답 목록(ground truth) | JSON | `testbed/ground-truth/` — 형식은 [ground-truth/README.md](ground-truth/README.md) |
+| 스냅샷 기록 | Markdown 표 (이름, 생성일, 상태, 해시·버전) | 이 문서 7장 |
+
+---
+
+## 6. 현재 구현 현황 (2026.10.04 기준)
+
+| 항목 | 상태 | 비고 |
+|---|---|---|
+| 테스트베드 요구사항 R1~R7 도출 | 완료 | |
+| 사양 확정 (VM 2대, 버전 고정, 스냅샷 체계, 정상군 프로파일) | 완료 | [사양 확정서](docs/testbed-spec-20260929.md) |
+| `tb-gw` 생성 및 Ubuntu 24.04.5 설치 | 완료 | open-vm-tools 동작 확인 |
+| OpenClaw 2026.9.6 및 실행 요구사항(Node.js >= 24.16) 확인 | 완료 | |
+| `tb-node` 생성 | 완료 (10.04) | `tb-gw` 전체 복제 후 식별자 재생성, 패키지 목록 해시 동일 |
+| SNAP-0 / SNAP-1 | 완료 (10.04) | OpenClaw 2026.9.6 설치·페어링, 기준선 수집 ([구축 기록](docs/build-log-snap0-snap1.md)) |
+| 정상군 P0/P1/P2, 정답 목록, SNAP-2 | 예정 (~10.12) | |
+| 위협 구성 (S1→S2→S4→S3→S5) | 예정 (10.13~) | |
+
+---
+
+## 7. 테스트 데이터 및 결과
+
+### 7.1 현재까지의 확인 결과
+
+| 확인 항목 | 방법 | 결과 |
+|---|---|---|
+| 게이트웨이 VM OS 설치 | VM 생성 후 설치 | Ubuntu 24.04.5 LTS (x86_64) 설치 완료 |
+| 게스트 도구 | open-vm-tools 서비스 동작 확인 | 정상 |
+| OpenClaw 고정 버전 결정 | npm 최신판 조회 (2026.09.28) | 2026.9.6 |
+| Node.js 요구사항 | OpenClaw 실행 요구사항 확인 | `>=24.16.0 <25` |
+
+| tb-node 생성 | 게이트웨이 VM 전체 복제, machine-id·SSH 호스트 키·MAC 재생성 | 완료, 두 VM 패키지 목록 해시 `7d16c29a4b9aea75` 동일 |
+| OpenClaw 설치 | `npm install -g openclaw@2026.9.6` | `OpenClaw 2026.9.6 (eb377ac)` 양쪽 동일 |
+| 게이트웨이·노드 페어링 | 장치 승인 + 명령 표면 승인 | `paired · connected` |
+| SNAP-1 기준선 | MCP·플러그인·스킬 목록, 내장 보안 감사 | MCP 0건, 사용자 추가 자산 0건(내장 플러그인 63종·스킬 57종), 감사 critical 1 / warn 1 — [baseline/SNAP-1](baseline/SNAP-1/) |
+
+SNAP-1 기준선 원본은 `testbed/baseline/SNAP-1/`에 있다.
+
+### 7.2 예정된 테스트 데이터
+
+| 데이터 | 생성 시점 | 용도 |
+|---|---|---|
+| SNAP-1 기준선 (사용자 추가 자산 0건) | 완료 | 스캐너 오탐 측정 |
+| `openclaw security audit` 결과 | 완료 | 내장 감사와 스캐너 결과 대조 |
+| 프로파일별 정답 목록 P0/P1/P2 | 6주차 | 스캐너 수집률(S1 선언 계층, S2 광고 계층) 산출 |
+| 위협 구성별 설정 세트와 기대 경고 | 7주차~ | 시나리오 탐지 여부·오탐 측정 |
+
+### 7.3 스냅샷 기록
+
+| 스냅샷 | 생성일 | 상태 | 비고 |
+|---|---|---|---|
+| SNAP-0 | 2026.10.04 | 두 VM 생성 | Ubuntu 24.04.5 (7.0.0-38), Node.js v24.21.0, 자동 업데이트 비활성화 |
+| SNAP-1 | 2026.10.04 | 두 VM 생성 | OpenClaw 2026.9.6 (eb377ac), 페어링 완료, MCP·사용자 자산 0건 |
+
+---
+
+## 8. 운영 원칙
+
+- 실제 토큰·API 키는 사용하지 않고 더미 값과 참조 이름만 사용한다(v2.0 민감정보 수집 원칙과 동일).
+- 원격 관리를 위해 두 VM은 SSH 키 인증과 테스트베드 계정 한정 비밀번호 없는 sudo(`/etc/sudoers.d/90-agentscope-testbed`)를 사용한다. VM은 VMnet8 NAT 내부에만 노출된다.
+- 외부 실계정·SaaS에 연결하지 않으며, 원격 서버도 실습망 내부에서만 구동한다.
+- 설정 파일과 정답 목록은 작업 브랜치에서 관리하고 Pull Request를 거쳐 반영한다.
+- 저장소에 올리는 설정·로그의 IP, 사용자명, 토큰은 자리표시자(`<TB_GW_IP>`, `<TB_USER>`, `<DUMMY_TOKEN>`)로 치환한다.
+
+---
+
+## 9. 미확정 사항
+
+| 항목 | 현황 | 확정 계획 |
+|---|---|---|
+| 모델 백엔드 | 미정. 백엔드에 따라 토큰 관측 해상도가 달라짐 | 토큰 수집 담당과 협의하여 SNAP-2 전 확정 |
+| 공통 자산 스키마 | `docs/schema-design-draft.md`(PR #1) 기반 합의 진행 중 | 스캐너·대시보드·시나리오 담당 합의 |
+| 노드 VM 자원 | 3.3절 제안값 | 생성 시 게이트웨이 VM 부하를 보고 확정 |
+| 관측 지점 경로·키 | SNAP-1 실측 반영(10.04) | 노드 식별 정보가 SQLite로 바뀜 → 스캐너 담당과 공유 |
+| "0건" 기준선 정의 | 내장 플러그인 63종·스킬 57종이 기본 로드됨 | 스캐너가 내장 자산을 어떻게 처리할지 스캐너·대시보드 담당과 합의 |
+| 내장 감사 critical/warn | `allowedOrigins`, `auth.rateLimit` 미설정 | 정상군(SNAP-2)에서 보완 여부 결정 |
+| 노드 VM 디스크 | 복제로 150 GB 상속(제안값 80 GB) | 씬 프로비저닝이라 실사용량 영향 없음, 필요 시 축소 |
+
+---
+
+## 10. 일정
+
+| 주차 | 기간 | 주요 활동 | 산출물 |
+|---|---|---|---|
+| 5 | 09.29~10.05 | 사양 확정, 게이트웨이 VM OS 설치(완료), 노드 VM 생성, SNAP-0, OpenClaw 설치·페어링, SNAP-1 | 사양 확정서, SNAP-0/1 |
+| 6 | 10.06~10.12 | 정상군 P0/P1/P2 구성, 정답 목록 작성, 인터페이스 확정, SNAP-2 | 설정 세트, 정답 목록, SNAP-2 |
+| 7~ | 10.13~ | 위협 구성 지원(S1→S2→S4→S3→S5) | SNAP-3~ |

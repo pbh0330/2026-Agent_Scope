@@ -1,0 +1,3 @@
+Config path is valid but unset: mcp. The runtime default applies until you set an authored value with openclaw config set mcp <value>.
+No OpenClaw-managed MCP servers configured in /home/<TB_USER>/.openclaw/openclaw.json. Add one with openclaw mcp set <name> '{"command":"uvx","args":["context7-mcp"]}'.
+Note: this command only shows OpenClaw-managed mcp.servers entries and does not include mcporter servers from config/mcporter.json.
