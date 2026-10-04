@@ -1,6 +1,6 @@
 # otelcol-agentscope — 도구별 토큰·비용 귀속 커스텀 Collector
 
-`scripts/traceid_attribution/`(파이썬 프로토타입)에서 검증한 귀속 로직을 Go로 옮겨서
+파이썬 프로토타입(작성자 개인 저장소 보관)으로 검증한 귀속 로직을 Go로 옮겨서
 OpenTelemetry Collector **커넥터(traces → metrics)** 로 만든 것. OpenClaw가 보내는
 트레이스를 실시간으로 받아 도구·MCP 서버별 토큰·비용 메트릭을 Prometheus로 내보낸다.
 로그를 캡처해서 파이썬을 따로 돌리던 오프라인 방식과 달리, Collector만 켜두면 계속 동작한다.
@@ -8,7 +8,7 @@ OpenTelemetry Collector **커넥터(traces → metrics)** 로 만든 것. OpenCl
 ## 폴더 구조
 
 ```
-attribution/                 핵심 로직(외부 라이브러리 없는 순수 Go). 파이썬 attribution.py와 동일
+attribution/                 핵심 로직(외부 라이브러리 없는 순수 Go). 파이썬 프로토타입과 동일한 판정
   classify.go                  패턴 판정(순차/병렬/배치/귀속불가) + 순차 구간 토큰 귀속 공식
   tracker.go                   실시간용: 스팬을 run별로 모으고 확정 가능한 구간만 결과로 내보냄
   pricing.go                   openclaw.json 단가 로딩, 단가 0이면 Anthropic 공식 정가(참고용)로 대체
@@ -98,7 +98,7 @@ cd ../tokenattributionconnector && go test ./... # 커넥터: 메트릭 합계·
 cd ../usagereport && go test ./...               # usage.json: 파이썬 결과 일치·null 규칙·중복 제거·자산 매핑
 ```
 
-테스트 픽스처를 다시 만들려면 `scripts/traceid_attribution/export_fixtures.py`를 쓴다
+테스트 픽스처는 파이썬 프로토타입의 `export_fixtures.py`(개인 저장소 보관)로 만들었다
 (스팬 속성 중 `openclaw.*`, `gen_ai.*`만 남김).
 
 ## 검증 기록 (2026-09-28)

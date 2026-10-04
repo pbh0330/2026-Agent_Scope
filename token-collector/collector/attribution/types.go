@@ -1,7 +1,7 @@
 // Package attribution은 OpenClaw 텔레메트리 스팬(openclaw.model.call /
 // openclaw.tool.execution)으로 도구별 토큰·비용을 근사 귀속하는 핵심 로직이다.
 //
-// scripts/traceid_attribution/attribution.py(파이썬 프로토타입)를 그대로 옮긴 것이며,
+// 파이썬 프로토타입(attribution.py, 작성자 개인 저장소 보관)을 그대로 옮긴 것이며,
 // 외부 라이브러리 없이 표준 라이브러리만 사용한다. OTel Collector 커넥터
 // (tokenattributionconnector)는 이 패키지를 감싸서 스팬을 넣고 결과를 메트릭으로 내보낸다.
 //

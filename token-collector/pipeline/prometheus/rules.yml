@@ -5,7 +5,7 @@
 # (점(.)은 밑줄(_)로, Sum 타입은 `_total` 접미사가 붙음 — 1주차 검증 로그로 확인함)
 #
 # *** 아래 0.000001 / 0.000005 는 자리표시자(placeholder) 단가임 ***
-# attribution.py의 PRICING_PLACEHOLDER와 동일한 임시값(input $1.00 / output $5.00, per 1M tokens)
+# 파이썬 프로토타입에서 쓰던 것과 같은 임시값(input $1.00 / output $5.00, per 1M tokens)
 # 실제 openclaw.json의 models.providers.<provider>.models[].cost 값을 받으면
 # 아래 두 숫자를 (해당 단가 / 1,000,000)로 바꿔야 함.
 # 여러 모델을 동시에 쓰게 되면 이 rule을 모델별로(by (openclaw_model)) 쪼개고

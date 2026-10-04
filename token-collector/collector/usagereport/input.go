@@ -17,7 +17,7 @@ import (
 //
 //   - OTLP JSON 줄 단위(JSON Lines): Collector file 익스포터 출력. 한 줄 = ExportTraceServiceRequest
 //     ({"resourceSpans":[...]}). OTLP/HTTP JSON 요청 본문 하나를 그대로 저장한 파일도 된다.
-//   - 픽스처 배열: export_fixtures.py가 만든 [{"trace_id":..,"span_id":..,"attrs":{..}}, ...]
+//   - 픽스처 배열: attribution/testdata/*.spans.json 형식 [{"trace_id":..,"span_id":..,"attrs":{..}}, ...]
 func ReadSpansFile(path string) ([]attribution.Span, error) {
 	f, err := os.Open(path)
 	if err != nil {

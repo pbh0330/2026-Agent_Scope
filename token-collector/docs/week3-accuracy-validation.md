@@ -1,5 +1,8 @@
 # 3주차 — 정확도 검증 (2026-09-28 착수)
 
+> 이 문서에 나오는 Python 스크립트(`attribution.py`, `audit_attribution.py`, `test_attribution.py`)는 이후 Go로 옮겼고,
+> 원본은 팀 브랜치에서 빼서 작성자 개인 저장소에 보관한다(10.04).
+
 ## 왜 이게 어려운 문제인가
 
 정확도를 "검증"하려면 원래 비교할 정답(ground truth)이 있어야 하는데, 이 프로젝트엔

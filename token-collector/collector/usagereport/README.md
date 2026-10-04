@@ -34,7 +34,7 @@ OpenClaw ─OTLP─▶ otelcol-agentscope ─┬─ tokenattribution 커넥터 �
   `--from`/`--to`(도구 시작 시각 기준 [from, to), 없으면 데이터 범위를 초 단위로 잡음),
   `--include-cache-in-prompt`(커넥터 옵션과 같게), `--reference-pricing=false`(참고 정가 끄기).
 - `--input`은 여러 번 줄 수 있다(로테이션된 이전 파일 포함). Collector file 익스포터 출력(OTLP JSON 줄)과
-  `export_fixtures.py` 픽스처 배열 둘 다 읽는다.
+  테스트 픽스처 배열(`attribution/testdata/*.spans.json`) 둘 다 읽는다.
 - `--env`, `--profile`은 필수다. 텔레메트리에는 host 수준 속성뿐이라 환경·프로필 ID를 주입한다.
 - 출력에는 입력 파일의 **파일 이름만** 남는다(사용자 이름이 든 전체 경로, openclaw.json의 키 값은 안 남김).
 

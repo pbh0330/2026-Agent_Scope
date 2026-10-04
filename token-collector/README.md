@@ -23,8 +23,10 @@ OpenClaw ─OTLP→ otelcol-agentscope(커스텀 Collector) ─┬─ 도구별 
 | `collector/builder-config.yaml`, `Dockerfile` | 커스텀 Collector 빌드(OCB) / 컨테이너 이미지 |
 | `collector/otelcol-agentscope-config.yaml` | Windows 로컬 단독 실행 설정 |
 | `pipeline/` | docker-compose: 커스텀 Collector + Tempo + Prometheus(exemplar) + Grafana |
-| `scripts/traceid_attribution/` | Python 프로토타입. Go 결과의 비교 기준, 테스트 픽스처 추출, 판정 근거 감사 |
 | `docs/` | 개발계획서와 검증 기록(아래 표) |
+
+초기 검증에 쓴 Python 프로토타입(`attribution.py` 등)은 팀 브랜치에서 빼고 작성자 개인 저장소에 보관한다(필요하면 요청).
+Go 테스트의 `collector/attribution/testdata/*.expected.json`이 그 프로토타입의 계산 결과이며, Go 결과와 비교하는 기준으로 계속 쓴다.
 
 | 문서 | 내용 |
 |---|---|
@@ -51,7 +53,6 @@ cd pipeline; docker compose up -d --build
 cd collector/attribution && go test ./...                 # 판정 로직, 실제 로그 3개로 Python 결과와 일치 확인
 cd collector/tokenattributionconnector && go test ./...   # 메트릭 합계·누적·exemplar·재전송 중복 방지
 cd collector/usagereport && go test ./...                 # usage.json: null 규칙·중복 제거·자산 매핑
-cd scripts/traceid_attribution && python3 test_attribution.py
 ```
 
 ## 진행 기록
