@@ -1,0 +1,83 @@
+{
+  "agents": {
+    "defaults": {
+      "workspace": "/home/<TB_USER>/workspace"
+    },
+    "entries": {
+      "main": {
+        "name": "main",
+        "workspace": "/home/<TB_USER>/workspace",
+        "agentDir": "/home/<TB_USER>/.openclaw/agents/main/agent",
+        "identity": {
+          "name": "main"
+        }
+      }
+    }
+  },
+  "plugins": {
+    "entries": {
+      "anthropic": {
+        "config": {
+          "sessionCatalog": {
+            "enabled": false
+          }
+        }
+      },
+      "codex": {
+        "config": {
+          "sessionCatalog": {
+            "enabled": false
+          }
+        }
+      }
+    }
+  },
+  "meta": {
+    "migrations": {
+      "modelPolicyAllowlist": true,
+      "utilityModelSeparation": true
+    },
+    "lastTouchedVersion": "2026.9.6"
+  },
+  "gateway": {
+    "mode": "local",
+    "auth": {
+      "mode": "token",
+      "token": "<DUMMY_TOKEN>"
+    },
+    "port": 18789,
+    "bind": "lan",
+    "tailscale": {
+      "mode": "off"
+    }
+  },
+  "tools": {
+    "profile": "full"
+  },
+  "wizard": {
+    "lastRunAt": "2026-10-04T06:20:31.193Z",
+    "lastRunVersion": "2026.9.6",
+    "lastRunCommand": "onboard",
+    "lastRunMode": "local"
+  },
+  "update": {
+    "checkOnStart": false
+  },
+  "mcp": {
+    "servers": {
+      "fs-workspace": {
+        "command": "mcp-server-filesystem",
+        "args": [
+          "/home/<TB_USER>/workspace"
+        ],
+        "toolFilter": {
+          "include": [
+            "read_text_file",
+            "list_directory"
+          ]
+        },
+        "enabled": true
+      }
+    }
+  }
+}

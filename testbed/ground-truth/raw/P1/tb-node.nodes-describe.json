@@ -1,0 +1,605 @@
+{
+  "ts": 1791096114321,
+  "nodeId": "b8cd252a851642463b068cdb75c716c7e472114557924c8e472355e0848da921",
+  "displayName": "tb-node",
+  "platform": "linux",
+  "version": "2026.9.6",
+  "clientId": "node-host",
+  "clientMode": "node",
+  "deviceFamily": "Linux",
+  "modelIdentifier": "VMware Virtual Platform",
+  "remoteIp": "<TB_NODE_IP>",
+  "caps": [
+    "browser",
+    "file",
+    "local-inference",
+    "mcp",
+    "system"
+  ],
+  "commands": [
+    "browser.proxy",
+    "browser.proxy.upload.v1",
+    "desktop.stream",
+    "fs.listDir",
+    "mcp.tools.call.v1",
+    "ollama.chat",
+    "ollama.models",
+    "system.execApprovals.get",
+    "system.execApprovals.set",
+    "system.notify",
+    "system.run",
+    "system.run.prepare",
+    "system.which",
+    "terminal.upload"
+  ],
+  "sessionHost": false,
+  "hostStats": {
+    "cpuCount": 2,
+    "loadAverage": [
+      0.69,
+      0.69,
+      0.3
+    ],
+    "memoryTotalBytes": 4051070976,
+    "memoryFreeBytes": 2468663296,
+    "diskTotalBytes": 157393829888,
+    "diskAvailableBytes": 135785332736,
+    "updatedAtMs": 1791096110252
+  },
+  "nodePluginTools": [
+    {
+      "pluginId": "node-mcp",
+      "name": "demo-everything_echo",
+      "description": "Echoes back the input string",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Message to echo"
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "command": "mcp.tools.call.v1",
+      "mcp": {
+        "server": "demo-everything",
+        "tool": "echo"
+      }
+    },
+    {
+      "pluginId": "node-mcp",
+      "name": "demo-everything_get-annotated-message",
+      "description": "Demonstrates how annotations can be used to provide metadata about content.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "messageType": {
+            "type": "string",
+            "enum": [
+              "error",
+              "success",
+              "debug"
+            ],
+            "description": "Type of message to demonstrate different annotation patterns"
+          },
+          "includeImage": {
+            "default": false,
+            "description": "Whether to include an example image",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "messageType"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "command": "mcp.tools.call.v1",
+      "mcp": {
+        "server": "demo-everything",
+        "tool": "get-annotated-message"
+      }
+    },
+    {
+      "pluginId": "node-mcp",
+      "name": "demo-everything_get-resource-links",
+      "description": "Returns up to ten resource links that reference different types of resources",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "default": 3,
+            "description": "Number of resource links to return (1-10)",
+            "type": "number",
+            "minimum": 1,
+            "maximum": 10
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "command": "mcp.tools.call.v1",
+      "mcp": {
+        "server": "demo-everything",
+        "tool": "get-resource-links"
+      }
+    },
+    {
+      "pluginId": "node-mcp",
+      "name": "demo-everything_get-resource-reference",
+      "description": "Returns a resource reference that can be used by MCP clients",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "resourceType": {
+            "default": "Text",
+            "type": "string",
+            "enum": [
+              "Text",
+              "Blob"
+            ]
+          },
+          "resourceId": {
+            "default": 1,
+            "description": "ID of the text resource to fetch",
+            "type": "number"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "command": "mcp.tools.call.v1",
+      "mcp": {
+        "server": "demo-everything",
+        "tool": "get-resource-reference"
+      }
+    },
+    {
+      "pluginId": "node-mcp",
+      "name": "demo-everything_get-structured-content",
+      "description": "Returns structured content along with an output schema for client data validation",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "string",
+            "enum": [
+              "New York",
+              "Chicago",
+              "Los Angeles"
+            ],
+            "description": "Choose city"
+          }
+        },
+        "required": [
+          "location"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "command": "mcp.tools.call.v1",
+      "mcp": {
+        "server": "demo-everything",
+        "tool": "get-structured-content"
+      }
+    },
+    {
+      "pluginId": "node-mcp",
+      "name": "demo-everything_get-sum",
+      "description": "Returns the sum of two numbers",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "a": {
+            "type": "number",
+            "description": "First number"
+          },
+          "b": {
+            "type": "number",
+            "description": "Second number"
+          }
+        },
+        "required": [
+          "a",
+          "b"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "command": "mcp.tools.call.v1",
+      "mcp": {
+        "server": "demo-everything",
+        "tool": "get-sum"
+      }
+    },
+    {
+      "pluginId": "node-mcp",
+      "name": "demo-everything_get-tiny-image",
+      "description": "Returns a tiny MCP logo image.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "command": "mcp.tools.call.v1",
+      "mcp": {
+        "server": "demo-everything",
+        "tool": "get-tiny-image"
+      }
+    },
+    {
+      "pluginId": "node-mcp",
+      "name": "demo-everything_toggle-simulated-logging",
+      "description": "Toggles simulated, random-leveled logging on or off.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "command": "mcp.tools.call.v1",
+      "mcp": {
+        "server": "demo-everything",
+        "tool": "toggle-simulated-logging"
+      }
+    },
+    {
+      "pluginId": "node-mcp",
+      "name": "demo-everything_toggle-subscriber-updates",
+      "description": "Toggles simulated resource subscription updates on or off.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "command": "mcp.tools.call.v1",
+      "mcp": {
+        "server": "demo-everything",
+        "tool": "toggle-subscriber-updates"
+      }
+    },
+    {
+      "pluginId": "node-mcp",
+      "name": "demo-everything_trigger-long-running-operation",
+      "description": "Demonstrates a long running operation with progress updates.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "duration": {
+            "default": 10,
+            "description": "Duration of the operation in seconds",
+            "type": "number"
+          },
+          "steps": {
+            "default": 5,
+            "description": "Number of steps in the operation",
+            "type": "number"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "command": "mcp.tools.call.v1",
+      "mcp": {
+        "server": "demo-everything",
+        "tool": "trigger-long-running-operation"
+      }
+    },
+    {
+      "pluginId": "node-mcp",
+      "name": "kg-memory_add_observations",
+      "description": "Add new observations to existing entities in the knowledge graph",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "observations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "entityName": {
+                  "type": "string",
+                  "description": "The name of the entity to add the observations to"
+                },
+                "contents": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "An array of observation contents to add"
+                }
+              },
+              "required": [
+                "entityName",
+                "contents"
+              ]
+            }
+          }
+        },
+        "required": [
+          "observations"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "command": "mcp.tools.call.v1",
+      "mcp": {
+        "server": "kg-memory",
+        "tool": "add_observations"
+      }
+    },
+    {
+      "pluginId": "node-mcp",
+      "name": "kg-memory_create_entities",
+      "description": "Create multiple new entities in the knowledge graph",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "entities": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "The name of the entity"
+                },
+                "entityType": {
+                  "type": "string",
+                  "description": "The type of the entity"
+                },
+                "observations": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "An array of observation contents associated with the entity"
+                }
+              },
+              "required": [
+                "name",
+                "entityType",
+                "observations"
+              ]
+            }
+          }
+        },
+        "required": [
+          "entities"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "command": "mcp.tools.call.v1",
+      "mcp": {
+        "server": "kg-memory",
+        "tool": "create_entities"
+      }
+    },
+    {
+      "pluginId": "node-mcp",
+      "name": "kg-memory_create_relations",
+      "description": "Create multiple new relations between entities in the knowledge graph. Relations should be in active voice",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "relations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "from": {
+                  "type": "string",
+                  "description": "The name of the entity where the relation starts"
+                },
+                "to": {
+                  "type": "string",
+                  "description": "The name of the entity where the relation ends"
+                },
+                "relationType": {
+                  "type": "string",
+                  "description": "The type of the relation"
+                }
+              },
+              "required": [
+                "from",
+                "to",
+                "relationType"
+              ]
+            }
+          }
+        },
+        "required": [
+          "relations"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "command": "mcp.tools.call.v1",
+      "mcp": {
+        "server": "kg-memory",
+        "tool": "create_relations"
+      }
+    },
+    {
+      "pluginId": "node-mcp",
+      "name": "kg-memory_delete_entities",
+      "description": "Delete multiple entities and their associated relations from the knowledge graph",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "entityNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "An array of entity names to delete"
+          }
+        },
+        "required": [
+          "entityNames"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "command": "mcp.tools.call.v1",
+      "mcp": {
+        "server": "kg-memory",
+        "tool": "delete_entities"
+      }
+    },
+    {
+      "pluginId": "node-mcp",
+      "name": "kg-memory_delete_observations",
+      "description": "Delete specific observations from entities in the knowledge graph",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "deletions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "entityName": {
+                  "type": "string",
+                  "description": "The name of the entity containing the observations"
+                },
+                "observations": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "An array of observations to delete"
+                }
+              },
+              "required": [
+                "entityName",
+                "observations"
+              ]
+            }
+          }
+        },
+        "required": [
+          "deletions"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "command": "mcp.tools.call.v1",
+      "mcp": {
+        "server": "kg-memory",
+        "tool": "delete_observations"
+      }
+    },
+    {
+      "pluginId": "node-mcp",
+      "name": "kg-memory_delete_relations",
+      "description": "Delete multiple relations from the knowledge graph",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "relations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "from": {
+                  "type": "string",
+                  "description": "The name of the entity where the relation starts"
+                },
+                "to": {
+                  "type": "string",
+                  "description": "The name of the entity where the relation ends"
+                },
+                "relationType": {
+                  "type": "string",
+                  "description": "The type of the relation"
+                }
+              },
+              "required": [
+                "from",
+                "to",
+                "relationType"
+              ]
+            },
+            "description": "An array of relations to delete"
+          }
+        },
+        "required": [
+          "relations"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "command": "mcp.tools.call.v1",
+      "mcp": {
+        "server": "kg-memory",
+        "tool": "delete_relations"
+      }
+    },
+    {
+      "pluginId": "node-mcp",
+      "name": "kg-memory_open_nodes",
+      "description": "Open specific nodes in the knowledge graph by their names",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "An array of entity names to retrieve"
+          }
+        },
+        "required": [
+          "names"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "command": "mcp.tools.call.v1",
+      "mcp": {
+        "server": "kg-memory",
+        "tool": "open_nodes"
+      }
+    },
+    {
+      "pluginId": "node-mcp",
+      "name": "kg-memory_read_graph",
+      "description": "Read the entire knowledge graph",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "command": "mcp.tools.call.v1",
+      "mcp": {
+        "server": "kg-memory",
+        "tool": "read_graph"
+      }
+    },
+    {
+      "pluginId": "node-mcp",
+      "name": "kg-memory_search_nodes",
+      "description": "Search for nodes in the knowledge graph based on a query",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "The search query to match against entity names, types, and observation content"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "command": "mcp.tools.call.v1",
+      "mcp": {
+        "server": "kg-memory",
+        "tool": "search_nodes"
+      }
+    }
+  ],
+  "pathEnv": "/usr/bin:/bin:/usr/local/bin:/home/<TB_USER>/.local/bin:/home/<TB_USER>/.npm-global/bin:/home/<TB_USER>/bin:/home/<TB_USER>/.nix-profile/bin",
+  "approvalState": "approved",
+  "connectedAtMs": 1791096050220,
+  "lastConnectedAtMs": 1791096050220,
+  "lastSeenAtMs": 1791096050220,
+  "lastSeenReason": "connect",
+  "approvedAtMs": 1791094967533,
+  "paired": true,
+  "connected": true
+}
