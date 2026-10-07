@@ -34,9 +34,13 @@ const (
 	ProducerVersion = "0.1.0"
 	// AttributionMethod는 순차 구간 근사식 이름: next.input - prev.input - prev.output.
 	AttributionMethod = "sequential-input-delta"
+	// AttributionMethodParallelCount / BatchCount는 병렬·배치 구간 증가분을 토큰 계산 API로 센
+	// 결과별 토큰 수 비율로 나눈 경우(정확도 개선 방안 B)의 이름이다.
+	AttributionMethodParallelCount = "parallel-token-count"
+	AttributionMethodBatchCount    = "batch-token-count"
 	// AttributionVersion은 귀속 구현 버전. 판정 규칙을 바꾸면 올린다.
-	// (2026-10-01 PR 리뷰 반영본: 꼬리 도구 unattributed, 시간대 정렬 수정, 모델별 단가)
-	AttributionVersion = "attribution-go/0.2.0"
+	// (0.2.0: 꼬리 도구 unattributed, 시간대 정렬 수정, 모델별 단가 / 0.3.0: 병렬·배치 구간 토큰 수 비율 배분)
+	AttributionVersion = "attribution-go/0.3.0"
 	// PricingSourceUnavailable은 단가를 찾지 못한 경우의 pricing.source.
 	PricingSourceUnavailable = "unavailable"
 )
@@ -126,6 +130,12 @@ type Options struct {
 
 	Inventory *Inventory // nil이면 inventory_snapshot_id=null, 전부 unmatched
 
+	// ToolResultCounts: tool_call_id → 토큰 계산 API로 센 도구 결과 토큰 수(결과 기록 플러그인 기록).
+	// 주어지면 병렬·배치 구간 증가분을 이 비율로 나눈다. nil이면 병렬·배치는 지금처럼 null.
+	ToolResultCounts map[string]int64
+	// ToolResultsRef: evidence_source_refs에 붙일 플러그인 기록 파일 이름(경로 제외).
+	ToolResultsRef string
+
 	// EvidencePrefix: evidence_source_refs 앞부분(예: "otlp-json:traces.jsonl"). 사용자 경로를 넣지 말 것.
 	EvidencePrefix string
 }
@@ -170,7 +180,12 @@ func Build(spans []attribution.Span, opt Options) (*UsageReport, error) {
 		usedRef         bool
 		unmatchedSuffix bool
 	)
-	for _, r := range attribution.Classify(spans, opt.Attribution) {
+	results := attribution.Classify(spans, opt.Attribution)
+	if opt.ToolResultCounts != nil {
+		results = attribution.AllocateByCounts(results, opt.ToolResultCounts)
+	}
+	var parBatchNull int
+	for _, r := range results {
 		rec := newRecord(r, opt)
 		if seen[rec.UsageID] {
 			continue
@@ -183,6 +198,9 @@ func Build(spans []attribution.Span, opt Options) (*UsageReport, error) {
 		}
 		if rec.Pricing.Source == attribution.PriceSourceReference {
 			usedRef = true
+		}
+		if r.AllocationMethod == "" && (r.Pattern == attribution.Parallel || r.Pattern == attribution.Batch) {
+			parBatchNull++
 		}
 		if rec.MappingStatus == MappingUnmatched && rec.ToolSource == "mcp" && collisionSuffix.MatchString(rec.ToolName) {
 			unmatchedSuffix = true
@@ -230,8 +248,16 @@ func Build(spans []attribution.Span, opt Options) (*UsageReport, error) {
 
 	lim := []string{
 		"approx_input_tokens is an estimate of how much a tool result added to the next model input; it is not billed usage and must not be added to model-level input/output/cache totals.",
-		"Only sequential segments carry tokens and cost; parallel, batch and unattributed calls keep call count and duration only.",
 		"environment_id and profile_id are injected by the adapter because the telemetry carries only host-level resource attributes.",
+	}
+	switch {
+	case opt.ToolResultCounts == nil:
+		lim = append(lim, "Only sequential segments carry tokens and cost; parallel, batch and unattributed calls keep call count and duration only.")
+	default:
+		lim = append(lim, "Parallel and batch segments split their measured input increase in proportion to per-result token counts from the token-count API (attribution_method=parallel-token-count / batch-token-count); the split preserves the segment total.")
+		if parBatchNull > 0 {
+			lim = append(lim, fmt.Sprintf("%d parallel/batch call(s) keep null tokens because a per-result token count was missing for their segment.", parBatchNull))
+		}
 	}
 	var snapID *string
 	if opt.Inventory == nil {
@@ -285,7 +311,7 @@ func newRecord(r attribution.Result, opt Options) UsageRecord {
 		Model:                strPtr(r.Model),
 		Provider:             strPtr(r.Provider),
 		ClosingModelSpanID:   strPtr(r.ClosingModelSpanID),
-		AttributionMethod:    AttributionMethod,
+		AttributionMethod:    attributionMethod(r),
 		AttributionVersion:   AttributionVersion,
 		IncludeCacheInPrompt: opt.Attribution.IncludeCacheInPrompt,
 		Estimated:            true,
@@ -317,7 +343,10 @@ func newRecord(r attribution.Result, opt Options) UsageRecord {
 		}
 	}
 
-	if r.Pattern == attribution.Sequential && r.HasTokens {
+	if r.HasCount && opt.ToolResultsRef != "" && r.ToolCallID != "" {
+		rec.EvidenceSourceRefs = append(rec.EvidenceSourceRefs, fmt.Sprintf("tool-results:%s#toolCallId=%s", opt.ToolResultsRef, r.ToolCallID))
+	}
+	if (r.Pattern == attribution.Sequential || r.AllocationMethod != "") && r.HasTokens {
 		tok := r.ApproxTokens
 		rec.ApproxInputTokens = &tok
 		if havePrice {
@@ -332,6 +361,17 @@ func newRecord(r attribution.Result, opt Options) UsageRecord {
 		rec.MappingEvidenceRefs = []string{}
 	}
 	return rec
+}
+
+// attributionMethod는 레코드의 귀속 방식 이름이다.
+func attributionMethod(r attribution.Result) string {
+	if r.AllocationMethod == attribution.AllocationTokenCount {
+		if r.Pattern == attribution.Batch {
+			return AttributionMethodBatchCount
+		}
+		return AttributionMethodParallelCount
+	}
+	return AttributionMethod
 }
 
 // UsageID는 재전송 중복 방지 ID다. 같은 환경·프로필의 같은 도구 스팬이면 항상 같다.

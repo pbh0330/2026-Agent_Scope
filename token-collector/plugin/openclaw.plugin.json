@@ -1,0 +1,59 @@
+{
+  "id": "agentscope-token-guard",
+  "name": "AgentScope Token Guard",
+  "description": "도구 결과 크기·토큰 수 기록(병렬·배치 구간 배분용)과 토큰 소비 브레이크",
+  "categories": ["other"],
+  "activation": { "onStartup": true },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "outputPath": { "type": "string", "description": "기록 파일(JSONL) 경로. 기본: ~/.openclaw/agentscope/agentscope-tool-results.jsonl" },
+      "tokenCount": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "enabled": { "type": "boolean", "default": false },
+          "baseUrl": { "type": "string", "default": "https://api.anthropic.com" },
+          "apiKeyEnv": { "type": "string", "default": "ANTHROPIC_API_KEY", "description": "API 키를 담은 환경 변수 이름(키 자체는 설정에 넣지 않음)" },
+          "model": { "type": "string", "description": "토큰을 셀 모델 ID(테스트베드 모델과 같게)" },
+          "anthropicVersion": { "type": "string", "default": "2023-06-01" },
+          "timeoutMs": { "type": "integer", "minimum": 100, "default": 10000 },
+          "maxConcurrent": { "type": "integer", "minimum": 1, "default": 2 },
+          "maxResultChars": { "type": "integer", "minimum": 1, "description": "OpenClaw의 결과 길이 제한과 같게 맞추면 모델이 실제로 받는 길이로 센다" }
+        }
+      },
+      "brake": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "mode": { "type": "string", "enum": ["off", "warn", "enforce"], "default": "warn" },
+          "approvalTimeoutMs": { "type": "integer", "minimum": 1000, "default": 60000 },
+          "run": { "$ref": "#/definitions/levels" },
+          "day": { "$ref": "#/definitions/levels" }
+        }
+      }
+    },
+    "definitions": {
+      "limits": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "resultBytes": { "type": "integer", "minimum": 1 },
+          "countedTokens": { "type": "integer", "minimum": 1 },
+          "toolCalls": { "type": "integer", "minimum": 1 },
+          "sameToolStreak": { "type": "integer", "minimum": 1 }
+        }
+      },
+      "levels": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "warn": { "$ref": "#/definitions/limits" },
+          "approve": { "$ref": "#/definitions/limits" },
+          "block": { "$ref": "#/definitions/limits" }
+        }
+      }
+    }
+  }
+}

@@ -11,7 +11,8 @@
 //
 // 직전 model.call 자신의 응답(output)이 다음 호출의 입력 히스토리로 다시 들어가는 몫을
 // 빼서 도구 결과만의 기여분을 근사한다. 병렬·배치 구간은 여러 도구 결과가 한 번의
-// 입력 증가분에 섞여 있어서 도구별로 나눌 근거가 없으므로 토큰 귀속을 하지 않는다.
+// 입력 증가분에 섞여 있으므로, 구간 증가분만 계산해 두고(SegmentDelta) 결과별 토큰 수가
+// 있을 때 AllocateByCounts로 그 비율대로 나눈다(합계 보존). 토큰 수가 없으면 귀속하지 않는다.
 package attribution
 
 import "time"
@@ -101,11 +102,22 @@ type Result struct {
 
 	DurationMs    float64
 	HasDuration   bool
-	ApproxTokens  int64 // Pattern == Sequential && HasTokens일 때만 의미 있음
+	ApproxTokens  int64 // HasTokens일 때만 의미 있음(순차 실측 또는 AllocateByCounts 배분)
 	HasTokens     bool
 	NegativeDelta bool // 공식 결과가 음수여서 0으로 잘랐는지(컨텍스트 압축 등)
 	// MissingTimestamps: 이 구간 도구 스팬 중 시각이 없는 게 있어서 batch 판정을 확신할 수 없음.
 	MissingTimestamps bool
+
+	// 병렬·배치 구간의 입력 증가분(순차와 같은 공식, 구간 전체 값). 구간의 모든 도구가 같은 값을 가진다.
+	// 토큰은 AllocateByCounts가 결과별 토큰 수 비율로 나눌 때만 채운다.
+	SegmentDelta    int64
+	HasSegmentDelta bool
+	SegmentNegative bool // 구간 증가분이 음수여서 0으로 잘랐는지(배분하면 NegativeDelta로 옮김)
+	// AllocationMethod: 병렬·배치 구간 배분 방식. 빈 문자열이면 배분 안 함.
+	AllocationMethod string
+	// CountedTokens: 토큰 계산 API로 센 이 도구 결과의 토큰 수(배분 근거). HasCount=false면 없음.
+	CountedTokens int64
+	HasCount      bool
 
 	// 이 도구 구간을 닫는(=바로 다음) model.call. 없으면 빈 문자열(귀속 불가 구간).
 	ClosingModelSpanID string

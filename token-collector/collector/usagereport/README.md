@@ -26,13 +26,15 @@ OpenClaw ─OTLP─▶ otelcol-agentscope ─┬─ tokenattribution 커넥터 �
   --input .\agentscope-traces.jsonl `
   --inventory .\snapshot.json `
   --openclaw-config .\openclaw.json `
+  --tool-results .\agentscope\agentscope-tool-results.jsonl `
   --from 2026-10-02T00:00:00Z --to 2026-10-03T00:00:00Z `
   --out .\usage.json
 ```
 
 - 선택 옵션: `--inventory`(스캐너 스냅샷, 없으면 전부 unmatched), `--openclaw-config`(모델 단가),
   `--from`/`--to`(도구 시작 시각 기준 [from, to), 없으면 데이터 범위를 초 단위로 잡음),
-  `--include-cache-in-prompt`(커넥터 옵션과 같게), `--reference-pricing=false`(참고 정가 끄기).
+  `--include-cache-in-prompt`(커넥터 옵션과 같게), `--reference-pricing=false`(참고 정가 끄기),
+  `--tool-results`(결과 기록 플러그인 `agentscope-token-guard`의 JSONL, 여러 번 지정 가능 — 아래 "병렬·배치 구간 배분").
 - `--input`은 여러 번 줄 수 있다(로테이션된 이전 파일 포함). Collector file 익스포터 출력(OTLP JSON 줄)과
   테스트 픽스처 배열(`attribution/testdata/*.spans.json`) 둘 다 읽는다.
 - `--env`, `--profile`은 필수다. 텔레메트리에는 host 수준 속성뿐이라 환경·프로필 ID를 주입한다.
@@ -49,15 +51,31 @@ OpenClaw ─OTLP─▶ otelcol-agentscope ─┬─ tokenattribution 커넥터 �
 | `tool_name` / `tool_source` | OpenClaw 노출 이름(`<server>__<tool>` 또는 내장 도구 이름) / `mcp`, `core` 등 원본 값 |
 | `pattern` | sequential / parallel / batch / unattributed |
 | `duration_ms` | 도구 실행 시간, 시각이 없으면 null |
-| `approx_input_tokens` | **sequential이고 토큰이 있을 때만** 값, 그 외 null(균등 배분 안 함) |
+| `approx_input_tokens` | sequential이고 토큰이 있을 때, 또는 `--tool-results`로 병렬·배치 구간을 배분했을 때 값. 그 외 null(균등 배분 안 함) |
 | `estimated_cost_usd` | 토큰 × 입력 단가. 토큰이 null이거나 단가를 모르면 null(0으로 안 바꿈) |
 | `pricing` | `source`: config / reference_list_price / unavailable, `version`, `currency: USD`, `input_per_million`, `source_ref` |
 | `negative_delta` / `missing_timestamps` / `note` | 판정 경고 그대로 |
 | `model` / `provider` / `closing_model_span_id` | 닫는 model.call 기준(없으면 null) |
-| `attribution_method` / `attribution_version` | `sequential-input-delta` / `attribution-go/0.2.0` |
+| `attribution_method` / `attribution_version` | `sequential-input-delta`, 배분한 병렬·배치는 `parallel-token-count` / `batch-token-count` / `attribution-go/0.3.0` |
 | `include_cache_in_prompt` | 계산 옵션(커넥터와 같게 줄 것) |
 | `estimated` | 항상 true |
-| `evidence_source_refs` | `otlp-json:<파일 이름>#trace=<id>&span=<id>` |
+| `evidence_source_refs` | `otlp-json:<파일 이름>#trace=<id>&span=<id>`, 배분 근거가 있으면 `tool-results:<파일 이름>#toolCallId=<id>` 추가 |
+
+## 병렬·배치 구간 배분 (정확도 개선 방안 B, 2026-10-06)
+
+병렬·배치 구간은 도구 결과 여러 개가 다음 model.call 입력에 한꺼번에 들어가서 구간 증가분(Δ)만 측정된다.
+`--tool-results`로 결과 기록 플러그인(`../../plugin`, `agentscope-token-guard`)의 기록을 주면, 플러그인이 토큰 계산 API로
+결과마다 센 토큰 수(c_i)의 비율로 Δ를 나눈다.
+
+```
+도구 i 귀속 토큰 = Δ × c_i ÷ Σc     (최대 잔여 방식 반올림 → 구간 합계는 항상 Δ와 같음)
+```
+
+- 구간의 도구 하나라도 토큰 수가 없으면(플러그인 미설치, 계산 실패, 기록 누락) 그 구간은 배분하지 않고 지금처럼 null로 둔다.
+  limitations에 건수가 남는다.
+- Δ가 음수(컨텍스트 압축 등)면 0으로 배분하고 `negative_delta=true`.
+- 결과 내용은 플러그인 기록에 없다. 여기서는 `kind:"token_count"` 줄의 `toolCallId`·`countedTokens`만 읽는다.
+- 실시간 대시보드(커넥터)에는 아직 반영하지 않았다(2단계).
 
 단가 버전: 참고 정가는 `anthropic-list-price@2026-09-28`, openclaw.json 단가는 원천에 버전이 없어서
 모델별 단가표 내용의 해시(`openclaw-config-sha256:xxxxxxxxxxxx`)를 버전으로 쓴다(단가 값만 해시, 키 등 다른 값은 미포함).
@@ -88,12 +106,14 @@ go test ./...
 ```
 
 - 실제 로그 3개(순차·배치·병렬): 레코드의 판정·토큰·시간이 파이썬 기준 결과와 일치
-- 병렬·배치·귀속불가는 토큰·비용 null, 단가 출처 3종(config/참고 정가/unavailable→비용 null)
+- 병렬·배치·귀속불가는 토큰·비용 null(`--tool-results` 없을 때), 단가 출처 3종(config/참고 정가/unavailable→비용 null)
 - 같은 스팬 재전송 → 레코드·리포트 ID 동일(토큰 합계 668 유지)
 - 집계 구간 [start, end), 시작 시각 없는 도구는 제외 + 사유 기록
 - OTLP JSON 줄(BOM 포함)과 픽스처 입력 결과 동일
 - 매핑: 동명 Tool 서버별 분리, Gateway·Node 키 충돌 ambiguous, 내장 도구 unmatched, 근거 없는 후보 거부
 - CLI: 출력에 로컬 경로·openclaw.json 키 값이 안 남음
+- 배분: 실제 병렬 로그(4건)에 결과별 토큰 수를 주면 4건 모두 `parallel-token-count`, 합계 = 구간 증가분.
+  토큰 수가 일부 빠진 구간은 null 유지, 플러그인 JSONL의 다른 줄·깨진 줄은 건너뜀
 
 ## 검증 기록 (2026-10-02)
 

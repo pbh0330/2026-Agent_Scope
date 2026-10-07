@@ -19,7 +19,8 @@ OpenClaw ─OTLP→ otelcol-agentscope(커스텀 Collector) ─┬─ 도구별 
 |---|---|
 | `collector/attribution/` | 귀속 핵심 로직(순수 Go): 순차·병렬·배치·귀속불가 판정, 순차 구간 토큰 공식, 단가 |
 | `collector/tokenattributionconnector/` | OTel Collector 커넥터(traces → metrics). 실시간 도구별 메트릭 |
-| `collector/usagereport/` | usage.json 생성기(`agentscope-usage`). 통합 스키마 14절 UsageReport, 자산 ID 매핑 |
+| `collector/usagereport/` | usage.json 생성기(`agentscope-usage`). 통합 스키마 14절 UsageReport, 자산 ID 매핑, 병렬·배치 구간 배분 |
+| `plugin/` | OpenClaw 플러그인 `agentscope-token-guard`: 도구 결과 크기·토큰 수 기록(병렬·배치 배분 근거), 토큰 소비 브레이크 |
 | `collector/builder-config.yaml`, `Dockerfile`, `Dockerfile.prebuilt` | 커스텀 Collector 빌드(OCB) / 컨테이너 이미지(소스 빌드, 미리 빌드한 실행 파일 복사) |
 | `collector/otelcol-agentscope-config.yaml` | Windows 로컬 단독 실행 설정 |
 | `pipeline/` | docker-compose: 커스텀 Collector + Tempo + Prometheus(exemplar) + Grafana |
@@ -53,7 +54,8 @@ cd pipeline; docker compose up -d --build
 ```bash
 cd collector/attribution && go test ./...                 # 판정 로직, 실제 로그 3개로 Python 결과와 일치 확인
 cd collector/tokenattributionconnector && go test ./...   # 메트릭 합계·누적·exemplar·재전송 중복 방지
-cd collector/usagereport && go test ./...                 # usage.json: null 규칙·중복 제거·자산 매핑
+cd collector/usagereport && go test ./...                 # usage.json: null 규칙·중복 제거·자산 매핑·병렬 배분
+cd plugin && node --test test/*.test.ts                   # 플러그인: 크기 측정·토큰 계산(가짜 API)·소비 브레이크
 ```
 
 ## 진행 기록
@@ -68,9 +70,12 @@ cd collector/usagereport && go test ./...                 # usage.json: null 규
 | 10.02 | usage.json 생성기(자산 ID 매핑, 원본 스팬 파일 저장) |
 | 10.03 | docker-compose를 커스텀 Collector로 교체, Tempo 추가, exemplar가 스크랩 주기에 안 잡히던 문제 수정 |
 | 10.04 | docker-compose 실기동 확인(대시보드 도구별 표시, 점 → Tempo 이동, 원본 스팬 파일·usage.json 생성). 미리 빌드한 실행 파일용 이미지 추가 |
+| 10.06 | 병렬·배치 구간 배분(방안 B: 토큰 계산 API로 결과마다 세어 비율 배분) 구현, OpenClaw 플러그인(결과 기록·소비 브레이크) 추가 — 테스트베드 실측 전 |
 
 ## 남은 일
 
+- 플러그인 테스트베드 실측: 토큰 계산 API 접근(엔드포인트·키), 훅 호출 순서(결과 저장 → 다음 model.call), 승인 화면 동작
+- 병렬·배치 배분 정확도 검증(같은 조합을 순차·병렬로 실행해 비교), 커넥터(실시간 대시보드)에 배분 반영
 - 대시보드 모델 호출 지연 p95 패널 "No data" — 참조 메트릭 이름 확인 후 수정
 - 스캐너 InventorySnapshot으로 usage.json 자산 매핑(matched/ambiguous) 실데이터 확인
 - 환경·Gateway ID를 텔레메트리에 붙이는 방식(`OTEL_RESOURCE_ATTRIBUTES`) 실측 후 usage.json·메트릭에 반영

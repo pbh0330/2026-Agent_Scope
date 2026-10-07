@@ -12,3 +12,5 @@ collector/usagereport/agentscope-usage
 # 미리 빌드한 Linux 실행 파일(Dockerfile.prebuilt용)
 collector/otelcol-agentscope-linux
 *.zip
+# 플러그인 개발용 의존성(타입 검사)
+plugin/node_modules/

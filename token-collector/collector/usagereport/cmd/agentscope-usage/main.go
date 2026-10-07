@@ -4,6 +4,7 @@
 //	agentscope-usage --env env-test-01 --profile profile-test-01 \
 //	  --input telemetry/traces.jsonl [--input 이전파일 ...] \
 //	  [--inventory snapshot.json] [--openclaw-config openclaw.json] \
+//	  [--tool-results agentscope-tool-results.jsonl] \
 //	  [--from 2026-10-02T00:00:00Z --to 2026-10-03T00:00:00Z] --out usage.json
 package main
 
@@ -42,6 +43,8 @@ func run(args []string, stdout, stderr io.Writer) error {
 	env := fs.String("env", "", "environment_id (필수)")
 	profile := fs.String("profile", "", "profile_id (필수)")
 	inventory := fs.String("inventory", "", "자산 매핑에 쓸 InventorySnapshot(snapshot.json). 없으면 전부 unmatched")
+	var toolResults multi
+	fs.Var(&toolResults, "tool-results", "결과 기록 플러그인(agentscope-token-guard)의 JSONL. 주면 병렬·배치 구간을 결과별 토큰 수 비율로 배분. 여러 번 지정 가능")
 	ocConfig := fs.String("openclaw-config", "", "모델 단가를 읽을 openclaw.json (선택)")
 	refPricing := fs.Bool("reference-pricing", true, "설정 단가가 0이거나 없으면 Anthropic 공식 정가(참고용)를 쓴다")
 	includeCache := fs.Bool("include-cache-in-prompt", false, "프롬프트 토큰에 cache read/write를 포함(커넥터 옵션과 같게 맞출 것)")
@@ -86,6 +89,23 @@ func run(args []string, stdout, stderr io.Writer) error {
 		if opt.Inventory, err = usagereport.LoadInventory(*inventory); err != nil {
 			return err
 		}
+	}
+
+	if len(toolResults) > 0 {
+		counts := map[string]int64{}
+		refs := make([]string, 0, len(toolResults))
+		for _, p := range toolResults {
+			st, err := usagereport.ReadToolResultCounts(p, counts)
+			if err != nil {
+				return fmt.Errorf("--tool-results %s: %w", p, err)
+			}
+			if st.Malformed > 0 {
+				fmt.Fprintf(stderr, "경고: %s 에서 읽지 못한 줄 %d개\n", filepath.Base(p), st.Malformed)
+			}
+			refs = append(refs, filepath.Base(p))
+		}
+		opt.ToolResultCounts = counts
+		opt.ToolResultsRef = strings.Join(refs, "+")
 	}
 
 	var spans []attribution.Span

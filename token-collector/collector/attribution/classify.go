@@ -19,7 +19,7 @@ const (
 	noteTail         = "마지막 model.call 뒤에 실행된 도구 — 다음 model.call이 없어 귀속 불가"
 	noteMissingTok   = "model.call 스팬에 토큰 속성 누락 — 귀속 불가"
 	noteNegDelta     = "delta<0 (컨텍스트 압축/요약 등으로 오히려 줄어든 구간 — 근사치 신뢰 낮음)"
-	noteParBatch     = "병렬/배치 구간 — duration_ms만 대리 지표로 기록, 토큰 귀속 안 함"
+	noteParBatch     = "병렬/배치 구간 — 결과별 토큰 수가 없어 duration_ms만 대리 지표로 기록, 토큰 귀속 안 함"
 	noteMissingTs    = " | ⚠ 이 구간 도구 스팬 중 일부에 시작/종료 시각이 없어서 실제로는 병렬인데 batch로 오분류됐을 수 있음 — 원본 로그의 해당 스팬 캡처 여부 확인 필요"
 	noteNotInSegment = "어느 model.call 구간에도 속하지 않음(모델 응답 도중 시작됐거나 시작 시각 누락) — 귀속 불가"
 )
@@ -228,12 +228,28 @@ func ClassifyRun(k RunKey, group []Span, opts Options) []Result {
 		if pattern == Batch && missingTs {
 			note += noteMissingTs
 		}
+		// 구간 증가분(배분 전 합계). 순차와 같은 공식이며, 결과별 토큰 수가 있을 때 AllocateByCounts가 나눈다.
+		var segDelta int64
+		hasSeg, segNeg := false, false
+		if prevIn, ok1 := opts.promptTokens(*prev); ok1 {
+			if prevOut, ok2 := prev.Int(AttrOutputTokens); ok2 {
+				if nextIn, ok3 := opts.promptTokens(*next); ok3 {
+					segDelta = nextIn - prevIn - prevOut
+					hasSeg = true
+					if segDelta < 0 {
+						segNeg = true
+						segDelta = 0
+					}
+				}
+			}
+		}
 		for _, t := range between {
 			r := withModel(baseResult(k, t), next)
 			r.Pattern = pattern
 			r.ClosingModelSpanID = next.SpanID
 			r.Note = note
 			r.MissingTimestamps = pattern == Batch && missingTs
+			r.SegmentDelta, r.HasSegmentDelta, r.SegmentNegative = segDelta, hasSeg, segNeg
 			results = append(results, r)
 		}
 	}
