@@ -1,0 +1,13 @@
+# 미리 빌드한 Linux 실행 파일로 Collector 이미지를 만든다(컨테이너 안에서 Go 컴파일을 하지 않음).
+# 디스크·메모리가 부족해 Dockerfile(소스 빌드)이 실패하는 PC용.
+#
+# 준비: 이 폴더(collector)에 Linux용 실행 파일 otelcol-agentscope-linux 를 둔다.
+#   - 직접 만들기: builder --config builder-config.yaml 후 _build 폴더에서
+#       GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o ../otelcol-agentscope-linux .
+# 사용: pipeline 폴더에서
+#   docker compose -f docker-compose.yml -f docker-compose.prebuilt.yml up -d --build
+FROM alpine:3.22
+COPY otelcol-agentscope-linux /usr/local/bin/otelcol-agentscope
+EXPOSE 4318 9464
+ENTRYPOINT ["/usr/local/bin/otelcol-agentscope"]
+CMD ["--config=/etc/otelcol-config.yaml"]

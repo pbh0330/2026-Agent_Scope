@@ -1,0 +1,59 @@
+# docker-compose용 Collector 설정 (커스텀 Collector otelcol-agentscope)
+#
+# 2주차 버전(otelcol-contrib + debug/file/prometheus)에서 바뀐 점:
+#   - 이미지를 커스텀 Collector로 교체 → tokenattribution 커넥터로 도구별 토큰·비용 메트릭 생성
+#   - 트레이스 원본을 Tempo로 전송 → 메트릭의 exemplar(trace_id)로 Grafana에서 실행 기록 조회
+#   - 원본 스팬 파일을 usage.json 어댑터(agentscope-usage) 입력 형식(OTLP JSON 줄)으로 저장
+#   - prometheus 익스포터에 enable_open_metrics: exemplar를 /metrics에 함께 싣기 위해 필요
+#
+# 로컬 PC에서 단독 실행할 때 쓰는 설정은 ../collector/otelcol-agentscope-config.yaml(같은 4318 포트,
+# 동시에 실행하지 말 것).
+
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318   # openclaw.json의 diagnostics.otel.endpoint(http://<이 PC>:4318)
+
+processors:
+  batch:
+    timeout: 1s
+
+connectors:
+  tokenattribution:
+    metrics_flush_interval: 5s
+    grace: 2s
+    run_idle_timeout: 10m
+    # 컨테이너 안에서는 openclaw.json을 읽지 않는다(API 키가 같은 파일에 있음).
+    # 학교 게이트웨이 단가는 0이므로 Anthropic 공식 정가(참고용)로 비용을 계산한다(pricing_source 라벨로 구분).
+    use_reference_pricing: true
+    exemplars:
+      enabled: true
+      max_per_data_point: 5
+
+exporters:
+  prometheus:
+    endpoint: 0.0.0.0:9464
+    enable_open_metrics: true
+  otlp_http/tempo:
+    endpoint: http://tempo:4318   # 같은 docker 네트워크 안의 Tempo(OTLP/HTTP)
+  # usage.json 어댑터 입력. ./data 폴더(호스트)에 생긴다. 저장소에 올리지 말 것(.gitignore 처리됨).
+  file/traces:
+    path: /data/agentscope-traces.jsonl
+    rotation:
+      max_megabytes: 50
+      max_backups: 10
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [tokenattribution, otlp_http/tempo, file/traces]
+    metrics:                      # OpenClaw 코어 메트릭(openclaw_tokens_total 등) 그대로 통과
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [prometheus]
+    metrics/attribution:          # 커넥터가 만든 도구별 귀속 메트릭
+      receivers: [tokenattribution]
+      exporters: [prometheus]

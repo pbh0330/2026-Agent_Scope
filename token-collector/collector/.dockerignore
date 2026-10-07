@@ -1,0 +1,6 @@
+# 이미지 빌드에 필요한 것: attribution/, tokenattributionconnector/, builder-config.yaml 뿐
+_build/
+usagereport/
+*.exe
+*.zip
+*.jsonl

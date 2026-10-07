@@ -1,0 +1,7 @@
+# 소스 빌드 대신 미리 빌드한 Linux 실행 파일을 쓰는 덮어쓰기 설정(../collector/Dockerfile.prebuilt 참고).
+#   docker compose -f docker-compose.yml -f docker-compose.prebuilt.yml up -d --build
+services:
+  otel-collector:
+    build:
+      context: ../collector
+      dockerfile: Dockerfile.prebuilt

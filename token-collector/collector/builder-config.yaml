@@ -1,0 +1,44 @@
+# OpenTelemetry Collector Builder(OCB) 설정 — tokenattribution 커넥터를 넣은 커스텀 Collector.
+#
+# 빌드: 이 폴더(token-collector/collector)에서
+#   go install go.opentelemetry.io/collector/cmd/builder@v0.161.0
+#   builder --config builder-config.yaml
+# → ./_build/otelcol-agentscope(.exe) 생성
+#
+# 기존 otelcol-contrib 대신 이 바이너리를 쓰면 된다. 포함 컴포넌트는 우리 파이프라인에 필요한
+# 것만 골랐다(otelcol-contrib 386MB 대비 훨씬 작음). 버전은 기존에 쓰던 contrib v0.161.0과 맞춤.
+dist:
+  module: github.com/pbh0330/2026-Agent_Scope/token-collector/collector/cmd/otelcol-agentscope
+  name: otelcol-agentscope
+  description: OpenClaw 도구별 토큰·비용 귀속 커넥터를 포함한 OpenTelemetry Collector (2026 Agent Scope)
+  version: 0.1.0
+  output_path: ./_build
+
+receivers:
+  - gomod: go.opentelemetry.io/collector/receiver/otlpreceiver v0.161.0
+
+processors:
+  - gomod: go.opentelemetry.io/collector/processor/batchprocessor v0.161.0
+
+exporters:
+  - gomod: go.opentelemetry.io/collector/exporter/debugexporter v0.161.0
+  - gomod: go.opentelemetry.io/collector/exporter/otlphttpexporter v0.161.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/exporter/prometheusexporter v0.161.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/exporter/fileexporter v0.161.0
+
+connectors:
+  - gomod: github.com/pbh0330/2026-Agent_Scope/token-collector/collector/tokenattributionconnector v0.0.0
+    path: ./tokenattributionconnector
+
+providers:
+  - gomod: go.opentelemetry.io/collector/confmap/provider/envprovider v1.67.0
+  - gomod: go.opentelemetry.io/collector/confmap/provider/fileprovider v1.67.0
+  - gomod: go.opentelemetry.io/collector/confmap/provider/yamlprovider v1.67.0
+
+telemetry:
+  gomod: go.opentelemetry.io/collector/service v0.161.0
+  import: go.opentelemetry.io/collector/service/telemetry/otelconftelemetry
+
+replaces:
+  # 커넥터가 쓰는 핵심 로직 모듈(외부 라이브러리 없음)을 로컬 경로로 연결
+  - github.com/pbh0330/2026-Agent_Scope/token-collector/collector/attribution => ../attribution
