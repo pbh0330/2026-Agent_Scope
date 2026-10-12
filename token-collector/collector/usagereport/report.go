@@ -199,9 +199,6 @@ func Build(spans []attribution.Span, opt Options) (*UsageReport, error) {
 		if rec.Pricing.Source == attribution.PriceSourceReference {
 			usedRef = true
 		}
-		if r.AllocationMethod == "" && (r.Pattern == attribution.Parallel || r.Pattern == attribution.Batch) {
-			parBatchNull++
-		}
 		if rec.MappingStatus == MappingUnmatched && rec.ToolSource == "mcp" && collisionSuffix.MatchString(rec.ToolName) {
 			unmatchedSuffix = true
 		}
@@ -232,6 +229,9 @@ func Build(spans []attribution.Span, opt Options) (*UsageReport, error) {
 		if r.toolStart.Before(start) || !r.toolStart.Before(end) {
 			outOfWindow++
 			continue
+		}
+		if r.ApproxInputTokens == nil && (r.Pattern == string(attribution.Parallel) || r.Pattern == string(attribution.Batch)) {
+			parBatchNull++ // 집계 구간 안의 레코드만 센다
 		}
 		kept = append(kept, r)
 	}

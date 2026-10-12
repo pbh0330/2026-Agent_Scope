@@ -37,6 +37,32 @@ export async function startMockCountTokens(opts: { failWith?: number } = {}) {
   return { baseUrl: `http://127.0.0.1:${port}`, calls, close: () => new Promise<void>((r) => server.close(() => r())) };
 }
 
+// 가짜 OpenAI 호환 게이트웨이: tool 메시지 텍스트 4글자당 1토큰 + 고정분 60을 usage.prompt_tokens로 돌려준다.
+export async function startMockOpenAI() {
+  const calls: Array<{ url?: string; headers: Record<string, unknown>; body: any }> = [];
+  const server: Server = createServer((req, res) => {
+    let raw = "";
+    req.on("data", (c) => (raw += c));
+    req.on("end", () => {
+      const body = JSON.parse(raw);
+      calls.push({ url: req.url, headers: req.headers, body });
+      if (!req.url?.endsWith("/chat/completions")) {
+        res.writeHead(404).end();
+        return;
+      }
+      const tool = body.messages.find((m: any) => m.role === "tool");
+      const prompt = 60 + Math.ceil((tool?.content ?? "").length / 4); // "." → 61
+      res.writeHead(200, { "content-type": "application/json" }).end(JSON.stringify({
+        choices: [{ message: { role: "assistant", content: "." } }],
+        usage: { prompt_tokens: prompt, completion_tokens: 1, total_tokens: prompt + 1 },
+      }));
+    });
+  });
+  await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
+  const { port } = server.address() as AddressInfo;
+  return { baseUrl: `http://127.0.0.1:${port}/v1/gateway`, calls, close: () => new Promise<void>((r) => server.close(() => r())) };
+}
+
 export function pngHeader(w: number, h: number): Buffer {
   const b = Buffer.alloc(33);
   b.writeUInt32BE(0x89504e47, 0);

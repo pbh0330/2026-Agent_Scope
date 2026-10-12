@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { TokenCounter, toAnthropicBlocks } from "../src/counter.ts";
 import { resolveConfig } from "../src/core.ts";
-import { startMockCountTokens } from "./helpers.ts";
+import { startMockCountTokens, startMockOpenAI } from "./helpers.ts";
 
 const cfg = (baseUrl: string, extra: Record<string, unknown> = {}) =>
   resolveConfig({ tokenCount: { enabled: true, baseUrl, model: "claude-haiku-4-5", apiKeyEnv: "TEST_KEY", ...extra } }).tokenCount;
@@ -62,4 +62,24 @@ test("키·모델이 없으면 사용하지 않는다", () => {
 test("maxResultChars로 OpenClaw 결과 길이 제한과 맞춘다", () => {
   const { converted } = toAnthropicBlocks([{ type: "text", text: "abcdef" }, { type: "text", text: "ghij" }], 8);
   assert.deepEqual(converted, [{ type: "text", text: "abcdef" }, { type: "text", text: "gh" }]);
+});
+
+test("openai-usage: 게이트웨이 usage.prompt_tokens 차이로 센다", async () => {
+  const srv = await startMockOpenAI();
+  try {
+    const c = new TokenCounter(cfg(srv.baseUrl, { api: "openai-usage" }), undefined, { TEST_KEY: "k-gw" });
+    const a = await c.countResult([{ type: "text", text: "x".repeat(400) }, { type: "image", data: "AAAA", mimeType: "image/png" }]);
+    assert.equal(a.tokens, 100);
+    assert.equal(a.skippedBlocks, 1, "이미지는 세지 않음");
+    assert.equal(srv.calls.length, 2, "기준 1회 + 결과 1회");
+    const req = srv.calls[1];
+    assert.equal(req.url, "/v1/gateway/chat/completions");
+    assert.equal(req.headers["authorization"], "Bearer k-gw");
+    assert.equal(req.body.max_tokens, 1);
+    assert.equal(req.body.messages[2].role, "tool");
+    assert.equal(req.body.messages[2].tool_call_id, req.body.messages[1].tool_calls[0].id);
+    assert.equal(srv.calls[0].body.messages[2].content, ".", "기준 요청은 한 글자(빈 내용은 게이트웨이가 다르게 셈)");
+  } finally {
+    await srv.close();
+  }
 });

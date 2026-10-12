@@ -35,6 +35,7 @@ openclaw plugins inspect agentscope-token-guard --runtime --json   # 훅 등록 
           outputPath: "~/.openclaw/agentscope/agentscope-tool-results.jsonl",
           tokenCount: {
             enabled: true,
+            api: "anthropic-count-tokens",          // 또는 "openai-usage"(아래)
             baseUrl: "https://api.anthropic.com",   // 토큰 계산 엔드포인트(POST /v1/messages/count_tokens)
             apiKeyEnv: "ANTHROPIC_API_KEY",          // 키는 환경 변수 이름만 적는다
             model: "claude-haiku-4-5",               // 테스트베드 모델과 같게
@@ -52,6 +53,16 @@ openclaw plugins inspect agentscope-token-guard --runtime --json   # 훅 등록 
 }
 ```
 
+**OpenAI 호환 게이트웨이(학교 게이트웨이 등)를 쓰는 경우**: 토큰 계산 API(count_tokens)가 없으므로(10.12 확인: 404)
+`api: "openai-usage"`로 둔다. 게이트웨이에 `max_tokens: 1` 요청을 보내 응답의 `usage.prompt_tokens`로 센다
+(10.12 학교 게이트웨이 확인: 단어 200개 추가 시 차이 199토큰). 요청을 실제로 보내므로 게이트웨이 단가·호출 제한을 확인한다.
+이 방식은 텍스트 결과만 세고 이미지 블록은 세지 않는다(`skippedBlocks`).
+
+```json5
+tokenCount: { enabled: true, api: "openai-usage", baseUrl: "https://<게이트웨이>/v1/gateway",
+              apiKeyEnv: "AGENTSCOPE_COUNT_KEY", model: "claude-haiku-4-5-20251001" }
+```
+
 기준값은 예시다. 테스트베드 정상 사용 데이터로 기준선을 만든 뒤 정하고, 처음에는 `warn`으로 오탐 수준을 확인한다.
 
 ## 기록 형식 (JSONL, `v:1`)
@@ -59,7 +70,7 @@ openclaw plugins inspect agentscope-token-guard --runtime --json   # 훅 등록 
 | kind | 언제 | 주요 필드 |
 |---|---|---|
 | `tool_result` | 결과 저장 직전 | `toolCallId`, `runId`, `toolName`, `textBytes`, `textChars`, `nonAsciiRatio`, `images[{mimeType,bytes,width,height}]`, `isError`, `isSynthetic` |
-| `token_count` | 토큰 계산 완료 | `toolCallId`, `countedTokens`(= T_i − T_0), `probeTotal`, `probeBaseline`, `model`, `durationMs` |
+| `token_count` | 토큰 계산 완료 | `toolCallId`, `countedTokens`(= T_i − T_0), `probeTotal`, `probeBaseline`, `model`, `source`(계산 방식), `skippedBlocks`, `durationMs` |
 | `token_count_error` | 토큰 계산 실패 | `toolCallId`, `error`(200자 이내) |
 | `brake` | 기준 초과 | `level`(warn/approve/block), `mode`, `enforced`, `reasons[{scope,metric,value,limit}]`, `run` 누적값 |
 | `brake_resolution` | 승인 요구 응답 | `decision`(allow-once/allow-always/deny/timeout/cancelled) |

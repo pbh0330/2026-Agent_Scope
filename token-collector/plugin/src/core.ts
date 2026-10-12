@@ -35,6 +35,7 @@ export function resolveConfig(raw: unknown): GuardConfig {
       : join(homedir(), ".openclaw", "agentscope", "agentscope-tool-results.jsonl"),
     tokenCount: {
       enabled: tc.enabled === true,
+      api: tc.api === "openai-usage" ? "openai-usage" : "anthropic-count-tokens",
       baseUrl: typeof tc.baseUrl === "string" ? tc.baseUrl : "https://api.anthropic.com",
       apiKeyEnv: typeof tc.apiKeyEnv === "string" ? tc.apiKeyEnv : "ANTHROPIC_API_KEY",
       model: typeof tc.model === "string" ? tc.model : undefined,
@@ -190,7 +191,7 @@ export class TokenGuard {
           this.sink.write({
             kind: "token_count", ts: this.now().toISOString(), runId, toolCallId, toolName,
             countedTokens: c.tokens, probeTotal: c.total, probeBaseline: c.baseline, skippedBlocks: c.skippedBlocks,
-            model: this.cfg.tokenCount.model, source: "anthropic-count-tokens", durationMs: Date.now() - started,
+            model: this.cfg.tokenCount.model, source: this.cfg.tokenCount.api, durationMs: Date.now() - started,
           });
         },
         (e: unknown) => {
