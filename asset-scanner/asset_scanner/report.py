@@ -40,7 +40,7 @@ def build_report(collected: dict) -> dict:
             "source_path_redacted": collected["source_path_redacted"],
             "source_kind": "openclaw_config_file",
             "evidence_type": "config",
-            "registry_path": "mcp.servers",
+            "registry_path": collected["registry_path"],  # 실제로 선택해 수집한 등록 영역
         },
         "scope": {
             "method": "설정 파일 정적 읽기",

@@ -1,4 +1,7 @@
-"""OpenClaw 설정 파일(JSON/JSON5)에서 `mcp.servers` 등록 항목을 수집한다.
+"""OpenClaw 설정 파일(JSON/JSON5)에서 MCP 서버 등록 항목을 수집한다.
+
+수집할 등록 영역은 호출 때 하나만 명시적으로 고른다 (기본: `mcp.servers`, 선택: `nodeHost.mcp.servers`).
+파일 전체를 파싱하되, 같은 파일에 다른 등록 영역이 있어도 고른 영역만 수집·보고한다.
 
 이 모듈은 설정 파일을 읽기 전용으로 열어 파싱만 한다.
 설정 속 명령 실행, 서버 접속, 도구 조회, 환경변수 값 해석, $include 파일 읽기는 하지 않는다.
@@ -15,9 +18,15 @@ import json5
 
 from .redaction import ENV_REF_RE, REDACTED, Redactor, classify_secret_ref, looks_like_secret_value
 
-REGISTRY_PATH = ("mcp", "servers")
+DEFAULT_REGISTRY_PATH = ("mcp", "servers")
+# 지원하는 등록 영역. 임의 경로는 받지 않는다 (키에 점이 들어갈 수 있어 문자열 경로는 모호하다).
+# nodeHost.mcp.servers: OpenClaw 2026.9.6 패키지 docs/nodes/mcp-and-skills.md에 근거 (docs/field-mapping.md 참조).
+SUPPORTED_REGISTRY_PATHS: dict[str, tuple[str, ...]] = {
+    "mcp.servers": DEFAULT_REGISTRY_PATH,
+    "nodeHost.mcp.servers": ("nodeHost", "mcp", "servers"),
+}
 
-# OpenClaw `mcp.servers.<key>` 항목에서 값을 (가림 처리 후) 보존하는 원천 필드.
+# OpenClaw `<등록 영역>.<key>` 항목에서 값을 (가림 처리 후) 보존하는 원천 필드.
 STRING_FIELDS = ("transport", "command", "cwd", "workingDirectory", "url")
 # 값은 남기지 않고 존재 여부와 참조 이름만 남기는 인증·자격증명 관련 필드.
 NAME_MAP_FIELDS = ("env", "headers")
@@ -183,10 +192,10 @@ def _find_includes(node: Any, parts: tuple = ()) -> list[tuple[tuple, Any]]:
     return found
 
 
-def _affects_registry(container: tuple) -> bool:
-    """이 위치의 $include가 mcp.servers 내용을 바꿀 수 있는가 (조상 또는 하위 위치)."""
-    n = min(len(container), len(REGISTRY_PATH))
-    return tuple(container[:n]) == REGISTRY_PATH[:n]
+def _affects_registry(container: tuple, registry_path: tuple) -> bool:
+    """이 위치의 $include가 선택한 등록 영역 내용을 바꿀 수 있는가 (조상 또는 하위 위치)."""
+    n = min(len(container), len(registry_path))
+    return tuple(container[:n]) == registry_path[:n]
 
 
 def _include_record(container: tuple, value: Any, reason: str) -> dict:
@@ -295,8 +304,8 @@ def _name_map_summary(value: Any, parts: tuple, issues: list[dict]) -> dict:
     }
 
 
-def _base_record(key: str, source_path: str, key_masked: bool) -> dict:
-    parts = REGISTRY_PATH + (key,)
+def _base_record(key: str, source_path: str, key_masked: bool, registry_path: tuple) -> dict:
+    parts = registry_path + (key,)
     record: dict[str, Any] = {
         "registration_key": key,
         "source_path": source_path,
@@ -315,9 +324,10 @@ def _invalid_record(record: dict, issues: list[dict], redactions: list[dict]) ->
     return record
 
 
-def collect_server(key: str, entry: Any, source_path: str, key_masked: bool = False) -> dict:
-    parts = REGISTRY_PATH + (key,)
-    record = _base_record(key, source_path, key_masked)
+def collect_server(key: str, entry: Any, source_path: str, key_masked: bool = False,
+                   registry_path: tuple = DEFAULT_REGISTRY_PATH) -> dict:
+    parts = registry_path + (key,)
+    record = _base_record(key, source_path, key_masked, registry_path)
     issues: list[dict] = []
     redactor = Redactor()
     if key_masked:
@@ -412,19 +422,23 @@ def collect_server(key: str, entry: Any, source_path: str, key_masked: bool = Fa
 
 # ---- 설정 파일 전체 ------------------------------------------------------------
 
-def collect(config_path: Path) -> dict:
-    """설정 파일 하나를 수집해 `collection`과 `servers`를 돌려준다."""
+def collect(config_path: Path, registry_path: tuple = DEFAULT_REGISTRY_PATH) -> dict:
+    """설정 파일 하나에서 선택한 등록 영역을 수집해 `collection`과 `servers`를 돌려준다."""
+    if tuple(registry_path) not in SUPPORTED_REGISTRY_PATHS.values():
+        raise ValueError("지원하지 않는 등록 영역입니다.")
+    registry_path = tuple(registry_path)
     source_path, source_path_redacted = _safe_source_path(config_path)
     try:
         text = read_config(config_path)
         root = parse_config(text)
-        result = _collect_from_root(root, source_path)
+        result = _collect_from_root(root, source_path, registry_path)
         result["source_path_redacted"] = source_path_redacted
         return result
     except CollectionFailure as failure:
         return {
             "source_path": source_path,
             "source_path_redacted": source_path_redacted,
+            "registry_path": dotted_path(registry_path),
             "collection": {
                 "status": "failed",
                 "outcome": failure.outcome,
@@ -436,48 +450,50 @@ def collect(config_path: Path) -> dict:
         }
 
 
-def _collect_from_root(root: Any, source_path: str) -> dict:
+def _collect_from_root(root: Any, source_path: str, registry_path: tuple = DEFAULT_REGISTRY_PATH) -> dict:
     reasons: list[dict] = []
     unresolved: list[dict] = []
+    registry_label = dotted_path(registry_path)
 
     if not isinstance(root, dict):
         raise CollectionFailure("invalid_structure", "root_not_object",
                                 "설정 최상위가 객체가 아닙니다.", actual=_type_name(root))
 
     for container, value in _find_includes(root):
-        if _affects_registry(container) and len(container) <= len(REGISTRY_PATH):
+        if _affects_registry(container, registry_path) and len(container) <= len(registry_path):
             unresolved.append(_include_record(
                 container, value, "등록 영역에 영향을 줄 수 있는 $include를 해석하지 않았습니다."))
 
-    for p in [(), ("mcp",)]:
-        node = root
-        for k in p:
-            node = node.get(k) if isinstance(node, dict) else None
-        if isinstance(node, dict):
-            nxt = REGISTRY_PATH[len(p)]
-            if nxt in getattr(node, "duplicate_keys", []):
-                reasons.append({"code": "duplicate_key", "field_path": dotted_path(p + (nxt,)),
-                                "message": "등록 영역 키가 여러 번 선언되어 마지막 값만 읽었습니다."})
+    # 선택한 경로를 따라 내려가며 각 단계의 중복 키를 기록한다. 고르지 않은 영역은 보고하지 않는다.
+    node: Any = root
+    for i, nxt in enumerate(registry_path):
+        if not isinstance(node, dict):
+            break
+        if nxt in getattr(node, "duplicate_keys", []):
+            reasons.append({"code": "duplicate_key", "field_path": dotted_path(registry_path[:i + 1]),
+                            "message": "등록 영역 키가 여러 번 선언되어 마지막 값만 읽었습니다."})
+        node = node.get(nxt)
 
-    mcp = root.get("mcp", None)
-    if "mcp" not in root:
-        return _result_without_registry(source_path, "mcp", reasons, unresolved)
-    if not isinstance(mcp, dict):
-        raise CollectionFailure("invalid_structure", "mcp_not_object", "mcp 값이 객체가 아닙니다.",
-                                field_path="mcp", actual=_type_name(mcp))
-    if "servers" not in mcp:
-        return _result_without_registry(source_path, "mcp.servers", reasons, unresolved)
-    servers = mcp["servers"]
-    if not isinstance(servers, dict):
-        raise CollectionFailure("invalid_structure", "servers_not_object", "mcp.servers 값이 객체가 아닙니다.",
-                                field_path="mcp.servers", actual=_type_name(servers))
+    # 등록 영역까지 단계별로 내려간다. 없으면 registry_absent, 객체가 아니면 수집 실패.
+    node = root
+    for i, key in enumerate(registry_path):
+        here = registry_path[:i + 1]
+        if key not in node:
+            return _result_without_registry(source_path, registry_label, dotted_path(here),
+                                            reasons, unresolved)
+        node = node[key]
+        if not isinstance(node, dict):
+            raise CollectionFailure("invalid_structure", f"{key}_not_object",
+                                    f"{dotted_path(here)} 값이 객체가 아닙니다.",
+                                    field_path=dotted_path(here), actual=_type_name(node))
+    servers = node
 
     for dup in getattr(servers, "duplicate_keys", []):
-        reasons.append({"code": "duplicate_registration_key", "field_path": dotted_path(REGISTRY_PATH + (dup,)),
+        reasons.append({"code": "duplicate_registration_key", "field_path": dotted_path(registry_path + (dup,)),
                         "message": "같은 등록키가 여러 번 선언되어 마지막 항목만 수집했습니다."})
 
     masked_keys = set(getattr(servers, "masked_keys", []))
-    records = [_collect_server_safely(k, v, source_path, k in masked_keys)
+    records = [_collect_server_safely(k, v, source_path, k in masked_keys, registry_path)
                for k, v in servers.items() if k != "$include"]
 
     if any(r["collection_status"] != "complete" for r in records):
@@ -492,37 +508,41 @@ def _collect_from_root(root: Any, source_path: str) -> dict:
     status = "partial" if reasons else "complete"
     return {
         "source_path": source_path,
+        "registry_path": registry_label,
         "collection": {
             "status": status,
             "outcome": "servers_found" if records else "empty_registry",
             "server_count": len(records),
             "reasons": reasons,
             "unresolved": unresolved,
-            "key_redactions": _find_masked_keys(root),
+            # 선택한 등록 영역 안에서 가린 키만 기록한다 (다른 영역의 키는 이 결과의 대상이 아니다).
+            "key_redactions": _find_masked_keys(servers, registry_path),
         },
         "servers": records,
     }
 
 
-def _collect_server_safely(key: str, entry: Any, source_path: str, key_masked: bool) -> dict:
+def _collect_server_safely(key: str, entry: Any, source_path: str, key_masked: bool,
+                           registry_path: tuple = DEFAULT_REGISTRY_PATH) -> dict:
     """한 항목에서 예상하지 못한 오류가 나도 다른 항목은 계속 수집한다.
 
     오류 항목은 버리지 않고 `invalid`와 이슈로 남긴다. 예외 메시지에는 원문 값이 섞일 수 있어
     예외 종류만 기록한다.
     """
     try:
-        return collect_server(key, entry, source_path, key_masked)
+        return collect_server(key, entry, source_path, key_masked, registry_path)
     except Exception as exc:  # noqa: BLE001 - 항목 단위 격리가 목적
-        parts = REGISTRY_PATH + (key,)
+        parts = registry_path + (key,)
         issue = {"code": "collector_internal_error", "field_path": dotted_path(parts),
                  "error_type": type(exc).__name__,
                  "message": "이 항목을 처리하는 중 스캐너 내부 오류가 발생했습니다."}
         redactions = ([{"field_path": dotted_path(parts), "reason": "key_looks_like_secret"}]
                       if key_masked else [])
-        return _invalid_record(_base_record(key, source_path, key_masked), [issue], redactions)
+        return _invalid_record(_base_record(key, source_path, key_masked, registry_path), [issue], redactions)
 
 
-def _result_without_registry(source_path: str, missing: str, reasons: list, unresolved: list) -> dict:
+def _result_without_registry(source_path: str, registry_label: str, missing: str,
+                             reasons: list, unresolved: list) -> dict:
     # 앞서 기록된 중복 키 등은 수집을 불완전하게 만든다. `registry_absent` 안내 자체는 불완전 사유가 아니다.
     incomplete = bool(unresolved) or any(r["code"] in INCOMPLETE_REASON_CODES for r in reasons)
     reasons = list(reasons)
@@ -533,6 +553,7 @@ def _result_without_registry(source_path: str, missing: str, reasons: list, unre
                         "message": "해석하지 않은 $include에 등록 영역이 있을 수 있습니다."})
     return {
         "source_path": source_path,
+        "registry_path": registry_label,
         "collection": {
             # 파일은 정상적으로 읽었지만 등록 영역 자체가 없다.
             # include나 중복 키가 있으면 영역이 정말 없는지 확정할 수 없다.

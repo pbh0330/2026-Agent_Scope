@@ -79,6 +79,11 @@ def _pure_ref_without_fallback(value: str) -> bool:
     return bool(m) and not m.group(2)
 
 
+def is_env_ref_only(value: str) -> bool:
+    """값 전체가 기본값 없는 환경변수 참조(`${VAR}`)인가. 값 없이 이름만 가리키므로 가리지 않는다."""
+    return _pure_ref_without_fallback(value)
+
+
 @dataclass
 class Redactor:
     """가림 처리와 참조 감지 결과를 한 서버 항목 단위로 모은다."""
@@ -189,6 +194,25 @@ class Redactor:
         out = self._mask_token_patterns(out, field_path)
         out = _URL_RE.sub(lambda m: self.sanitize_url(m.group(0), field_path), out)
         if out == value and _looks_high_entropy(out):
+            self._note(field_path, "high_entropy_value")
+            out = REDACTED
+        return out
+
+    def sanitize_text(self, value: str, field_path: str, check_entropy: bool = True) -> str:
+        """서버가 제공한 설명문 같은 산문을 가린다 (Tool description 등).
+
+        `sanitize_string`과 달리 단어 단위 인자 해석·헤더 줄 전체 가림은 하지 않아 일반 문장을 통째로 지우지
+        않는다. 알려진 토큰 모양, URL의 사용자정보·쿼리·fragment, 환경변수 기본값, 전체가 무작위 문자열인
+        값만 가린다. 문장은 해석하거나 실행하지 않는다.
+
+        `check_entropy=False`는 `$ref`·`$id`·`pattern`처럼 구조 키 아래 문자열에 쓴다. 알려진 토큰 모양과 URL 자격증명은
+        가리되, 긴 식별자처럼 보인다는 이유만으로 통째로 지우지는 않는다.
+        """
+        self.collect_env_refs(value, field_path)
+        out = self._strip_env_defaults(value, field_path)
+        out = self._mask_token_patterns(out, field_path)
+        out = _URL_RE.sub(lambda m: self.sanitize_url(m.group(0), field_path), out)
+        if check_entropy and out == value and _looks_high_entropy(out):
             self._note(field_path, "high_entropy_value")
             out = REDACTED
         return out
