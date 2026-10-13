@@ -1,8 +1,12 @@
 """수집 결과의 구조·상태 구분 테스트."""
 
+import json
 from pathlib import Path
 
+import pytest
+
 from asset_scanner.collector import collect
+from asset_scanner.redaction import REDACTED, looks_like_secret_value
 from conftest import EXAMPLES
 
 
@@ -12,8 +16,8 @@ def by_key(result: dict) -> dict:
 
 # ---- 정상 수집 ------------------------------------------------------------------
 
-def test_two_different_servers_are_each_collected():
-    result = collect(EXAMPLES / "two-servers.json5")
+def _assert_two_servers_preserved(result: dict) -> dict:
+    """경로 처리와 무관하게 서버 2개와 각 서버의 선언 정보가 보존되는지 검사하고 서버 맵을 돌려준다."""
     col = result["collection"]
     assert col["status"] == "complete"
     assert col["outcome"] == "servers_found"
@@ -25,7 +29,6 @@ def test_two_different_servers_are_each_collected():
     local = servers["sample-files"]
     assert local["declaration_path"] == "mcp.servers.sample-files"
     assert local["declaration_pointer"] == "/mcp/servers/sample-files"
-    assert local["source_path"] == str((EXAMPLES / "two-servers.json5").resolve())
     assert local["declared"] == {
         "command": "npx",
         "args": ["-y", "@example/sample-files-mcp", "./workspace"],
@@ -39,6 +42,56 @@ def test_two_different_servers_are_each_collected():
         "enabled": False,
     }
     assert remote["other_declared_keys"] == ["requestTimeoutMs"]
+    return servers
+
+
+def _copy_example(tmp_path: Path, dirname: str) -> Path:
+    target = tmp_path / dirname
+    target.mkdir()
+    dest = target / "two-servers.json5"
+    dest.write_bytes((EXAMPLES / "two-servers.json5").read_bytes())
+    return dest
+
+
+def test_two_different_servers_are_each_collected(tmp_path):
+    """일반 경로: 원문 출처를 그대로 유지한다. 실행 위치(임시 폴더 이름)에 따라 결과가 달라지지 않도록 직접 만든 폴더를 쓴다."""
+    config = _copy_example(tmp_path, "plain-config-dir")
+    resolved = config.resolve()
+    # 이 테스트가 전제하는 것은 '가림 대상이 아닌 경로'다. 임시 폴더 상위 경로에 비밀값처럼 보이는 조각이 있으면
+    # 정책이 바르게 가렸을 것이므로 전제 불충족으로 건너뛴다(정책을 바꾸지 않는다). 이 경우는 아래 UUID 테스트가 덮는다.
+    if any(looks_like_secret_value(part) for part in resolved.parts):
+        pytest.skip("임시 폴더 경로 자체에 비밀값처럼 보이는 조각이 있어 '일반 경로' 전제가 성립하지 않음")
+
+    result = collect(config)
+    servers = _assert_two_servers_preserved(result)
+
+    assert result["source_path"] == str(resolved)
+    assert result["source_path_redacted"] is False
+    assert REDACTED not in result["source_path"]
+    for server in servers.values():
+        assert server["source_path"] == str(resolved)
+
+
+def test_secret_looking_source_path_is_masked_and_flagged_but_servers_are_preserved(tmp_path):
+    """민감해 보이는 경로(UUID 형태 폴더): 해당 조각만 가리고 가림 여부를 기록하며, 서버 정보는 그대로 보존한다."""
+    secret_like = "2c05877c-dccd-40ec-b346-eb177d3c8bd8"
+    assert looks_like_secret_value(secret_like)          # 정책이 이 값을 민감한 것으로 본다는 전제
+    config = _copy_example(tmp_path, secret_like)
+    resolved = config.resolve()
+
+    result = collect(config)
+    servers = _assert_two_servers_preserved(result)
+
+    safe_path = result["source_path"]
+    assert result["source_path_redacted"] is True
+    assert secret_like not in safe_path                  # 원문 조각이 출처에 남지 않는다
+    assert REDACTED in Path(safe_path).parts             # 가린 자리가 표시된다
+    assert Path(safe_path).name == "two-servers.json5"   # 가리지 않는 조각(파일명)은 유지된다
+    assert safe_path != str(resolved)
+    for server in servers.values():
+        assert server["source_path"] == safe_path
+        assert secret_like not in server["source_path"]
+    assert secret_like not in json.dumps(result, ensure_ascii=False)   # 결과 어디에도 원문이 없다
 
 
 def test_disabled_server_is_kept_as_registered_asset():
