@@ -15,10 +15,12 @@
 ## 설치 (테스트베드)
 
 ```bash
-openclaw plugins install --link ./token-collector/plugin --force
+openclaw plugins install --link ./token-collector/plugin --force --accept-capabilities
 openclaw plugins enable agentscope-token-guard
 openclaw plugins inspect agentscope-token-guard --runtime --json   # 훅 등록 확인
 ```
+
+`--accept-capabilities`가 없으면 설치 중 기능 동의를 묻는다. 명령을 여러 줄 한꺼번에 붙여 넣으면 다음 줄이 그 질문의 답으로 들어가 설치가 취소되므로(10.12 확인) 한 줄씩 실행한다.
 
 두 훅 모두 대화 내용 접근 권한(`allowConversationAccess`)이 필요한 훅이 아니다(OpenClaw `docs/plugins/hooks.md`).
 
@@ -70,7 +72,7 @@ tokenCount: { enabled: true, api: "openai-usage", baseUrl: "https://<게이트�
 | kind | 언제 | 주요 필드 |
 |---|---|---|
 | `tool_result` | 결과 저장 직전 | `toolCallId`, `runId`, `toolName`, `textBytes`, `textChars`, `nonAsciiRatio`, `images[{mimeType,bytes,width,height}]`, `isError`, `isSynthetic` |
-| `token_count` | 토큰 계산 완료 | `toolCallId`, `countedTokens`(= T_i − T_0), `probeTotal`, `probeBaseline`, `model`, `source`(계산 방식), `skippedBlocks`, `durationMs` |
+| `token_count` | 토큰 계산 완료 | `toolCallId`, `countedTokens`(= T_i − T_0), `probeTotal`, `probeBaseline`, `model`, `source`(계산 방식), `skippedBlocks`(세지 못한 블록 수. 0보다 크면 `agentscope-usage`가 배분에 쓰지 않음), `durationMs` |
 | `token_count_error` | 토큰 계산 실패 | `toolCallId`, `error`(200자 이내) |
 | `brake` | 기준 초과 | `level`(warn/approve/block), `mode`, `enforced`, `reasons[{scope,metric,value,limit}]`, `run` 누적값 |
 | `brake_resolution` | 승인 요구 응답 | `decision`(allow-once/allow-always/deny/timeout/cancelled) |
@@ -89,7 +91,7 @@ node --test test/*.test.ts      # Node 22.18 이상(TypeScript 타입 제거 실
 
 ## 테스트베드에서 확인할 것
 
-- 토큰 계산 API에 접근 가능한지(엔드포인트·키). 학교 게이트웨이 같은 중계 서버는 지원하지 않을 수 있다.
+- 모델 백엔드에 맞는 계산 방식(`api`)과 키. Anthropic 직접 연결이면 `anthropic-count-tokens`, 학교 게이트웨이 같은 OpenAI 호환 중계 서버면 `openai-usage`(10.12 PC에서 확인).
 - `tool_result_persist`가 다음 model.call 전에 호출되는지, 병렬 실행 시 결과마다 호출되는지.
 - OpenClaw는 이 훅 뒤에 결과 길이 제한(cap)을 적용한다. 제한에 걸리는 큰 결과는 `maxResultChars`를 같은 값으로 맞춘다.
 - 웹채팅에서 승인 요구 화면이 표시·처리되는지(`requireApproval`은 응답이 없으면 거부).

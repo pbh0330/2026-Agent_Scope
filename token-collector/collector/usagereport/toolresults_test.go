@@ -1,6 +1,7 @@
 package usagereport
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -44,6 +45,59 @@ func TestReadToolResultCounts(t *testing.T) {
 	}
 	if st.Lines != 6 || st.Counts != 2 || st.Malformed != 2 {
 		t.Fatalf("stats=%+v", st)
+	}
+}
+
+// 이미지 등 결과 일부를 세지 못한 기록(skippedBlocks > 0)은 쓰지 않는다. 앞서 온전한 값이 있었어도 지운다.
+func TestReadToolResultCountsSkipsPartial(t *testing.T) {
+	p := writeToolResults(t,
+		`{"v":1,"kind":"token_count","toolCallId":"img","countedTokens":40,"skippedBlocks":0}`,
+		`{"v":1,"kind":"token_count","toolCallId":"img","countedTokens":12,"skippedBlocks":1}`,
+		`{"v":1,"kind":"token_count","toolCallId":"txt","countedTokens":300,"skippedBlocks":0}`,
+	)
+	counts := map[string]int64{}
+	st, err := ReadToolResultCounts(p, counts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := counts["img"]; ok || counts["txt"] != 300 || len(counts) != 1 {
+		t.Fatalf("counts=%v", counts)
+	}
+	if st.Partial != 1 || st.Counts != 2 {
+		t.Fatalf("stats=%+v", st)
+	}
+}
+
+// 구간 안 한 도구가 일부만 센 기록이면 그 구간은 배분하지 않는다(다른 도구에 몫을 넘기지 않음).
+func TestParallelSegmentWithPartialCountNotAllocated(t *testing.T) {
+	spans := loadFixture(t, "week3-parallel")
+	lines := []string{}
+	for i, id := range parallelCalls {
+		skipped := 0
+		if i == 0 {
+			skipped = 1
+		}
+		lines = append(lines, fmt.Sprintf(`{"v":1,"kind":"token_count","toolCallId":"%s","countedTokens":%d,"skippedBlocks":%d}`, id, 100*(i+1), skipped))
+	}
+	counts := map[string]int64{}
+	if _, err := ReadToolResultCounts(writeToolResults(t, lines...), counts); err != nil {
+		t.Fatal(err)
+	}
+	opt := baseOpts()
+	opt.ToolResultCounts = counts
+	rep := mustBuild(t, spans, opt)
+	n := 0
+	for _, r := range rep.Records {
+		if r.Pattern != string(attribution.Parallel) {
+			continue
+		}
+		n++
+		if r.ApproxInputTokens != nil {
+			t.Fatalf("일부만 센 도구가 있는 구간이 배분됨: %+v", r)
+		}
+	}
+	if n != len(parallelCalls) {
+		t.Fatalf("병렬 레코드 %d개", n)
 	}
 }
 

@@ -102,6 +102,9 @@ func run(args []string, stdout, stderr io.Writer) error {
 			if st.Malformed > 0 {
 				fmt.Fprintf(stderr, "경고: %s 에서 읽지 못한 줄 %d개\n", filepath.Base(p), st.Malformed)
 			}
+			if st.Partial > 0 {
+				fmt.Fprintf(stderr, "참고: %s 에서 결과 일부(이미지 등)를 세지 못한 기록 %d개는 배분에 쓰지 않음\n", filepath.Base(p), st.Partial)
+			}
 			refs = append(refs, filepath.Base(p))
 		}
 		opt.ToolResultCounts = counts

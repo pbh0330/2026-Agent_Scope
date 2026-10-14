@@ -133,6 +133,7 @@ export class TokenGuard {
 
     const run = this.run(runId);
     const day = this.dayUsage();
+    const runLimits = runId ? this.cfg.brake.run : {}; // run을 모르면 run 기준은 판정하지 않는다(일 기준만)
     const streak = run.lastTool === toolName ? run.streak + 1 : 1;
     run.lastTool = toolName;
     run.streak = streak;
@@ -142,7 +143,7 @@ export class TokenGuard {
     if (mode !== "off") {
       const breaches: Record<Level, Breach[]> = { warn: [], approve: [], block: [] };
       for (const lv of LEVELS) {
-        breaches[lv].push(...check("run", { ...run, toolCalls: run.toolCalls + 1 }, streak, this.cfg.brake.run[lv]));
+        breaches[lv].push(...check("run", { ...run, toolCalls: run.toolCalls + 1 }, streak, runLimits[lv]));
         breaches[lv].push(...check("day", { ...day, toolCalls: day.toolCalls + 1 }, undefined, this.cfg.brake.day[lv]));
       }
       let level = LEVELS.find((lv) => breaches[lv].length > 0);
@@ -232,12 +233,15 @@ export class TokenGuard {
     return undefined;
   }
 
+  // run을 모르면(runId 없음) 매번 새 상태를 돌려준다. 하나의 공용 버킷에 여러 run이 쌓여
+  // run 기준 브레이크가 잘못 걸리는 것을 막는다(일 기준 누적에는 그대로 반영).
   private run(runId: string | undefined): RunState {
-    const key = runId ?? "(no-run)";
-    let s = this.runs.get(key);
+    const fresh = (): RunState => ({ resultBytes: 0, countedTokens: 0, toolCalls: 0, streak: 0, approved: false });
+    if (!runId) return fresh();
+    let s = this.runs.get(runId);
     if (!s) {
-      s = { resultBytes: 0, countedTokens: 0, toolCalls: 0, streak: 0, approved: false };
-      this.runs.set(key, s);
+      s = fresh();
+      this.runs.set(runId, s);
       if (this.runs.size > MAX_RUNS) this.runs.delete(this.runs.keys().next().value!);
     }
     return s;

@@ -100,3 +100,15 @@ test("일 단위 한도는 run을 넘어 누적된다", () => {
   g.beforeToolCall({ toolName: "b", toolCallId: "2", runId: "r2" }, {});
   assert.equal(g.beforeToolCall({ toolName: "c", toolCallId: "3", runId: "r3" }, {})?.block, true);
 });
+
+test("runId를 모르는 호출은 run 기준을 서로 합치지 않는다(일 기준만 적용)", () => {
+  const sink = new MemorySink();
+  const cfg = resolveConfig({ brake: { mode: "warn", run: { warn: { toolCalls: 2 } }, day: { warn: { toolCalls: 3 } } } });
+  const g = new TokenGuard(cfg, sink, undefined, fixedNow);
+  g.beforeToolCall({ toolName: "a", toolCallId: "x1" }, {});
+  g.beforeToolCall({ toolName: "a", toolCallId: "x2" }, {});
+  assert.equal(sink.of("brake").length, 0, "runId 없는 호출 2번이 한 run으로 합쳐지면 안 됨");
+  g.beforeToolCall({ toolName: "a", toolCallId: "x3" }, {});
+  const [b] = sink.of("brake");
+  assert.deepEqual(b.reasons.map((r: { scope: string }) => r.scope), ["day"]);
+});
