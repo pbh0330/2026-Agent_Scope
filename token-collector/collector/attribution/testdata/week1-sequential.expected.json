@@ -1,0 +1,11 @@
+[
+ {
+  "trace_id": "93aad0ab62cb43c4e84d08324eb29588",
+  "run_id": "3ce0ed27e161bf1f",
+  "tool_span_id": "22df37e2d7de9085",
+  "tool_name": "fs__list_directory_with_sizes",
+  "pattern": "sequential",
+  "approx_tokens": 264,
+  "duration_ms": 44.0
+ }
+]

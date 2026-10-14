@@ -1,0 +1,26 @@
+# 근사 비용 recording rule
+#
+# openclaw.tokens 메트릭(Sum/monotonic)은 Prometheus 익스포터를 거치면서
+# openclaw_tokens_total{openclaw_token="input"|"output"|"prompt"|"total", ...} 로 노출됨
+# (점(.)은 밑줄(_)로, Sum 타입은 `_total` 접미사가 붙음 — 1주차 검증 로그로 확인함)
+#
+# *** 아래 0.000001 / 0.000005 는 자리표시자(placeholder) 단가임 ***
+# 파이썬 프로토타입에서 쓰던 것과 같은 임시값(input $1.00 / output $5.00, per 1M tokens)
+# 실제 openclaw.json의 models.providers.<provider>.models[].cost 값을 받으면
+# 아래 두 숫자를 (해당 단가 / 1,000,000)로 바꿔야 함.
+# 여러 모델을 동시에 쓰게 되면 이 rule을 모델별로(by (openclaw_model)) 쪼개고
+# 모델마다 다른 단가 상수를 곱하도록 다시 짜야 함 — 지금은 단일 모델(claude-haiku-4-5)
+# 검증 단계라 전체 합산으로 단순화함.
+
+groups:
+  - name: openclaw_cost_approx
+    interval: 15s
+    rules:
+      - record: openclaw:cost_usd_input:total
+        expr: sum(openclaw_tokens_total{openclaw_token="input"}) * 0.000001   # TODO: 실제 input 단가로 교체
+
+      - record: openclaw:cost_usd_output:total
+        expr: sum(openclaw_tokens_total{openclaw_token="output"}) * 0.000005  # TODO: 실제 output 단가로 교체
+
+      - record: openclaw:cost_usd:total
+        expr: openclaw:cost_usd_input:total + openclaw:cost_usd_output:total

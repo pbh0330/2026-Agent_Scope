@@ -1,0 +1,16 @@
+# 로컬에서 생기는 산출물은 커밋하지 않는다.
+# 원본 로그·원본 스팬 파일(대화 메타데이터가 들어감)
+otel-debug-log*.txt
+agentscope-traces*.jsonl
+# docker-compose 데이터 폴더
+pipeline/data/*
+!pipeline/data/.gitkeep
+# Go 빌드 산출물(생성 코드·실행 파일)
+collector/_build/
+collector/usagereport/agentscope-usage
+*.exe
+# 미리 빌드한 Linux 실행 파일(Dockerfile.prebuilt용)
+collector/otelcol-agentscope-linux
+*.zip
+# 플러그인 개발용 의존성(타입 검사)
+plugin/node_modules/
