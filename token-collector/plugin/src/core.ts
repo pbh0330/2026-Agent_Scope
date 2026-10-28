@@ -5,12 +5,15 @@
 //    이 기록으로 병렬·배치 구간 증가분을 결과별 토큰 수 비율로 나눈다(정확도 개선 방안 B).
 // 2) 소비 브레이크: before_tool_call에서 run·일 단위 누적 소비를 기준과 비교해
 //    경고(기록만) / 승인 요구 / 차단을 결정한다. mode=warn이면 기록만 하고 실행에는 개입하지 않는다.
+// 3) 실시간 반영: otlpEndpoint를 주면 결과별 토큰 수를 OTLP 스팬으로 Collector에 보내,
+//    tokenattribution 커넥터가 병렬·배치 구간 배분을 대시보드에 바로 반영하게 한다.
 
 import { appendFileSync, mkdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { contentOf, measureContent } from "./measure.ts";
 import { TokenCounter, type TokenCountConfig } from "./counter.ts";
+import { CountSpanExporter, normalizeSpanId, normalizeTraceId } from "./otlp.ts";
 
 export const RECORD_VERSION = 1;
 
@@ -22,6 +25,8 @@ export type GuardConfig = {
   outputPath: string;
   tokenCount: TokenCountConfig;
   brake: { mode: BrakeMode; approvalTimeoutMs: number; run: Levels; day: Levels };
+  // otlp.endpoint: Collector OTLP/HTTP 주소(예: http://localhost:4318). 없으면 보내지 않는다(JSONL 기록만).
+  otlp: { endpoint?: string; timeoutMs: number };
 };
 
 export function resolveConfig(raw: unknown): GuardConfig {
@@ -49,6 +54,10 @@ export function resolveConfig(raw: unknown): GuardConfig {
       approvalTimeoutMs: Number.isInteger(br.approvalTimeoutMs) ? br.approvalTimeoutMs : 60000,
       run: (br.run ?? {}) as Levels,
       day: (br.day ?? {}) as Levels,
+    },
+    otlp: {
+      endpoint: typeof r.otlpEndpoint === "string" && r.otlpEndpoint.trim() ? r.otlpEndpoint.trim() : undefined,
+      timeoutMs: Number.isInteger(r.otlpTimeoutMs) && r.otlpTimeoutMs > 0 ? r.otlpTimeoutMs : 5000,
     },
   };
 }
@@ -81,6 +90,8 @@ export class JsonlSink implements Sink {
 // --- 상태 ---
 
 type Usage = { resultBytes: number; countedTokens: number; toolCalls: number };
+// before_tool_call에서 기억해 두는 호출 정보. traceId·spanId는 OpenClaw 진단 trace(ctx.trace)에서 온다.
+type CallMeta = { runId?: string; toolName?: string; traceId?: string; spanId?: string };
 type RunState = Usage & { lastTool?: string; streak: number; approved: boolean };
 
 const MAX_RUNS = 500;
@@ -107,7 +118,7 @@ type Breach = { scope: "run" | "day"; metric: keyof Limits; value: number; limit
 
 export class TokenGuard {
   private readonly runs = new Map<string, RunState>();
-  private readonly calls = new Map<string, { runId?: string; toolName?: string }>();
+  private readonly calls = new Map<string, CallMeta>();
   private day = { key: "", usage: { resultBytes: 0, countedTokens: 0, toolCalls: 0 } as Usage };
   readonly pending = new Set<Promise<void>>();
 
@@ -115,12 +126,15 @@ export class TokenGuard {
   private readonly sink: Sink;
   private readonly counter?: TokenCounter;
   private readonly now: () => Date;
+  private readonly exporter?: CountSpanExporter;
 
-  constructor(cfg: GuardConfig, sink: Sink, counter?: TokenCounter, now: () => Date = () => new Date(), log?: (msg: string) => void) {
+  constructor(cfg: GuardConfig, sink: Sink, counter?: TokenCounter, now: () => Date = () => new Date(), log?: (msg: string) => void,
+    exporter?: CountSpanExporter) {
     this.cfg = cfg;
     this.sink = sink;
     this.counter = counter;
     this.now = now;
+    this.exporter = exporter;
     if (counter && !counter.usable && cfg.tokenCount.enabled) log?.(`토큰 계산 비활성: ${counter.reasonUnusable}`);
   }
 
@@ -129,7 +143,11 @@ export class TokenGuard {
     const toolName: string = event.toolName ?? ctx?.toolName ?? "unknown";
     const toolCallId: string | undefined = event.toolCallId ?? ctx?.toolCallId;
     const runId: string | undefined = event.runId ?? ctx?.runId;
-    if (toolCallId) this.remember(toolCallId, { runId, toolName });
+    if (toolCallId) {
+      this.remember(toolCallId, {
+        runId, toolName, traceId: normalizeTraceId(ctx?.trace?.traceId), spanId: normalizeSpanId(ctx?.trace?.spanId),
+      });
+    }
 
     const run = this.run(runId);
     const day = this.dayUsage();
@@ -169,13 +187,14 @@ export class TokenGuard {
     const toolName: string = event.toolName ?? ctx?.toolName ?? "unknown";
     const meta = toolCallId ? this.calls.get(toolCallId) : undefined;
     const runId = meta?.runId;
+    const traceId = meta?.traceId;
     const blocks = contentOf(event.message);
     const m = measureContent(blocks);
     const isError = (event.message as { isError?: boolean } | undefined)?.isError === true;
     const synthetic = event.isSynthetic === true;
 
     this.sink.write({
-      kind: "tool_result", ts: this.now().toISOString(), runId, toolCallId, toolName,
+      kind: "tool_result", ts: this.now().toISOString(), runId, traceId, toolCallId, toolName,
       sessionKey: ctx?.sessionKey, isError, isSynthetic: synthetic, ...m,
     });
     const run = this.run(runId);
@@ -189,11 +208,23 @@ export class TokenGuard {
         (c) => {
           run.countedTokens += c.tokens;
           this.dayUsage().countedTokens += c.tokens;
+          const ended = Date.now();
           this.sink.write({
-            kind: "token_count", ts: this.now().toISOString(), runId, toolCallId, toolName,
+            kind: "token_count", ts: this.now().toISOString(), runId, traceId, toolCallId, toolName,
             countedTokens: c.tokens, probeTotal: c.total, probeBaseline: c.baseline, skippedBlocks: c.skippedBlocks,
-            model: this.cfg.tokenCount.model, source: this.cfg.tokenCount.api, durationMs: Date.now() - started,
+            model: this.cfg.tokenCount.model, source: this.cfg.tokenCount.api, durationMs: ended - started,
           });
+          if (this.exporter) {
+            this.track(this.exporter.send({
+              traceId, parentSpanId: meta?.spanId, toolCallId, toolName, countedTokens: c.tokens,
+              skippedBlocks: c.skippedBlocks, source: this.cfg.tokenCount.api, startMs: started, endMs: ended,
+            }).catch((e: unknown) => {
+              this.sink.write({
+                kind: "count_export_error", ts: this.now().toISOString(), runId, traceId, toolCallId, toolName,
+                error: String((e as Error)?.message ?? e).slice(0, 200),
+              });
+            }));
+          }
         },
         (e: unknown) => {
           this.sink.write({
@@ -201,9 +232,16 @@ export class TokenGuard {
             error: String((e as Error)?.message ?? e).slice(0, 200),
           });
         },
-      ).finally(() => this.pending.delete(p));
-      this.pending.add(p);
+      );
+      this.track(p);
     }
+  }
+
+  // track은 진행 중인 비동기 작업(토큰 계산·전송)을 flush가 기다릴 수 있게 등록한다.
+  private track(p: Promise<void>): void {
+    // 예외가 새어 나가 처리되지 않은 거부(unhandled rejection)로 게이트웨이가 멈추지 않게 여기서 삼킨다.
+    const q: Promise<void> = p.catch(() => undefined).finally(() => this.pending.delete(q));
+    this.pending.add(q);
   }
 
   // 테스트·종료용: 진행 중인 토큰 계산이 끝날 때까지 기다린다.
@@ -247,7 +285,7 @@ export class TokenGuard {
     return s;
   }
 
-  private remember(toolCallId: string, v: { runId?: string; toolName?: string }) {
+  private remember(toolCallId: string, v: CallMeta) {
     this.calls.set(toolCallId, v);
     if (this.calls.size > MAX_CALLS) this.calls.delete(this.calls.keys().next().value!);
   }
@@ -277,5 +315,7 @@ function check(scope: "run" | "day", u: Usage, streak: number | undefined, lim: 
 export function createTokenGuard(rawConfig: unknown, log?: (msg: string) => void): TokenGuard {
   const cfg = resolveConfig(rawConfig);
   const sink = new JsonlSink(cfg.outputPath, (e) => log?.(`기록 실패: ${String(e)}`));
-  return new TokenGuard(cfg, sink, new TokenCounter(cfg.tokenCount), undefined, log);
+  const exporter = cfg.otlp.endpoint ? new CountSpanExporter(cfg.otlp.endpoint, cfg.otlp.timeoutMs) : undefined;
+  if (exporter && !cfg.tokenCount.enabled) log?.("otlpEndpoint가 있지만 tokenCount.enabled=false라 보낼 토큰 수가 없음");
+  return new TokenGuard(cfg, sink, new TokenCounter(cfg.tokenCount), undefined, log, exporter);
 }

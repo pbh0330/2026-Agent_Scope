@@ -89,14 +89,14 @@
     {
       "id": 5,
       "type": "timeseries",
-      "title": "도구별 귀속 토큰 증가량(추정치) — 점을 누르면 Tempo 실행 기록",
-      "description": "순차 구간에서 도구에 귀속된 근사 입력 토큰. 점 하나가 도구 호출 한 건(exemplar)이며, 누르면 trace_id로 Tempo가 열린다. 병렬·배치 호출은 토큰을 귀속하지 않으므로 여기 나타나지 않는다.",
+      "title": "도구별 귀속 토큰 증가량(추정치: 순차 실측 + 병렬·배치 배분) — 점을 누르면 Tempo 실행 기록",
+      "description": "도구에 귀속된 근사 입력 토큰. 괄호 안이 sequential이면 순차 구간 실측, parallel/batch면 구간 증가분을 결과별 토큰 수(agentscope-token-guard 플러그인이 보낸 값) 비율로 나눈 배분값이다. 점 하나가 도구 호출 한 건(exemplar)이며, 누르면 trace_id로 Tempo가 열린다. 토큰 수가 없는 병렬·배치 호출은 여기 나타나지 않고 아래 '배분 근거 누락'에 센다.",
       "gridPos": { "h": 9, "w": 12, "x": 0, "y": 14 },
       "datasource": { "type": "prometheus", "uid": "Prometheus" },
       "targets": [
         {
           "expr": "increase(openclaw_tool_attribution_tokens_total[5m])",
-          "legendFormat": "{{tool_name}}",
+          "legendFormat": "{{tool_name}} ({{attribution_pattern}})",
           "exemplar": true,
           "refId": "A"
         }
@@ -118,6 +118,49 @@
           "expr": "increase(openclaw_tool_attribution_calls_total[5m])",
           "legendFormat": "{{tool_name}} ({{attribution_pattern}})",
           "exemplar": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "short" },
+        "overrides": []
+      }
+    },
+    {
+      "id": 7,
+      "type": "stat",
+      "title": "병렬·배치 배분 근거 누락(최근 1시간)",
+      "description": "결과별 토큰 수가 없어 배분하지 못한 병렬·배치 도구 호출 수(anomalies reason=missing_counts). 0이 아니면 플러그인 설치, otlpEndpoint 설정, 토큰 계산 실패(token_count_error), 이미지 결과 여부를 확인한다.",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 23 },
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "targets": [
+        {
+          "expr": "sum(increase(openclaw_tool_attribution_anomalies_total{reason=\"missing_counts\"}[1h])) or vector(0)",
+          "legendFormat": "missing_counts",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 1 }] }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value" }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "귀속 이상 사례(사유별, 5분 증가량)",
+      "description": "근사치 신뢰도를 낮추는 사례: negative_delta(컨텍스트 압축 등), missing_tokens(모델 호출 토큰 누락), missing_counts(병렬·배치 배분 근거 누락), missing_timestamps(시각 누락).",
+      "gridPos": { "h": 6, "w": 18, "x": 6, "y": 23 },
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "targets": [
+        {
+          "expr": "sum by (reason) (increase(openclaw_tool_attribution_anomalies_total[5m]))",
+          "legendFormat": "{{reason}}",
           "refId": "A"
         }
       ],

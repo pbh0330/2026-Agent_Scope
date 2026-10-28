@@ -149,8 +149,9 @@ func (a *aggregator) record(r attribution.Result, pricing attribution.Pricing, n
 		a.addExemplar(h, r, now, r.DurationMs)
 	}
 
-	if r.Pattern == attribution.Sequential && r.HasTokens {
-		modelAttrs := append(append([]kv{}, base...), kv{attrModel, r.Model}, kv{attrProvider, r.Provider}, kv{attrEstimated, "true"})
+	// 토큰·비용: 순차 실측분과, 병렬·배치 구간을 결과별 토큰 수 비율로 나눈 배분분. attribution.pattern으로 구분한다.
+	if (r.Pattern == attribution.Sequential || r.AllocationMethod != "") && r.HasTokens {
+		modelAttrs := append(append([]kv{}, withPattern...), kv{attrModel, r.Model}, kv{attrProvider, r.Provider}, kv{attrEstimated, "true"})
 		t := get(a.tokens, modelAttrs)
 		t.intVal += r.ApproxTokens
 		a.addExemplar(t, r, now, float64(r.ApproxTokens))
@@ -168,6 +169,13 @@ func (a *aggregator) record(r attribution.Result, pricing attribution.Pricing, n
 	}
 	if r.Pattern == attribution.Sequential && !r.HasTokens {
 		reasons = append(reasons, "missing_tokens")
+	}
+	if (r.Pattern == attribution.Parallel || r.Pattern == attribution.Batch) && !r.HasTokens {
+		if r.HasSegmentDelta {
+			reasons = append(reasons, "missing_counts") // 결과별 토큰 수가 없어(플러그인 미설치·계산 실패·이미지 등) 배분 못 함
+		} else if r.ClosingModelSpanID != "" {
+			reasons = append(reasons, "missing_tokens")
+		}
 	}
 	if r.MissingTimestamps {
 		reasons = append(reasons, "missing_timestamps")
@@ -251,9 +259,9 @@ func (a *aggregator) build(now time.Time, pendingRuns int, droppedSpans uint64) 
 	}
 
 	addSum(metricCalls, "도구 호출 수(귀속 패턴별: sequential/parallel/batch/unattributed)", "{call}", a.calls, true)
-	addSum(metricTokens, "순차 구간에서 도구에 귀속된 근사 입력 토큰 수(추정치)", "{token}", a.tokens, true)
+	addSum(metricTokens, "도구에 귀속된 근사 입력 토큰 수(추정치; attribution.pattern=sequential은 순차 실측, parallel/batch는 결과별 토큰 수 비율 배분)", "{token}", a.tokens, true)
 	addSum(metricCost, "도구에 귀속된 근사 비용(USD, 추정치; pricing.source=reference_list_price면 참고용 정가)", "{USD}", a.cost, false)
-	addSum(metricAnomalies, "근사치 신뢰도를 낮추는 이상 사례 수(음수 delta, 토큰 누락, 시각 누락)", "{event}", a.anomalies, true)
+	addSum(metricAnomalies, "근사치 신뢰도를 낮추는 이상 사례 수(음수 delta, 토큰 누락, 병렬·배치 배분 근거 누락, 시각 누락)", "{event}", a.anomalies, true)
 
 	if len(a.duration) > 0 {
 		met := sm.Metrics().AppendEmpty()

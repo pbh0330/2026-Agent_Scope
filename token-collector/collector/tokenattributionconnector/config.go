@@ -14,6 +14,7 @@ import (
 //	    metrics_flush_interval: 5s
 //	    grace: 2s
 //	    run_idle_timeout: 10m
+//	    count_wait: 15s
 //	    openclaw_config_path: C:\Users\me\.openclaw\openclaw.json
 type Config struct {
 	// MetricsFlushInterval: 확정된 결과를 누적 메트릭으로 내보내는 주기.
@@ -24,6 +25,12 @@ type Config struct {
 	RunIdleTimeout time.Duration `mapstructure:"run_idle_timeout"`
 	// MaxRuns: 메모리에 동시에 들고 있는 run 수 상한.
 	MaxRuns int `mapstructure:"max_runs"`
+	// CountWait: 병렬·배치 구간을 닫는 model.call 도착(+grace) 뒤, 결과 기록 플러그인이 보내는 결과별 토큰 수
+	// (agentscope.tool_result.count 스팬)를 기다리는 최대 시간. 다 모이면 바로 배분하고, 모자라면 이 시간 뒤
+	// 배분 없이 확정한다. 플러그인이 없는 환경이면 병렬·배치 결과가 이만큼 늦게 확정될 뿐 동작은 같다. 0이면 기다리지 않음.
+	CountWait time.Duration `mapstructure:"count_wait"`
+	// CountTTL: 받은 결과별 토큰 수를 보관하는 시간(도구 스팬보다 먼저 올 수 있음).
+	CountTTL time.Duration `mapstructure:"count_ttl"`
 	// IncludeCacheInPrompt: 캐시 토큰을 input_tokens와 따로 보고하는 프로바이더라면 true.
 	IncludeCacheInPrompt bool `mapstructure:"include_cache_in_prompt"`
 
@@ -55,6 +62,8 @@ func createDefaultConfig() *Config {
 		Grace:                2 * time.Second,
 		RunIdleTimeout:       10 * time.Minute,
 		MaxRuns:              10000,
+		CountWait:            15 * time.Second,
+		CountTTL:             10 * time.Minute,
 		UseReferencePricing:  true,
 		Exemplars:            ExemplarsConfig{Enabled: true, MaxPerDataPoint: 5},
 	}
@@ -74,6 +83,14 @@ func (c *Config) Validate() error {
 	}
 	if c.MaxRuns <= 0 {
 		errs = append(errs, errors.New("max_runs must be > 0"))
+	}
+	if c.CountWait < 0 {
+		errs = append(errs, errors.New("count_wait must be >= 0"))
+	}
+	if c.CountTTL <= 0 {
+		errs = append(errs, errors.New("count_ttl must be > 0"))
+	} else if c.CountTTL < c.CountWait {
+		errs = append(errs, errors.New("count_ttl must be >= count_wait"))
 	}
 	if c.Exemplars.MaxPerDataPoint < 0 {
 		errs = append(errs, errors.New("exemplars.max_per_data_point must be >= 0"))

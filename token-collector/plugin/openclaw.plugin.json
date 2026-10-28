@@ -16,6 +16,16 @@
         "type": "string",
         "description": "기록 파일(JSONL) 경로. 기본: ~/.openclaw/agentscope/agentscope-tool-results.jsonl"
       },
+      "otlpEndpoint": {
+        "type": "string",
+        "description": "결과별 토큰 수를 OTLP 스팬(agentscope.tool_result.count)으로 보낼 Collector OTLP/HTTP 주소(예: http://localhost:4318). 없으면 보내지 않고 JSONL에만 기록"
+      },
+      "otlpTimeoutMs": {
+        "type": "integer",
+        "minimum": 100,
+        "default": 5000,
+        "description": "Collector 전송 제한 시간(ms)"
+      },
       "tokenCount": {
         "type": "object",
         "additionalProperties": false,

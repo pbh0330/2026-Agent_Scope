@@ -167,7 +167,8 @@ func TestConnectorRealLogsMatchPython(t *testing.T) {
 			if err := c.ConsumeTraces(context.Background(), loadTraces(t, name)); err != nil {
 				t.Fatal(err)
 			}
-			clk.t = clk.t.Add(5 * time.Second) // grace(2s) 경과, openclaw.run 스팬도 이미 도착
+			// grace(2s) + count_wait(15s) 경과: 결과별 토큰 수가 없는 병렬 구간도 배분 없이 확정된다.
+			clk.t = clk.t.Add(20 * time.Second)
 			c.flush(context.Background())
 
 			wantCalls := map[string]float64{}
@@ -213,7 +214,7 @@ func TestConnectorCumulativeNoDoubleCount(t *testing.T) {
 	sink := new(consumertest.MetricsSink)
 	c, clk := newTestConnector(t, createDefaultConfig(), sink)
 	_ = c.ConsumeTraces(context.Background(), loadTraces(t, "week3-parallel"))
-	for i := 0; i < 3; i++ {
+	for i := 0; i < 5; i++ { // 병렬 구간은 grace+count_wait(17s) 뒤 확정
 		clk.t = clk.t.Add(5 * time.Second)
 		c.flush(context.Background())
 	}
@@ -328,7 +329,7 @@ func TestConnectorReplayAfterCompletionNotDoubleCounted(t *testing.T) {
 	sink := new(consumertest.MetricsSink)
 	c, clk := newTestConnector(t, createDefaultConfig(), sink)
 	_ = c.ConsumeTraces(context.Background(), loadTraces(t, "week3-sequential-batch"))
-	clk.t = clk.t.Add(5 * time.Second)
+	clk.t = clk.t.Add(20 * time.Second) // 배치 구간은 grace+count_wait(17s) 뒤 확정
 	c.flush(context.Background())
 	before := lastMetrics(t, sink)
 	callsBefore := sumBy(before[metricCalls], attrPattern)

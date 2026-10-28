@@ -75,7 +75,12 @@ OpenClaw ─OTLP─▶ otelcol-agentscope ─┬─ tokenattribution 커넥터 �
   limitations에 건수가 남는다.
 - Δ가 음수(컨텍스트 압축 등)면 0으로 배분하고 `negative_delta=true`.
 - 결과 내용은 플러그인 기록에 없다. 여기서는 `kind:"token_count"` 줄의 `toolCallId`·`countedTokens`만 읽는다.
-- 실시간 대시보드(커넥터)에는 아직 반영하지 않았다(2단계).
+- **스팬 파일만으로도 배분된다(10.28)**: 플러그인에 `otlpEndpoint`를 설정하면 결과별 토큰 수가
+  `agentscope.tool_result.count` 스팬으로 Collector에 가고, 원본 스팬 파일에도 저장된다. `--input`의 스팬 파일에
+  이 스팬이 있으면 `--tool-results` 없이 배분하며, 근거는 `otlp-json:<파일>#trace=..&span=..`(카운트 스팬)로 남는다.
+  둘 다 있으면 같은 `tool_call_id`는 `--tool-results` 값을 쓴다.
+- 이미지 등 결과 일부만 센 값(`skippedBlocks`/`agentscope.count.skipped_blocks` > 0)은 배분에 쓰지 않는다.
+- 같은 배분이 실시간 대시보드(커넥터)에도 반영된다(`../README.md` 6번).
 
 단가 버전: 참고 정가는 `anthropic-list-price@2026-09-28`, openclaw.json 단가는 원천에 버전이 없어서
 모델별 단가표 내용의 해시(`openclaw-config-sha256:xxxxxxxxxxxx`)를 버전으로 쓴다(단가 값만 해시, 키 등 다른 값은 미포함).

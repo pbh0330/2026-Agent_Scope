@@ -138,6 +138,10 @@ type Options struct {
 
 	// EvidencePrefix: evidence_source_refs 앞부분(예: "otlp-json:traces.jsonl"). 사용자 경로를 넣지 말 것.
 	EvidencePrefix string
+
+	// countSpanRefs: 스팬 파일 안의 결과별 토큰 수 스팬(agentscope.tool_result.count)에서 얻은 값의 근거
+	// (tool_call_id → "trace=..&span=.."). Build가 채운다.
+	countSpanRefs map[string]string
 }
 
 // Build는 스팬 묶음을 판정하고 UsageReport를 만든다.
@@ -180,9 +184,20 @@ func Build(spans []attribution.Span, opt Options) (*UsageReport, error) {
 		usedRef         bool
 		unmatchedSuffix bool
 	)
+	// 결과별 토큰 수: 스팬 파일 안의 카운트 스팬(플러그인이 Collector로 보낸 것) + --tool-results 파일.
+	// 같은 tool_call_id면 파일 값을 쓴다. 일부만 센 값(이미지 등)은 배분에 쓰지 않는다.
+	counts, refs := countsFromSpans(spans)
+	opt.countSpanRefs = refs
+	if opt.ToolResultCounts != nil || len(counts) > 0 {
+		for id, n := range opt.ToolResultCounts {
+			counts[id] = n
+		}
+	} else {
+		counts = nil
+	}
 	results := attribution.Classify(spans, opt.Attribution)
-	if opt.ToolResultCounts != nil {
-		results = attribution.AllocateByCounts(results, opt.ToolResultCounts)
+	if counts != nil {
+		results = attribution.AllocateByCounts(results, counts)
 	}
 	var parBatchNull int
 	for _, r := range results {
@@ -251,7 +266,7 @@ func Build(spans []attribution.Span, opt Options) (*UsageReport, error) {
 		"environment_id and profile_id are injected by the adapter because the telemetry carries only host-level resource attributes.",
 	}
 	switch {
-	case opt.ToolResultCounts == nil:
+	case counts == nil:
 		lim = append(lim, "Only sequential segments carry tokens and cost; parallel, batch and unattributed calls keep call count and duration only.")
 	default:
 		lim = append(lim, "Parallel and batch segments split their measured input increase in proportion to per-result token counts from the token-count API (attribution_method=parallel-token-count / batch-token-count); the split preserves the segment total.")
@@ -343,8 +358,12 @@ func newRecord(r attribution.Result, opt Options) UsageRecord {
 		}
 	}
 
-	if r.HasCount && opt.ToolResultsRef != "" && r.ToolCallID != "" {
-		rec.EvidenceSourceRefs = append(rec.EvidenceSourceRefs, fmt.Sprintf("tool-results:%s#toolCallId=%s", opt.ToolResultsRef, r.ToolCallID))
+	if r.HasCount && r.ToolCallID != "" {
+		if _, fromFile := opt.ToolResultCounts[r.ToolCallID]; fromFile && opt.ToolResultsRef != "" {
+			rec.EvidenceSourceRefs = append(rec.EvidenceSourceRefs, fmt.Sprintf("tool-results:%s#toolCallId=%s", opt.ToolResultsRef, r.ToolCallID))
+		} else if ref, ok := opt.countSpanRefs[r.ToolCallID]; ok {
+			rec.EvidenceSourceRefs = append(rec.EvidenceSourceRefs, fmt.Sprintf("%s#%s", opt.EvidencePrefix, ref))
+		}
 	}
 	if (r.Pattern == attribution.Sequential || r.AllocationMethod != "") && r.HasTokens {
 		tok := r.ApproxTokens
@@ -448,3 +467,24 @@ func strPtr(s string) *string {
 }
 
 func roundUSD(v float64) float64 { return math.Round(v*1e9) / 1e9 }
+
+// countsFromSpans는 스팬 묶음 안의 결과별 토큰 수 스팬을 tool_call_id → 토큰 수로 모은다.
+// 같은 tool_call_id가 여러 번 나오면 마지막 값을 쓰고, 일부만 센 값이 나오면 그 도구는 빼서 배분하지 않게 한다.
+func countsFromSpans(spans []attribution.Span) (map[string]int64, map[string]string) {
+	counts := map[string]int64{}
+	refs := map[string]string{}
+	for _, s := range spans {
+		id, n, partial, ok := attribution.ToolResultCount(s)
+		if !ok {
+			continue
+		}
+		if partial {
+			delete(counts, id)
+			delete(refs, id)
+			continue
+		}
+		counts[id] = n
+		refs[id] = fmt.Sprintf("trace=%s&span=%s", s.TraceID, s.SpanID)
+	}
+	return counts, refs
+}

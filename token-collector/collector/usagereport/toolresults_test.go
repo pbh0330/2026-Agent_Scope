@@ -174,3 +174,72 @@ func hasLimitation(rep *UsageReport, sub string) bool {
 	}
 	return false
 }
+
+func countSpan(id string, n, skipped int64) attribution.Span {
+	return attribution.Span{TraceID: "aa", SpanID: "cnt-" + id, Name: attribution.SpanToolResultCount,
+		Attrs: map[string]any{attribution.AttrToolCallID: id, attribution.AttrCountedTokens: n, attribution.AttrCountSkippedBlocks: skipped}}
+}
+
+// 스팬 파일 안의 결과별 토큰 수 스팬(플러그인이 Collector로 보낸 것)만으로도 병렬 구간을 배분한다.
+func TestParallelAllocatedFromCountSpansInTraceFile(t *testing.T) {
+	spans := loadFixture(t, "week3-parallel")
+	for i, id := range parallelCalls {
+		spans = append(spans, countSpan(id, int64(100*(i+1)), 0))
+	}
+	rep := mustBuild(t, spans, baseOpts())
+	var sum int64
+	n := 0
+	for _, r := range rep.Records {
+		if r.Pattern != string(attribution.Parallel) {
+			continue
+		}
+		n++
+		if r.ApproxInputTokens == nil || r.AttributionMethod != "parallel-token-count" {
+			t.Fatalf("배분 안 됨: %+v", r)
+		}
+		sum += *r.ApproxInputTokens
+		found := false
+		for _, ref := range r.EvidenceSourceRefs {
+			if strings.Contains(ref, "span=cnt-") {
+				found = true
+			}
+		}
+		if !found {
+			t.Fatalf("카운트 스팬 근거가 없음: %v", r.EvidenceSourceRefs)
+		}
+	}
+	if n != len(parallelCalls) || sum <= 0 {
+		t.Fatalf("n=%d sum=%d", n, sum)
+	}
+}
+
+// --tool-results 파일 값이 스팬 값보다 우선하고, 스팬의 일부만 센 값은 배분에 쓰지 않는다.
+func TestCountSourcesPrecedenceAndPartial(t *testing.T) {
+	spans := loadFixture(t, "week3-parallel")
+	for _, id := range parallelCalls {
+		spans = append(spans, countSpan(id, 100, 0))
+	}
+	opt := baseOpts()
+	opt.ToolResultCounts = map[string]int64{parallelCalls[0]: 700}
+	opt.ToolResultsRef = "agentscope-tool-results.jsonl"
+	rep := mustBuild(t, spans, opt)
+	vals := map[string]int64{}
+	for _, r := range rep.Records {
+		if r.Pattern == string(attribution.Parallel) && r.ApproxInputTokens != nil {
+			vals[*r.ToolCallID] = *r.ApproxInputTokens
+		}
+	}
+	if !(vals[parallelCalls[0]] > 6*vals[parallelCalls[1]]) {
+		t.Fatalf("파일 값(700)이 스팬 값(100)보다 우선해야 함: %v", vals)
+	}
+
+	partial := countSpan(parallelCalls[2], 50, 1) // 같은 도구의 일부만 센 값(다른 스팬)
+	partial.SpanID = "cnt-partial"
+	spans = append(spans, partial)
+	rep = mustBuild(t, spans, baseOpts())
+	for _, r := range rep.Records {
+		if r.Pattern == string(attribution.Parallel) && r.ApproxInputTokens != nil {
+			t.Fatalf("일부만 센 도구가 있는 구간은 배분하지 않음: %+v", r)
+		}
+	}
+}

@@ -22,6 +22,8 @@ connectors:
     metrics_flush_interval: 5s
     grace: 2s
     run_idle_timeout: 10m
+    count_wait: 15s      # 병렬·배치 구간 결과별 토큰 수 대기(플러그인 otlpEndpoint 설정 시)
+    count_ttl: 10m
     # openclaw.json의 모델 단가를 읽는다. 단가가 0(학교 게이트웨이)이면 Anthropic 공식 정가(참고용)로 대체.
     openclaw_config_path: '${env:USERPROFILE}\.openclaw\openclaw.json'   # Windows 사용자 폴더 기준
     use_reference_pricing: true

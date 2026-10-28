@@ -21,12 +21,28 @@ type TrackerConfig struct {
 	// 스팬이 다시 들어오면(Collector·SDK 재전송 등) 새 run으로 세지 않고 버린다.
 	// 0이면 RunIdleTimeout과 30분 중 큰 값.
 	CompletedRetention time.Duration
-	Options            Options
+	// CountWait: 병렬·배치 구간을 닫는 model.call 도착(+Grace) 뒤, 구간 도구들의 결과별 토큰 수
+	// (결과 기록 플러그인이 보내는 agentscope.tool_result.count 스팬)를 기다리는 최대 시간.
+	// 다 모이면 바로 배분해 확정하고, 이 시간이 지나도 모자라면 배분 없이 확정한다.
+	// 0이면 기다리지 않는다(그 시점에 가진 토큰 수로만 배분).
+	CountWait time.Duration
+	// CountTTL: 받은 결과별 토큰 수를 보관하는 시간(도구 스팬보다 먼저 도착할 수 있음). 0이면 10분.
+	CountTTL time.Duration
+	Options  Options
 }
 
 // DefaultTrackerConfig는 기본 설정이다.
 func DefaultTrackerConfig() TrackerConfig {
 	return TrackerConfig{Grace: 2 * time.Second, RunIdleTimeout: 10 * time.Minute, MaxRuns: 10000}
+}
+
+// maxCounts는 보관하는 결과별 토큰 수의 상한(메모리 보호). 넘으면 오래된 것부터 지운다.
+const maxCounts = 100000
+
+type countEntry struct {
+	tokens  int64
+	partial bool // 결과 일부(이미지 등)를 세지 못한 값: 배분에 쓰지 않고, 기다리지도 않는다
+	at      time.Time
 }
 
 type runState struct {
@@ -55,6 +71,10 @@ type Tracker struct {
 	// 새 run으로 다시 집계되던 문제(PR 리뷰)를 막는다.
 	completed map[RunKey]time.Time
 	dropped   uint64 // 완료된 run으로 늦게(또는 중복으로) 들어와 버린 스팬 수
+
+	// 결과별 토큰 수(tool_call_id 기준). usable은 AllocateByCounts에 그대로 넘기는 사본.
+	counts map[string]countEntry
+	usable map[string]int64
 }
 
 // NewTracker는 Tracker를 만든다. 0인 설정값은 기본값으로 채운다.
@@ -75,7 +95,52 @@ func NewTracker(cfg TrackerConfig) *Tracker {
 			cfg.CompletedRetention = cfg.RunIdleTimeout
 		}
 	}
-	return &Tracker{cfg: cfg, runs: map[RunKey]*runState{}, completed: map[RunKey]time.Time{}}
+	if cfg.CountWait < 0 {
+		cfg.CountWait = 0
+	}
+	if cfg.CountTTL <= 0 {
+		cfg.CountTTL = 10 * time.Minute
+	}
+	return &Tracker{cfg: cfg, runs: map[RunKey]*runState{}, completed: map[RunKey]time.Time{},
+		counts: map[string]countEntry{}, usable: map[string]int64{}}
+}
+
+// AddCount는 도구 결과 하나의 토큰 수(토큰 계산 API로 센 값)를 넣는다. 도구 스팬보다 먼저 와도 된다.
+// partial이면 결과 일부만 센 값이라 배분에 쓰지 않고, 그 구간은 기다리지 않고 배분 없이 확정한다.
+// 같은 tool_call_id가 다시 오면(재전송) 마지막 값을 쓴다.
+func (t *Tracker) AddCount(toolCallID string, tokens int64, partial bool, now time.Time) {
+	if toolCallID == "" || tokens < 0 {
+		return
+	}
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	t.counts[toolCallID] = countEntry{tokens: tokens, partial: partial, at: now}
+	if partial {
+		delete(t.usable, toolCallID)
+	} else {
+		t.usable[toolCallID] = tokens
+	}
+}
+
+// pruneCounts는 보관 기간이 지난 토큰 수를 지우고, 개수도 maxCounts 이내로 유지한다.
+func (t *Tracker) pruneCounts(now time.Time) {
+	for id, c := range t.counts {
+		if now.Sub(c.at) >= t.cfg.CountTTL {
+			delete(t.counts, id)
+			delete(t.usable, id)
+		}
+	}
+	if over := len(t.counts) - maxCounts; over > 0 {
+		ids := make([]string, 0, len(t.counts))
+		for id := range t.counts {
+			ids = append(ids, id)
+		}
+		sort.Slice(ids, func(i, j int) bool { return t.counts[ids[i]].at.Before(t.counts[ids[j]].at) })
+		for _, id := range ids[:over] {
+			delete(t.counts, id)
+			delete(t.usable, id)
+		}
+	}
 }
 
 func (t *Tracker) state(k RunKey, now time.Time) *runState {
@@ -129,10 +194,12 @@ func (t *Tracker) Flush(now time.Time) []Result {
 
 	var out []Result
 	for k, st := range t.runs {
-		done := (!st.endedAt.IsZero() && now.Sub(st.endedAt) >= t.cfg.Grace) ||
-			now.Sub(st.lastSeen) >= t.cfg.RunIdleTimeout
-		out = append(out, t.collect(st, now, done)...)
-		if done {
+		ended := !st.endedAt.IsZero() && now.Sub(st.endedAt) >= t.cfg.Grace
+		forced := now.Sub(st.lastSeen) >= t.cfg.RunIdleTimeout
+		rs, waiting := t.collect(st, now, ended, forced)
+		out = append(out, rs...)
+		// run이 끝났어도 결과별 토큰 수를 기다리는 병렬·배치 구간이 있으면 메모리에 남겨 둔다(최대 CountWait).
+		if forced || (ended && !waiting) {
 			t.complete(k, now)
 		}
 	}
@@ -144,11 +211,13 @@ func (t *Tracker) Flush(now time.Time) []Result {
 		}
 		sort.Slice(states, func(i, j int) bool { return states[i].lastSeen.Before(states[j].lastSeen) })
 		for _, st := range states[:over] {
-			out = append(out, t.collect(st, now, true)...)
+			rs, _ := t.collect(st, now, true, true)
+			out = append(out, rs...)
 			t.complete(st.key, now)
 		}
 	}
 	t.pruneCompleted(now)
+	t.pruneCounts(now)
 	return out
 }
 
@@ -177,24 +246,83 @@ func (t *Tracker) pruneCompleted(now time.Time) {
 	}
 }
 
-func (t *Tracker) collect(st *runState, now time.Time, done bool) []Result {
+// collect는 run에서 지금 확정할 수 있는 도구 결과를 돌려준다. waiting은 아직 확정하지 않은 결과가
+// 남았는지(결과별 토큰 수를 기다리는 병렬·배치 구간 등)이다.
+//
+//   - 순차·귀속 불가: 닫는 model.call 도착 + Grace 뒤, 또는 run 종료(ended) 시 확정(기존과 같음)
+//   - 병렬·배치: 구간 단위로 함께 확정. 닫는 model.call 도착 + Grace 뒤에
+//     구간 도구의 토큰 수가 다 모였거나(→ 배분) 기다릴 필요가 없으면(일부만 센 값, 구간 증가분 없음)
+//     바로, 아니면 CountWait까지 기다렸다가 배분 없이 확정한다. run이 끝나도 이 대기는 유지한다.
+//   - forced(유휴 시간 초과·메모리 상한): 기다리지 않고 지금 가진 값으로 확정
+func (t *Tracker) collect(st *runState, now time.Time, ended, forced bool) ([]Result, bool) {
+	results := ClassifyRun(st.key, st.spans, t.cfg.Options)
+	if len(t.usable) > 0 {
+		results = AllocateByCounts(results, t.usable)
+	}
+
+	// 병렬·배치 구간별 확정 가능 여부
+	segReady := map[segKey]bool{}
+	segments := map[segKey][]Result{}
+	for _, r := range results {
+		if (r.Pattern == Parallel || r.Pattern == Batch) && r.ClosingModelSpanID != "" {
+			k := segKey{r.TraceID, r.RunID, r.ClosingModelSpanID}
+			segments[k] = append(segments[k], r)
+		}
+	}
+	for k, members := range segments {
+		if forced {
+			segReady[k] = true
+			continue
+		}
+		closingAt, ok := st.arrival[k.closing]
+		if !ok || (!ended && now.Sub(closingAt) < t.cfg.Grace) {
+			continue
+		}
+		noWait := !members[0].HasSegmentDelta || t.cfg.CountWait <= 0
+		allCounted := true
+		for _, m := range members {
+			if c, has := t.counts[m.ToolCallID]; has && c.partial {
+				noWait = true
+			}
+			if !m.HasCount {
+				allCounted = false
+			}
+		}
+		segReady[k] = noWait || allCounted || now.Sub(closingAt) >= t.cfg.Grace+t.cfg.CountWait
+	}
+
 	var out []Result
-	for _, r := range ClassifyRun(st.key, st.spans, t.cfg.Options) {
+	waiting := false
+	for _, r := range results {
 		if st.emitted[r.ToolSpanID] {
 			continue
 		}
-		final := done
-		if !final && r.ClosingModelSpanID != "" {
-			if at, ok := st.arrival[r.ClosingModelSpanID]; ok && now.Sub(at) >= t.cfg.Grace {
-				final = true
+		var final bool
+		if (r.Pattern == Parallel || r.Pattern == Batch) && r.ClosingModelSpanID != "" {
+			final = segReady[segKey{r.TraceID, r.RunID, r.ClosingModelSpanID}]
+		} else {
+			final = ended || forced
+			if !final && r.ClosingModelSpanID != "" {
+				if at, ok := st.arrival[r.ClosingModelSpanID]; ok && now.Sub(at) >= t.cfg.Grace {
+					final = true
+				}
 			}
 		}
 		if final {
 			st.emitted[r.ToolSpanID] = true
 			out = append(out, r)
+		} else {
+			waiting = true
 		}
 	}
-	return out
+	return out, waiting
+}
+
+// PendingCounts는 보관 중인 결과별 토큰 수 개수(모니터링·테스트용).
+func (t *Tracker) PendingCounts() int {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	return len(t.counts)
 }
 
 // DroppedSpans는 이미 완료된 run으로 들어와서 버린 스팬 수(누적, 모니터링용).

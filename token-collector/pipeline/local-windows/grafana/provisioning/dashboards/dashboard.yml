@@ -1,0 +1,13 @@
+# 대시보드 JSON은 docker 구성과 같은 파일(../../grafana/provisioning/dashboards/*.json)을 쓴다.
+# 경로는 start-local.cmd가 환경변수 AGENTSCOPE_DASHBOARDS로 넘겨준다(Grafana 프로비저닝은 ${환경변수}를 지원).
+apiVersion: 1
+
+providers:
+  - name: openclaw
+    orgId: 1
+    folder: ""
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    options:
+      path: ${AGENTSCOPE_DASHBOARDS}

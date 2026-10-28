@@ -66,6 +66,8 @@ func newConnector(logger *zap.Logger, cfg *Config, next consumer.Metrics) (*toke
 			Grace:          cfg.Grace,
 			RunIdleTimeout: cfg.RunIdleTimeout,
 			MaxRuns:        cfg.MaxRuns,
+			CountWait:      cfg.CountWait,
+			CountTTL:       cfg.CountTTL,
 			Options:        attribution.Options{IncludeCacheInPrompt: cfg.IncludeCacheInPrompt},
 		}),
 		pricing: pricing,
@@ -110,6 +112,7 @@ func (c *tokenConnector) Shutdown(ctx context.Context) error {
 }
 
 // ConsumeTraces는 관련 스팬(model.call / tool.execution / openclaw.run)만 골라 Tracker에 넣는다.
+// 결과 기록 플러그인이 보내는 결과별 토큰 수 스팬(agentscope.tool_result.count)은 병렬·배치 구간 배분 근거로 넣는다.
 func (c *tokenConnector) ConsumeTraces(_ context.Context, td ptrace.Traces) error {
 	now := c.now()
 	rss := td.ResourceSpans()
@@ -122,6 +125,12 @@ func (c *tokenConnector) ConsumeTraces(_ context.Context, td ptrace.Traces) erro
 				switch sp.Name() {
 				case attribution.SpanModelCall, attribution.SpanToolExec, attribution.SpanRun:
 					c.tracker.Add(toSpan(sp), now)
+				case attribution.SpanToolResultCount:
+					if id, tokens, partial, ok := attribution.ToolResultCount(toSpan(sp)); ok {
+						c.tracker.AddCount(id, tokens, partial, now)
+					} else {
+						c.logger.Debug("tokenattribution: 필수 속성이 없는 결과별 토큰 수 스팬 무시", zap.String("trace_id", sp.TraceID().String()))
+					}
 				}
 			}
 		}

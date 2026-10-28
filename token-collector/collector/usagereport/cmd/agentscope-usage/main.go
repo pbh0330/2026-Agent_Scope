@@ -44,7 +44,7 @@ func run(args []string, stdout, stderr io.Writer) error {
 	profile := fs.String("profile", "", "profile_id (필수)")
 	inventory := fs.String("inventory", "", "자산 매핑에 쓸 InventorySnapshot(snapshot.json). 없으면 전부 unmatched")
 	var toolResults multi
-	fs.Var(&toolResults, "tool-results", "결과 기록 플러그인(agentscope-token-guard)의 JSONL. 주면 병렬·배치 구간을 결과별 토큰 수 비율로 배분. 여러 번 지정 가능")
+	fs.Var(&toolResults, "tool-results", "결과 기록 플러그인(agentscope-token-guard)의 JSONL. 주면 병렬·배치 구간을 결과별 토큰 수 비율로 배분(스팬 파일의 카운트 스팬보다 우선). 여러 번 지정 가능")
 	ocConfig := fs.String("openclaw-config", "", "모델 단가를 읽을 openclaw.json (선택)")
 	refPricing := fs.Bool("reference-pricing", true, "설정 단가가 0이거나 없으면 Anthropic 공식 정가(참고용)를 쓴다")
 	includeCache := fs.Bool("include-cache-in-prompt", false, "프롬프트 토큰에 cache read/write를 포함(커넥터 옵션과 같게 맞출 것)")

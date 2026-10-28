@@ -22,7 +22,32 @@ const (
 	SpanModelCall = "openclaw.model.call"
 	SpanToolExec  = "openclaw.tool.execution"
 	SpanRun       = "openclaw.run"
+	// SpanToolResultCount는 결과 기록 플러그인(agentscope-token-guard)이 도구 결과 하나의 토큰 수를 센 뒤
+	// 보내는 짧은 스팬이다. 커넥터·usage.json 생성기가 병렬·배치 구간 배분 근거로 쓴다.
+	SpanToolResultCount = "agentscope.tool_result.count"
 )
+
+// 결과별 토큰 수 스팬(SpanToolResultCount) 속성 키. tool_call_id는 AttrToolCallID를 같이 쓴다.
+const (
+	AttrCountedTokens      = "agentscope.counted_tokens"
+	AttrCountSkippedBlocks = "agentscope.count.skipped_blocks"
+	AttrCountSource        = "agentscope.count.source"
+)
+
+// ToolResultCount는 결과별 토큰 수 스팬을 읽는다. 이 스팬이 아니거나 필수 속성이 없으면 ok=false.
+// partial은 결과 일부(이미지 등)를 세지 못한 값인지다.
+func ToolResultCount(s Span) (toolCallID string, tokens int64, partial bool, ok bool) {
+	if s.Name != SpanToolResultCount {
+		return "", 0, false, false
+	}
+	toolCallID = s.Str(AttrToolCallID, "")
+	tokens, has := s.Int(AttrCountedTokens)
+	if toolCallID == "" || !has || tokens < 0 {
+		return "", 0, false, false
+	}
+	skipped, _ := s.Int(AttrCountSkippedBlocks)
+	return toolCallID, tokens, skipped > 0, true
+}
 
 // OpenClaw 스팬 속성 키.
 const (

@@ -24,6 +24,10 @@ connectors:
     metrics_flush_interval: 5s
     grace: 2s
     run_idle_timeout: 10m
+    # 병렬·배치 구간: 결과 기록 플러그인(agentscope-token-guard)이 보내는 결과별 토큰 수
+    # (agentscope.tool_result.count 스팬)를 닫는 model.call 도착 뒤 최대 15초 기다렸다가 배분한다.
+    count_wait: 15s
+    count_ttl: 10m
     # 컨테이너 안에서는 openclaw.json을 읽지 않는다(API 키가 같은 파일에 있음).
     # 학교 게이트웨이 단가는 0이므로 Anthropic 공식 정가(참고용)로 비용을 계산한다(pricing_source 라벨로 구분).
     use_reference_pricing: true

@@ -71,11 +71,13 @@ cd plugin && node --test test/*.test.ts                   # 플러그인: 크기
 | 10.03 | docker-compose를 커스텀 Collector로 교체, Tempo 추가, exemplar가 스크랩 주기에 안 잡히던 문제 수정 |
 | 10.04 | docker-compose 실기동 확인(대시보드 도구별 표시, 점 → Tempo 이동, 원본 스팬 파일·usage.json 생성). 미리 빌드한 실행 파일용 이미지 추가 |
 | 10.06 | 병렬·배치 구간 배분(방안 B: 토큰 계산 API로 결과마다 세어 비율 배분) 구현, OpenClaw 플러그인(결과 기록·소비 브레이크) 추가 — 테스트베드 실측 전 |
+| 10.12~13 | PC에 플러그인 설치·실검증, 학교 게이트웨이용 토큰 계산(openai-usage) 추가. 병렬 배분 오차 7건 모두 ±3% 이내(최대 45토큰) |
+| 10.28 | 병렬·배치 배분 실시간 반영: 플러그인이 결과별 토큰 수를 OTLP 스팬으로 Collector에 보내고, 커넥터가 구간 단위로 배분해 메트릭에 반영(`count_wait`). usage.json도 스팬 파일의 카운트 스팬으로 배분. 대시보드에 순차·배분 구분과 배분 근거 누락 패널 추가 |
 
 ## 남은 일
 
 - 플러그인 테스트베드 실측: 토큰 계산 API 접근(엔드포인트·키), 훅 호출 순서(결과 저장 → 다음 model.call), 승인 화면 동작
-- 병렬·배치 배분 정확도 검증(같은 조합을 순차·병렬로 실행해 비교), 커넥터(실시간 대시보드)에 배분 반영
+- 실시간 배분 PC 실측(플러그인 `otlpEndpoint` 설정 → Grafana 패널·Tempo 카운트 스팬 확인), 테스트베드 검증 실험(3개 이상 병렬·배치·이미지)
 - 대시보드 모델 호출 지연 p95 패널 "No data" — 참조 메트릭 이름 확인 후 수정
 - 스캐너 InventorySnapshot으로 usage.json 자산 매핑(matched/ambiguous) 실데이터 확인
 - 환경·Gateway ID를 텔레메트리에 붙이는 방식(`OTEL_RESOURCE_ATTRIBUTES`) 실측 후 usage.json·메트릭에 반영

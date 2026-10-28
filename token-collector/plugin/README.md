@@ -1,10 +1,11 @@
 # agentscope-token-guard — OpenClaw 플러그인
 
-토큰 파트의 OpenClaw 플러그인. 두 가지를 한다.
+토큰 파트의 OpenClaw 플러그인. 세 가지를 한다.
 
 | 기능 | 훅 | 내용 |
 |---|---|---|
 | 결과 기록 + 토큰 계산 | `tool_result_persist` | 도구 결과의 크기·특징값을 기록하고, 토큰 계산 API로 결과마다 토큰 수를 센다. `agentscope-usage --tool-results`가 이 값으로 병렬·배치 구간 증가분을 나눈다(정확도 개선 방안 B) |
+| 실시간 반영 | (토큰 계산 완료 시) | `otlpEndpoint`를 주면 결과별 토큰 수를 OTLP 스팬(`agentscope.tool_result.count`)으로 Collector에 보내, 커넥터가 병렬·배치 구간 배분을 대시보드에 바로 반영한다(아래) |
 | 소비 브레이크 | `before_tool_call` | run·일 단위 누적 소비(결과 바이트, 센 토큰 수, 도구 호출 수, 같은 도구 연속 호출)를 기준과 비교해 경고 기록 / 승인 요구 / 차단 |
 
 - **결과 내용은 저장하지 않는다.** 크기·글자 수·비ASCII 비율·이미지 픽셀 크기만 남긴다. 토큰 계산 시에는 결과 내용을
@@ -67,13 +68,26 @@ tokenCount: { enabled: true, api: "openai-usage", baseUrl: "https://<게이트�
 
 기준값은 예시다. 테스트베드 정상 사용 데이터로 기준선을 만든 뒤 정하고, 처음에는 `warn`으로 오탐 수준을 확인한다.
 
+**실시간 대시보드 반영(10.28)**: `config`에 Collector OTLP/HTTP 주소를 넣는다(OpenClaw `diagnostics.otel.endpoint`와 같은 Collector).
+
+```json5
+otlpEndpoint: "http://localhost:4318",   // /v1/traces는 자동으로 붙음. 없으면 보내지 않음(JSONL만)
+otlpTimeoutMs: 5000
+```
+
+토큰 계산이 끝날 때마다 짧은 스팬 하나를 보낸다. trace id는 `before_tool_call`의 `ctx.trace.traceId`(OpenClaw 진단 trace)를
+그대로 써서 Tempo에서 같은 요청 아래에 보인다. 속성은 `gen_ai.tool.call.id`, `openclaw.toolName`, `agentscope.counted_tokens`,
+`agentscope.count.skipped_blocks`, `agentscope.count.source`뿐이고 결과 내용은 없다. 전송 실패는 `count_export_error`로 기록만 하고
+에이전트 실행에는 영향이 없다. 커넥터 쪽 설정은 `count_wait`(기본 15초, `../collector/README.md`).
+
 ## 기록 형식 (JSONL, `v:1`)
 
 | kind | 언제 | 주요 필드 |
 |---|---|---|
-| `tool_result` | 결과 저장 직전 | `toolCallId`, `runId`, `toolName`, `textBytes`, `textChars`, `nonAsciiRatio`, `images[{mimeType,bytes,width,height}]`, `isError`, `isSynthetic` |
-| `token_count` | 토큰 계산 완료 | `toolCallId`, `countedTokens`(= T_i − T_0), `probeTotal`, `probeBaseline`, `model`, `source`(계산 방식), `skippedBlocks`(세지 못한 블록 수. 0보다 크면 `agentscope-usage`가 배분에 쓰지 않음), `durationMs` |
+| `tool_result` | 결과 저장 직전 | `toolCallId`, `runId`, `traceId`, `toolName`, `textBytes`, `textChars`, `nonAsciiRatio`, `images[{mimeType,bytes,width,height}]`, `isError`, `isSynthetic` |
+| `token_count` | 토큰 계산 완료 | `toolCallId`, `traceId`, `countedTokens`(= T_i − T_0), `probeTotal`, `probeBaseline`, `model`, `source`(계산 방식), `skippedBlocks`(세지 못한 블록 수. 0보다 크면 `agentscope-usage`가 배분에 쓰지 않음), `durationMs` |
 | `token_count_error` | 토큰 계산 실패 | `toolCallId`, `error`(200자 이내) |
+| `count_export_error` | Collector 전송 실패(`otlpEndpoint` 설정 시) | `toolCallId`, `traceId`, `error`(200자 이내) |
 | `brake` | 기준 초과 | `level`(warn/approve/block), `mode`, `enforced`, `reasons[{scope,metric,value,limit}]`, `run` 누적값 |
 | `brake_resolution` | 승인 요구 응답 | `decision`(allow-once/allow-always/deny/timeout/cancelled) |
 
@@ -87,7 +101,8 @@ node --test test/*.test.ts      # Node 22.18 이상(TypeScript 타입 제거 실
 ```
 
 가짜 토큰 계산 서버로 요청 형식·기준값 재사용·실패 처리, 크기 측정(PNG·JPEG·GIF·WebP 헤더), 결과 내용 미기록,
-브레이크 단계(warn은 개입 안 함, 승인 후 같은 run 재질문 안 함, 차단 유지, 일 단위 누적)를 확인한다.
+브레이크 단계(warn은 개입 안 함, 승인 후 같은 run 재질문 안 함, 차단 유지, 일 단위 누적), 가짜 Collector로
+OTLP 본문 형식(trace id 연결, 결과 내용 없음)과 전송 실패 처리를 확인한다.
 
 ## 테스트베드에서 확인할 것
 

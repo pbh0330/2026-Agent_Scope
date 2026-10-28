@@ -32,6 +32,14 @@ otelcol-agentscope-config.yaml  로컬 PC(Windows) 실행 설정 예시
 4. 판정은 매번 run 전체를 다시 계산하므로 오프라인 분석(파이썬)과 결과가 같다.
    순차 구간 토큰 = `다음.input - 이전.input - 이전.output` (직전 응답 재편입분 제외).
 5. `metrics_flush_interval`(기본 5초)마다 누적값 전체를 Prometheus 익스포터로 보낸다.
+6. **병렬·배치 구간 배분(10.28)**: 결과 기록 플러그인(`plugin/`, `otlpEndpoint` 설정)이 결과마다 센 토큰 수를
+   `agentscope.tool_result.count` 스팬으로 같은 4318 포트에 보낸다. 커넥터는 이 값을 `tool_call_id`로 보관하다가
+   (`count_ttl`, 기본 10분, 도구 스팬보다 먼저 와도 됨) 병렬·배치 구간을 **구간 단위로** 확정한다.
+   구간 도구의 토큰 수가 다 모이면 닫는 model.call 도착 + grace 뒤 바로 비율 배분(합계 = 구간 증가분),
+   모자라면 `count_wait`(기본 15초)까지 기다렸다가 배분 없이 확정하고 `missing_counts`로 센다.
+   이미지 등 결과 일부만 센 값(`agentscope.count.skipped_blocks` > 0)이 섞이면 기다리지 않고 배분 없이 확정한다.
+   run이 끝나도 기다리는 구간이 있으면 그 구간만 남겨 둔다. 플러그인이 없는 환경에서도 병렬·배치 결과가
+   `count_wait`만큼 늦게 확정될 뿐 나머지 동작은 같다.
 
 도구 실행 후 대시보드 반영까지는 보통 10~40초 걸린다. 다음 model.call이 끝나야
 입력 토큰을 알 수 있는 공식 구조상의 지연 + OpenClaw 전송 주기(5초) + Prometheus 스크랩
@@ -42,10 +50,10 @@ otelcol-agentscope-config.yaml  로컬 PC(Windows) 실행 설정 예시
 | 메트릭 | 설명 | 주요 라벨 |
 |---|---|---|
 | `openclaw_tool_attribution_calls_total` | 도구 호출 수 | `tool_name`, `tool_source`, `mcp_server`, `attribution_pattern` |
-| `openclaw_tool_attribution_tokens_total` | 순차 구간에서 도구에 귀속된 근사 토큰(추정치) | `tool_name`, `mcp_server`, `gen_ai_request_model`, `attribution_estimated="true"` |
+| `openclaw_tool_attribution_tokens_total` | 도구에 귀속된 근사 토큰(추정치). `attribution_pattern=sequential`은 순차 실측, `parallel`/`batch`는 결과별 토큰 수 비율 배분 | `tool_name`, `mcp_server`, `attribution_pattern`, `gen_ai_request_model`, `attribution_estimated="true"` |
 | `openclaw_tool_attribution_cost_usd_total` | 위 토큰 × 입력 단가(추정치) | 위 + `pricing_source`(`config` / `reference_list_price`) |
 | `openclaw_tool_attribution_duration_milliseconds` | 도구 실행 시간 히스토그램(병렬·배치의 대리 지표) | `tool_name`, `attribution_pattern` |
-| `openclaw_tool_attribution_anomalies_total` | 신뢰도 낮은 사례 수 | `reason`(`negative_delta`/`missing_tokens`/`missing_timestamps`) |
+| `openclaw_tool_attribution_anomalies_total` | 신뢰도 낮은 사례 수 | `reason`(`negative_delta`/`missing_tokens`/`missing_counts`/`missing_timestamps`) |
 | `openclaw_tool_attribution_pending_runs` | 확정 대기 중인 run 수 | |
 | `openclaw_tool_attribution_dropped_spans_total` | 이미 확정된 run으로 늦게·중복(재전송)으로 들어와 집계에서 뺀 스팬 수 | |
 
