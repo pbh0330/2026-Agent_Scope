@@ -9,6 +9,8 @@ pipeline/data/*
 collector/_build/
 collector/usagereport/agentscope-usage
 *.exe
+# Docker 없이 쓰던 Windows 로컬 구성(개인 PC 경로가 들어 있음)
+pipeline/local-windows/
 # 미리 빌드한 Linux 실행 파일(Dockerfile.prebuilt용)
 collector/otelcol-agentscope-linux
 *.zip
