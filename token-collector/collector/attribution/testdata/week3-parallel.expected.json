@@ -1,0 +1,38 @@
+[
+ {
+  "trace_id": "e30df998446bd3d258c129ff14d8f610",
+  "run_id": "5979f5f38c7d91e1",
+  "tool_span_id": "f2d58ebb0b26a08c",
+  "tool_name": "fs__read_text_file",
+  "pattern": "parallel",
+  "approx_tokens": null,
+  "duration_ms": 79.0
+ },
+ {
+  "trace_id": "e30df998446bd3d258c129ff14d8f610",
+  "run_id": "5979f5f38c7d91e1",
+  "tool_span_id": "62f10936e47e631b",
+  "tool_name": "fs__read_text_file",
+  "pattern": "parallel",
+  "approx_tokens": null,
+  "duration_ms": 153.0
+ },
+ {
+  "trace_id": "e30df998446bd3d258c129ff14d8f610",
+  "run_id": "5979f5f38c7d91e1",
+  "tool_span_id": "b110d46fbffcbfd5",
+  "tool_name": "fs__read_text_file",
+  "pattern": "parallel",
+  "approx_tokens": null,
+  "duration_ms": 152.0
+ },
+ {
+  "trace_id": "e30df998446bd3d258c129ff14d8f610",
+  "run_id": "5979f5f38c7d91e1",
+  "tool_span_id": "7b5bdcebc94db41b",
+  "tool_name": "fs__read_text_file",
+  "pattern": "parallel",
+  "approx_tokens": null,
+  "duration_ms": 151.0
+ }
+]

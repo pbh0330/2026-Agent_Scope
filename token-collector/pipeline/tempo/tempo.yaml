@@ -1,0 +1,33 @@
+# Tempo(트레이스 저장소) 단일 실행(single binary) 설정.
+# Grafana Tempo 공식 예제(example/docker-compose/single-binary/tempo.yaml, Tempo 3.0)에서
+# 이 프로젝트에 필요 없는 부분(메트릭 생성기, MCP 서버)을 뺀 것.
+#
+# Collector가 OTLP/HTTP(4318)로 트레이스를 보내고, Grafana·대시보드는 3200 포트로 조회한다
+# (GET /api/traces/<traceId>). 4317/4318은 docker 네트워크 안에서만 쓰고 호스트에 열지 않는다
+# (호스트 4318은 Collector가 사용).
+
+stream_over_http_enabled: true
+
+server:
+  http_listen_port: 3200
+  log_level: info
+
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: "tempo:4317"
+        http:
+          endpoint: "tempo:4318"
+
+storage:
+  trace:
+    backend: local
+    wal:
+      path: /var/tempo/wal
+    local:
+      path: /var/tempo/blocks
+
+usage_report:
+  reporting_enabled: false
