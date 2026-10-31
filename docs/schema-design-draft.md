@@ -1,11 +1,13 @@
 # Agent Scope 전체 데이터 스키마 — PR 통합 검토안
 
+> 2026-10-31: 사용자 확인에 따라 Gateway 포함 8종 분류를 확정 반영했습니다. 분류 확정과 별개로 ID 생성 방식·원천 명령·관계 세부 규칙 및 구현 지원 여부는 검증·협의 대상입니다.
+
 > 작성일: 2026-09-29 · 상태: 팀 협의 전 초안
-> 문서 버전: v0.6 · 수정일: 2026-10-02 (KST)
+> 문서 버전: v0.7 · 수정일: 2026-10-31 (KST)
 > 공유 상태: 팀 검토용 협의안. 구현 계약 확정 전 검토를 위해 공유한다.
 > 검토 기준: 열린 PR #1, #3, #4, #5, #6, #7의 조회 시점 HEAD 및 로컬 v0.5 편집본. PR별 기준 commit과 불일치는 15절 참조.
-> 프로젝트 필드·필수 조건·허용값은 모두 제안이며 합의 완료를 뜻하지 않는다. 11~16절에 생산자·소비자 매핑과 결정 사항을 정리한다.
-> 데이터 계약 버전: `0.6.0-draft` · 신규 연계 계약을 포함한 제안 버전. 기존 생산자가 지원한다는 의미가 아님.
+> 8종 분류는 확정 사항이다. 그 밖의 프로젝트 필드·필수 조건·관계 허용값은 구현 계약 초안이며 합의 완료를 뜻하지 않는다. 11~16절에 생산자·소비자 매핑과 결정 사항을 정리한다.
+> 데이터 계약 버전: `0.7.0-draft` · 신규 연계 계약을 포함한 제안 버전. 기존 생산자가 지원한다는 의미가 아님.
 > 설계 기준 MCP 규격: **2026-07-28**
 > 대상 환경: OpenClaw 기반 테스트베드. 정확한 설치 버전·commit은 담당자가 확인하여 기록한다.
 
@@ -20,8 +22,8 @@
 문서 버전은 설명·표·협의 내용의 변경을 추적하기 위한 값으로 본문에서 관리한다. `schema_version`은 프로그램이 주고받는 데이터 형식의 버전이다. Notion 문구 수정만으로 데이터 계약 버전을 올리지는 않으며, 필드·자료형·의미·필수 조건을 변경할 때 별도로 검토한다.
 
 - 공격표면 A(통신), B(공급망), C(권한·자격증명)를 모두 분석 범위로 유지한다. B·C의 저장 위치와 분석 범위는 별개다.
-- 스캐너 수집 범주는 Server, Tool, Resource/Template/Prompt, Skill, Plugin, 권한·인증 참조, Node다. 이번 구현의 자산 유형과 집계도 이 7종으로 고정한다.
-- Gateway·Host·Client·Agent는 독립 자산으로 만들지 않고 profile_id 및 context로 표현한다. 권한·인증은 permission_auth 유형으로 통합하며 Credential을 별도 여덟 번째 유형으로 만들지 않는다. 관계 이름과 세부 필드는 협의 대상으로 유지한다.
+- 공통 자산 분류는 Gateway, Node, MCP Server, Tool, Resource/Template/Prompt, Skill, Plugin, Permission/Auth의 8종으로 확정한다. 유형별 실제 수집 지원 여부는 별도로 기록한다.
+- Gateway는 독립 자산으로 관리한다. Host·Client·Agent는 profile_id 및 context로 표현한다. 권한·인증은 permission_auth 유형으로 통합하며 Credential을 별도 아홉 번째 유형으로 만들지 않는다. 관계 이름과 세부 필드는 협의 대상으로 유지한다.
 - 자산 상태는 공유 공격표면 문서의 6개 의미를 유지한다. 저장 구조와 판정 담당은 협의한다.
 - MCP 공식 객체는 `mcp.definition`에, OpenClaw 원천 설정은 `product.config`에 구분한다.
 - 프로젝트가 만든 ID·관계·상태 판정·정규화 속성은 공식 필드와 별도로 저장한다.
@@ -94,11 +96,11 @@ flowchart LR
 
 | 필드 | 자료형 | 필수 | 의미 |
 |---|---|---|---|
-| `schema_version` | string | O | 예제는 `0.6.0-draft` |
+| `schema_version` | string | O | 예제는 `0.7.0-draft` |
 | `snapshot_id` | string | O | 수집 실행마다 새 ID, 재전송은 유지 |
 | `environment_id` | string | O | 테스트베드의 논리 환경 ID |
 | `profile_id` | string | O | 수집 대상 설치·프로필 ID |
-| `context` | object | O | gateway_ref:string 선택. Gateway 설정·조회 대상의 안전한 문맥 ID. 자산 수에 포함하지 않음 |
+| `context` | object | O | gateway_ref:string 선택. 같은 스냅샷의 Gateway asset_id 참조. Gateway는 자산 수에 포함 |
 | `basis` | object | O | 설계 기준. `mcp_spec_version: "2026-07-28"` |
 | `environment` | object | O | `openclaw_version`, `openclaw_commit`: string 또는 null. 미확인이면 `version_note` 필수 |
 | `producer` | object | O | 수집기 `name`, `version` 문자열 |
@@ -112,16 +114,16 @@ flowchart LR
 
 시각은 시간대를 포함한 UTC 문자열이다. 미확인은 허용한 필드에서만 null로 표현한다. 선택 필드 생략은 미제공이며 안전·없음·false를 의미하지 않는다. 빈 배열만으로 정상적인 빈 수집을 판정하지 않는다.
 
-## 3. Asset 공통 구조와 고정된 7종 자산
+## 3. Asset 공통 구조와 확정된 8종 자산
 
 | 필드 | 자료형 | 필수 | 규칙 |
 |---|---|---|---|
 | `asset_id` | string | O | 반복 수집 시 유지하는 ID |
-| `asset_type` | string | O | 아래 7종만 허용 |
+| `asset_type` | string | O | 아래 8종만 허용 |
 | `asset_subtype` | string | 조건부 | resource_prompt면 resource/resource_template/prompt. permission_auth면 permission/authentication |
 | `name` | string | O | 표시 이름 |
-| `owner_ref` | string | 조건부 | Tool·Resource/Template/Prompt는 소속 Server 필수. Node 소속이 확인된 Server는 Node 참조. Gateway 소속 Server는 생략하고 context 사용 |
-| `context` | object | O | profile_id:string 필수. gateway_ref/agent_id/client_ref:string은 확인된 경우 선택. Gateway 등 문맥 참조는 asset_id가 아님 |
+| `owner_ref` | string | 조건부 | Tool·Resource/Template/Prompt는 소속 Server 필수. Server는 확인된 선언 주체 Gateway·Node·Plugin의 asset_id 참조. 미확인이면 생략하고 수집 제약 기록. 실행 위치는 별도 속성 |
+| `context` | object | O | profile_id:string 필수. gateway_ref/agent_id/client_ref:string은 확인된 경우 선택. gateway_ref는 Gateway asset_id이며 agent_id/client_ref는 문맥 참조 |
 | `evidence_refs` | string[] | O | 하나 이상의 근거 ID |
 | `mcp` | object | 조건부 | 공식 객체가 수집됐을 때 |
 | `product` | object | 조건부 | OpenClaw 설정·설치 원천이 있을 때 |
@@ -129,6 +131,7 @@ flowchart LR
 
 | asset_type | 원천·저장 내용 | 식별 기준 제안 |
 |---|---|---|
+| `gateway` | Gateway 식별·설정·서버 선언 근거 | 환경·프로필 범위 + device identity 후보, 실제 값 검증 필요 |
 | `node` | Node 설정·식별 정보. 정확한 원천 키는 설치 버전 확인 후 | profile_id + Node 식별자 |
 | `mcp_server` | 선언 위치·서버 설정, 확보한 발견 응답 | 선언 주체 + 선언 위치 + 서버 키 |
 | `tool` | 공식 Tool 객체 | 서버 ID + 유형 + name |
@@ -248,9 +251,11 @@ subject_ref는 “누구에게 노출·호출 가능한가”의 대상이다. �
 
 ## 7. 관계·근거·수집 결과
 
+Server의 선언 소속과 실행 위치는 구분한다. `project.execution_location`은 선택 객체 후보로 `location_ref:string`, `evidence_refs:string[]`를 기록하며 미확인이면 생략한다. URL이나 owner_ref만으로 실행 위치를 추정하지 않는다. P2의 Gateway 선언·Node VM 실행을 검증 사례로 사용한다. Node identity 원천과 CLI 명령은 실측 대기다. 페어링 목록 실패·부분 수집은 관계 해제나 Node 삭제의 근거가 아니다.
+
 ### Relation
 
-아래 6개 관계는 구체화 과정에서 제안한 후보이며 확정 enum이 아니다. 공유본 관계와 스캐너 결과의 대응은 12절에서 협의한다. MAY_ACCESS·MAY_SEND_TO 등 추론 생성은 스캐너 필수 업무로 확정하지 않는다.
+아래 관계는 구체화 과정에서 제안한 후보이며 확정 enum이 아니다. 공유본 관계와 스캐너 결과의 대응은 12절에서 협의한다. MAY_ACCESS·MAY_SEND_TO 등 추론 생성은 스캐너 필수 업무로 확정하지 않는다.
 
 관계는 그래프의 연결선에 해당한다. source_asset_ref는 시작 자산을, target은 연결 대상을 가리킨다. evidence_refs를 따라가면 그 연결을 만든 근거를 확인할 수 있다.
 
@@ -258,7 +263,8 @@ subject_ref는 “누구에게 노출·호출 가능한가”의 대상이다. �
 
 | 관계 | 출발 → 대상 |
 |---|---|
-| DECLARES | Node → Server. Gateway의 선언은 Server context와 설정 증적으로 표현 |
+| DECLARES | Gateway/Node/Plugin → Server. 원천 설정의 선언 주체를 연결 |
+| PAIRED_WITH | Gateway → Node. 페어링 근거 기반 후보이며 현재 접속과 구분 |
 | ADVERTISES | Server → Tool/Resource/Prompt |
 | ASSOCIATED_WITH | Skill/Plugin → Server/Tool |
 | MAY_EXPOSE_TO | 관련 자산 → Agent/Host |
@@ -267,9 +273,9 @@ subject_ref는 “누구에게 노출·호출 가능한가”의 대상이다. �
 
 TargetRef는 다음 구조 중 하나다. 키의 값은 모두 문자열이다.
 
-- 자산: `kind: asset`, `asset_ref`. 같은 스냅샷의 7종 자산만 참조한다.
+- 자산: `kind: asset`, `asset_ref`. 같은 스냅샷의 8종 자산만 참조한다.
 - Agent: `kind: agent`, `profile_id`, `agent_key`.
-- Host: `kind: host`, `profile_id`, `gateway_ref`. Gateway는 문맥 참조이며 독립 자산이 아니다.
+- Host: `kind: host`, `profile_id`, `gateway_ref`. gateway_ref는 Gateway asset_id 참조이며 Host 문맥 자체는 별도 자산이 아니다.
 - 접근 자원: `kind: backend_resource`, `resource_kind`, `normalized_locator` 또는 `scope_category`.
 - 외부 목적지: `kind: external_destination`, `destination_kind`, `normalized_endpoint` 또는 `scope_category`.
 
@@ -314,8 +320,8 @@ scope 후보: gateway_config/node_config/skill_files/plugin_manifest/server_disc
 
 ### 참조·증적·시각의 공통 규칙
 
-- `owner_ref`, `source_asset_ref`, `target.asset_ref`, 수집 결과의 null이 아닌 `target_ref`는 같은 스냅샷의 7종 자산 ID만 참조한다. Gateway·Host·Client·Agent 문맥 ID를 이 필드에 넣지 않는다.
-- 각 자산 context.profile_id는 최상위 profile_id와 같아야 한다. gateway_ref는 최상위 context.gateway_ref와 대응하며 외부 문맥 ID로 해석한다. Agent/Host TargetRef도 같은 profile_id를 사용한다.
+- `owner_ref`, `source_asset_ref`, `target.asset_ref`, 수집 결과의 null이 아닌 `target_ref`는 같은 스냅샷의 8종 자산 ID만 참조한다. Host·Client·Agent 문맥 ID를 이 필드에 넣지 않는다. Gateway 참조는 gateway 자산이어야 한다.
+- 각 자산 context.profile_id는 최상위 profile_id와 같아야 한다. gateway_ref는 최상위 context.gateway_ref와 대응하며 같은 스냅샷의 Gateway asset_id로 해석한다. Agent/Host TargetRef도 같은 profile_id를 사용한다.
 - 상태 판정의 `subject_ref`는 Agent 또는 Host를 가리킨다. 접근 자원·외부 목적지는 상태 판정의 주체가 아니라 관계 대상으로 표현한다.
 - `evidence_refs`는 같은 스냅샷의 근거 ID, `collection_ref`는 수집 작업 ID를 참조한다. 자산·관계·근거·수집 작업 ID는 각각 해당 배열 안에서 유일해야 한다.
 - `policy_ref`는 같은 스냅샷의 permission_auth(permission) 자산 ID를 참조한다. 정책 버전은 snapshot_id와 해당 자산의 원천 증적으로 식별한다. `source_ref`, `auth_context_ref`는 안전한 외부 증적·인가 맥락 ID이며 자산 ID와 혼용하지 않는다.
@@ -330,7 +336,7 @@ scope 후보: gateway_config/node_config/skill_files/plugin_manifest/server_disc
 
 ```json
 {
-  "schema_version": "0.6.0-draft",
+  "schema_version": "0.7.0-draft",
   "snapshot_id": "snap-001",
   "environment_id": "env-test-01",
   "basis": {
@@ -352,6 +358,29 @@ scope 후보: gateway_config/node_config/skill_files/plugin_manifest/server_disc
     "status": "success"
   },
   "assets": [
+    {
+      "asset_id": "gw-01",
+      "asset_type": "gateway",
+      "name": "Test Gateway",
+      "context": {
+        "profile_id": "profile-test-01",
+        "gateway_ref": "gw-01"
+      },
+      "evidence_refs": [
+        "ev-config"
+      ],
+      "project": {
+        "state_assessments": [
+          {
+            "state": "DECLARED",
+            "value": true,
+            "evidence_refs": [
+              "ev-config"
+            ]
+          }
+        ]
+      }
+    },
     {
       "asset_id": "srv-01",
       "asset_type": "mcp_server",
@@ -391,8 +420,9 @@ scope 후보: gateway_config/node_config/skill_files/plugin_manifest/server_disc
       },
       "context": {
         "profile_id": "profile-test-01",
-        "gateway_ref": "gateway-context-01"
-      }
+        "gateway_ref": "gw-01"
+      },
+      "owner_ref": "gw-01"
     },
     {
       "asset_id": "tool-01",
@@ -462,7 +492,7 @@ scope 후보: gateway_config/node_config/skill_files/plugin_manifest/server_disc
       },
       "context": {
         "profile_id": "profile-test-01",
-        "gateway_ref": "gateway-context-01"
+        "gateway_ref": "gw-01"
       }
     },
     {
@@ -472,7 +502,7 @@ scope 후보: gateway_config/node_config/skill_files/plugin_manifest/server_disc
       "name": "docs Tool filter",
       "context": {
         "profile_id": "profile-test-01",
-        "gateway_ref": "gateway-context-01"
+        "gateway_ref": "gw-01"
       },
       "evidence_refs": [
         "ev-config"
@@ -508,6 +538,19 @@ scope 후보: gateway_config/node_config/skill_files/plugin_manifest/server_disc
     }
   ],
   "relations": [
+    {
+      "relation_id": "rel-01",
+      "relation_type": "DECLARES",
+      "source_asset_ref": "gw-01",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "srv-01"
+      },
+      "evidence_refs": [
+        "ev-config"
+      ],
+      "confidence": "confirmed"
+    },
     {
       "relation_id": "rel-02",
       "relation_type": "ADVERTISES",
@@ -564,7 +607,7 @@ scope 후보: gateway_config/node_config/skill_files/plugin_manifest/server_disc
   ],
   "profile_id": "profile-test-01",
   "context": {
-    "gateway_ref": "gateway-context-01"
+    "gateway_ref": "gw-01"
   }
 }
 ```
@@ -573,8 +616,8 @@ scope 후보: gateway_config/node_config/skill_files/plugin_manifest/server_disc
 
 ### 예제를 화면과 연결해 읽기
 
-1. `assets`의 세 항목으로 Server·Tool·Permission/Authentication을 표시한다.
-2. ADVERTISES로 Server → Tool을 연결한다. Gateway는 context의 소속 묶음으로만 표시하고 자산 수에는 포함하지 않는다. 권한 자산의 target_refs로 정책 적용 대상을 표시한다.
+1. `assets`의 네 항목으로 Gateway·Server·Tool·Permission/Authentication을 표시한다.
+2. ADVERTISES로 Server → Tool을 연결한다. Gateway를 독립 자산으로 표시·집계하고 DECLARES로 Server와 연결한다. context의 그룹 표시는 중복 집계하지 않는다. 권한 자산의 target_refs로 정책 적용 대상을 표시한다.
 3. 서버 상세에서는 `product.config`의 주소·전송·TLS·필터 설정을 보여준다.
 4. Tool 상세에서는 `mcp.definition`의 이름·입력 구조를 보여준다.
 5. 상태에는 “발견됨 / 노출 여부 미확인 / 실제 호출 미검증”을 구분해 표시한다.
@@ -585,7 +628,7 @@ scope 후보: gateway_config/node_config/skill_files/plugin_manifest/server_disc
 
 | 상황 | 출력·표시 규칙 |
 |---|---|
-| 설정 성공, Tool 목록 시간 초과 | 전체 partial. 설정에서 확인한 Server·권한 자산과 Gateway 문맥을 유지. tools_list는 failed와 TIMEOUT, Tool과 ADVERTISES는 이번 결과에서 생성하지 않음 |
+| 설정 성공, Tool 목록 시간 초과 | 전체 partial. 설정에서 확인한 Server·권한 자산과 Gateway 자산과 확인된 선언 관계를 유지. tools_list는 failed와 TIMEOUT, Tool과 ADVERTISES는 이번 결과에서 생성하지 않음 |
 | 위 실패 후 이전 Tool 존재 | 이전 스냅샷에서 확인 가능. 이번 누락을 삭제로 판정하지 않음 |
 | 정상 조회 후 Tool 빈 목록 | tools_list success와 Tool 0개. 실패와 구분 |
 | 첫 페이지만 확보하고 나머지 조회 실패 | 확보한 Tool·관계·근거는 유지, 해당 작업과 전체 scan.status는 partial |
@@ -709,7 +752,7 @@ Agent·세션별 조회 결과를 전역 상태로 덮어쓰지 않는다. 노�
 | access_scope | object | 확인된 권한 범위, 선택 |
 | reason | string | 대상·판정 미확인 사유 |
 
-자산 ID는 [profile_id, 원본 설정 위치, 키, 하위 유형] 기반으로 만든다. policy_ref는 permission 하위 유형의 asset_id를 참조한다. 인증 참조도 authentication 자산으로 식별하되 실제 비밀값은 저장하지 않는다. 다른 자산에 보존한 원천 설정·참조 사본을 추가 자산으로 중복 집계하지 않는다. Gateway 전역 정책은 context로 소속을 표시하고, 적용 자산이 확인되면 target_refs에 연결한다. wildcard 규칙을 완전한 실효 권한으로 단정하지 않는다.
+자산 ID는 [profile_id, 원본 설정 위치, 키, 하위 유형] 기반으로 만든다. policy_ref는 permission 하위 유형의 asset_id를 참조한다. 인증 참조도 authentication 자산으로 식별하되 실제 비밀값은 저장하지 않는다. 다른 자산에 보존한 원천 설정·참조 사본을 추가 자산으로 중복 집계하지 않는다. Gateway 전역 정책은 context.gateway_ref로 Gateway 자산을 참조하고, 적용 자산이 확인되면 target_refs에 연결한다. wildcard 규칙을 완전한 실효 권한으로 단정하지 않는다.
 
 `access_scope`의 선택 필드 후보는 `filesystem:string[]`, `network:string[]`, `commands:string[]`, `oauth_scopes:string[]`, `audiences:string[]`, `resources:string[]`이다. 안전한 경로·범주·정책 선언값만 저장한다. 생략은 미수집, []는 원천에서 확인한 빈 목록이다. 이 필드 자체가 접근 성공의 증거는 아니며 source_ref/source_field로 원천을 추적한다. 원천에 없는 범위를 설명문에서 추정했다면 실효 권한처럼 채우지 않고 별도 추론 관계와 규칙을 사용한다.
 
@@ -717,7 +760,7 @@ Agent·세션별 조회 결과를 전역 상태로 덮어쓰지 않는다. 노�
 
 | 확인한 사실 | 관계 후보 | 생성 조건·협의 사항 |
 |---|---|---|
-| 설정에 Server 등록 | Server context + evidence | Gateway 선언은 문맥으로 기록. Node의 선언은 DECLARES 후보 |
+| 설정에 Server 등록 | Server owner_ref + evidence | Gateway/Node/Plugin 선언 주체를 DECLARES 후보로 연결 |
 | Server 목록에서 자산 확인 | ADVERTISES | 스캐너 provides에 대응. Template 포함 |
 | 특정 Agent/세션의 노출 목록 확인 | EXPOSES_TO | 대상·조회 문맥·원래 자산이 확인됨 |
 | 설정상 노출·호출 가능성 추정 | MAY_EXPOSE_TO / MAY_CALL | 전자는 추가 후보. 규칙·생성 담당 협의 |
@@ -729,7 +772,7 @@ Agent·세션별 조회 결과를 전역 상태로 덮어쓰지 않는다. 노�
 
 공유본의 HOSTS_CLIENT, CONNECTS_TO, REQUESTS_INPUT_FROM, INSTALLS, USES_CREDENTIAL, GRANTS_ACCESS_TO, CAN_CHAIN_TO도 모델 후보로 유지한다. 모든 관계를 이번에 생성한다는 뜻은 아니다. 관계에 basis_kind:string(declared/observed/inferred)와 observed_at:UTC string을 추가하는 안을 제안한다. confidence만으로 실행 사실을 구분하지 않는다.
 
-이번 구현에서 Host·Client는 문맥이며 Credential은 permission_auth에 포함한다. 공유본의 개념 관계 전체를 독립 정점으로 구현하지 않는다. 관계 양끝의 의미를 7종 자산과 문맥으로 표현할 수 없는 관계는 생성하지 않고 후속 범위로 남긴다.
+이번 구현에서 Host·Client는 문맥이며 Credential은 permission_auth에 포함한다. 공유본의 개념 관계 전체를 독립 정점으로 구현하지 않는다. 관계 양끝의 의미를 8종 자산과 문맥으로 표현할 수 없는 관계는 생성하지 않고 후속 범위로 남긴다.
 
 ### 12.4 대시보드 요구와 출력 위치
 
@@ -749,7 +792,7 @@ Agent·세션별 조회 결과를 전역 상태로 덮어쓰지 않는다. 노�
 
 project.supply_chain 추가 선택 필드 후보: install_path:string(안전한 위치), active:boolean 또는 null, dependencies:string[], update_info:object. hash 입력에서 비밀값을 제외하고 정규화 범위를 명시한다. 파일 변경을 악성·서명 검증 실패로 단정하지 않는다. 최초·최근 관찰 이력이 없으면 null이며 현재 시각으로 채우지 않는다.
 
-전체 자산 수는 7종 assets의 고유 asset_id 수다. permission_auth를 포함하고 Gateway·Agent·Host·Client 문맥과 그래프 보조 표시를 제외한다. resource_prompt 하위 유형은 같은 범주로 집계한다. Active 요약도 enabled·EXPOSED·USED 중 무엇을 뜻하는지 합의한 뒤 계산한다.
+전체 자산 수는 8종 assets의 고유 asset_id 수다. gateway와 permission_auth를 포함하고 Agent·Host·Client 문맥과 그래프 보조 표시를 제외한다. resource_prompt 하위 유형은 같은 범주로 집계한다. Active 요약도 enabled·EXPOSED·USED 중 무엇을 뜻하는지 합의한 뒤 계산한다.
 
 ### 12.5 SnapshotDiff 후보
 
@@ -775,7 +818,7 @@ changes 원소 후보: asset_id:string, change_type:string(added/modified/remove
 
 | 항목 | 권장안 | 대안·남은 결정 | 담당 |
 |---|---|---|---|
-| 정점·집계 | 기존 7종 고정, Gateway 등은 context | 고정 범위 내 세부 필드 확인 | 스캐너·대시보드 |
+| 정점·집계 | Gateway 포함 8종 확정 | 유형별 지원·ID·참조 세부 필드 확인 | 스캐너·대시보드 |
 | Template | resource_prompt 내 resource_template 하위 유형 | 실제 목록 출력 예제 확인 | 스캐너·대시보드 |
 | 출력 배열 | evidence/collection_results에 문맥 보완 | observations/collection_runs 유지 후 본문 수정 | 스캐너·대시보드·QA |
 | 관계 | 공유본 의미 유지, 원천 확인 관계부터 제공 | 추가 이름·방향·추론 생성 담당 | 스캐너·분석·대시보드 |
@@ -787,15 +830,15 @@ changes 원소 후보: asset_id:string, change_type:string(added/modified/remove
 
 8절 JSON은 핵심 구조의 가상 예제이며 위 확장 전체를 검증하는 예제가 아니다. PR #5 실제 출력 예제가 아니므로 구현 완료 근거로 사용하지 않는다. 정상·부분 실패·템플릿·정책·변경 비교의 실제 샘플을 교환하고 합의한 후 표·예제·JSON Schema를 함께 확정한다.
 
-### 12.7 Gateway를 향후 독립 자산으로 추가할 조건
+### 12.7 Gateway 독립 자산 및 구버전 전환
 
-현재는 기존 7종을 유지한다. Gateway는 profile_id와 context.gateway_ref로 식별하고, 화면에서 소속 묶음이나 보조 표시로 사용할 수 있으나 자산 수에 포함하지 않는다. 여러 Gateway 자체의 설정·상태·변경을 독립적으로 추적해야 할 요구가 생기면 별도 자산 추가를 검토한다. 그때 얻는 이점은 공통 정책과 연결된 자산의 영향 범위를 Gateway 중심으로 탐색할 수 있다는 것이다. 추가 시 자산 유형·ID·수집 근거·상태·집계·QA 정답·계약 버전을 함께 변경한다.
+Gateway를 독립 자산으로 포함하는 8종 분류를 사용한다. context.gateway_ref는 같은 스냅샷의 Gateway asset_id를 참조한다. 이름만으로 구버전 문맥을 자산화하지 않고 실제 identity·증적을 확보해 매핑한다. Server owner_ref·TargetRef·관계·집계·GroundTruth를 함께 전환한다. 0.6.0-draft의 7종 입력은 명시적 어댑터 없이 새 계약으로 수용하지 않는다. 구현 전환 완료는 실제 출력으로 검증한다.
 
 ### 12.8 PR #6 표시 모델과의 변환
 
 | PR #6 | 이 문서의 공통 계약 | 변환·표시 규칙 |
 |---|---|---|
-| `MCP_SERVER` 등 대문자 유형 | 3절의 소문자 asset_type | 명시적 enum 매핑. Gateway는 context, Resource/Prompt는 resource_prompt + subtype |
+| `MCP_SERVER` 등 대문자 유형 | 3절의 소문자 asset_type | 명시적 enum 매핑. Gateway는 gateway 자산, Resource/Prompt는 resource_prompt + subtype |
 | 단일 `state` | `project.state_assessments[]` | 선택 Agent/Host의 판정과 근거를 표시. 한 상태로 원본 배열을 덮어쓰지 않음 |
 | Asset의 `source` | product.source_ref / evidence_refs | 표시 출처와 관계의 출발점 필드를 혼용하지 않음 |
 | Asset의 `confidence` | 각 상태·관계·탐지 결과의 신뢰도 | 자산 전체에 HIGH를 일괄 부여하지 않음 |
@@ -806,7 +849,7 @@ changes 원소 후보: asset_id:string, change_type:string(added/modified/remove
 | HIGH/MEDIUM/LOW | 탐지 confidence는 high/medium/low | 관계 confirmed는 직접 관측 주장. 단순 대소문자 변환으로 탐지 HIGH와 동일시하지 않음 |
 | Normal/Warning/High | 평가 범위·결과 + 경고 severity | unknown/not_evaluated/error를 Normal로 표시하지 않음 |
 
-Total Assets는 7종 고유 asset_id 수, Total Relations는 저장된 고유 relation_id 수다. Gateway 묶음·target_refs로 만든 보조 선은 두 집계에서 제외한다. Detected Alerts는 선택 report의 alerts 수이며 High Risk Assets는 high/critical 경고의 asset_ids 합집합이다. 하나의 자산에 경고가 여러 개 있어도 자산 수는 한 번만 센다.
+Total Assets는 8종 고유 asset_id 수, Total Relations는 저장된 고유 relation_id 수다. Gateway 묶음·target_refs로 만든 보조 선은 두 집계에서 제외한다. Detected Alerts는 선택 report의 alerts 수이며 High Risk Assets는 high/critical 경고의 asset_ids 합집합이다. 하나의 자산에 경고가 여러 개 있어도 자산 수는 한 번만 센다.
 
 ### 12.9 관계·경고 Diff 확장
 
@@ -830,7 +873,7 @@ PR #7의 S1~S5 조건과 PR #6의 경고 필드를 연결하는 **신규 계약 
 
 | 필드 | 자료형 | 의미 |
 |---|---|---|
-| schema_version / report_id | string | `0.6.0-draft`, 평가 실행 ID |
+| schema_version / report_id | string | `0.7.0-draft`, 평가 실행 ID |
 | environment_id / profile_id / snapshot_id | string | 평가한 InventorySnapshot과 일치 |
 | generated_at | UTC string | 평가 결과 생성 시각 |
 | producer | object | name/version:string, 탐지기와 버전 |
@@ -884,7 +927,7 @@ S2의 B 분류는 PR #7 기준이며 권한 검토에는 C 영역 근거도 사�
 
 ```json
 {
-  "schema_version": "0.6.0-draft",
+  "schema_version": "0.7.0-draft",
   "report_id": "detection-001",
   "environment_id": "env-test-01",
   "profile_id": "profile-test-01",
@@ -972,10 +1015,10 @@ pricing 필수 필드: `source:string`(config/reference_list_price/placeholder/u
 
 | 항목 | 확인한 차이 | 이번 정리의 제안·담당 |
 |---|---|---|
-| 7종의 구성 | 로컬 스키마는 permission_auth 포함·Gateway 제외, #4·#6은 Gateway 포함. #4 GT는 resource/prompt 별도 | 기존 7종 유지. Gateway context 및 하위 유형 변환을 스캐너·대시보드·QA가 합의 |
+| 7종의 구성 | 로컬 스키마는 permission_auth 포함·Gateway 제외, #4·#6은 Gateway 포함. #4 GT는 resource/prompt 별도 | 8종 확정 반영. Gateway 독립 자산과 permission_auth를 모두 포함하고 구버전 변환을 검증 |
 | 실제 출력 | #5는 servers[] 내부 형식, #6 예제는 평탄 Asset, 본문은 중첩 snapshot | 11절 어댑터 구현 후 공통 연동. 세 형식을 같은 버전으로 취급하지 않음 |
 | 상태 | 단일 state와 대상별 state_assessments 차이 | 배열이 원본. UI 요약은 대상과 근거를 유지 |
-| 관계 | PROVIDES/CONNECTS_TO와 ADVERTISES/DECLARES 차이 | 의미별 명시적 변환. Gateway 간선은 자산 관계 집계에서 제외 |
+| 관계 | PROVIDES/CONNECTS_TO와 ADVERTISES/DECLARES 차이 | 의미별 명시적 변환. 근거가 있는 Gateway 자산 간선은 집계에 포함하고 그룹 보조 선은 제외 |
 | 경고 | #6 예제는 evidence·평가 상태·규칙 버전 없음 | 13절 평가 보고서로 미평가와 정상 구분 |
 | S2·S5 입력 | #5는 Tool 및 sslVerify/toolFilter 값을 제공하지 않음 | 추가 수집 전 unknown/not_evaluated. 탐지 완료로 표시하지 않음 |
 | 설치 버전 | #4는 2026.9.6 고정 계획, #5 README/매핑은 2026.9.5 언급 | 테스트베드 담당이 실제 버전·commit 확인. 계획값을 observed 환경 버전에 복사하지 않음 |
@@ -998,11 +1041,11 @@ PR #3에는 이전 리뷰에 대한 수정 응답과 코드 변경이 있다. �
 - 기대 평가: `condition_id`, `scenario_id`, `rule_id`, `rule_version`, `asset_gt_refs:string[]`, `expected_result`(13절 result enum), `expected_alert:boolean`, `policy_refs:object[]`. 규칙·정책 버전 없는 기대 결과를 확정 정답으로 집계하지 않는다.
 - 정답 증적: `evidence_id`, `source_ref`, `observed_at`, `redaction_status`, redacted이면 `redacted_fields:string[]`. 정답 문서의 증적 ID는 스캐너 snapshot 증적과 별도 namespace다.
 
-PR #4의 `profile`은 configuration_id로, `snapshot`은 vm_snapshot_label로 변환한다. gateway 행은 문맥으로 이동하고 전체 자산 수에서 제외한다. resource/prompt는 subtype으로 묶고 permission_auth 정답을 실제 구성에 따라 보완한다. asset_key → asset_id 매핑은 환경·소속·원천 식별자를 확인하며 이름만으로 연결하지 않는다.
+PR #4의 `profile`은 configuration_id로, `snapshot`은 vm_snapshot_label로 변환한다. gateway 행은 identity·증적을 확인해 gateway 자산으로 매핑하고 전체 자산 수에 포함한다. resource/prompt는 subtype으로 묶고 permission_auth 정답을 실제 구성에 따라 보완한다. asset_key → asset_id 매핑은 환경·소속·원천 식별자를 확인하며 이름만으로 연결하지 않는다.
 
 PR #4는 S1~S5 파일을 기준 프로필 대비 추가·변경분으로 제안하지만 삭제·관계 병합 규칙은 아직 없다. 따라서 이번 계약은 QA 비교 전에 **완전한 full 정답**으로 물질화하는 방식을 제안한다. 차분 파일을 완전 목록으로 읽지 않는다. 차분 형식을 유지하려면 base_ground_truth_id/version과 add/modify/remove 및 종속 관계 처리 규칙을 별도로 합의한다.
 
-로컬 `QA/QA_GroundTruth.md`에도 Gateway 집계와 Gateway→Server 예시가 남아 있다. 이 문서만 수정했다고 QA 원본·PR #4가 변환된 것은 아니며, 실제 인수 시 7종 기준으로 변환·검토해야 한다.
+로컬 `QA/QA_GroundTruth.md`에도 Gateway 집계와 Gateway→Server 예시가 남아 있다. 이 문서만 수정했다고 QA 원본·PR #4가 변환된 것은 아니며, 실제 인수 시 확정된 8종 기준으로 변환·검토해야 한다.
 
 ### 16.2 QAResult 계약 제안
 
@@ -1016,15 +1059,15 @@ PR #4는 S1~S5 파일을 기준 프로필 대비 추가·변경분으로 제안�
 
 checks의 evidence_refs는 평가 snapshot의 증적이며 정답 증적은 ground_truth_id로 조회한다. 스키마 검사·ID 중복·참조 무결성, 자산 수집률, 시나리오 탐지 검증을 서로 다른 check로 기록한다. 미평가 범위는 PARTIAL 및 limitations로 표시하고 정상 통과로 합치지 않는다.
 
-수집률은 같은 범위의 매핑된 고유 정답 자산 수 / 고유 정답 자산 수다. 선언 계층·광고 계층을 구분하고 위협 시나리오 S1/S2와 혼동되지 않도록 metric.name에 `declared_asset_recall`, `advertised_asset_recall`을 사용한다. 분모가 0이면 value=null과 limitations를 남긴다. Gateway 문맥·예시 TBD 행·수집 범위 밖 자산은 분모에서 제외하되 제외 범위를 명시한다. 이름 중복을 정답 일치로 계산하지 않는다.
+수집률은 같은 범위의 매핑된 고유 정답 자산 수 / 고유 정답 자산 수다. 선언 계층·광고 계층을 구분하고 위협 시나리오 S1/S2와 혼동되지 않도록 metric.name에 `declared_asset_recall`, `advertised_asset_recall`을 사용한다. 분모가 0이면 value=null과 limitations를 남긴다. Gateway 자산은 해당 수집 범위의 분모에 포함한다. 그룹 문맥·예시 TBD 행·수집 범위 밖 자산은 분모에서 제외하되 제외 범위를 명시한다. 이름 중복을 정답 일치로 계산하지 않는다.
 
 ### 16.3 다음 구현과 검증 순서
 
-1. **범위 합의:** 7종 자산·Gateway 문맥, ID 생성과 관계 이름, 실제 OpenClaw 버전, evidence 저장 위치를 담당자들이 확인한다.
+1. **확정 범위 적용:** 8종 자산·Gateway 독립 자산화를 반영하고, ID 생성과 관계 이름, 실제 OpenClaw 버전, evidence 저장 위치를 담당자들이 확인한다.
 2. **첫 연동:** PR #5 내부 출력에 실행 메타데이터를 붙여 InventorySnapshot으로 변환한다. 선언 Server·수집 결과·증적부터 대시보드에서 읽는다.
 3. **수집 확장:** Node·MCP 목록·정책·Skill/Plugin과 sslVerify/toolFilter 값을 실제 테스트베드에서 확인한다. 문서 필드가 있다는 이유로 수집 완료 처리하지 않는다.
 4. **분석 연동:** 버전 있는 정책과 S1~S5 평가 보고서를 제공한다. 규칙별 unknown/not_applicable 및 경고 근거 연결을 검증한다.
 5. **사용량·QA:** 안전한 자산 매핑, 추정/미귀속 표시, full GroundTruth와 ID 매핑으로 비교한다.
-6. **계약 고정:** JSON Schema·참조 무결성 검사기·생산자/소비자 어댑터와 실제 예제를 같은 버전으로 확정한다. v0.5와 v0.6을 같은 형식으로 자동 수용하지 않는다.
+6. **계약 고정:** JSON Schema·참조 무결성 검사기·생산자/소비자 어댑터와 실제 예제를 같은 버전으로 확정한다. v0.5·v0.6·v0.7을 같은 형식으로 자동 수용하지 않는다.
 
 최소 인수 예제는 정상 빈 등록 영역, 영역 미선언, 파일 실패, 부분 수집/include, 가려진 등록키, 동명 Tool, 목록 페이지 실패, 권한/인증 참조, 미평가 탐지, 경고 근거, 관계·경고 Diff, 병렬/미귀속 사용량이다. 8절과 13.4절은 설명용 JSON이며 이 전체 인수 검증을 대체하지 않는다.

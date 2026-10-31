@@ -1,5 +1,7 @@
 # AI 에이전트 MCP 공격 표면 정의 v2.0
 
+> 2026-10-31: Gateway 포함 8종 분류를 확정 반영했습니다. 공통 유형·소속·집계는 [공통 스키마](schema-design-draft.md)를 따릅니다. ID 방식·수집 원천·페어링 세부 규칙 및 파트별 구현 완료는 별도 검증 대상입니다.
+
 > 문서 범위: MCP 기반 AI 에이전트의 공격 표면 정의, 분석 경계, 정적 자산·관계 및 최소 수집 기준을 다룬다. 런타임 관찰은 후속 단계로 구분하며, 구체적인 공격 페이로드와 침투 테스트 절차는 제외한다.
 > 
 > 
@@ -278,6 +280,12 @@ Prompt Injection과 악성 Tool 설명·Resource·Prompt는 비신뢰 입력의 
 ---
 
 ## 9. 통합 자산·관계 모델
+
+### 9.0 확정된 직접 수집 자산 8종
+
+`gateway`, `node`, `mcp_server`, `tool`, `resource_prompt`, `skill`, `plugin`, `permission_auth`를 직접 수집·집계한다. Resource/Template/Prompt는 하위 유형으로, Permission/Authentication도 하위 유형으로 구분한다. Gateway는 독립 자산이다. 아래 권장 정점에는 Agent·Host·Client·Backend Resource 등 개념·문맥 대상도 포함되며 직접 수집 유형 수와 구분한다.
+
+Server의 소속은 설정 선언 주체로 표현하고 실행 위치는 별도 증적이 있을 때 기록한다. Gateway–Node 페어링은 관계 후보로 유지하며 현재 연결·호출 성공을 뜻하지 않는다. ID 후보와 실제 수집 지원 여부는 별도 확인한다.
 
 ### 9.1 권장 정점
 
