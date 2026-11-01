@@ -1,0 +1,79 @@
+name: QA 결함 보고
+description: QA 테스트에서 발견한 결함과 재현 정보를 등록합니다.
+title: "[QA] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        운영은 GitHub Issues, 보고는 QA 실행결과 문서에서 관리합니다.
+        실제 토큰, API 키, 비밀번호, 인증 Header, 개인정보 및 민감한 내부 경로를 입력하거나 첨부하지 마세요.
+        증적은 비밀값을 제거한 정제본만 공유하세요. 이 폼은 민감정보를 자동 검사하지 않습니다.
+  - type: input
+    id: tc-id
+    attributes:
+      label: TC ID
+      description: 관련 테스트 ID를 입력하세요. 미등록 결함은 사유와 후속 TC 등록 계획을 적으세요.
+      placeholder: QA-COL-03
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected
+      description: 기대 결과와 근거가 되는 Ground Truth 조건 또는 기준 문서를 적으세요.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual
+      description: 실제 관찰 결과와 기대 결과와의 차이를 적으세요.
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: Critical은 비밀값 노출·전체 손상, High는 핵심 기능 실패, Medium은 우회 가능한 일부 오류, Low는 경미한 표현·사용성 문제입니다.
+      options:
+        - Critical
+        - High
+        - Medium
+        - Low
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 재현 절차
+      description: 사전 조건, 입력 및 수행 순서를 적으세요.
+      placeholder: |
+        사전 조건:
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: 정제된 로그·출력·캡처의 증적 ID나 링크를 적으세요. 미확보 시 사유를 적고 실제 비밀값은 첨부하지 마세요.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: 재현 환경을 적으세요. 미확인 또는 해당 없음인 항목은 사유를 밝혀주세요.
+      placeholder: |
+        실행 ID·일시:
+        OS·버전:
+        OpenClaw·MCP 버전:
+        스캐너·대시보드 버전/commit:
+        테스트베드 프로파일·스냅샷:
+        출력 스키마 버전:
+        Ground Truth 파일·버전:
+        시나리오 문서·버전:
+    validations:
+      required: true

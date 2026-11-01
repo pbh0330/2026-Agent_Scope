@@ -12,13 +12,16 @@
 | 대상 PR·Issue | TBD |
 | 스캐너 commit | TBD |
 | 대시보드 commit | TBD |
-| 출력 스키마 버전 | TBD |
+| 출력 스키마 버전 | TBD (준비 기준 0.7.0-draft) |
+| 분류 기준 | Gateway 포함 8종 확정 / PR #1 HEAD 8442670745c7d1c64cf58df945b955f06bd2f01a |
+| ID 규칙·정답 생성기·변환기 버전/commit | TBD |
+| full 정답 경로·차분 적용 규칙 | TBD |
 | 실행 기준 시나리오 문서·ID·버전 | S1~S5 / 문서 버전 TBD |
 | Ground Truth 버전 | GT-001 |
 | 기준 스냅샷 ID | TBD |
 | 프로파일·위협 구성 ID | TBD |
 | 정답 JSON 경로·commit | TBD |
-| 스키마 기준 문서·commit·합의 여부 | TBD (준비 기준 0.2.0-draft) |
+| 스키마 기준 문서·commit·합의 여부 | TBD ([공통 스키마](https://github.com/pbh0330/2026-Agent_Scope/blob/8442670745c7d1c64cf58df945b955f06bd2f01a/docs/schema-design-draft.md) 0.7.0-draft, 세부 계약 합의 확인) |
 | 수집 범위·인증 맥락 | TBD (안전한 참조) |
 | 환경 차이 | 없음 / 내용 기록 |
 
@@ -26,15 +29,15 @@
 
 | 구분 | 수량 |
 |---|---:|
-| 전체 계획 | 32 |
+| 전체 계획 | 37 |
 | 실행 완료 (Pass + Fail) | 0 |
 | Pass | 0 |
 | Fail | 0 |
 | Blocked | 0 |
 | N/A | 0 |
-| NOT_RUN | 32 |
+| NOT_RUN | 37 |
 
-전체 계획 = Pass + Fail + Blocked + N/A + NOT_RUN이다. 아래 표는 현재 계획한 32개 테스트의 초기 상태이며 실행별 대상이 달라지면 행과 집계를 함께 갱신한다. Blocked와 N/A는 실행 완료 수에 포함하지 않는다.
+전체 계획 = Pass + Fail + Blocked + N/A + NOT_RUN이다. 아래 표는 현재 계획한 37개 테스트의 초기 상태이며 실행별 대상이 달라지면 행과 집계를 함께 갱신한다. Blocked와 N/A는 실행 완료 수에 포함하지 않는다.
 
 **종합 판정:** TBD
 
@@ -64,12 +67,17 @@
 | QA-COL-06 | NOT_RUN |  |  |  |  |
 | QA-COL-07 | NOT_RUN |  |  |  |  |
 | QA-COL-08 | NOT_RUN |  |  |  |  |
+| QA-COL-09 | NOT_RUN |  |  |  |  |
+| QA-COL-10 | NOT_RUN |  |  |  |  |
 | QA-REL-01 | NOT_RUN |  |  |  |  |
 | QA-REL-02 | NOT_RUN |  |  |  |  |
+| QA-REL-03 | NOT_RUN |  |  |  |  |
+| QA-REL-04 | NOT_RUN |  |  |  |  |
 | QA-SCHEMA-01 | NOT_RUN |  |  |  |  |
 | QA-SCHEMA-02 | NOT_RUN |  |  |  |  |
 | QA-SCHEMA-03 | NOT_RUN |  |  |  |  |
 | QA-SCHEMA-04 | NOT_RUN |  |  |  |  |
+| QA-SCHEMA-05 | NOT_RUN |  |  |  |  |
 | QA-SEC-01 | NOT_RUN |  |  |  |  |
 | QA-SEC-02 | NOT_RUN |  |  |  |  |
 | QA-UI-01 | NOT_RUN |  |  |  |  |
@@ -84,6 +92,14 @@
 | 항목 | 정답 수 | 올바른 결과 | 누락 | 오탐 | 측정값 |
 |---|---:|---:|---:|---:|---:|
 | 전체 자산 | TBD | TBD | TBD | TBD | TBD |
+| Gateway | TBD | TBD | TBD | TBD | TBD |
+| Node | TBD | TBD | TBD | TBD | TBD |
+| MCP Server | TBD | TBD | TBD | TBD | TBD |
+| Tool | TBD | TBD | TBD | TBD | TBD |
+| Resource/Template/Prompt | TBD | TBD | TBD | TBD | TBD |
+| Skill | TBD | TBD | TBD | TBD | TBD |
+| Plugin | TBD | TBD | TBD | TBD | TBD |
+| Permission/Auth | TBD | TBD | TBD | TBD | TBD |
 | 전체 관계 | TBD | TBD | TBD | TBD | TBD |
 | 기대 경고 | TBD | TBD | TBD | TBD | TBD |
 
@@ -101,7 +117,13 @@
 | declared | TBD | TBD | TBD | TBD | TBD |
 | advertised | TBD | TBD | TBD | TBD | TBD |
 
-전체 자산은 계층 간 중복을 제거해 집계한다.
+전체 자산은 8종 고유 ID로 계층 간 중복을 제거해 집계한다. Gateway 그룹·Host/Client/Agent 문맥은 제외하고 Permission/Auth를 대상 수만큼 중복 계산하지 않는다. 관계 수에는 target_refs 보조 선을 포함하지 않는다.
+
+| 유형 | 지원 여부 | 정상 0건/미지원/실패·부분 수집 | 범위 제외·미수집 사유 | 증적 |
+|---|---|---|---|---|
+| TBD (8종 각각 기록) | TBD | TBD | TBD | TBD |
+
+QAResult 기계 출력의 PASS/FAIL/PARTIAL은 문서 실행 상태와 별도로 보존한다. PARTIAL을 Pass로 합치지 않고 미평가 범위와 limitations를 기록한다. 분모 0은 문서에서 N/A, 기계 출력에서 value=null과 사유로 기록한다.
 
 | Ground Truth 조건 ID | TC ID | 기대 결과 | 실제 결과 | 판정 | 증적 ID·위치 | 결함 Issue |
 |---|---|---|---|---|---|---|

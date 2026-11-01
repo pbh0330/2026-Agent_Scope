@@ -14,10 +14,13 @@ QA는 단순 화면 확인이 아니라 다음 질문에 답하는 것을 목표
 
 ## 2. 근거 문서
 
-- [MCP 공격 표면 정의](../2026-agent-scope-pr/docs/mcp-attack-surface.md)
-- [통합 스키마](../통합_스키마.md): 0.2.0-draft, 팀 협의 전 초안. 관련 테스트는 이 초안 기준이며 실행 전 적용 버전·commit과 합의 여부를 기록한다.
+2026-10-31 PR #1 HEAD `8442670745c7d1c64cf58df945b955f06bd2f01a` 기준이다. Gateway 포함 8종 분류는 확정됐으며, ID 생성 방식·수집 명령·관계 세부 규칙과 구현 지원 여부는 별도 협의·검증 대상이다.
+
+- [MCP 공격 표면 정의](https://github.com/pbh0330/2026-Agent_Scope/blob/8442670745c7d1c64cf58df945b955f06bd2f01a/docs/mcp-attack-surface.md)
+- [공통 데이터 스키마](https://github.com/pbh0330/2026-Agent_Scope/blob/8442670745c7d1c64cf58df945b955f06bd2f01a/docs/schema-design-draft.md): 0.7.0-draft, 구현 계약 초안. 실행 전 생산자·소비자의 적용 버전·commit과 합의 범위를 기록한다.
+- [확정된 8종 분류](https://github.com/pbh0330/2026-Agent_Scope/blob/8442670745c7d1c64cf58df945b955f06bd2f01a/docs/asset-classification-proposal.md)
 - [PR 4 테스트베드 계획](https://github.com/pbh0330/2026-Agent_Scope/pull/4): 프로파일·정답 JSON 연계 참고. 실제 데이터 인수 및 적용 버전 확인 필요
-- [위협 시나리오 후보](../위협시나리오.md): S1~S5 테스트 준비 기준
+- 로컬 준비 자료 `위협시나리오.md` (미공유 후보; 실행 전 확정 문서 인수 필요): S1~S5 테스트 준비 기준
 - 실행 기준 시나리오 문서·버전: 담당자와 확정 후 기록(TBD)
 - `../회의록/20260915.md`
 - `../회의록/20260922.md`
@@ -29,8 +32,11 @@ QA는 단순 화면 확인이 아니라 다음 질문에 답하는 것을 목표
 
 ### 3.1 포함 범위
 
-- 7종 정점: Gateway, Node, MCP Server, Tool, Resource/Prompt, Skill, Plugin
-- MVP 관계: `DECLARES`, `ADVERTISES`, `ASSOCIATED_WITH`, `MAY_EXPOSE_TO`, `MAY_ACCESS`, `MAY_SEND_TO`
+- 8종 정점: Gateway, Node, MCP Server, Tool, Resource/Template/Prompt, Skill, Plugin, Permission/Auth
+- 하위 유형: resource_prompt의 resource/resource_template/prompt, permission_auth의 permission/authentication
+- 정적 관계 후보: `DECLARES`, `PAIRED_WITH`, `ADVERTISES`, `ASSOCIATED_WITH`, `MAY_EXPOSE_TO`, `MAY_ACCESS`, `MAY_SEND_TO` (이름·방향·생성 담당 합의 후 판정)
+- Permission/Auth 적용 대상 참조와 중복 집계 방지, 선언 주체와 실행 위치 구분
+- 구버전 입력의 명시적 변환, 정상 0건·미지원·조회 실패 구분
 - 선언·공급망·발견·권한 계층의 정적 스냅샷
 - 스캐너 출력 스키마 유효성
 - 스캐너와 대시보드 간 데이터 전달
@@ -87,6 +93,9 @@ QA는 단순 화면 확인이 아니라 다음 질문에 답하는 것을 목표
 
 - [ ] 테스트할 PR 또는 commit이 식별되어 있다.
 - [ ] 출력 스키마 버전과 필수 필드가 합의되어 있다.
+- [ ] 8종별 지원 범위와 미지원·미수집 사유가 확인되어 있다.
+- [ ] 구버전 입력의 변환기·ID/참조 매핑과 보완 증적이 확인되어 있다.
+- [ ] 정답은 비교 범위의 full 목록이며 차분 구성은 적용 규칙에 따라 물질화했다.
 - [ ] Gateway·Node 기준 스냅샷이 확보되어 있다.
 - [ ] 정답 자산·관계·경고 목록이 작성되어 있다.
 - [ ] 테스트용 비밀값은 실제 운영 자격증명과 분리되어 있다.
@@ -117,9 +126,11 @@ QA는 단순 화면 확인이 아니라 다음 질문에 답하는 것을 목표
 
 분모가 0인 지표는 0으로 계산하지 않고 `N/A`로 기록한다.
 
+전체 자산은 8종의 고유 asset_id 수다. Gateway와 Permission/Auth를 포함하고 Gateway 그룹·Host/Client/Agent 문맥은 제외한다. 하나의 정책을 적용 대상 수만큼 복제하지 않는다. 수집 범위 내 미지원 유형의 정답을 임의로 분모에서 빼지 않고, 합의된 범위 밖 제외와 미지원·실패 범위를 따로 보고한다.
+
 선언 계층(`declared`)과 광고 계층(`advertised`)의 수집 재현율도 각각 기록한다. 비교 대상 프로파일·스냅샷·수집 범위·인증 맥락을 맞추고, 계층 간 중복 자산은 전체 집계에서 중복 계산하지 않는다. 부분 수집 시 누락과 수집 실패 범위를 함께 보고하며 누락을 자산 삭제로 단정하지 않는다.
 
-테스트베드 인수 시 P0는 기본 수집, P1은 분산 수집, P2는 7종 자산 검증에 연결한다. 위협 구성은 기준 프로파일과 변경분의 적용 규칙을 확인한다. SNAP-1의 “0건”은 MCP 서버 등 대상 유형별로 확인하고 Gateway·Node를 포함한 전체 자산 0건으로 가정하지 않는다.
+테스트베드 인수 시 P0는 기본 수집, P1은 분산 수집, P2는 8종 자산 검증에 연결하되 Permission/Auth 정답과 실제 수집 지원을 확인한다. 위협 구성은 기준 프로파일과 변경분을 full 목록으로 만드는 규칙을 확인한다. SNAP-1의 “0건”은 MCP 서버 등 대상 유형별로 확인하고 Gateway·Node를 포함한 전체 자산 0건으로 가정하지 않는다.
 
 ## 8. 우선순위
 
