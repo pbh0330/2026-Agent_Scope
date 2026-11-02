@@ -1,0 +1,27 @@
+// 가상 예제입니다. 실제 팀 설정이 아닙니다 (테스트용).
+// 한 파일에 Gateway 등록 영역(mcp.servers)과 Node 등록 영역(nodeHost.mcp.servers)이 함께 있는 경우.
+// --registry-path로 고른 영역만 수집합니다.
+{
+  mcp: {
+    servers: {
+      "sample-gateway-only": { command: "example-gateway-server" },
+    },
+  },
+  nodeHost: {
+    mcp: {
+      servers: {
+        "sample-node-files": {
+          command: "npx",
+          args: ["-y", "@modelcontextprotocol/server-filesystem", "/srv/sample-docs"],
+          toolFilter: { include: ["read_*", "search"] }, // 값은 그대로 보존하지 않고 선언된 키 이름만 기록
+        },
+        "sample-node-remote": {
+          url: "https://mcp.sample.example/mcp",
+          transport: "streamable-http",
+          enabled: false, // 비활성이어도 등록 자산으로 남긴다
+          headers: { Authorization: "Bearer ${SAMPLE_FAKE_TOKEN}" }, // 참조 이름만 기록, 값은 읽지 않음
+        },
+      },
+    },
+  },
+}

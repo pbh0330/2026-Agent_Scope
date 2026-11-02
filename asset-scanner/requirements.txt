@@ -1,0 +1,5 @@
+# 실행 의존성 (Python 3.14.4, Windows 10에서 검증)
+json5==0.15.0
+# 실제 stdio 조회(python -m asset_scanner.live_tools)에만 필요한 공식 MCP Python SDK. 정적 수집 CLI는 이 패키지를 import하지 않는다.
+# 2026-07-28 규격을 지원하는 정식 2.x 중 2.3.0(2026-10-02 릴리스)을 고정한다. 근거: docs/field-mapping.md 7장
+mcp==2.3.0
