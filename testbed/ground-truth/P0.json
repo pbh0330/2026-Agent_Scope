@@ -1,0 +1,418 @@
+{
+  "profile": "P0",
+  "snapshot": "SNAP-2-P0",
+  "environment": {
+    "openclaw_version": "2026.9.6",
+    "mcp_spec_version": "2026-07-28"
+  },
+  "scope": "테스트베드가 추가한 자산만 포함. 내장(stock) 플러그인 63종·스킬 57종은 제외(testbed/baseline/SNAP-1 참조)",
+  "summary": {
+    "asset_counts": {
+      "gateway": 1,
+      "node": 1,
+      "mcp_server": 1,
+      "tool": 14
+    },
+    "relation_count": 16
+  },
+  "assets": [
+    {
+      "asset_key": "tb-gw/gateway",
+      "asset_type": "gateway",
+      "declared_at": "tb-gw:~/.openclaw/openclaw.json",
+      "layer": "declared",
+      "attributes": {
+        "device_id": "e3e14de2813332ecf443e9e8400ad142f50d89b3af238d162826b31785eddaa4",
+        "identity_source": "openclaw gateway call gateway.identity.get --json",
+        "bind": "lan",
+        "port": 18789,
+        "auth_mode": "token"
+      }
+    },
+    {
+      "asset_key": "tb-node/node",
+      "asset_type": "node",
+      "declared_at": "tb-node:~/.openclaw/state/openclaw.sqlite#nodeHost.config",
+      "layer": "declared",
+      "attributes": {
+        "device_id": "b8cd252a851642463b068cdb75c716c7e472114557924c8e472355e0848da921",
+        "identity_source": "openclaw node identity --json",
+        "pairing_record": "tb-gw:openclaw devices list --json#paired[deviceId]"
+      }
+    },
+    {
+      "asset_key": "tb-gw/mcp_server/fs-workspace",
+      "asset_type": "mcp_server",
+      "declared_at": "tb-gw:~/.openclaw/openclaw.json#mcp.servers.fs-workspace",
+      "layer": "declared",
+      "attributes": {
+        "transport": "stdio",
+        "negotiated_protocol_version": "2025-11-25",
+        "server_info": {
+          "name": "secure-filesystem-server",
+          "version": "0.2.0"
+        },
+        "command": "mcp-server-filesystem",
+        "args": [
+          "/home/<TB_USER>/workspace"
+        ],
+        "runs_on": "tb-gw",
+        "tool_filter": {
+          "include": [
+            "read_text_file",
+            "list_directory"
+          ]
+        }
+      }
+    },
+    {
+      "asset_key": "fs-workspace/tool/read_file",
+      "asset_type": "tool",
+      "declared_at": "fs-workspace:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": false,
+        "not_exposed_reason": "toolFilter.include",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "fs-workspace/tool/read_text_file",
+      "asset_type": "tool",
+      "declared_at": "fs-workspace:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": true,
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "fs-workspace/tool/read_media_file",
+      "asset_type": "tool",
+      "declared_at": "fs-workspace:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": false,
+        "not_exposed_reason": "toolFilter.include",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "fs-workspace/tool/read_multiple_files",
+      "asset_type": "tool",
+      "declared_at": "fs-workspace:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": false,
+        "not_exposed_reason": "toolFilter.include",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "fs-workspace/tool/write_file",
+      "asset_type": "tool",
+      "declared_at": "fs-workspace:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": false,
+        "not_exposed_reason": "toolFilter.include",
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": true,
+          "destructiveHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "fs-workspace/tool/edit_file",
+      "asset_type": "tool",
+      "declared_at": "fs-workspace:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": false,
+        "not_exposed_reason": "toolFilter.include",
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": false,
+          "destructiveHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "fs-workspace/tool/create_directory",
+      "asset_type": "tool",
+      "declared_at": "fs-workspace:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": false,
+        "not_exposed_reason": "toolFilter.include",
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": true,
+          "destructiveHint": false,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "fs-workspace/tool/list_directory",
+      "asset_type": "tool",
+      "declared_at": "fs-workspace:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": true,
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "fs-workspace/tool/list_directory_with_sizes",
+      "asset_type": "tool",
+      "declared_at": "fs-workspace:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": false,
+        "not_exposed_reason": "toolFilter.include",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "fs-workspace/tool/directory_tree",
+      "asset_type": "tool",
+      "declared_at": "fs-workspace:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": false,
+        "not_exposed_reason": "toolFilter.include",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "fs-workspace/tool/move_file",
+      "asset_type": "tool",
+      "declared_at": "fs-workspace:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": false,
+        "not_exposed_reason": "toolFilter.include",
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": false,
+          "destructiveHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "fs-workspace/tool/search_files",
+      "asset_type": "tool",
+      "declared_at": "fs-workspace:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": false,
+        "not_exposed_reason": "toolFilter.include",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "fs-workspace/tool/get_file_info",
+      "asset_type": "tool",
+      "declared_at": "fs-workspace:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": false,
+        "not_exposed_reason": "toolFilter.include",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "fs-workspace/tool/list_allowed_directories",
+      "asset_type": "tool",
+      "declared_at": "fs-workspace:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": false,
+        "not_exposed_reason": "toolFilter.include",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        }
+      }
+    }
+  ],
+  "relations": [
+    {
+      "type": "PAIRED_WITH",
+      "source": "tb-gw/gateway",
+      "target": "tb-node/node",
+      "evidence_refs": [
+        "tb-gw:openclaw devices list --json#paired",
+        "tb-gw:openclaw nodes describe --node tb-node"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "DECLARES",
+      "source": "tb-gw/gateway",
+      "target": "tb-gw/mcp_server/fs-workspace",
+      "evidence_refs": [
+        "tb-gw:~/.openclaw/openclaw.json#mcp.servers.fs-workspace"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/fs-workspace",
+      "target": "fs-workspace/tool/read_file",
+      "evidence_refs": [
+        "fs-workspace:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/fs-workspace",
+      "target": "fs-workspace/tool/read_text_file",
+      "evidence_refs": [
+        "fs-workspace:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/fs-workspace",
+      "target": "fs-workspace/tool/read_media_file",
+      "evidence_refs": [
+        "fs-workspace:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/fs-workspace",
+      "target": "fs-workspace/tool/read_multiple_files",
+      "evidence_refs": [
+        "fs-workspace:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/fs-workspace",
+      "target": "fs-workspace/tool/write_file",
+      "evidence_refs": [
+        "fs-workspace:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/fs-workspace",
+      "target": "fs-workspace/tool/edit_file",
+      "evidence_refs": [
+        "fs-workspace:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/fs-workspace",
+      "target": "fs-workspace/tool/create_directory",
+      "evidence_refs": [
+        "fs-workspace:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/fs-workspace",
+      "target": "fs-workspace/tool/list_directory",
+      "evidence_refs": [
+        "fs-workspace:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/fs-workspace",
+      "target": "fs-workspace/tool/list_directory_with_sizes",
+      "evidence_refs": [
+        "fs-workspace:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/fs-workspace",
+      "target": "fs-workspace/tool/directory_tree",
+      "evidence_refs": [
+        "fs-workspace:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/fs-workspace",
+      "target": "fs-workspace/tool/move_file",
+      "evidence_refs": [
+        "fs-workspace:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/fs-workspace",
+      "target": "fs-workspace/tool/search_files",
+      "evidence_refs": [
+        "fs-workspace:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/fs-workspace",
+      "target": "fs-workspace/tool/get_file_info",
+      "evidence_refs": [
+        "fs-workspace:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/fs-workspace",
+      "target": "fs-workspace/tool/list_allowed_directories",
+      "evidence_refs": [
+        "fs-workspace:tools/list"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

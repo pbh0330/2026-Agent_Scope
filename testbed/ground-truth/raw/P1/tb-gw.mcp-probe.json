@@ -1,0 +1,22 @@
+{
+  "generatedAt": "2026-10-04T06:41:49.439Z",
+  "servers": {
+    "fs-workspace": {
+      "launch": "mcp-server-filesystem /home/<TB_USER>/workspace",
+      "tools": 2,
+      "codexApprovalMode": "auto",
+      "requestTimeoutMs": 60000,
+      "filteredTools": 12,
+      "listChanged": {
+        "tools": true,
+        "resources": false,
+        "prompts": false
+      }
+    }
+  },
+  "tools": [
+    "fs-workspace__list_directory",
+    "fs-workspace__read_text_file"
+  ],
+  "diagnostics": []
+}

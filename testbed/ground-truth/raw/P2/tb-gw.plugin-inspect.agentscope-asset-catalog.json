@@ -1,0 +1,132 @@
+{
+  "workspaceDir": "/home/<TB_USER>/workspace",
+  "plugin": {
+    "id": "agentscope-asset-catalog",
+    "name": "Agent Scope Asset Catalog",
+    "description": "Contributes the asset-catalog MCP server (testbed P2).",
+    "packageVersion": "0.1.0",
+    "version": "0.1.0",
+    "builtWithOpenClawVersion": "2026.9.6",
+    "packageName": "@agentscope/openclaw-asset-catalog",
+    "format": "openclaw",
+    "source": "/home/<TB_USER>/.openclaw/extensions/agentscope-asset-catalog/index.js",
+    "rootDir": "/home/<TB_USER>/.openclaw/extensions/agentscope-asset-catalog",
+    "origin": "global",
+    "workspaceDir": "/home/<TB_USER>/workspace",
+    "trust": {
+      "reason": "origin-path",
+      "registryPath": "/home/<TB_USER>/.openclaw/state/openclaw.sqlite",
+      "origin": "global",
+      "installSource": "path"
+    },
+    "enabled": true,
+    "compat": [],
+    "explicitlyEnabled": true,
+    "activated": true,
+    "activationSource": "explicit",
+    "activationReason": "enabled in config",
+    "syntheticAuthRefs": [],
+    "status": "loaded",
+    "toolNames": [],
+    "hookNames": [],
+    "channelIds": [],
+    "cliBackendIds": [],
+    "providerIds": [],
+    "embeddingProviderIds": [],
+    "speechProviderIds": [],
+    "realtimeTranscriptionProviderIds": [],
+    "realtimeVoiceProviderIds": [],
+    "mediaUnderstandingProviderIds": [],
+    "transcriptSourceProviderIds": [],
+    "imageGenerationProviderIds": [],
+    "videoGenerationProviderIds": [],
+    "musicGenerationProviderIds": [],
+    "webFetchProviderIds": [],
+    "webSearchProviderIds": [],
+    "migrationProviderIds": [],
+    "contextEngineIds": [],
+    "agentHarnessIds": [],
+    "cliCommands": [],
+    "services": [],
+    "gatewayDiscoveryServiceIds": [],
+    "commands": [],
+    "httpRoutes": 0,
+    "hookCount": 0,
+    "configSchema": true,
+    "configJsonSchema": {
+      "type": "object",
+      "additionalProperties": false
+    },
+    "mcpServers": {
+      "asset-catalog": {
+        "transport": "stdio",
+        "command": "node",
+        "args": [
+          "./mcp-server.mjs"
+        ]
+      }
+    },
+    "imported": true,
+    "dependencyStatus": {
+      "hasDependencies": false,
+      "installed": true,
+      "requiredInstalled": true,
+      "optionalInstalled": true,
+      "missing": [],
+      "missingOptional": [],
+      "dependencies": [],
+      "optionalDependencies": []
+    }
+  },
+  "shape": "non-capability",
+  "capabilityMode": "none",
+  "capabilityCount": 0,
+  "capabilities": [],
+  "typedHooks": [],
+  "customHooks": [],
+  "tools": [],
+  "commands": [],
+  "cliCommands": [],
+  "services": [],
+  "decisions": [],
+  "gatewayDiscoveryServices": [],
+  "gatewayMethods": [],
+  "mcpServers": [
+    {
+      "name": "asset-catalog",
+      "hasStdioTransport": true
+    }
+  ],
+  "lspServers": [],
+  "httpRouteCount": 0,
+  "bundleCapabilities": [],
+  "diagnostics": [],
+  "policy": {
+    "allowedModels": [],
+    "hasAllowedModelsConfig": false
+  },
+  "compatibility": [],
+  "install": {
+    "source": "path",
+    "sourcePath": "/home/<TB_USER>/agentscope-asset-catalog",
+    "installPath": "/home/<TB_USER>/.openclaw/extensions/agentscope-asset-catalog",
+    "version": "0.1.0",
+    "installedAt": "2026-10-04T06:47:52.142Z",
+    "acceptedSurface": {
+      "channels": [],
+      "providers": [],
+      "tools": [],
+      "contracts": [],
+      "hooks": [],
+      "mcpServers": [
+        "asset-catalog"
+      ],
+      "cliCommands": [],
+      "cliBackends": [],
+      "skills": [],
+      "dangerousConfigFlags": []
+    },
+    "acceptedSurfaceHash": "9add6407d30b9c312fcf7e880d035263427c504f775eb335611a7a56278abab9",
+    "acceptedSurfaceAt": "2026-10-04T06:47:52.140Z"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "@agentscope/openclaw-asset-catalog",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Agent Scope 테스트베드 P2 플러그인: manifest mcpServers로 asset-catalog MCP 서버를 등록",
+  "type": "module",
+  "peerDependencies": {
+    "openclaw": "2026.9.6"
+  },
+  "openclaw": {
+    "extensions": ["./index.js"],
+    "compat": {
+      "pluginApi": ">=2026.9.6",
+      "minGatewayVersion": "2026.9.6"
+    },
+    "build": {
+      "openclawVersion": "2026.9.6",
+      "pluginSdkVersion": "2026.9.6"
+    }
+  }
+}

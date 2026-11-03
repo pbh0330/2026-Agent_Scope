@@ -1,0 +1,20 @@
+{
+  "id": "agentscope-asset-catalog",
+  "name": "Agent Scope Asset Catalog",
+  "description": "Testbed P2 plugin that contributes the asset-catalog stdio MCP server through the manifest mcpServers field.",
+  "categories": ["other"],
+  "activation": {
+    "onStartup": true
+  },
+  "mcpServers": {
+    "asset-catalog": {
+      "transport": "stdio",
+      "command": "node",
+      "args": ["./mcp-server.mjs"]
+    }
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false
+  }
+}
