@@ -1,0 +1,65 @@
+{
+  "schema_version": "0.6.0-draft",
+  "snapshot_id": "snap-test-fs",
+  "environment_id": "env-test-01",
+  "profile_id": "profile-test-01",
+  "context": { "gateway_ref": "gateway-context-01" },
+  "basis": { "mcp_spec_version": "2026-07-28" },
+  "environment": { "openclaw_version": null, "openclaw_commit": null, "version_note": "test fixture" },
+  "producer": { "name": "test-fixture", "version": "example" },
+  "generated_at": "2026-10-02T00:00:00Z",
+  "scan": { "started_at": "2026-10-02T00:00:00Z", "finished_at": "2026-10-02T00:00:01Z", "status": "success" },
+  "assets": [
+    {
+      "asset_id": "srv-fs",
+      "asset_type": "mcp_server",
+      "name": "fs",
+      "evidence_refs": ["ev-config"],
+      "product": { "name": "openclaw", "source_ref": "fixture-config", "config_path": "mcp.servers.fs" },
+      "project": { "state_assessments": [] },
+      "context": { "profile_id": "profile-test-01" }
+    },
+    {
+      "asset_id": "srv-docs",
+      "asset_type": "mcp_server",
+      "name": "docs",
+      "evidence_refs": ["ev-config"],
+      "product": { "name": "openclaw", "source_ref": "fixture-config", "config_path": "mcp.servers.docs" },
+      "project": { "state_assessments": [] },
+      "context": { "profile_id": "profile-test-01" }
+    },
+    {
+      "asset_id": "tool-fs-list",
+      "asset_type": "tool",
+      "name": "list_directory_with_sizes",
+      "owner_ref": "srv-fs",
+      "evidence_refs": ["ev-tools-fs"],
+      "mcp": { "protocol_version": "2026-07-28", "definition": { "name": "list_directory_with_sizes", "inputSchema": { "type": "object" } } },
+      "project": { "state_assessments": [] },
+      "context": { "profile_id": "profile-test-01" }
+    },
+    {
+      "asset_id": "tool-fs-read",
+      "asset_type": "tool",
+      "name": "read_text_file",
+      "owner_ref": "srv-fs",
+      "evidence_refs": ["ev-tools-fs"],
+      "mcp": { "protocol_version": "2026-07-28", "definition": { "name": "read_text_file", "inputSchema": { "type": "object" } } },
+      "project": { "state_assessments": [] },
+      "context": { "profile_id": "profile-test-01" }
+    },
+    {
+      "asset_id": "tool-docs-read",
+      "asset_type": "tool",
+      "name": "read_text_file",
+      "owner_ref": "srv-docs",
+      "evidence_refs": ["ev-tools-docs"],
+      "mcp": { "protocol_version": "2026-07-28", "definition": { "name": "read_text_file", "inputSchema": { "type": "object" } } },
+      "project": { "state_assessments": [] },
+      "context": { "profile_id": "profile-test-01" }
+    }
+  ],
+  "relations": [],
+  "evidence": [],
+  "collection_results": []
+}
