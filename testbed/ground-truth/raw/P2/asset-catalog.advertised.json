@@ -1,0 +1,62 @@
+{
+  "requestedProtocolVersion": "2026-07-28",
+  "negotiatedProtocolVersion": "2025-11-25",
+  "serverInfo": {
+    "name": "agentscope-asset-catalog",
+    "version": "0.1.0"
+  },
+  "capabilities": {
+    "tools": {}
+  },
+  "tools": [
+    {
+      "name": "catalog_search",
+      "title": "Search asset catalog",
+      "description": "Search the fictional asset catalog by name substring.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "catalog_get_entry",
+      "title": "Get catalog entry",
+      "description": "Get one fictional catalog entry by ID.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false
+      }
+    }
+  ],
+  "resources": {
+    "notAdvertised": true
+  },
+  "resourceTemplates": {
+    "notAdvertised": true
+  },
+  "prompts": {
+    "notAdvertised": true
+  }
+}
