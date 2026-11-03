@@ -32,7 +32,7 @@ tb-gw (VM 하나 안에서 동작. 밖으로 여는 포트는 사용 현황 API 
 | 공용 API 키 | 정철(직접 전달) | 메시지·문서·저장소에 붙이지 않음 |
 | 학교 게이트웨이 주소 | 정철 | 아래 `<GW_BASE_URL>` 자리. `https://.../v1/gateway` 형태 |
 | 저장소 | GitHub | `feature/token-collector` 브랜치(플러그인, 설치 스크립트·설정) |
-| 사용 현황 API 실행 파일 `agentscope-usage-api`(+ `.sha256`) | 정철 | 약 7MB. `deploy/build.sh`로 만든 linux/amd64 파일. 저장소에는 없음 |
+| 사용 현황 API 실행 파일 `agentscope-usage-api-linux-amd64.zip` | 정철 | 실행 파일 + `.sha256`. `deploy/build.sh`로 만든 linux/amd64 파일(약 7MB). 저장소에는 없음 |
 
 tb-gw에서 쓰는 사용자는 아래에서 `<TB_USER>`로 적는다. 명령은 전부 이 사용자로(sudo 없이) 실행한다.
 
@@ -168,10 +168,11 @@ grep -c '"kind":"token_count_error"\|"kind":"count_export_error"' $J
 
 ## 9. 사용 현황 API(대시보드 백엔드)
 
-받은 실행 파일을 tb-gw 홈에 둔 뒤(예: `scp`로 `~/agentscope-usage-api`, `~/agentscope-usage-api.sha256`):
+받은 zip을 tb-gw 홈에 둔 뒤(예: 병하 PC에서 `scp agentscope-usage-api-linux-amd64.zip <TB_USER>@<TB_GW_IP>:`):
 
 ```bash
-~/agentscope/repo/token-collector/deploy/testbed/install-usage-api.sh ~/agentscope-usage-api
+mkdir -p ~/usage-api-dist && unzip -o ~/agentscope-usage-api-linux-amd64.zip -d ~/usage-api-dist
+~/agentscope/repo/token-collector/deploy/testbed/install-usage-api.sh ~/usage-api-dist/agentscope-usage-api
 ```
 
 - 체크섬 확인 → `~/agentscope/bin`에 설치 → systemd 사용자 서비스 `agentscope-usage-api` 등록·시작 → health 출력까지 한다.
