@@ -200,8 +200,9 @@ export class TokenGuard {
     });
     const run = this.run(runId);
     const day = this.dayUsage();
-    run.resultBytes += m.textBytes;
-    day.resultBytes += m.textBytes;
+    // 텍스트와 이미지 모두 다음 모델 입력에 들어가므로 둘 다 소비 한도에 넣는다(PR #3 리뷰 반영).
+    run.resultBytes += m.resultBytes;
+    day.resultBytes += m.resultBytes;
 
     if (!synthetic && toolCallId && this.counter?.usable) {
       const started = Date.now();

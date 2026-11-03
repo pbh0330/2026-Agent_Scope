@@ -13,6 +13,8 @@ export type ResultMeasure = {
   textChars: number; // 코드 포인트 수
   nonAsciiRatio: number; // 0~1, 한글 등 비ASCII 글자 비율
   images: ImageInfo[];
+  imageBytes: number; // 이미지 디코딩 바이트 합
+  resultBytes: number; // textBytes + imageBytes(소비 브레이크 resultBytes 누적에 쓰는 값)
   otherBlocks: number; // 텍스트·이미지가 아닌 블록 수
 };
 
@@ -40,10 +42,11 @@ export function measureContent(blocks: ContentBlock[]): ResultMeasure {
       otherBlocks++;
     }
   }
+  const imageBytes = images.reduce((n, i) => n + i.bytes, 0);
   return {
     textBlocks, textBytes, textChars,
     nonAsciiRatio: textChars ? Math.round((nonAscii / textChars) * 1000) / 1000 : 0,
-    images, otherBlocks,
+    images, imageBytes, resultBytes: textBytes + imageBytes, otherBlocks,
   };
 }
 

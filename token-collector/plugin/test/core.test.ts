@@ -112,3 +112,32 @@ test("runId를 모르는 호출은 run 기준을 서로 합치지 않는다(일 
   const [b] = sink.of("brake");
   assert.deepEqual(b.reasons.map((r: { scope: string }) => r.scope), ["day"]);
 });
+
+const imageMsg = (bytes: number) => ({
+  role: "toolResult", isError: false,
+  content: [{ type: "image", data: Buffer.alloc(bytes, 1).toString("base64"), mimeType: "image/png" }],
+});
+
+// 리뷰 반영(PR #3, P2): 이미지만 있는 결과도 resultBytes 한도에 들어간다(run·day 모두).
+test("이미지 결과도 resultBytes 한도에 포함된다(run 차단)", () => {
+  const sink = new MemorySink();
+  const g = new TokenGuard(resolveConfig({ brake: { mode: "enforce", run: { block: { resultBytes: 100 } } } }), sink, undefined, fixedNow);
+  g.beforeToolCall({ toolName: "screenshot", toolCallId: "a", runId: "r" }, {});
+  g.toolResultPersist({ toolName: "screenshot", toolCallId: "a", message: imageMsg(1024) }, {});
+  assert.equal(sink.of("tool_result")[0].resultBytes, 1024);
+  const r = g.beforeToolCall({ toolName: "ls", toolCallId: "b", runId: "r" }, {});
+  assert.equal(r?.block, true, "1,024바이트 이미지 뒤 다음 호출은 run.resultBytes ≥ 100으로 차단");
+  assert.match(r!.blockReason!, /resultBytes 1024/);
+  assert.ok(!JSON.stringify(sink.records).includes(Buffer.alloc(16, 1).toString("base64")), "이미지 데이터는 기록하지 않음");
+});
+
+test("이미지 결과도 일 단위 resultBytes에 누적된다", () => {
+  const sink = new MemorySink();
+  const g = new TokenGuard(resolveConfig({ brake: { mode: "enforce", day: { block: { resultBytes: 1500 } } } }), sink, undefined, fixedNow);
+  for (const [id, run] of [["a", "r1"], ["b", "r2"]] as const) {
+    g.beforeToolCall({ toolName: "screenshot", toolCallId: id, runId: run }, {});
+    g.toolResultPersist({ toolName: "screenshot", toolCallId: id, message: imageMsg(1024) }, {});
+  }
+  const r = g.beforeToolCall({ toolName: "ls", toolCallId: "c", runId: "r3" }, {});
+  assert.equal(r?.block, true, "다른 run의 이미지 1,024 + 1,024 ≥ 1,500 → 일 단위 차단");
+});

@@ -35,3 +35,11 @@ test("content가 문자열이거나 없는 메시지", () => {
   assert.deepEqual(contentOf({ content: "hi" }), [{ type: "text", text: "hi" }]);
   assert.deepEqual(contentOf(undefined), []);
 });
+
+test("결과 바이트 = 텍스트 UTF-8 + 이미지 디코딩 바이트", () => {
+  const img = Buffer.alloc(1024, 7).toString("base64");
+  const m = measureContent([{ type: "text", text: "가나" }, { type: "image", data: img, mimeType: "image/png" }]);
+  assert.equal(m.textBytes, 6);
+  assert.equal(m.imageBytes, 1024);
+  assert.equal(m.resultBytes, 1030);
+});
