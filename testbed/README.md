@@ -198,7 +198,7 @@
 | `tb-node` 생성 | 완료 (10.04) | `tb-gw` 전체 복제 후 식별자 재생성, 패키지 목록 해시 동일 |
 | SNAP-0 / SNAP-1 | 완료 (10.04) | OpenClaw 2026.9.6 설치·페어링, 기준선 수집 ([구축 기록](docs/build-log-snap0-snap1.md)) |
 | 정상군 P0/P1/P2, 정답 목록, SNAP-2 | 완료 (10.04) | [프로파일](profiles/README.md), [정답 목록](ground-truth/), SNAP-2-P0/P1/P2 |
-| 위협 구성 (S1→S2→S4→S3→S5) | 예정 (10.13~) | |
+| 위협 구성 (S1→S2→S4→S3→S5) | S1 설정·정답 작성 (10.31), VM 구축 전 | [S1](profiles/S1/README.md) |
 
 ---
 
