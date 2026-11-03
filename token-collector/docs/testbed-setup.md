@@ -1,6 +1,6 @@
 # 테스트베드 적용 가이드 — 토큰 사용량 수집
 
-작성 11.02, 수정 11.03 이정철 · 대상 tb-gw(Ubuntu 24.04, OpenClaw 2026.9.6) · 10.31 회의 결정 반영
+작성 11.02, 수정 11.03(사용 현황 API 추가) 이정철 · 대상 tb-gw(Ubuntu 24.04, OpenClaw 2026.9.6) · 10.31 회의 결정 반영
 
 ## 0. 무엇을 하나
 
@@ -8,11 +8,12 @@ tb-gw 안에서 도구 호출마다 토큰 사용량을 계산할 원본 기록�
 남은 파일로 토큰 파트가 usage.json과 사용 현황 API(대시보드 백엔드) 데이터를 만든다.
 
 ```
-tb-gw (VM 하나 안에서 끝남, 바깥으로 여는 포트 없음)
+tb-gw (VM 하나 안에서 동작. 밖으로 여는 포트는 사용 현황 API 8088 하나, NAT 안)
   OpenClaw 게이트웨이 ── diagnostics-otel ──┐
         │                                     ├─→ Collector(127.0.0.1:4318) → ~/agentscope/data/agentscope-traces.jsonl
         └ token-guard 플러그인 ── 결과별 토큰 수 ┘
                     └─→ ~/.openclaw/agentscope/agentscope-tool-results.jsonl
+  사용 현황 API(:8088, 실시간 모드) ← 위 두 파일을 읽어 계산 ← 대시보드 UI(호스트 PC에서 http://<TB_GW_IP>:8088)
   학교 게이트웨이(claude-haiku-5-5) ← 에이전트 모델 호출 + 플러그인 토큰 세기(같은 공용 키)
 ```
 
@@ -31,13 +32,14 @@ tb-gw (VM 하나 안에서 끝남, 바깥으로 여는 포트 없음)
 | 공용 API 키 | 정철(직접 전달) | 메시지·문서·저장소에 붙이지 않음 |
 | 학교 게이트웨이 주소 | 정철 | 아래 `<GW_BASE_URL>` 자리. `https://.../v1/gateway` 형태 |
 | 저장소 | GitHub | `feature/token-collector` 브랜치(플러그인, 설치 스크립트·설정) |
+| 사용 현황 API 실행 파일 `agentscope-usage-api`(+ `.sha256`) | 정철 | 약 7MB. `deploy/build.sh`로 만든 linux/amd64 파일. 저장소에는 없음 |
 
 tb-gw에서 쓰는 사용자는 아래에서 `<TB_USER>`로 적는다. 명령은 전부 이 사용자로(sudo 없이) 실행한다.
 
 ## 2. 스냅샷 분기
 
 1. tb-gw를 끈 상태에서 SNAP-2-P2로 되돌린 뒤 켠다.
-2. 이 가이드를 끝까지 진행하고 동작 확인(8절)까지 마친 뒤, **10절 체크리스트를 거쳐** 끈 상태에서 SNAP-2-P2-T를 만든다.
+2. 이 가이드를 끝까지 진행하고 동작 확인(8절)까지 마친 뒤, **11절 체크리스트를 거쳐** 끈 상태에서 SNAP-2-P2-T를 만든다.
 3. SNAP-2-P2-T의 정답 목록에는 플러그인 `diagnostics-otel`, `agentscope-token-guard`가 추가된다(SNAP-2-P2와 따로 관리).
 
 ## 3. 모델 백엔드 설정(키는 참조만)
@@ -164,7 +166,32 @@ grep -c '"kind":"token_count_error"\|"kind":"count_export_error"' $J
 - `openclaw agent exec`는 게이트웨이를 거치지 않아 텔레메트리가 안 나온다. 위처럼 `openclaw agent`(게이트웨이 경유)를 쓴다.
 - 확인 결과(위 명령 출력, `plugins inspect` 출력)를 정철에게 보내 주면 2026.9.6에서 훅 동작이 9.5와 같은지 함께 본다.
 
-## 9. 기록 파일 전달
+## 9. 사용 현황 API(대시보드 백엔드)
+
+받은 실행 파일을 tb-gw 홈에 둔 뒤(예: `scp`로 `~/agentscope-usage-api`, `~/agentscope-usage-api.sha256`):
+
+```bash
+~/agentscope/repo/token-collector/deploy/testbed/install-usage-api.sh ~/agentscope-usage-api
+```
+
+- 체크섬 확인 → `~/agentscope/bin`에 설치 → systemd 사용자 서비스 `agentscope-usage-api` 등록·시작 → health 출력까지 한다.
+- 실시간 모드로 돈다: Collector 스팬 파일(로테이션 포함)과 플러그인 기록이 바뀌면 15초 안에 다시 계산한다.
+- `0.0.0.0:8088`로 열린다. VMware NAT 안이라 호스트 PC(대시보드 UI)에서 `http://<TB_GW_IP>:8088`로 접속된다.
+- `environment_id`/`profile_id`는 서비스 파일의 `AS_ENV`, `AS_PROFILE`(기본 `env-testbed`, `profile-snap2-p2t`). 스캐너 스냅샷과 같은 값으로 맞춘다.
+  바꾸려면 `systemctl --user edit agentscope-usage-api`로 `Environment=` 두 줄을 덮어쓴다.
+- 스캐너 스냅샷을 연결할 때는 서비스 파일의 `--inventory` 주석 참고.
+
+확인:
+
+```bash
+curl -s http://127.0.0.1:8088/api/v1/usage/health                  # "mode":"live", "status":"ok"
+curl -s 'http://127.0.0.1:8088/api/v1/usage/summary?range=1h'      # 8절 요청이 calls에 잡힘
+curl -s 'http://127.0.0.1:8088/api/v1/usage/brake-events?range=24h' # "available":true
+```
+
+API 명세: `token-collector/backend/usageapi/README.md`.
+
+## 10. 기록 파일 전달
 
 병하 PC에서(SSH 키로 tb-gw 접속되는 상태):
 
@@ -178,7 +205,7 @@ scp '<TB_USER>@<TB_GW_IP>:.openclaw/agentscope/agentscope-tool-results.jsonl' .
 - 파일에는 도구 이름·실행 시각·모델 호출 토큰 수·결과 크기만 있고 대화·결과 내용은 없다. 저장소에는 올리지 않는다.
 - 어느 실행이 어떤 시나리오인지 시각과 함께 메모해 주면 분석할 때 맞춰 본다.
 
-## 10. 스냅샷 만들기 전 체크리스트
+## 11. 스냅샷 만들기 전 체크리스트
 
 ```bash
 systemctl --user unset-environment AGENTSCOPE_GW_KEY
@@ -191,13 +218,14 @@ grep -rl 'AGENTSCOPE_GW_KEY=' ~/.openclaw ~/.config/systemd 2>/dev/null  # 아�
 - 위협 시나리오 스냅샷(SNAP-3~)과 OVA 내보내기 전에도 같은 확인을 한다. 키를 넣지 않은 상태에서는 에이전트가 모델을 못 불러 실행이 실패하는 것이 정상이다.
 - 기록 파일(`~/agentscope/data`, `~/.openclaw/agentscope`)은 스냅샷에 남는다. 다음 실험과 섞이지 않게 하려면 전달 후 비운다.
 
-## 11. 문제가 생기면
+## 12. 문제가 생기면
 
 | 증상 | 확인 |
 |---|---|
 | 게이트웨이가 멈추거나 시작이 매우 느림 | diagnostics-otel 알려진 이슈(OpenClaw #152981, 09.21 재현). `openclaw config set diagnostics.otel.enabled false` 후 재시작해 비교 |
 | 모델 호출 실패(401 등) | 4절 키 확인(`grep -c` 결과 1), `systemctl --user restart`로 다시 시작했는지 |
 | `token_count_error` | `<GW_BASE_URL>` 오타, 키 미설정. 에이전트는 계속 동작함(병렬 배분만 빠짐) |
+| API health가 `degraded` | `last_error` 확인, `journalctl --user -u agentscope-usage-api -n 50`. 이전 데이터로는 계속 답함 |
 | `count_export_error` | Collector가 꺼짐(`systemctl --user status agentscope-collector`, `journalctl --user -u agentscope-collector`) |
 | 플러그인이 안 보임 | `plugins.allow` 목록(6절 주의), `openclaw plugins list` |
 | 되돌리기 | SNAP-2-P2로 복귀(이 가이드의 변경은 전부 분기에서만) |

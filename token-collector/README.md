@@ -34,7 +34,8 @@ tb-gw (VM 하나 안에서 동작)
 | `backend/usagereport/` | usage.json 생성기 `agentscope-usage`(통합 스키마 14절 UsageReport, 자산 ID 매핑) |
 | `backend/usageapi/` | 사용 현황 API `agentscope-usage-api`. API 명세는 [backend/usageapi/README.md](backend/usageapi/README.md) |
 | `plugin/` | OpenClaw 플러그인. 설정·기록 형식은 [plugin/README.md](plugin/README.md) |
-| `deploy/testbed/` | tb-gw 설치: Collector 설치 스크립트, Collector 설정, systemd 사용자 서비스 |
+| `deploy/testbed/` | tb-gw 설치: Collector·사용 현황 API 설치 스크립트, Collector 설정, systemd 사용자 서비스 2개 |
+| `deploy/build.sh` | 사용 현황 API linux/amd64 실행 파일 만들기(`dist/`, 커밋 안 함) |
 | `docs/testbed-setup.md` | 테스트베드 적용 가이드(키 환경 변수, Collector, diagnostics-otel, 플러그인, 확인, 기록 전달) |
 | `docs/accuracy-summary.md` | 계산 방법과 PC 실측 정확도 요약 |
 
@@ -47,7 +48,8 @@ go run ./cmd/agentscope-usage-api --env env-pc --profile profile-pc --input test
 curl http://127.0.0.1:8088/api/v1/usage/summary
 ```
 
-10.29 PC 실측 데이터(16건)로 답한다. 결과: 호출 16, 귀속 토큰 15,769(순차 2,268 / 병렬 배분 13,501).
+10.29 PC 실측 데이터(16건)로 답한다(고정 응답 모드). 결과: 호출 16, 귀속 토큰 15,769(순차 2,268 / 병렬 배분 13,501).
+테스트베드에서는 `--live`(실시간 모드)로 Collector 스팬 파일이 쌓이는 대로 다시 계산한다(`docs/testbed-setup.md` 9절).
 
 ## 테스트
 
