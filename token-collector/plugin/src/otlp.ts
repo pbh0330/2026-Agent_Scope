@@ -7,6 +7,7 @@
 // 외부 라이브러리 없이 OTLP/HTTP JSON(POST {endpoint}/v1/traces)으로 보낸다. 결과 내용은 담지 않는다(토큰 수만).
 
 import { randomBytes } from "node:crypto";
+import { httpError } from "./safeerror.ts";
 
 export const COUNT_SPAN_NAME = "agentscope.tool_result.count";
 export const SERVICE_NAME = "agentscope-token-guard";
@@ -105,9 +106,6 @@ export class CountSpanExporter {
       body: JSON.stringify(buildCountPayload(s)),
       signal: AbortSignal.timeout(this.timeoutMs),
     });
-    if (!res.ok) {
-      const t = (await res.text().catch(() => "")).slice(0, 200);
-      throw new Error(`OTLP HTTP ${res.status}: ${t}`);
-    }
+    if (!res.ok) throw await httpError("OTLP", res);
   }
 }

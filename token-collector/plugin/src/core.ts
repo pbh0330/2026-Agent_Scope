@@ -14,6 +14,7 @@ import { dirname, join } from "node:path";
 import { contentOf, measureContent } from "./measure.ts";
 import { TokenCounter, type TokenCountConfig } from "./counter.ts";
 import { CountSpanExporter, normalizeSpanId, normalizeTraceId } from "./otlp.ts";
+import { safeErrorText } from "./safeerror.ts";
 
 export const RECORD_VERSION = 1;
 
@@ -221,7 +222,7 @@ export class TokenGuard {
             }).catch((e: unknown) => {
               this.sink.write({
                 kind: "count_export_error", ts: this.now().toISOString(), runId, traceId, toolCallId, toolName,
-                error: String((e as Error)?.message ?? e).slice(0, 200),
+                error: safeErrorText(e),
               });
             }));
           }
@@ -229,7 +230,7 @@ export class TokenGuard {
         (e: unknown) => {
           this.sink.write({
             kind: "token_count_error", ts: this.now().toISOString(), runId, toolCallId, toolName,
-            error: String((e as Error)?.message ?? e).slice(0, 200),
+            error: safeErrorText(e),
           });
         },
       );

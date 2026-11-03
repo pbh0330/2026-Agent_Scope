@@ -15,6 +15,7 @@
 // API 키는 설정 파일에 두지 않고 환경 변수(apiKeyEnv)에서 읽는다. 결과 내용은 계산에만 쓰고 저장하지 않는다.
 
 import type { ContentBlock } from "./measure.ts";
+import { httpError, SafeError } from "./safeerror.ts";
 
 export type CountApi = "anthropic-count-tokens" | "openai-usage";
 
@@ -108,7 +109,7 @@ export class TokenCounter {
     };
     const j = (await this.post("/v1/messages/count_tokens",
       { "x-api-key": this.apiKey ?? "", "anthropic-version": this.cfg.anthropicVersion }, body)) as { input_tokens?: unknown };
-    if (typeof j.input_tokens !== "number") throw new Error("count_tokens 응답에 input_tokens 없음");
+    if (typeof j.input_tokens !== "number") throw new SafeError("count_tokens 응답에 input_tokens 없음");
     return j.input_tokens;
   }
 
@@ -126,7 +127,7 @@ export class TokenCounter {
     const j = (await this.post("/chat/completions", { authorization: `Bearer ${this.apiKey ?? ""}` }, body)) as {
       usage?: { prompt_tokens?: unknown };
     };
-    if (typeof j.usage?.prompt_tokens !== "number") throw new Error("응답에 usage.prompt_tokens 없음");
+    if (typeof j.usage?.prompt_tokens !== "number") throw new SafeError("응답에 usage.prompt_tokens 없음");
     return j.usage.prompt_tokens;
   }
 
@@ -139,11 +140,12 @@ export class TokenCounter {
         body: JSON.stringify(body),
         signal: AbortSignal.timeout(this.cfg.timeoutMs),
       });
-      if (!res.ok) {
-        const t = (await res.text().catch(() => "")).slice(0, 200);
-        throw new Error(`${path} HTTP ${res.status}: ${t}`);
+      if (!res.ok) throw await httpError(path, res); // 본문(요청 내용이 되돌아올 수 있음)은 기록하지 않음
+      try {
+        return await res.json();
+      } catch {
+        throw new SafeError(`${path} 응답이 JSON이 아님`); // 파싱 오류 메시지에 본문 일부가 들어가므로 버림
       }
-      return await res.json();
     } finally {
       this.release();
     }

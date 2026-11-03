@@ -57,7 +57,7 @@ curl http://127.0.0.1:8088/api/v1/usage/summary
 cd backend/attribution && go test ./...   # 판정·순차 공식·병렬 배분(실제 캡처 로그 3개)
 cd backend/usagereport && go test ./...   # usage.json: null 규칙·중복 제거·자산 매핑·병렬 배분
 cd backend/usageapi && go test ./...      # API: 10.29 값 재현·묶음·구간·오류·경로 미노출
-cd plugin && node --test test/*.test.ts   # 플러그인: 크기 측정·토큰 계산(가짜 API)·브레이크·OTLP 전송
+cd plugin && node --test test/*.test.ts   # 플러그인: 크기 측정·토큰 계산(가짜 API)·브레이크(이미지 포함)·OTLP 전송·오류 기록에 내용 미노출
 ```
 
 ## 정확도
