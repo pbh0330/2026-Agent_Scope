@@ -17,15 +17,18 @@ type window struct{ start, end time.Time }
 func (w window) contains(t time.Time) bool { return !t.Before(w.start) && t.Before(w.end) }
 
 // parseWindow는 from/to 또는 range로 조회 구간을 정한다.
-//   - 아무것도 없으면 데이터 구간 전체
-//   - range(15m, 1h, 24h, 7d 등)는 기준 시각(now)에서 거꾸로 잰다. 고정 응답 모드의 기준 시각은 데이터 구간 끝
-//   - from/to는 RFC3339(UTC 권장). 하나만 주면 나머지는 데이터 구간 끝/시작
-func parseWindow(q url.Values, ds *Dataset, now time.Time) (window, error) {
+//   - 아무것도 없으면 def(고정 모드: 데이터 구간 전체, 실시간 모드: 최근 기본 구간)
+//   - range(15m, 1h, 24h, 7d 등)는 기준 시각(now)에서 거꾸로 잰다. 고정 모드의 기준 시각은 데이터 구간 끝, 실시간 모드는 현재
+//   - from/to는 RFC3339(UTC 권장). 하나만 주면 나머지는 def의 끝/시작
+func parseWindow(q url.Values, def window, now time.Time) (window, error) {
 	from, to, rng := q.Get("from"), q.Get("to"), q.Get("range")
 	if rng != "" && (from != "" || to != "") {
 		return window{}, errors.New("range와 from/to는 함께 쓸 수 없음")
 	}
-	w := window{start: ds.Start, end: ds.End}
+	if from == "" && to == "" && rng == "" {
+		return def, nil
+	}
+	w := def
 	switch {
 	case rng != "":
 		d, err := parseRange(rng)
@@ -58,7 +61,9 @@ func parseWindow(q url.Values, ds *Dataset, now time.Time) (window, error) {
 	return w, nil
 }
 
-// parseRange는 "15m", "1h", "24h", "7d" 같은 기간을 읽는다.
+// ParseRange는 "15m", "1h", "24h", "7d" 같은 기간을 읽는다(최대 7일).
+func ParseRange(s string) (time.Duration, error) { return parseRange(s) }
+
 func parseRange(s string) (time.Duration, error) {
 	var d time.Duration
 	if n, ok := strings.CutSuffix(s, "d"); ok {

@@ -7,8 +7,10 @@
 package usageapi
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -50,6 +52,9 @@ type Dataset struct {
 	Sources             []string // 입력 파일 이름(경로 제외)
 	LoadedAt            time.Time
 	Limitations         []string
+
+	BrakeEvents    []BrakeEvent // 플러그인 기록의 소비 브레이크(시각 오름차순)
+	BrakeAvailable bool         // 플러그인 기록 파일을 읽었는지(없으면 브레이크 정보 자체가 없음)
 }
 
 // NewDataset은 UsageReport를 API용 묶음으로 바꾼다. inv는 서버 단위 묶음에만 쓰며 nil이어도 된다.
@@ -117,12 +122,14 @@ type LoadConfig struct {
 	IncludeCacheInPrompt     bool
 	From, To                 time.Time // 둘 다 zero면 데이터에서 잡음
 	Now                      func() time.Time
+	// AllowMissing: 입력 파일이 아직 없어도 오류로 보지 않음(실시간 모드: Collector가 첫 요청 뒤에 파일을 만듦).
+	AllowMissing bool
 }
 
 // Load는 파일을 읽어 Dataset을 만든다. 경고(단가 로딩 실패 등)는 warn으로 알린다.
 func Load(cfg LoadConfig, warn func(string)) (*Dataset, error) {
 	if len(cfg.Inputs) == 0 {
-		return nil, errors.New("스팬 파일이 하나 이상 필요")
+		return nil, errors.New("스팬 파일(--input)이 하나 이상 필요")
 	}
 	if warn == nil {
 		warn = func(string) {}
@@ -159,10 +166,19 @@ func Load(cfg LoadConfig, warn func(string)) (*Dataset, error) {
 		}
 		opt.Inventory = inv
 	}
-	if len(cfg.ToolResults) > 0 {
+	inputs, err := expandInputs(cfg.Inputs, cfg.AllowMissing)
+	if err != nil {
+		return nil, err
+	}
+	toolResults, err := expandInputs(cfg.ToolResults, cfg.AllowMissing)
+	if err != nil {
+		return nil, err
+	}
+	var brakes []BrakeEvent
+	if len(toolResults) > 0 {
 		counts := map[string]int64{}
-		refs := make([]string, 0, len(cfg.ToolResults))
-		for _, p := range cfg.ToolResults {
+		refs := make([]string, 0, len(toolResults))
+		for _, p := range toolResults {
 			st, err := usagereport.ReadToolResultCounts(p, counts)
 			if err != nil {
 				return nil, fmt.Errorf("결과 기록 %s: %w", filepath.Base(p), err)
@@ -170,15 +186,20 @@ func Load(cfg LoadConfig, warn func(string)) (*Dataset, error) {
 			if st.Malformed > 0 {
 				warn(fmt.Sprintf("%s 에서 읽지 못한 줄 %d개", filepath.Base(p), st.Malformed))
 			}
+			ev, err := ReadBrakeEvents(p)
+			if err != nil {
+				return nil, fmt.Errorf("결과 기록 %s: %w", filepath.Base(p), err)
+			}
+			brakes = append(brakes, ev...)
 			refs = append(refs, filepath.Base(p))
 		}
 		opt.ToolResultCounts = counts
 		opt.ToolResultsRef = strings.Join(refs, "+")
 	}
 	var spans []attribution.Span
-	names := make([]string, 0, len(cfg.Inputs))
-	for _, p := range cfg.Inputs {
-		s, err := usagereport.ReadSpansFile(p)
+	names := make([]string, 0, len(inputs))
+	for _, p := range inputs {
+		s, err := readSpans(p, cfg.AllowMissing)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", filepath.Base(p), err)
 		}
@@ -191,5 +212,32 @@ func Load(cfg LoadConfig, warn func(string)) (*Dataset, error) {
 	if err != nil {
 		return nil, err
 	}
-	return NewDataset(rep, opt.Inventory, names, now())
+	ds, err := NewDataset(rep, opt.Inventory, names, now())
+	if err != nil {
+		return nil, err
+	}
+	ds.BrakeAvailable = len(toolResults) > 0
+	ds.BrakeEvents = sortBrakes(brakes)
+	return ds, nil
+}
+
+// readSpans는 스팬 파일을 읽는다. tolerateTail이면(실시간 모드) Collector가 아직 쓰는 중인
+// 마지막 줄(줄바꿈 전)은 빼고 읽어, 쓰는 도중에 읽어도 실패하지 않게 한다.
+func readSpans(path string, tolerateTail bool) ([]attribution.Span, error) {
+	if !tolerateTail {
+		return usagereport.ReadSpansFile(path)
+	}
+	b, err := os.ReadFile(path)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil, nil // 로테이션 중 사라진 파일
+		}
+		return nil, err
+	}
+	if i := bytes.LastIndexByte(b, '\n'); i >= 0 {
+		b = b[:i+1]
+	} else {
+		b = nil
+	}
+	return usagereport.ReadSpans(bytes.NewReader(b))
 }

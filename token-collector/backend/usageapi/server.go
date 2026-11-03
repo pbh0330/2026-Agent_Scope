@@ -11,22 +11,25 @@ import (
 
 const timeFormat = "2006-01-02T15:04:05.000Z07:00"
 
-// Mode는 health에 표시하는 동작 방식이다.
-const ModeFixed = "fixed"
-
-// Server는 Dataset 하나로 답하는 HTTP 핸들러다.
+// Server는 Source가 주는 Dataset으로 답하는 HTTP 핸들러다. 요청마다 그 시점의 Dataset 하나를 잡아 쓰므로
+// 실시간 모드에서 다시 읽는 중이어도 한 응답 안의 값은 서로 맞는다.
 type Server struct {
-	ds  *Dataset
-	now func() time.Time // range 기준 시각. 고정 응답 모드는 데이터 구간 끝
+	src Source
 	mux *http.ServeMux
 }
 
 // NewFixedServer는 고정 응답 모드 서버를 만든다(range 기준 시각 = 데이터 구간 끝).
-func NewFixedServer(ds *Dataset) *Server {
-	s := &Server{ds: ds, now: func() time.Time { return ds.End }, mux: http.NewServeMux()}
+func NewFixedServer(ds *Dataset) *Server { return NewServer(FixedSource(ds)) }
+
+// NewServer는 Source(고정 또는 실시간)로 서버를 만든다.
+func NewServer(src Source) *Server {
+	s := &Server{src: src, mux: http.NewServeMux()}
 	s.mux.HandleFunc("GET /api/v1/usage/summary", s.summary)
 	s.mux.HandleFunc("GET /api/v1/usage/by-asset", s.byAsset)
 	s.mux.HandleFunc("GET /api/v1/usage/records", s.records)
+	s.mux.HandleFunc("GET /api/v1/usage/timeseries", s.timeseries)
+	s.mux.HandleFunc("GET /api/v1/usage/assets/{asset_id}", s.asset)
+	s.mux.HandleFunc("GET /api/v1/usage/brake-events", s.brakeEvents)
 	s.mux.HandleFunc("GET /api/v1/usage/health", s.health)
 	s.mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusNotFound, "없는 경로")
@@ -64,19 +67,31 @@ func writeError(w http.ResponseWriter, status int, msg string) {
 	writeJSON(w, status, map[string]string{"error": msg})
 }
 
-func (s *Server) window(w http.ResponseWriter, r *http.Request) (window, bool) {
-	win, err := parseWindow(r.URL.Query(), s.ds, s.now())
-	if err != nil {
-		writeError(w, http.StatusBadRequest, err.Error())
-		return window{}, false
-	}
-	return win, true
+// view는 요청 하나가 쓰는 Dataset과 조회 구간이다.
+type view struct {
+	ds  *Dataset
+	win window
 }
 
-func (s *Server) inWindow(win window) []Record {
+func (s *Server) view(w http.ResponseWriter, r *http.Request) (view, bool) {
+	ds := s.src.Current()
+	if ds == nil {
+		writeError(w, http.StatusServiceUnavailable, "아직 데이터를 읽지 못함(health 참고)")
+		return view{}, false
+	}
+	now, def := s.src.Now(ds)
+	win, err := parseWindow(r.URL.Query(), def, now)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return view{}, false
+	}
+	return view{ds: ds, win: win}, true
+}
+
+func (v view) records() []Record {
 	var out []Record
-	for _, r := range s.ds.Records {
-		if win.contains(r.Start) {
+	for _, r := range v.ds.Records {
+		if v.win.contains(r.Start) {
 			out = append(out, r)
 		}
 	}
@@ -141,21 +156,22 @@ type dataQuality struct {
 }
 
 func (s *Server) summary(w http.ResponseWriter, r *http.Request) {
-	win, ok := s.window(w, r)
+	v, ok := s.view(w, r)
 	if !ok {
 		return
 	}
+	win := v.win
 	resp := summaryResp{
 		Window: win.json(), Estimated: true,
 		Pricing:     pricingSummary{Currency: "USD", Sources: []string{}},
 		ByMapping:   map[string]int{"matched": 0, "ambiguous": 0, "unmatched": 0},
-		DataQuality: dataQuality{InventorySnapshotID: s.ds.InventorySnapshotID},
+		DataQuality: dataQuality{InventorySnapshotID: v.ds.InventorySnapshotID},
 	}
 	var seqTok, allocTok int64
 	var seqN, allocN, ncN int
 	var cost costSum
 	sources := map[string]bool{}
-	for _, rec := range s.inWindow(win) {
+	for _, rec := range v.records() {
 		resp.Calls++
 		tok, has := rec.Tokens()
 		switch rec.Method {
@@ -272,7 +288,7 @@ func nonEmpty(s string) *string {
 }
 
 func (s *Server) byAsset(w http.ResponseWriter, r *http.Request) {
-	win, ok := s.window(w, r)
+	v, ok := s.view(w, r)
 	if !ok {
 		return
 	}
@@ -281,10 +297,18 @@ func (s *Server) byAsset(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
 	}
+	items, total := aggregate(v.records(), group)
+	resp := byAssetResp{Window: v.win.json(), Estimated: true, Group: group, TotalTokens: total,
+		InventorySnapshotID: v.ds.InventorySnapshotID, Items: items}
+	writeJSON(w, http.StatusOK, resp)
+}
+
+// aggregate는 기록을 group 기준으로 묶어 토큰 많은 순으로 돌려준다(share·relative 포함).
+func aggregate(recs []Record, group string) ([]assetItem, int64) {
 	items := map[string]*assetItem{}
 	var order []string
 	var total int64
-	for _, rec := range s.inWindow(win) {
+	for _, rec := range recs {
 		key, base := groupKey(rec, group)
 		it, ok := items[key]
 		if !ok {
@@ -312,14 +336,13 @@ func (s *Server) byAsset(w http.ResponseWriter, r *http.Request) {
 			it.LastTraceID = str(rec.TraceID)
 		}
 	}
-	resp := byAssetResp{Window: win.json(), Estimated: true, Group: group, TotalTokens: total,
-		InventorySnapshotID: s.ds.InventorySnapshotID, Items: []assetItem{}}
 	var maxTok int64
 	for _, k := range order {
 		if items[k].Tokens > maxTok {
 			maxTok = items[k].Tokens
 		}
 	}
+	out := []assetItem{}
 	for _, k := range order {
 		it := items[k]
 		it.EstimatedCostUSD = it.cost.value()
@@ -332,15 +355,15 @@ func (s *Server) byAsset(w http.ResponseWriter, r *http.Request) {
 		if !it.last.IsZero() {
 			it.LastUsedAt = timePtr(it.last)
 		}
-		resp.Items = append(resp.Items, *it)
+		out = append(out, *it)
 	}
-	sort.SliceStable(resp.Items, func(i, j int) bool {
-		if resp.Items[i].Tokens != resp.Items[j].Tokens {
-			return resp.Items[i].Tokens > resp.Items[j].Tokens
+	sort.SliceStable(out, func(i, j int) bool {
+		if out[i].Tokens != out[j].Tokens {
+			return out[i].Tokens > out[j].Tokens
 		}
-		return resp.Items[i].Key < resp.Items[j].Key
+		return out[i].Key < out[j].Key
 	})
-	writeJSON(w, http.StatusOK, resp)
+	return out, total
 }
 
 // ---- records ----
@@ -375,7 +398,7 @@ type recordsResp struct {
 }
 
 func (s *Server) records(w http.ResponseWriter, r *http.Request) {
-	win, ok := s.window(w, r)
+	v, ok := s.view(w, r)
 	if !ok {
 		return
 	}
@@ -390,34 +413,14 @@ func (s *Server) records(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	recs := s.inWindow(win)
-	// 최신순
-	for i, j := 0, len(recs)-1; i < j; i, j = i+1, j-1 {
-		recs[i], recs[j] = recs[j], recs[i]
-	}
-	resp := recordsResp{Window: win.json(), Estimated: true, Total: len(recs), Items: []recordItem{}}
+	recs := newestFirst(v.records())
+	resp := recordsResp{Window: v.win.json(), Estimated: true, Total: len(recs), Items: []recordItem{}}
 	if offset > len(recs) {
 		offset = len(recs)
 	}
 	end := min(offset+limit, len(recs))
 	for _, rec := range recs[offset:end] {
-		it := recordItem{
-			UsageID: rec.UsageID, ToolName: rec.ToolName, ToolSource: rec.ToolSource, MCPServer: nonEmpty(rec.MCPServer),
-			AssetID: rec.AssetRef, MappingStatus: rec.MappingStatus, Pattern: rec.Pattern, Method: rec.Method,
-			AttributionMethod: rec.AttributionMethod, Tokens: rec.ApproxInputTokens, EstimatedCostUSD: rec.EstimatedCostUSD,
-			DurationMs: rec.DurationMs, Model: rec.Model, TraceID: rec.TraceID, ToolSpanID: rec.ToolSpanID,
-			ToolCallID: rec.ToolCallID, EvidenceSourceRefs: rec.EvidenceSourceRefs,
-		}
-		if rec.MappingStatus != "matched" {
-			it.AssetID = nil
-		}
-		if !rec.Start.IsZero() {
-			it.Time = timePtr(rec.Start)
-		}
-		if it.EvidenceSourceRefs == nil {
-			it.EvidenceSourceRefs = []string{}
-		}
-		resp.Items = append(resp.Items, it)
+		resp.Items = append(resp.Items, toRecordItem(rec))
 	}
 	if end < len(recs) {
 		resp.NextCursor = str(strconv.Itoa(end))
@@ -425,34 +428,83 @@ func (s *Server) records(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, resp)
 }
 
+func newestFirst(recs []Record) []Record {
+	for i, j := 0, len(recs)-1; i < j; i, j = i+1, j-1 {
+		recs[i], recs[j] = recs[j], recs[i]
+	}
+	return recs
+}
+
+func toRecordItem(rec Record) recordItem {
+	it := recordItem{
+		UsageID: rec.UsageID, ToolName: rec.ToolName, ToolSource: rec.ToolSource, MCPServer: nonEmpty(rec.MCPServer),
+		AssetID: rec.AssetRef, MappingStatus: rec.MappingStatus, Pattern: rec.Pattern, Method: rec.Method,
+		AttributionMethod: rec.AttributionMethod, Tokens: rec.ApproxInputTokens, EstimatedCostUSD: rec.EstimatedCostUSD,
+		DurationMs: rec.DurationMs, Model: rec.Model, TraceID: rec.TraceID, ToolSpanID: rec.ToolSpanID,
+		ToolCallID: rec.ToolCallID, EvidenceSourceRefs: rec.EvidenceSourceRefs,
+	}
+	if rec.MappingStatus != "matched" {
+		it.AssetID = nil
+	}
+	if !rec.Start.IsZero() {
+		it.Time = timePtr(rec.Start)
+	}
+	if it.EvidenceSourceRefs == nil {
+		it.EvidenceSourceRefs = []string{}
+	}
+	return it
+}
+
 // ---- health ----
 
 type healthResp struct {
-	Status              string     `json:"status"`
-	Mode                string     `json:"mode"`
-	DataWindow          windowJSON `json:"data_window"`
-	Records             int        `json:"records"`
-	Sources             []string   `json:"sources"`
-	LoadedAt            string     `json:"loaded_at"`
-	InventorySnapshotID *string    `json:"inventory_snapshot_id"`
-	MissingCounts       int        `json:"missing_counts"`
-	Limitations         []string   `json:"limitations"`
+	Status              string      `json:"status"`
+	Mode                string      `json:"mode"`
+	DataWindow          *windowJSON `json:"data_window"`
+	Records             int         `json:"records"`
+	BrakeEvents         *int        `json:"brake_events"`
+	Sources             []string    `json:"sources"`
+	LoadedAt            *string     `json:"loaded_at"`
+	LastError           *string     `json:"last_error"`
+	InventorySnapshotID *string     `json:"inventory_snapshot_id"`
+	MissingCounts       int         `json:"missing_counts"`
+	Limitations         []string    `json:"limitations"`
 }
 
 func (s *Server) health(w http.ResponseWriter, r *http.Request) {
-	all := window{start: s.ds.Start, end: s.ds.End}
-	resp := healthResp{
-		Status: "ok", Mode: ModeFixed, DataWindow: all.json(), Records: len(s.ds.Records),
-		Sources: s.ds.Sources, LoadedAt: s.ds.LoadedAt.Format(timeFormat),
-		InventorySnapshotID: s.ds.InventorySnapshotID, Limitations: s.ds.Limitations,
+	st := s.src.Status()
+	resp := healthResp{Status: "ok", Mode: st.Mode, Sources: []string{}, Limitations: []string{}}
+	if st.LastError != "" {
+		resp.LastError = str(st.LastError)
 	}
-	if resp.Sources == nil {
-		resp.Sources = []string{}
+	ds := s.src.Current()
+	if ds == nil {
+		resp.Status = "loading"
+		if st.LastError != "" {
+			resp.Status = "error"
+		}
+		writeJSON(w, http.StatusOK, resp)
+		return
 	}
-	if resp.Limitations == nil {
-		resp.Limitations = []string{}
+	all := window{start: ds.Start, end: ds.End}.json()
+	resp.DataWindow = &all
+	resp.Records = len(ds.Records)
+	resp.LoadedAt = timePtr(ds.LoadedAt)
+	resp.InventorySnapshotID = ds.InventorySnapshotID
+	if ds.Sources != nil {
+		resp.Sources = ds.Sources
 	}
-	for _, rec := range s.ds.Records {
+	if ds.Limitations != nil {
+		resp.Limitations = ds.Limitations
+	}
+	if ds.BrakeAvailable {
+		n := len(ds.BrakeEvents)
+		resp.BrakeEvents = &n
+	}
+	if st.LastError != "" {
+		resp.Status = "degraded" // 마지막 다시 읽기는 실패, 이전 데이터로 답하는 중
+	}
+	for _, rec := range ds.Records {
 		if rec.Method == MethodNotComputed && (rec.Pattern == "parallel" || rec.Pattern == "batch") {
 			resp.MissingCounts++
 		}
