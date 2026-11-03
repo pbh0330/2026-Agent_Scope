@@ -41,6 +41,8 @@ MCP 공식 참조 서버 3종은 `npm install -g`로 버전을 고정 설치하�
 
 ### 승인 서버 목록 (S1 allowlist)
 
+기계 판독용 사본: [../ground-truth/approved-servers.json](../ground-truth/approved-servers.json). 위협 구성 S1은 [S1/README.md](S1/README.md).
+
 | 서버 | 등록 주체 | 실행 위치 | 승인 근거 |
 |---|---|---|---|
 | `fs-workspace` | tb-gw 설정 | tb-gw | MCP 공식 참조 서버, 버전 고정 |

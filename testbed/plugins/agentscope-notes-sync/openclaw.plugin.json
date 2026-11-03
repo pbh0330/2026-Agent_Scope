@@ -1,0 +1,20 @@
+{
+  "id": "agentscope-notes-sync",
+  "name": "Agent Scope Notes Sync",
+  "description": "Testbed S1 plugin that contributes the unapproved notes-sync stdio MCP server through the manifest mcpServers field.",
+  "categories": ["other"],
+  "activation": {
+    "onStartup": true
+  },
+  "mcpServers": {
+    "notes-sync": {
+      "transport": "stdio",
+      "command": "node",
+      "args": ["./mcp-server.mjs", "--name", "notes-sync"]
+    }
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false
+  }
+}

@@ -1,0 +1,358 @@
+{
+  "profile": "S1",
+  "snapshot": "SNAP-3-S1",
+  "base_profile": "P2",
+  "base_snapshot": "SNAP-2-P2",
+  "environment": {
+    "openclaw_version": "2026.9.6",
+    "mcp_spec_version": "2026-07-28"
+  },
+  "scope": "P2 대비 추가·변경·삭제된 자산과 관계만 기록. 나머지는 ground-truth/P2.json과 같다",
+  "approved_servers": "ground-truth/approved-servers.json",
+  "summary": {
+    "asset_counts": {
+      "gateway": 1,
+      "node": 1,
+      "plugin": 2,
+      "mcp_server": 8,
+      "tool": 46,
+      "resource": 11,
+      "prompt": 5,
+      "skill": 3
+    },
+    "relation_count": 77
+  },
+  "added_assets": [
+    {
+      "asset_key": "tb-gw/plugin/agentscope-notes-sync",
+      "asset_type": "plugin",
+      "declared_at": "tb-gw:~/.openclaw/extensions/agentscope-notes-sync",
+      "layer": "declared",
+      "attributes": {
+        "install_source": "local path (openclaw plugins install ./agentscope-notes-sync)",
+        "config_entry": "plugins.entries.agentscope-notes-sync",
+        "enabled": true
+      }
+    },
+    {
+      "asset_key": "tb-gw/mcp_server/shadow-notes",
+      "asset_type": "mcp_server",
+      "declared_at": "tb-gw:~/.openclaw/openclaw.json#mcp.servers.shadow-notes",
+      "layer": "declared",
+      "attributes": {
+        "transport": "stdio",
+        "negotiated_protocol_version": "2025-11-25",
+        "server_info": {
+          "name": "agentscope-shadow-notes",
+          "version": "0.1.0"
+        },
+        "command": "node",
+        "args": [
+          "/home/<TB_USER>/mcp-servers/notes-stub/server.mjs",
+          "--name",
+          "shadow-notes"
+        ],
+        "runs_on": "tb-gw"
+      }
+    },
+    {
+      "asset_key": "shadow-notes/tool/shadow_notes_list_notes",
+      "asset_type": "tool",
+      "declared_at": "shadow-notes:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": null,
+        "exposure_check": "unverified: raw/S1 probe not collected yet",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "shadow-notes/tool/shadow_notes_get_note",
+      "asset_type": "tool",
+      "declared_at": "shadow-notes:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": null,
+        "exposure_check": "unverified: raw/S1 probe not collected yet",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "tb-node/mcp_server/node-helper",
+      "asset_type": "mcp_server",
+      "declared_at": "tb-node:~/.openclaw/openclaw.json#nodeHost.mcp.servers.node-helper",
+      "layer": "declared",
+      "attributes": {
+        "transport": "stdio",
+        "negotiated_protocol_version": "2025-11-25",
+        "server_info": {
+          "name": "agentscope-node-helper",
+          "version": "0.1.0"
+        },
+        "command": "node",
+        "args": [
+          "/home/<TB_USER>/mcp-servers/notes-stub/server.mjs",
+          "--name",
+          "node-helper"
+        ],
+        "runs_on": "tb-node"
+      }
+    },
+    {
+      "asset_key": "node-helper/tool/node_helper_list_notes",
+      "asset_type": "tool",
+      "declared_at": "node-helper:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": null,
+        "exposure_check": "unverified: raw/S1 probe not collected yet",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "node-helper/tool/node_helper_get_note",
+      "asset_type": "tool",
+      "declared_at": "node-helper:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": null,
+        "exposure_check": "unverified: raw/S1 probe not collected yet",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "tb-gw/mcp_server/notes-sync",
+      "asset_type": "mcp_server",
+      "declared_at": "tb-gw:~/.openclaw/extensions/agentscope-notes-sync/openclaw.plugin.json#mcpServers.notes-sync",
+      "layer": "declared",
+      "attributes": {
+        "transport": "stdio",
+        "negotiated_protocol_version": "2025-11-25",
+        "server_info": {
+          "name": "agentscope-notes-sync",
+          "version": "0.1.0"
+        },
+        "command": "node",
+        "args": [
+          "./mcp-server.mjs",
+          "--name",
+          "notes-sync"
+        ],
+        "runs_on": "tb-gw",
+        "visible_in_openclaw_mcp_list": false
+      }
+    },
+    {
+      "asset_key": "notes-sync/tool/notes_sync_list_notes",
+      "asset_type": "tool",
+      "declared_at": "notes-sync:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": null,
+        "exposure_check": "unverified: plugin-contributed server is not covered by openclaw mcp probe",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "notes-sync/tool/notes_sync_get_note",
+      "asset_type": "tool",
+      "declared_at": "notes-sync:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": null,
+        "exposure_check": "unverified: plugin-contributed server is not covered by openclaw mcp probe",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        }
+      }
+    }
+  ],
+  "changed_assets": [
+    {
+      "asset_key": "tb-gw/mcp_server/inventory-remote",
+      "changes": {
+        "url": {
+          "before": "https://tb-node:8443/mcp",
+          "after": "https://tb-node:9443/mcp"
+        }
+      }
+    }
+  ],
+  "removed_assets": [],
+  "added_relations": [
+    {
+      "type": "DECLARES",
+      "source": "tb-gw/gateway",
+      "target": "tb-gw/plugin/agentscope-notes-sync",
+      "evidence_refs": [
+        "tb-gw:~/.openclaw/openclaw.json#plugins.entries.agentscope-notes-sync"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "DECLARES",
+      "source": "tb-gw/gateway",
+      "target": "tb-gw/mcp_server/shadow-notes",
+      "evidence_refs": [
+        "tb-gw:~/.openclaw/openclaw.json#mcp.servers.shadow-notes"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/shadow-notes",
+      "target": "shadow-notes/tool/shadow_notes_list_notes",
+      "evidence_refs": [
+        "shadow-notes:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/shadow-notes",
+      "target": "shadow-notes/tool/shadow_notes_get_note",
+      "evidence_refs": [
+        "shadow-notes:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "DECLARES",
+      "source": "tb-node/node",
+      "target": "tb-node/mcp_server/node-helper",
+      "evidence_refs": [
+        "tb-node:~/.openclaw/openclaw.json#nodeHost.mcp.servers.node-helper"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/node-helper",
+      "target": "node-helper/tool/node_helper_list_notes",
+      "evidence_refs": [
+        "node-helper:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/node-helper",
+      "target": "node-helper/tool/node_helper_get_note",
+      "evidence_refs": [
+        "node-helper:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ASSOCIATED_WITH",
+      "source": "tb-gw/plugin/agentscope-notes-sync",
+      "target": "tb-gw/mcp_server/notes-sync",
+      "evidence_refs": [
+        "tb-gw:~/.openclaw/extensions/agentscope-notes-sync/openclaw.plugin.json#mcpServers.notes-sync",
+        "tb-gw:openclaw plugins inspect agentscope-notes-sync --runtime --json#install.acceptedSurface.mcpServers"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/notes-sync",
+      "target": "notes-sync/tool/notes_sync_list_notes",
+      "evidence_refs": [
+        "notes-sync:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/notes-sync",
+      "target": "notes-sync/tool/notes_sync_get_note",
+      "evidence_refs": [
+        "notes-sync:tools/list"
+      ],
+      "confidence": "high"
+    }
+  ],
+  "removed_relations": [],
+  "expected_alerts": [
+    {
+      "required": true,
+      "case": "1-gw",
+      "scenario": "S1",
+      "target": "tb-gw/mcp_server/shadow-notes",
+      "risk_condition": "신규 Server 선언",
+      "reason": "승인 목록에 없는 서버가 tb-gw mcp.servers에 선언됨",
+      "confidence": "high"
+    },
+    {
+      "required": true,
+      "case": "1-node",
+      "scenario": "S1",
+      "target": "tb-node/mcp_server/node-helper",
+      "risk_condition": "신규 Server 선언",
+      "reason": "승인 목록에 없는 서버가 tb-node nodeHost.mcp.servers에 선언됨",
+      "confidence": "high"
+    },
+    {
+      "required": true,
+      "case": "2",
+      "scenario": "S1",
+      "target": "tb-gw/mcp_server/inventory-remote",
+      "risk_condition": "Endpoint 불일치",
+      "reason": "승인 endpoint https://tb-node:8443/mcp 대신 https://tb-node:9443/mcp로 변경됨",
+      "confidence": "high"
+    },
+    {
+      "required": true,
+      "case": "3",
+      "scenario": "S1",
+      "target": "tb-gw/mcp_server/notes-sync",
+      "risk_condition": "출처 이상",
+      "reason": "승인 목록에 없는 플러그인 agentscope-notes-sync가 manifest mcpServers로 서버를 등록함",
+      "confidence": "high"
+    },
+    {
+      "required": false,
+      "case": "3",
+      "scenario": "S1",
+      "target": "tb-gw/plugin/agentscope-notes-sync",
+      "risk_condition": "출처 이상",
+      "reason": "승인 플러그인 목록(approved_plugins)에 없는 플러그인. 서버 단위 경고(notes-sync)에 묶어 내도 정답으로 인정",
+      "confidence": "high"
+    },
+    {
+      "required": false,
+      "case": "2",
+      "scenario": "S4",
+      "target": "tb-gw/mcp_server/inventory-remote",
+      "risk_condition": "자격증명이 승인되지 않은 endpoint로 전송",
+      "reason": "INVENTORY_MCP_TOKEN이 바뀐 endpoint로 전송됨. S4 규칙 구현 시 동반 경고로 인정(S1 채점에는 미포함)",
+      "confidence": "medium"
+    }
+  ],
+  "expected_no_alert": {
+    "scenario": "S1",
+    "targets": [
+      "tb-gw/mcp_server/fs-workspace",
+      "tb-node/mcp_server/kg-memory",
+      "tb-node/mcp_server/demo-everything",
+      "tb-gw/mcp_server/asset-catalog"
+    ],
+    "note": "승인 목록과 일치하는 서버. 여기에 경고가 나면 오탐"
+  }
+}
