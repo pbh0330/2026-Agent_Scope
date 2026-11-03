@@ -355,3 +355,36 @@ func TestNonSequentialResultNeverCarriesTokens(t *testing.T) {
 		}
 	}
 }
+
+// 리뷰 반영(PR #3, P2): 같은 호출이라도 내용(토큰·비용·판정)이 바뀌면 리포트 ID가 바뀐다. usage_id는 그대로.
+func TestReportIDChangesWhenRecordContentChanges(t *testing.T) {
+	spans := loadFixture(t, "week3-parallel")
+	without := mustBuild(t, spans, baseOpts())
+	opt := baseOpts()
+	opt.ToolResultCounts = map[string]int64{}
+	for i, r := range without.Records {
+		if r.ToolCallID != nil {
+			opt.ToolResultCounts[*r.ToolCallID] = int64(100 * (i + 1))
+		}
+	}
+	with := mustBuild(t, spans, opt)
+	changed := false
+	for i := range without.Records {
+		if without.Records[i].UsageID != with.Records[i].UsageID {
+			t.Fatalf("usage_id는 호출 식별자라 바뀌면 안 됨: %s vs %s", without.Records[i].UsageID, with.Records[i].UsageID)
+		}
+		if (without.Records[i].ApproxInputTokens == nil) != (with.Records[i].ApproxInputTokens == nil) {
+			changed = true
+		}
+	}
+	if !changed {
+		t.Fatal("결과별 토큰 수를 줬는데 null → 값으로 바뀐 레코드가 없음(픽스처 확인)")
+	}
+	if without.UsageReportID == with.UsageReportID {
+		t.Fatal("레코드 토큰이 null → 값으로 바뀌었는데 usage_report_id가 같음")
+	}
+	again := mustBuild(t, spans, opt)
+	if again.UsageReportID != with.UsageReportID {
+		t.Fatal("같은 입력이면 같은 usage_report_id여야 함")
+	}
+}

@@ -16,6 +16,7 @@ package usagereport
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math"
@@ -402,8 +403,10 @@ func UsageID(env, profile, traceID, toolSpanID string) string {
 	return "use-" + hashParts(env, profile, traceID, toolSpanID)[:32]
 }
 
-// reportID는 같은 입력(환경·프로필·구간·스냅샷·계산 옵션·단가표·레코드)이면 같은 ID를 낸다
-// (재전송 시 중복 저장 방지). 생성 시각은 넣지 않는다. 단가표나 옵션이 바뀌면 값이 달라지므로 ID도 바뀐다.
+// reportID는 같은 내용이면 같은 ID를 낸다(재전송 시 중복 저장 방지). 생성 시각은 넣지 않는다.
+// 환경·프로필·구간·스냅샷·계산 옵션·단가표와 함께 **레코드 내용 전체**(토큰·비용·판정·매핑·근거)를 해시한다.
+// 그래서 같은 호출(usage_id는 그대로)이라도 결과별 토큰 수가 나중에 들어와 null → 값으로 바뀌면 리포트 ID가 바뀐다.
+// 소비자는 usage_report_id로 "같은 리포트를 두 번 받음"만 걸러야 하고, 보완된 리포트는 새 ID로 받는다.
 func reportID(r *UsageReport, opt Options) string {
 	refPricing := "no-reference"
 	if len(opt.Pricing.Reference) > 0 {
@@ -415,7 +418,12 @@ func reportID(r *UsageReport, opt Options) string {
 		parts = append(parts, *r.InventorySnapshotID)
 	}
 	for _, rec := range r.Records {
-		parts = append(parts, rec.UsageID)
+		// 내보내는 필드만 직렬화된다(집계용 내부 시각 제외). 레코드 순서는 Build가 고정한다.
+		b, err := json.Marshal(rec)
+		if err != nil {
+			b = []byte(rec.UsageID) // UsageRecord는 직렬화에 실패할 필드가 없음(방어용)
+		}
+		parts = append(parts, string(b))
 	}
 	return "usage-" + hashParts(parts...)[:24]
 }
