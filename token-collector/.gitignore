@@ -1,0 +1,11 @@
+# 로컬에서 생기는 산출물은 커밋하지 않는다.
+# 원본 스팬 파일·플러그인 기록(실행 메타데이터가 들어감)
+agentscope-traces*.jsonl
+agentscope-tool-results*.jsonl
+# 빌드 산출물(deploy/build.sh 결과)·내려받은 실행 파일
+dist/
+*.exe
+*.zip
+*.tar.gz
+# 플러그인 개발용 의존성(타입 검사)
+plugin/node_modules/
