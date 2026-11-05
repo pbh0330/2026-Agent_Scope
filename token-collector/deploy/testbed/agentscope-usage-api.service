@@ -13,7 +13,9 @@ ExecStart=%h/agentscope/bin/agentscope-usage-api --live \
   --env ${AS_ENV} --profile ${AS_PROFILE} \
   --input %h/agentscope/data/agentscope-traces*.jsonl \
   --tool-results %h/.openclaw/agentscope/agentscope-tool-results.jsonl \
+  --include-cache-in-prompt \
   --addr 0.0.0.0:8088
+# --include-cache-in-prompt: Anthropic API는 캐시된 입력을 input_tokens에서 빼고 따로 보고하므로 합쳐서 계산한다.
 # 스캐너 스냅샷을 연결하려면 ExecStart 끝에 추가: --inventory %h/agentscope/snapshot.json
 Restart=on-failure
 RestartSec=5
