@@ -1,6 +1,6 @@
 # 테스트베드 적용 가이드 — 토큰 사용량 수집
 
-작성 11.02, 수정 11.05(Anthropic API 직접 연결) 이정철 · 대상 tb-gw(Ubuntu 24.04, OpenClaw 2026.9.6) · 10.31 회의 결정 반영
+작성 11.02, 수정 11.05(Anthropic API 직접 연결, Haiku 5.5 직접 등록) 이정철 · 대상 tb-gw(Ubuntu 24.04, OpenClaw 2026.9.6) · 10.31 회의 결정 반영
 
 ## 0. 무엇을 하나
 
@@ -14,12 +14,12 @@ tb-gw (VM 하나 안에서 동작. 밖으로 여는 포트는 사용 현황 API 
         └ token-guard 플러그인 ── 결과별 토큰 수 ┘
                     └─→ ~/.openclaw/agentscope/agentscope-tool-results.jsonl
   사용 현황 API(:8088, 실시간 모드) ← 위 두 파일을 읽어 계산 ← 대시보드 UI(호스트 PC에서 http://<TB_GW_IP>:8088)
-  Anthropic API(claude-haiku-5-5) ← 에이전트 모델 호출 + 플러그인 토큰 세기(무료 count_tokens, 같은 공용 키)
+  Anthropic API(claude-haiku-5-5, 직접 등록) ← 에이전트 모델 호출 + 플러그인 토큰 세기(무료 count_tokens, 같은 공용 키)
 ```
 
 | 회의 결정(10.31) | 이 가이드에서 |
 |---|---|
-| 모델 Claude Haiku 5.5 | 에이전트 모델과 플러그인 토큰 계산 모델 모두 `claude-haiku-5-5` |
+| 모델 Claude Haiku 5.5 | 에이전트 모델과 플러그인 토큰 계산 모델 모두 `claude-haiku-5-5`. 9.6 내장 목록에 없어서 직접 등록(3절), thinking 수준은 지정하지 않음 |
 | 공용 키, tb-gw 환경 변수로만 | 공용 Claude Max 계정의 API 크레딧으로 만든 **Anthropic API 키**. 환경 변수 `ANTHROPIC_API_KEY`에 실행할 때마다 메모리로만 넣음(4절). 설정 파일에는 키가 없음 |
 | 분기 스냅샷 SNAP-2-P2-T | SNAP-2-P2는 그대로 두고 분기에서만 작업. 플러그인 2개가 늘어나므로 정답 목록 따로 관리 |
 | Collector 위치 | tb-gw 안. OpenTelemetry 공식 Collector(otelcol, 버전 고정)를 설치 스크립트로 내려받음. Docker 없음 |
@@ -41,15 +41,31 @@ tb-gw에서 쓰는 사용자는 아래에서 `<TB_USER>`로 적는다. 명령은
 2. 이 가이드를 끝까지 진행하고 동작 확인(8절)까지 마친 뒤, **11절 체크리스트를 거쳐** 끈 상태에서 SNAP-2-P2-T를 만든다.
 3. SNAP-2-P2-T의 정답 목록에는 플러그인 `diagnostics-otel`, `agentscope-token-guard`가 추가된다(SNAP-2-P2와 따로 관리).
 
-## 3. 모델 설정(Anthropic API, 키는 설정 파일에 넣지 않음)
+## 3. 모델 설정(Haiku 5.5 직접 등록, 키는 설정 파일에 넣지 않음)
+
+OpenClaw 2026.9.6의 내장 Anthropic 모델 목록에는 `claude-haiku-5-5`가 없다(9.36부터 있음). 테스트베드 버전은 바꾸지 않으므로
+같은 Anthropic API를 쓰는 연결 `anthropic-direct`를 직접 등록하고 거기에 5.5를 넣는다(11.05 PC에서 9.6으로 확인).
 
 ```bash
 cp ~/.openclaw/openclaw.json ~/.openclaw/openclaw.json.bak-$(date +%m%d)
-openclaw config set agents.entries.main.model anthropic/claude-haiku-5-5
+
+openclaw config set models.providers.anthropic-direct '{
+  "api": "anthropic-messages", "baseUrl": "https://api.anthropic.com", "apiKey": "${ANTHROPIC_API_KEY}",
+  "models": [ { "id": "claude-haiku-5-5", "name": "claude-haiku-5-5",
+                "reasoning": false, "contextWindow": 200000, "maxTokens": 16000 } ]
+}' --strict-json
+openclaw config set agents.entries.main.model anthropic-direct/claude-haiku-5-5
+
+openclaw config get models.providers.anthropic-direct.apiKey    # ${ANTHROPIC_API_KEY} 글자 그대로여야 함
 ```
 
-- OpenClaw의 Anthropic 플러그인(번들)이 환경 변수 `ANTHROPIC_API_KEY`를 읽는다. `models.providers`나 `env.vars`에 키를 적지 않는다.
-- 4절에서 키를 넣고 재시작한 뒤 `openclaw models list --provider anthropic`에 `claude-haiku-5-5`가 보이는지 확인한다.
+- `apiKey`는 키가 아니라 환경 변수 **참조**다. 작은따옴표 안이라 셸이 바꾸지 않고, OpenClaw가 실행될 때 4절에서 넣은 값을 읽는다. 키 값을 직접 적지 않는다.
+- **`"reasoning": false`(꼭 유지)**: OpenClaw에 이 모델의 thinking 수준을 다루지 말라고 알린다. 웹챗에 thinking 선택 칸이 없어지고 요청에 thinking 설정을 넣지 않는다.
+  - 9.6은 thinking 수준을 4.5 세대 방식(생각 토큰 한도 지정)으로 보내는데, 5.5는 이 방식을 거부한다. `true`로 두고 Medium 등을 고르면 `LLM request failed (request format rejected, HTTP 400)`가 난다(11.05 확인).
+  - `false`여도 5.5는 기본 동작(adaptive)대로 필요할 때 스스로 생각한다. 이 상태에서 토큰 계산이 맞는 것을 확인했다.
+- **`"maxTokens": 16000`**: 한 번 응답의 최대 출력(5.5는 생각 토큰 포함). PC에서 분석 요청 하나가 5,714토큰까지 나왔다. 정상 사용 데이터를 보고 한도 가까이 가는 일이 잦으면 조정한다.
+- `agents.defaults.models`(허용 목록)를 쓰고 있다면 `anthropic-direct/claude-haiku-5-5`를 거기에도 추가한다.
+- OpenClaw를 9.36 이상으로 올리게 되면 직접 등록을 지우고 내장 `anthropic/claude-haiku-5-5`로 바꾼다.
 - 비용은 크레딧에서 빠진다. Haiku 5.5는 입력 100만 토큰당 0.10달러(프롬프트 10만 토큰 이하, 넘으면 0.50달러), 10.29 PC 테스트 1시간 분량(입력 약 79만 토큰)이 약 0.08달러.
 - 크레딧을 다 쓰면 API가 `credit balance is too low` 오류를 돌려주고 다음 달까지 멈춘다(12절).
 
@@ -155,10 +171,12 @@ grep -c '"kind":"token_count_error"\|"kind":"count_export_error"' $J
 | `token_count_error`, `count_export_error` | 0 |
 
 - `openclaw agent exec`는 게이트웨이를 거치지 않아 텔레메트리가 안 나온다. 위처럼 `openclaw agent`(게이트웨이 경유)를 쓴다.
-- 확인 결과(위 명령 출력, `plugins inspect` 출력)를 정철에게 보내 주면 2026.9.6에서 훅 동작이 9.5와 같은지 함께 본다.
-- Anthropic 직접 연결은 PC 실측(학교 게이트웨이)과 다르므로 아래 두 가지를 첫 데이터로 확인한다.
-  - **프롬프트 캐시**: Anthropic은 캐시된 입력을 `input_tokens`에서 빼고 따로 보고한다. 사용 현황 API는 `--include-cache-in-prompt`로 캐시분까지 합쳐 계산하도록 서비스 파일에 넣어 두었다(9절). 스팬의 `gen_ai.usage.cache_read.input_tokens`가 0보다 큰지 본다.
-  - **thinking**: Haiku 5.5는 기본으로 생각(thinking) 토큰을 쓴다. 순차 구간 공식(다음 입력 − 앞 입력 − 앞 출력)이 그대로 맞는지 같은 파일의 순차·병렬 비교를 한 번 돌려 본다. 어긋나면 에이전트 thinking을 `off`로 두고 다시 비교한다.
+- 확인 결과(위 명령 출력, `plugins inspect` 출력)를 정철에게 보내 주면 PC 결과와 같은지 함께 본다.
+- 11.05 PC(9.6 + Haiku 5.5 직접 등록)에서 확인한 것. 테스트베드 첫 데이터도 같은지 본다.
+  - **훅**: 도구 결과마다 `tool_result`, `token_count`, 스팬 파일의 카운트 스팬이 하나씩 남았다.
+  - **프롬프트 캐시**: Anthropic은 캐시된 입력을 `input_tokens`에서 빼고 따로 보고한다. 사용 현황 API는 `--include-cache-in-prompt`로 캐시분까지 합쳐 계산하도록 서비스 파일에 넣어 두었다(9절). 이 옵션이 없으면 순차 구간이 0으로 잘린다.
+  - **긴 대화**: `/compact`로 압축을 두 번 일으킨 뒤에도 오류 없이 도구 호출·계산이 됐다. 테스트베드에서도 긴 세션을 하나 돌려 본다.
+  - **토큰 수**: 같은 파일을 4.5보다 약 45% 많게 센다(USER.md 255 → 365). 4.5 시절 수치와 직접 비교하지 않는다.
 
 ## 9. 사용 현황 API(대시보드 백엔드)
 
@@ -218,6 +236,7 @@ grep -rl 'sk-ant-' ~/.openclaw ~/.config/systemd ~/.bashrc ~/.profile 2>/dev/nul
 |---|---|
 | 게이트웨이가 멈추거나 시작이 매우 느림 | diagnostics-otel 알려진 이슈(OpenClaw #152981, 09.21 재현). `openclaw config set diagnostics.otel.enabled false` 후 재시작해 비교 |
 | 모델 호출 실패(401 등) | 4절 키 확인(`grep -c` 결과 1), `systemctl --user restart`로 다시 시작했는지 |
+| `request format rejected, HTTP 400` | thinking 수준이 지정됨. 3절 `"reasoning": false` 확인, 세션에서 `/think off` |
 | `credit balance is too low` | 공용 계정 API 크레딧 소진. Console Billing에서 잔액 확인(다음 결제 주기에 새로 들어옴) |
 | `token_count_error` | 키 미설정, `error`에 HTTP 상태 확인(401 키 / 429 한도). 에이전트는 계속 동작함(병렬 배분만 빠짐) |
 | API health가 `degraded` | `last_error` 확인, `journalctl --user -u agentscope-usage-api -n 50`. 이전 데이터로는 계속 답함 |

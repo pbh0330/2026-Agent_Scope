@@ -62,7 +62,10 @@ cd plugin && node --test test/*.test.ts   # 플러그인: 크기 측정·토큰 
 
 ## 정확도
 
-병렬 배분 값은 같은 파일을 순차로 따로 읽은 값과 ±3% 안에서 맞았다(10.13 7건, 10.29 13건). 자세한 내용은 [docs/accuracy-summary.md](docs/accuracy-summary.md).
+병렬 배분 값은 같은 파일을 순차로 따로 읽은 값과 비교했다.
+학교 게이트웨이(Haiku 4.5)에서는 ±3% 안에서 맞았다(10.13 7건, 10.29 13건).
+테스트베드와 같은 Anthropic 직접 연결(Haiku 5.5, 11.05)에서는 −4.9%~+2.2%였다.
+자세한 내용은 [docs/accuracy-summary.md](docs/accuracy-summary.md).
 
 ## 이전 이력
 
