@@ -89,9 +89,9 @@ func TestByAssetWithoutInventory(t *testing.T) {
 		seq      int64
 		relative float64
 	}{
-		{"tool:read", 11805, 2268, 1},
-		{"tool:fs__read_text_file", 3920, 0, 0.3321},
-		{"tool:ls", 44, 0, 0.0037},
+		{"tool:read", 11790, 2268, 1},
+		{"tool:fs__read_text_file", 3920, 0, 0.3325},
+		{"tool:ls", 59, 0, 0.005},
 	}
 	if len(got.Items) != len(want) {
 		t.Fatalf("items: %+v", got.Items)

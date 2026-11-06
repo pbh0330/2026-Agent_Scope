@@ -23,7 +23,7 @@ import (
 // 귀속 방식 묶음(summary.by_method, records[].method).
 const (
 	MethodSequential  = "sequential"   // 순차 구간 실측(앞뒤 모델 호출 입력 차이)
-	MethodAllocated   = "allocated"    // 병렬·배치 구간 증가분을 결과별 토큰 수 비율로 배분
+	MethodAllocated   = "allocated"    // 병렬·배치 구간 증가분을 고정분 k + 결과별 토큰 수 비율로 배분
 	MethodNotComputed = "not_computed" // 토큰을 계산하지 못함(배분 근거 없음, 꼬리 도구 등)
 )
 

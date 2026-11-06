@@ -88,7 +88,7 @@ export default defineConfig({
                    "calls_without_cost": 0, "inventory_snapshot_id": null} }
 ```
 
-- `sequential`: 순차 구간 실측(앞뒤 모델 호출 입력 차이). `allocated`: 병렬·배치 구간 증가분을 결과별 토큰 수 비율로 나눈 값
+- `sequential`: 순차 구간 실측(앞뒤 모델 호출 입력 차이). `allocated`: 병렬·배치 구간 증가분을 나눈 값(결과마다 고정분 k를 먼저 주고 나머지를 결과별 토큰 수 비율로, 구간 합계 보존)
 - `not_computed`: 토큰을 계산하지 못한 호출(배분 근거 없음 등). 0으로 채우지 않고 따로 센다. 그중 병렬·배치는 `missing_counts`
 - 비용은 단가가 있는 기록만 더한다. 하나도 없으면 `null`(0과 구분)
 
@@ -108,12 +108,12 @@ export default defineConfig({
   "items": [
     { "key": "tool:read", "label": "read", "asset_id": null, "asset_type": null,
       "mapping_status": "unmatched", "tool_source": "core",
-      "calls": 13, "calls_not_computed": 0, "tokens": 11805,
-      "tokens_sequential": 2268, "tokens_allocated": 9537, "estimated_cost_usd": 0.011805,
-      "share": 0.7486, "relative": 1, "last_used_at": "2026-10-29T05:29:02.132Z",
+      "calls": 13, "calls_not_computed": 0, "tokens": 11790,
+      "tokens_sequential": 2268, "tokens_allocated": 9522, "estimated_cost_usd": 0.01179,
+      "share": 0.7477, "relative": 1, "last_used_at": "2026-10-29T05:29:02.132Z",
       "last_trace_id": "78f1519286fc431fe44ec8345e5d3e79" },
     { "key": "tool:fs__read_text_file", "label": "fs__read_text_file", "mcp_server": "fs",
-      "tool_source": "mcp", "mapping_status": "unmatched", "tokens": 3920, "relative": 0.3321, "...": "..." } ] }
+      "tool_source": "mcp", "mapping_status": "unmatched", "tokens": 3920, "relative": 0.3325, "...": "..." } ] }
 ```
 
 - 스냅샷을 주면 MCP 도구는 `"key": "tool-fs-read", "asset_id": "tool-fs-read", "asset_type": "tool", "mapping_status": "matched"`처럼 나온다
@@ -145,7 +145,7 @@ export default defineConfig({
 ```json
 { "group": "tool", "step": "1m0s",
   "total":  { "key": "total", "tokens": 15769, "points": [ {"t": "2026-10-29T05:24:00.000Z", "tokens": 3752, "calls": 4}, ... ] },
-  "series": [ { "key": "tool:read", "label": "read", "tokens": 11805, "points": [ ... ] },
+  "series": [ { "key": "tool:read", "label": "read", "tokens": 11790, "points": [ ... ] },
               { "key": "tool:fs__read_text_file", "label": "fs__read_text_file", "tokens": 3920, "points": [ ... ] }, ... ] }
 ```
 
@@ -158,7 +158,7 @@ export default defineConfig({
 { "key": "tool-fs-read",
   "usage": { "asset_id": "tool-fs-read", "asset_type": "tool", "mapping_status": "matched", "calls": 2, "tokens": 3920, ... },
   "runtime": { "used": true, "calls": 2, "last_used_at": "2026-10-29T05:26:56.716Z", "last_trace_id": "abd2a05c..." },
-  "recent": [ { "usage_id": "...", "time": "...", "tokens": 3317, "trace_id": "...", ... } ],
+  "recent": [ { "usage_id": "...", "time": "...", "tokens": 3306, "trace_id": "...", ... } ],
   "brake_events": null }
 ```
 

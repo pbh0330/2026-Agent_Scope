@@ -54,7 +54,7 @@ curl http://127.0.0.1:8088/api/v1/usage/summary
 ## 테스트
 
 ```bash
-cd backend/attribution && go test ./...   # 판정·순차 공식·병렬 배분(실제 캡처 로그 3개)
+cd backend/attribution && go test ./...   # 판정·순차 공식·병렬 배분(실제 캡처 로그 3개, 11.05 실측으로 고정분 k)
 cd backend/usagereport && go test ./...   # usage.json: null 규칙·중복 제거·자산 매핑·병렬 배분
 cd backend/usageapi && go test ./...      # API: 10.29 값 재현·묶음·구간·오류·경로 미노출
 cd plugin && node --test test/*.test.ts   # 플러그인: 크기 측정·토큰 계산(가짜 API)·브레이크(이미지 포함)·OTLP 전송·오류 기록에 내용 미노출
@@ -63,8 +63,8 @@ cd plugin && node --test test/*.test.ts   # 플러그인: 크기 측정·토큰 
 ## 정확도
 
 병렬 배분 값은 같은 파일을 순차로 따로 읽은 값과 비교했다.
-학교 게이트웨이(Haiku 4.5)에서는 ±3% 안에서 맞았다(10.13 7건, 10.29 13건).
-테스트베드와 같은 Anthropic 직접 연결(Haiku 5.5, 11.05)에서는 −4.9%~+2.2%였다.
+배분은 결과마다 고정분 k를 먼저 주고 나머지를 결과별 토큰 수 비율로 나눈다(11.06부터).
+이 방식으로 다시 계산하면 학교 게이트웨이(Haiku 4.5, 10.29)는 최대 1.9%, 테스트베드와 같은 Anthropic 직접 연결(Haiku 5.5, 11.05)은 최대 1.4% 차이였다.
 자세한 내용은 [docs/accuracy-summary.md](docs/accuracy-summary.md).
 
 ## 이전 이력

@@ -143,6 +143,10 @@ func TestParallelSegmentAllocatedByCounts(t *testing.T) {
 	if !hasLimitation(rep, "per-result token counts") {
 		t.Fatalf("limitations에 배분 설명 없음: %v", rep.Limitations)
 	}
+	// 이 픽스처는 순차 표본이 없고 모델 기본값도 없어 k 없이 비율로만 나눈다(그 사실을 적어 둔다).
+	if !hasLimitation(rep, "No per-result overhead is known") {
+		t.Fatalf("limitations에 고정분 근거 없음: %v", rep.Limitations)
+	}
 }
 
 func TestParallelSegmentWithMissingCountStaysNull(t *testing.T) {

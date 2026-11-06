@@ -39,7 +39,7 @@ func TestTimeseries(t *testing.T) {
 	}
 
 	get(t, s, "/api/v1/usage/timeseries?top=1", 200, &got)
-	if len(got.Series) != 2 || got.Series[0].Key != "tool:read" || got.Series[1].Key != "other" || got.Series[1].Tokens != 3964 {
+	if len(got.Series) != 2 || got.Series[0].Key != "tool:read" || got.Series[1].Key != "other" || got.Series[1].Tokens != 3979 {
 		t.Fatalf("top=1: %+v", got.Series)
 	}
 	get(t, s, "/api/v1/usage/timeseries?step=1h&group=pattern", 200, &got)
@@ -61,7 +61,7 @@ func TestAssetDetail(t *testing.T) {
 		t.Fatalf("fs: %+v", got)
 	}
 	get(t, s, "/api/v1/usage/assets/tool:read", 200, &got)
-	if got.Runtime.Calls != 13 || got.Usage.Tokens != 11805 || len(got.Recent) != recentLimit {
+	if got.Runtime.Calls != 13 || got.Usage.Tokens != 11790 || len(got.Recent) != recentLimit {
 		t.Fatalf("read: %+v", got)
 	}
 	if got.Recent[0].Time == nil || *got.Recent[0].Time < *got.Recent[1].Time {

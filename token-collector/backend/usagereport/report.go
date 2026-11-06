@@ -36,12 +36,13 @@ const (
 	// AttributionMethod는 순차 구간 근사식 이름: next.input - prev.input - prev.output.
 	AttributionMethod = "sequential-input-delta"
 	// AttributionMethodParallelCount / BatchCount는 병렬·배치 구간 증가분을 토큰 계산 API로 센
-	// 결과별 토큰 수 비율로 나눈 경우(정확도 개선 방안 B)의 이름이다.
+	// 결과별 토큰 수를 근거로 나눈 경우의 이름이다(결과마다 고정분 k를 먼저 주고 나머지를 비율로).
 	AttributionMethodParallelCount = "parallel-token-count"
 	AttributionMethodBatchCount    = "batch-token-count"
 	// AttributionVersion은 귀속 구현 버전. 판정 규칙을 바꾸면 올린다.
-	// (0.2.0: 꼬리 도구 unattributed, 시간대 정렬 수정, 모델별 단가 / 0.3.0: 병렬·배치 구간 토큰 수 비율 배분)
-	AttributionVersion = "attribution-go/0.3.0"
+	// (0.2.0: 꼬리 도구 unattributed, 시간대 정렬 수정, 모델별 단가 / 0.3.0: 병렬·배치 구간 토큰 수 비율 배분
+	//  / 0.4.0: 배분 때 결과당 고정분 k를 먼저 줌, k는 순차 구간 중앙값 또는 모델 기본값)
+	AttributionVersion = "attribution-go/0.4.0"
 	// PricingSourceUnavailable은 단가를 찾지 못한 경우의 pricing.source.
 	PricingSourceUnavailable = "unavailable"
 )
@@ -201,8 +202,10 @@ func Build(spans []attribution.Span, opt Options) (*UsageReport, error) {
 		counts = nil
 	}
 	results := attribution.Classify(spans, opt.Attribution)
+	var overheadEst map[string]attribution.Overhead
 	if counts != nil {
 		results = attribution.AllocateByCounts(results, counts)
+		overheadEst = attribution.EstimateOverheads(results, counts)
 	}
 	var parBatchNull int
 	for _, r := range results {
@@ -274,7 +277,8 @@ func Build(spans []attribution.Span, opt Options) (*UsageReport, error) {
 	case counts == nil:
 		lim = append(lim, "Only sequential segments carry tokens and cost; parallel, batch and unattributed calls keep call count and duration only.")
 	default:
-		lim = append(lim, "Parallel and batch segments split their measured input increase in proportion to per-result token counts from the token-count API (attribution_method=parallel-token-count / batch-token-count); the split preserves the segment total.")
+		lim = append(lim, "Parallel and batch segments split their measured input increase using per-result token counts from the token-count API (attribution_method=parallel-token-count / batch-token-count): each result first gets a fixed per-result overhead k, the rest is split in proportion to the counts, and the split preserves the segment total.")
+		lim = append(lim, overheadNotes(records, overheadEst)...)
 		if parBatchNull > 0 {
 			lim = append(lim, fmt.Sprintf("%d parallel/batch call(s) keep null tokens because a per-result token count was missing for their segment.", parBatchNull))
 		}
@@ -499,4 +503,33 @@ func countsFromSpans(spans []attribution.Span) (map[string]int64, map[string]str
 		refs[id] = fmt.Sprintf("trace=%s&span=%s", s.TraceID, s.SpanID)
 	}
 	return counts, refs
+}
+
+// overheadNotes는 구간 안 레코드의 배분에 쓴 모델별 고정분 k와 근거를 limitations 문장으로 만든다(모델 이름순).
+// k는 구간이 아니라 읽은 데이터 전체의 순차 구간으로 정한다(표본이 많을수록 안정적).
+func overheadNotes(records []UsageRecord, est map[string]attribution.Overhead) []string {
+	used := map[string]bool{}
+	for _, r := range records {
+		if (r.AttributionMethod == AttributionMethodParallelCount || r.AttributionMethod == AttributionMethodBatchCount) && r.Model != nil {
+			used[*r.Model] = true
+		}
+	}
+	models := make([]string, 0, len(used))
+	for m := range used {
+		models = append(models, m)
+	}
+	sort.Strings(models)
+	var out []string
+	for _, m := range models {
+		o, ok := est[m]
+		switch {
+		case ok:
+			out = append(out, fmt.Sprintf("Per-result overhead k for %s is %d tokens: the median of (measured increase - counted tokens) over %d sequential segment(s) in this data.", m, o.Tokens, o.Samples))
+		case attribution.DefaultResultOverhead[m] > 0:
+			out = append(out, fmt.Sprintf("Per-result overhead k for %s is the built-in default %d tokens (no usable sequential segment in this data).", m, attribution.DefaultResultOverhead[m]))
+		default:
+			out = append(out, fmt.Sprintf("No per-result overhead is known for %s, so its segments are split in proportion to the counts only.", m))
+		}
+	}
+	return out
 }

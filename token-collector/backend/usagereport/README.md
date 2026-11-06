@@ -53,7 +53,7 @@ OpenClaw ─OTLP─▶ Collector(otelcol-contrib, file 익스포터) ─▶ agen
 | `pricing` | `source`: config / reference_list_price / unavailable, `version`, `currency: USD`, `input_per_million`, `source_ref` |
 | `negative_delta` / `missing_timestamps` / `note` | 판정 경고 그대로 |
 | `model` / `provider` / `closing_model_span_id` | 닫는 model.call 기준(없으면 null) |
-| `attribution_method` / `attribution_version` | `sequential-input-delta`, 배분한 병렬·배치는 `parallel-token-count` / `batch-token-count` / `attribution-go/0.3.0` |
+| `attribution_method` / `attribution_version` | `sequential-input-delta`, 배분한 병렬·배치는 `parallel-token-count` / `batch-token-count` / `attribution-go/0.4.0`(배분 때 결과당 고정분 k를 먼저 줌. 쓴 k와 근거는 `limitations`에 적힘) |
 | `include_cache_in_prompt` | 계산 옵션 |
 | `estimated` | 항상 true |
 | `evidence_source_refs` | `otlp-json:<파일 이름>#trace=<id>&span=<id>`, 배분 근거가 있으면 `tool-results:<파일 이름>#toolCallId=<id>` 추가 |

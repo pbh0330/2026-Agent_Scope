@@ -12,7 +12,8 @@
 // 직전 model.call 자신의 응답(output)이 다음 호출의 입력 히스토리로 다시 들어가는 몫을
 // 빼서 도구 결과만의 기여분을 근사한다. 병렬·배치 구간은 여러 도구 결과가 한 번의
 // 입력 증가분에 섞여 있으므로, 구간 증가분만 계산해 두고(SegmentDelta) 결과별 토큰 수가
-// 있을 때 AllocateByCounts로 그 비율대로 나눈다(합계 보존). 토큰 수가 없으면 귀속하지 않는다.
+// 있을 때 AllocateByCounts로 나눈다(결과마다 고정분 k를 먼저 주고 나머지를 토큰 수 비율로, 합계 보존).
+// 토큰 수가 없으면 귀속하지 않는다.
 package attribution
 
 import "time"
@@ -143,6 +144,11 @@ type Result struct {
 	// CountedTokens: 토큰 계산 API로 센 이 도구 결과의 토큰 수(배분 근거). HasCount=false면 없음.
 	CountedTokens int64
 	HasCount      bool
+	// AllocOverhead: 배분할 때 이 결과에 먼저 준 고정분 k(0이면 토큰 수 비율로만 배분).
+	AllocOverhead int64
+	// SegmentResidual: 구간 증가분 − Σ(결과별 토큰 수 + k). k가 맞으면 0 근처다(점검용, 배분에는 안 씀).
+	SegmentResidual int64
+	HasResidual     bool
 
 	// 이 도구 구간을 닫는(=바로 다음) model.call. 없으면 빈 문자열(귀속 불가 구간).
 	ClosingModelSpanID string
