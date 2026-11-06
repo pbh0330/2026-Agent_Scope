@@ -1,0 +1,13 @@
+# systemd 사용자 서비스: ~/.config/systemd/user/agentscope-collector.service (install-collector.sh가 복사)
+# 게이트웨이와 같은 사용자. loginctl enable-linger 상태라 로그인 없이도 실행된다.
+[Unit]
+Description=AgentScope token Collector (OTLP 127.0.0.1:4318 -> span file)
+After=network.target
+
+[Service]
+ExecStart=%h/agentscope/bin/otelcol --config %h/agentscope/otelcol-testbed.yaml
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

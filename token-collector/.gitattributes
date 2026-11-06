@@ -1,0 +1,4 @@
+# 셸 스크립트·systemd 파일은 Windows에서 받아도 LF 유지(VM에서 그대로 실행)
+*.sh text eol=lf
+*.service text eol=lf
+*.yaml text eol=lf
