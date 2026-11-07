@@ -1,0 +1,440 @@
+{
+  "schema_version": "0.6.0-draft",
+  "qa_run_id": "qa-snap-p0-20261026T133744Z",
+  "environment_id": "agentscope-testbed",
+  "profile_id": "tb-openclaw",
+  "snapshot_id": "snap-p0-20261026T133744Z",
+  "ground_truth_id": "testbed-gt-P0",
+  "ground_truth_version": "SNAP-2-P0",
+  "generated_at": "2026-10-26T13:37:44Z",
+  "detection_report_id": "det-snap-p0-20261026T133744Z",
+  "id_mappings": [
+    {
+      "gt_asset_id": "tb-gw/gateway",
+      "asset_id": "gw_4261ac71d127a248",
+      "asset_type": "gateway",
+      "layer": "declared",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "tb-node/node",
+      "asset_id": "node_1ca37e363256f7fb",
+      "asset_type": "node",
+      "layer": "declared",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "tb-gw/mcp_server/fs-workspace",
+      "asset_id": "srv_82d252784c25ade0",
+      "asset_type": "mcp_server",
+      "layer": "declared",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "fs-workspace/tool/read_file",
+      "asset_id": "tool_195991a776278649",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "fs-workspace/tool/read_text_file",
+      "asset_id": "tool_808858ad67b2571e",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "fs-workspace/tool/read_media_file",
+      "asset_id": "tool_024b0ecd7f1ef493",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "fs-workspace/tool/read_multiple_files",
+      "asset_id": "tool_dd5b0d8c51c2703a",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "fs-workspace/tool/write_file",
+      "asset_id": "tool_ae3a16e72cd51e20",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "fs-workspace/tool/edit_file",
+      "asset_id": "tool_48ebc84cc788d189",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "fs-workspace/tool/create_directory",
+      "asset_id": "tool_6d81dcbe721e8c45",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "fs-workspace/tool/list_directory",
+      "asset_id": "tool_194d79b6acffacf6",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "fs-workspace/tool/list_directory_with_sizes",
+      "asset_id": "tool_a3b41a1ef6d32f7b",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "fs-workspace/tool/directory_tree",
+      "asset_id": "tool_db2ee601e1be0f61",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "fs-workspace/tool/move_file",
+      "asset_id": "tool_885804152d454da3",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "fs-workspace/tool/search_files",
+      "asset_id": "tool_6674705e458e8b17",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "fs-workspace/tool/get_file_info",
+      "asset_id": "tool_e18ee8a4b7d18ab1",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "fs-workspace/tool/list_allowed_directories",
+      "asset_id": "tool_1168c52833bf45ae",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    }
+  ],
+  "checks": [
+    {
+      "check_id": "chk-expo-fs-workspace/tool/read_file",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": false
+      },
+      "actual": {
+        "EXPOSED": false
+      },
+      "evidence_refs": [
+        "ev-expo-fs-workspace"
+      ],
+      "reason": "toolFilter.include에 없음"
+    },
+    {
+      "check_id": "chk-expo-fs-workspace/tool/read_text_file",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": true
+      },
+      "actual": {
+        "EXPOSED": true
+      },
+      "evidence_refs": [
+        "ev-expo-fs-workspace"
+      ],
+      "reason": ""
+    },
+    {
+      "check_id": "chk-expo-fs-workspace/tool/read_media_file",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": false
+      },
+      "actual": {
+        "EXPOSED": false
+      },
+      "evidence_refs": [
+        "ev-expo-fs-workspace"
+      ],
+      "reason": "toolFilter.include에 없음"
+    },
+    {
+      "check_id": "chk-expo-fs-workspace/tool/read_multiple_files",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": false
+      },
+      "actual": {
+        "EXPOSED": false
+      },
+      "evidence_refs": [
+        "ev-expo-fs-workspace"
+      ],
+      "reason": "toolFilter.include에 없음"
+    },
+    {
+      "check_id": "chk-expo-fs-workspace/tool/write_file",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": false
+      },
+      "actual": {
+        "EXPOSED": false
+      },
+      "evidence_refs": [
+        "ev-expo-fs-workspace"
+      ],
+      "reason": "toolFilter.include에 없음"
+    },
+    {
+      "check_id": "chk-expo-fs-workspace/tool/edit_file",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": false
+      },
+      "actual": {
+        "EXPOSED": false
+      },
+      "evidence_refs": [
+        "ev-expo-fs-workspace"
+      ],
+      "reason": "toolFilter.include에 없음"
+    },
+    {
+      "check_id": "chk-expo-fs-workspace/tool/create_directory",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": false
+      },
+      "actual": {
+        "EXPOSED": false
+      },
+      "evidence_refs": [
+        "ev-expo-fs-workspace"
+      ],
+      "reason": "toolFilter.include에 없음"
+    },
+    {
+      "check_id": "chk-expo-fs-workspace/tool/list_directory",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": true
+      },
+      "actual": {
+        "EXPOSED": true
+      },
+      "evidence_refs": [
+        "ev-expo-fs-workspace"
+      ],
+      "reason": ""
+    },
+    {
+      "check_id": "chk-expo-fs-workspace/tool/list_directory_with_sizes",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": false
+      },
+      "actual": {
+        "EXPOSED": false
+      },
+      "evidence_refs": [
+        "ev-expo-fs-workspace"
+      ],
+      "reason": "toolFilter.include에 없음"
+    },
+    {
+      "check_id": "chk-expo-fs-workspace/tool/directory_tree",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": false
+      },
+      "actual": {
+        "EXPOSED": false
+      },
+      "evidence_refs": [
+        "ev-expo-fs-workspace"
+      ],
+      "reason": "toolFilter.include에 없음"
+    },
+    {
+      "check_id": "chk-expo-fs-workspace/tool/move_file",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": false
+      },
+      "actual": {
+        "EXPOSED": false
+      },
+      "evidence_refs": [
+        "ev-expo-fs-workspace"
+      ],
+      "reason": "toolFilter.include에 없음"
+    },
+    {
+      "check_id": "chk-expo-fs-workspace/tool/search_files",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": false
+      },
+      "actual": {
+        "EXPOSED": false
+      },
+      "evidence_refs": [
+        "ev-expo-fs-workspace"
+      ],
+      "reason": "toolFilter.include에 없음"
+    },
+    {
+      "check_id": "chk-expo-fs-workspace/tool/get_file_info",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": false
+      },
+      "actual": {
+        "EXPOSED": false
+      },
+      "evidence_refs": [
+        "ev-expo-fs-workspace"
+      ],
+      "reason": "toolFilter.include에 없음"
+    },
+    {
+      "check_id": "chk-expo-fs-workspace/tool/list_allowed_directories",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": false
+      },
+      "actual": {
+        "EXPOSED": false
+      },
+      "evidence_refs": [
+        "ev-expo-fs-workspace"
+      ],
+      "reason": "toolFilter.include에 없음"
+    },
+    {
+      "check_id": "chk-normal-no-alerts",
+      "condition_id": "NORMAL-STATE",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "alerts": 0
+      },
+      "actual": {
+        "alerts": 0
+      },
+      "evidence_refs": [],
+      "reason": "정상군 프로파일에서는 S1~S5 경고가 없어야 함"
+    }
+  ],
+  "metrics": [
+    {
+      "name": "declared_asset_recall",
+      "scope": "declared",
+      "numerator": 3,
+      "denominator": 3,
+      "value": 1.0
+    },
+    {
+      "name": "advertised_asset_recall",
+      "scope": "advertised",
+      "numerator": 14,
+      "denominator": 14,
+      "value": 1.0
+    },
+    {
+      "name": "relation_recall",
+      "scope": "relations",
+      "numerator": 15,
+      "denominator": 16,
+      "value": 0.9375
+    }
+  ],
+  "extra_assets": [
+    {
+      "asset_id": "pa_10415b79168a91f6",
+      "canonical_key": "tb-gw/authentication/gateway.auth",
+      "asset_type": "permission_auth"
+    },
+    {
+      "asset_id": "pa_0547cf3234bd24fd",
+      "canonical_key": "tb-gw/permission/tools.profile",
+      "asset_type": "permission_auth"
+    },
+    {
+      "asset_id": "pa_3a3c5f7d09203be0",
+      "canonical_key": "tb-gw/permission/mcp.servers.fs-workspace.toolFilter",
+      "asset_type": "permission_auth"
+    }
+  ],
+  "missing_relations": [
+    {
+      "type": "PAIRED_WITH",
+      "source": "tb-gw/gateway",
+      "target": "tb-node/node"
+    }
+  ],
+  "limitations": [
+    "정답 목록에는 permission_auth 자산이 없어 해당 유형은 추가 자산으로만 표시",
+    "관계 비교는 (유형, 출발 키, 대상 키) 완전 일치 기준"
+  ]
+}

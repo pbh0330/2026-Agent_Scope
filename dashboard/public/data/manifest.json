@@ -1,0 +1,247 @@
+{
+  "generated_at": "2026-10-26T13:37:43Z",
+  "environment_id": "agentscope-testbed",
+  "sources": {
+    "scanner": "feature/scanner-config · asset_scanner (openclaw-mcp-config 0.1.0-draft)",
+    "testbed": "feature/testbed-profiles · profiles P0~P2, ground-truth/raw",
+    "threat_rules": "docs/threat-scenarios · scenario-s1~s5.md Static Detection",
+    "schema": "docs/mcp-attack-surface-definition · schema-design-draft v0.6",
+    "usage": "feature/token-collector · usagereport"
+  },
+  "snapshots": [
+    {
+      "key": "P0",
+      "label": "P0 · 기본 구성",
+      "kind": "normal",
+      "scenario_id": null,
+      "synthetic": false,
+      "snapshot_id": "snap-p0-20261026T133744Z",
+      "files": {
+        "snapshot": "snapshots/P0/snapshot.json",
+        "detections": "snapshots/P0/detections.json",
+        "qa": "snapshots/P0/qa.json"
+      },
+      "counts": {
+        "assets": 20,
+        "relations": 18,
+        "alerts": 0
+      }
+    },
+    {
+      "key": "P1",
+      "label": "P1 · 노드 서버·스킬",
+      "kind": "normal",
+      "scenario_id": null,
+      "synthetic": false,
+      "snapshot_id": "snap-p1-20261026T133744Z",
+      "files": {
+        "snapshot": "snapshots/P1/snapshot.json",
+        "detections": "snapshots/P1/detections.json",
+        "qa": "snapshots/P1/qa.json"
+      },
+      "counts": {
+        "assets": 61,
+        "relations": 60,
+        "alerts": 0
+      }
+    },
+    {
+      "key": "P2",
+      "label": "P2 · 원격 서버·플러그인",
+      "kind": "normal",
+      "scenario_id": null,
+      "synthetic": false,
+      "snapshot_id": "snap-p2-20261026T133744Z",
+      "files": {
+        "snapshot": "snapshots/P2/snapshot.json",
+        "detections": "snapshots/P2/detections.json",
+        "audit": "snapshots/P2/openclaw-security-audit.json",
+        "qa": "snapshots/P2/qa.json"
+      },
+      "counts": {
+        "assets": 73,
+        "relations": 73,
+        "alerts": 0
+      }
+    },
+    {
+      "key": "S1",
+      "label": "S1 · 비인가 서버 등록",
+      "kind": "scenario",
+      "scenario_id": "S1",
+      "synthetic": true,
+      "snapshot_id": "snap-s1-20261026T133744Z",
+      "files": {
+        "snapshot": "snapshots/S1/snapshot.json",
+        "detections": "snapshots/S1/detections.json",
+        "audit": "snapshots/S1/openclaw-security-audit.json"
+      },
+      "counts": {
+        "assets": 74,
+        "relations": 74,
+        "alerts": 2
+      }
+    },
+    {
+      "key": "S2",
+      "label": "S2 · 과도한 도구 권한",
+      "kind": "scenario",
+      "scenario_id": "S2",
+      "synthetic": true,
+      "snapshot_id": "snap-s2-20261026T133744Z",
+      "files": {
+        "snapshot": "snapshots/S2/snapshot.json",
+        "detections": "snapshots/S2/detections.json",
+        "audit": "snapshots/S2/openclaw-security-audit.json"
+      },
+      "counts": {
+        "assets": 72,
+        "relations": 72,
+        "alerts": 1
+      }
+    },
+    {
+      "key": "S3",
+      "label": "S3 · 도구 이름 충돌",
+      "kind": "scenario",
+      "scenario_id": "S3",
+      "synthetic": true,
+      "snapshot_id": "snap-s3-20261026T133744Z",
+      "files": {
+        "snapshot": "snapshots/S3/snapshot.json",
+        "detections": "snapshots/S3/detections.json",
+        "audit": "snapshots/S3/openclaw-security-audit.json"
+      },
+      "counts": {
+        "assets": 74,
+        "relations": 74,
+        "alerts": 1
+      }
+    },
+    {
+      "key": "S4",
+      "label": "S4 · 자격증명 공유",
+      "kind": "scenario",
+      "scenario_id": "S4",
+      "synthetic": true,
+      "snapshot_id": "snap-s4-20261026T133745Z",
+      "files": {
+        "snapshot": "snapshots/S4/snapshot.json",
+        "detections": "snapshots/S4/detections.json",
+        "audit": "snapshots/S4/openclaw-security-audit.json"
+      },
+      "counts": {
+        "assets": 74,
+        "relations": 74,
+        "alerts": 1
+      }
+    },
+    {
+      "key": "S5",
+      "label": "S5 · 약한 연결 보안",
+      "kind": "scenario",
+      "scenario_id": "S5",
+      "synthetic": true,
+      "snapshot_id": "snap-s5-20261026T133745Z",
+      "files": {
+        "snapshot": "snapshots/S5/snapshot.json",
+        "detections": "snapshots/S5/detections.json",
+        "audit": "snapshots/S5/openclaw-security-audit.json"
+      },
+      "counts": {
+        "assets": 73,
+        "relations": 73,
+        "alerts": 3
+      }
+    }
+  ],
+  "diffs": [
+    {
+      "from": "P0",
+      "to": "P1",
+      "file": "diffs/P0__P1.json",
+      "counts": {
+        "added": 41,
+        "modified": 1,
+        "removed_from_scope": 0,
+        "not_observed": 0
+      }
+    },
+    {
+      "from": "P1",
+      "to": "P2",
+      "file": "diffs/P1__P2.json",
+      "counts": {
+        "added": 12,
+        "modified": 0,
+        "removed_from_scope": 0,
+        "not_observed": 0
+      }
+    },
+    {
+      "from": "P2",
+      "to": "S1",
+      "file": "diffs/P2__S1.json",
+      "counts": {
+        "added": 1,
+        "modified": 3,
+        "removed_from_scope": 0,
+        "not_observed": 0
+      }
+    },
+    {
+      "from": "P2",
+      "to": "S2",
+      "file": "diffs/P2__S2.json",
+      "counts": {
+        "added": 0,
+        "modified": 15,
+        "removed_from_scope": 1,
+        "not_observed": 0
+      }
+    },
+    {
+      "from": "P2",
+      "to": "S3",
+      "file": "diffs/P2__S3.json",
+      "counts": {
+        "added": 1,
+        "modified": 3,
+        "removed_from_scope": 0,
+        "not_observed": 0
+      }
+    },
+    {
+      "from": "P2",
+      "to": "S4",
+      "file": "diffs/P2__S4.json",
+      "counts": {
+        "added": 1,
+        "modified": 29,
+        "removed_from_scope": 0,
+        "not_observed": 0
+      }
+    },
+    {
+      "from": "P2",
+      "to": "S5",
+      "file": "diffs/P2__S5.json",
+      "counts": {
+        "added": 0,
+        "modified": 3,
+        "removed_from_scope": 0,
+        "not_observed": 0
+      }
+    }
+  ],
+  "usage": {
+    "file": "usage.json",
+    "source": "token-collector/collector/usagereport",
+    "linked_snapshot": "snap-test-fs",
+    "note": "토큰 수집기 3주차 검증 로그로 만든 usage.json. 테스트베드 스냅샷과 다른 환경(environment_id)"
+  },
+  "policies": [
+    "approved_servers",
+    "tool_risk"
+  ]
+}

@@ -1,0 +1,522 @@
+{
+  "schema_version": "0.6.0-draft",
+  "report_id": "det-snap-s4-20261026T133745Z",
+  "environment_id": "agentscope-testbed",
+  "profile_id": "tb-openclaw",
+  "snapshot_id": "snap-s4-20261026T133745Z",
+  "generated_at": "2026-10-26T13:37:45Z",
+  "producer": {
+    "name": "agentscope-dashboard-pipeline",
+    "version": "0.1.0",
+    "component": "static-detector"
+  },
+  "ruleset": {
+    "id": "agentscope-static",
+    "version": "draft-1"
+  },
+  "evaluations": [
+    {
+      "evaluation_id": "eval-S1-C1-cc162bb8d0",
+      "scenario_id": "S1",
+      "rule_id": "S1-C1",
+      "rule_version": "draft-1",
+      "asset_ids": [
+        "srv_82d252784c25ade0"
+      ],
+      "relation_ids": [
+        "rel_4f5c464bf781a31b"
+      ],
+      "evidence_refs": [
+        "ev-decl-tb-gw-fs-workspace"
+      ],
+      "policy_refs": [
+        {
+          "id": "pol-s1-approved-servers",
+          "version": "testbed-P2@2026-10-04",
+          "source_ref": "testbed/profiles/README.md#승인-서버-목록-s1-allowlist"
+        }
+      ],
+      "result": "not_detected",
+      "reason": "승인 목록의 이름·등록 주체·Endpoint와 일치",
+      "evaluated_at": "2026-10-26T13:37:45Z",
+      "details": {
+        "name": "fs-workspace",
+        "declared_by": "gateway",
+        "host": "tb-gw",
+        "endpoint": "command:mcp-server-filesystem"
+      }
+    },
+    {
+      "evaluation_id": "eval-S1-C1-64b2a4f9fc",
+      "scenario_id": "S1",
+      "rule_id": "S1-C1",
+      "rule_version": "draft-1",
+      "asset_ids": [
+        "srv_8d8aec91ec656a07"
+      ],
+      "relation_ids": [
+        "rel_7dc61339ce7bc959",
+        "rel_c36eb59fbde7d2ad"
+      ],
+      "evidence_refs": [
+        "ev-decl-tb-gw-inventory-remote"
+      ],
+      "policy_refs": [
+        {
+          "id": "pol-s1-approved-servers",
+          "version": "testbed-P2@2026-10-04",
+          "source_ref": "testbed/profiles/README.md#승인-서버-목록-s1-allowlist"
+        }
+      ],
+      "result": "not_detected",
+      "reason": "승인 목록의 이름·등록 주체·Endpoint와 일치",
+      "evaluated_at": "2026-10-26T13:37:45Z",
+      "details": {
+        "name": "inventory-remote",
+        "declared_by": "gateway",
+        "host": "tb-gw",
+        "endpoint": "url:https://tb-node:8443/mcp"
+      }
+    },
+    {
+      "evaluation_id": "eval-S1-C1-301ea146eb",
+      "scenario_id": "S1",
+      "rule_id": "S1-C1",
+      "rule_version": "draft-1",
+      "asset_ids": [
+        "srv_ec1aa5ba6ea61ff0"
+      ],
+      "relation_ids": [
+        "rel_dc821a5d3c34c5e4"
+      ],
+      "evidence_refs": [
+        "ev-decl-tb-node-kg-memory"
+      ],
+      "policy_refs": [
+        {
+          "id": "pol-s1-approved-servers",
+          "version": "testbed-P2@2026-10-04",
+          "source_ref": "testbed/profiles/README.md#승인-서버-목록-s1-allowlist"
+        }
+      ],
+      "result": "not_detected",
+      "reason": "승인 목록의 이름·등록 주체·Endpoint와 일치",
+      "evaluated_at": "2026-10-26T13:37:45Z",
+      "details": {
+        "name": "kg-memory",
+        "declared_by": "node",
+        "host": "tb-node",
+        "endpoint": "command:mcp-server-memory"
+      }
+    },
+    {
+      "evaluation_id": "eval-S1-C1-2f8c563d28",
+      "scenario_id": "S1",
+      "rule_id": "S1-C1",
+      "rule_version": "draft-1",
+      "asset_ids": [
+        "srv_eee2566222d9bc33"
+      ],
+      "relation_ids": [
+        "rel_dcf5e77d71f2150e"
+      ],
+      "evidence_refs": [
+        "ev-decl-tb-node-demo-everything"
+      ],
+      "policy_refs": [
+        {
+          "id": "pol-s1-approved-servers",
+          "version": "testbed-P2@2026-10-04",
+          "source_ref": "testbed/profiles/README.md#승인-서버-목록-s1-allowlist"
+        }
+      ],
+      "result": "not_detected",
+      "reason": "승인 목록의 이름·등록 주체·Endpoint와 일치",
+      "evaluated_at": "2026-10-26T13:37:45Z",
+      "details": {
+        "name": "demo-everything",
+        "declared_by": "node",
+        "host": "tb-node",
+        "endpoint": "command:mcp-server-everything"
+      }
+    },
+    {
+      "evaluation_id": "eval-S1-C1-1d437ef4c1",
+      "scenario_id": "S1",
+      "rule_id": "S1-C1",
+      "rule_version": "draft-1",
+      "asset_ids": [
+        "srv_bbb764ffe6b99467"
+      ],
+      "relation_ids": [
+        "rel_707c61b88f8de3e7"
+      ],
+      "evidence_refs": [
+        "ev-plugin-srv-agentscope-asset-catalog-asset-catalog"
+      ],
+      "policy_refs": [
+        {
+          "id": "pol-s1-approved-servers",
+          "version": "testbed-P2@2026-10-04",
+          "source_ref": "testbed/profiles/README.md#승인-서버-목록-s1-allowlist"
+        }
+      ],
+      "result": "not_detected",
+      "reason": "승인 목록의 이름·등록 주체·Endpoint와 일치",
+      "evaluated_at": "2026-10-26T13:37:45Z",
+      "details": {
+        "name": "asset-catalog",
+        "declared_by": "plugin",
+        "host": "tb-gw",
+        "endpoint": "command:node"
+      }
+    },
+    {
+      "evaluation_id": "eval-S2-C1-b30bdc16fa",
+      "scenario_id": "S2",
+      "rule_id": "S2-C1",
+      "rule_version": "draft-1",
+      "asset_ids": [
+        "srv_82d252784c25ade0"
+      ],
+      "relation_ids": [],
+      "evidence_refs": [
+        "ev-decl-tb-gw-fs-workspace"
+      ],
+      "policy_refs": [
+        {
+          "id": "pol-s2-tool-risk",
+          "version": "scenario-s2@2026-10-11",
+          "source_ref": "docs/threat-scenarios/scenario-s2.md#6-static-detection"
+        }
+      ],
+      "result": "not_detected",
+      "reason": "고위험 입력을 가진 쓰기 도구가 필터로 제외되었거나 없음",
+      "evaluated_at": "2026-10-26T13:37:45Z"
+    },
+    {
+      "evaluation_id": "eval-S2-C1-93ec84cae2",
+      "scenario_id": "S2",
+      "rule_id": "S2-C1",
+      "rule_version": "draft-1",
+      "asset_ids": [
+        "srv_8d8aec91ec656a07"
+      ],
+      "relation_ids": [],
+      "evidence_refs": [
+        "ev-decl-tb-gw-inventory-remote"
+      ],
+      "policy_refs": [
+        {
+          "id": "pol-s2-tool-risk",
+          "version": "scenario-s2@2026-10-11",
+          "source_ref": "docs/threat-scenarios/scenario-s2.md#6-static-detection"
+        }
+      ],
+      "result": "not_detected",
+      "reason": "고위험 입력을 가진 쓰기 도구가 필터로 제외되었거나 없음",
+      "evaluated_at": "2026-10-26T13:37:45Z"
+    },
+    {
+      "evaluation_id": "eval-S2-C1-fe04022341",
+      "scenario_id": "S2",
+      "rule_id": "S2-C1",
+      "rule_version": "draft-1",
+      "asset_ids": [
+        "srv_ec1aa5ba6ea61ff0"
+      ],
+      "relation_ids": [],
+      "evidence_refs": [
+        "ev-decl-tb-node-kg-memory"
+      ],
+      "policy_refs": [
+        {
+          "id": "pol-s2-tool-risk",
+          "version": "scenario-s2@2026-10-11",
+          "source_ref": "docs/threat-scenarios/scenario-s2.md#6-static-detection"
+        }
+      ],
+      "result": "not_detected",
+      "reason": "고위험 입력을 가진 쓰기 도구가 필터로 제외되었거나 없음",
+      "evaluated_at": "2026-10-26T13:37:45Z"
+    },
+    {
+      "evaluation_id": "eval-S2-C1-1b9578b4a9",
+      "scenario_id": "S2",
+      "rule_id": "S2-C1",
+      "rule_version": "draft-1",
+      "asset_ids": [
+        "srv_eee2566222d9bc33"
+      ],
+      "relation_ids": [],
+      "evidence_refs": [
+        "ev-decl-tb-node-demo-everything"
+      ],
+      "policy_refs": [
+        {
+          "id": "pol-s2-tool-risk",
+          "version": "scenario-s2@2026-10-11",
+          "source_ref": "docs/threat-scenarios/scenario-s2.md#6-static-detection"
+        }
+      ],
+      "result": "not_detected",
+      "reason": "고위험 입력을 가진 쓰기 도구가 필터로 제외되었거나 없음",
+      "evaluated_at": "2026-10-26T13:37:45Z"
+    },
+    {
+      "evaluation_id": "eval-S2-C1-b30b1f510f",
+      "scenario_id": "S2",
+      "rule_id": "S2-C1",
+      "rule_version": "draft-1",
+      "asset_ids": [
+        "srv_bbb764ffe6b99467"
+      ],
+      "relation_ids": [],
+      "evidence_refs": [
+        "ev-plugin-srv-agentscope-asset-catalog-asset-catalog"
+      ],
+      "policy_refs": [
+        {
+          "id": "pol-s2-tool-risk",
+          "version": "scenario-s2@2026-10-11",
+          "source_ref": "docs/threat-scenarios/scenario-s2.md#6-static-detection"
+        }
+      ],
+      "result": "not_detected",
+      "reason": "고위험 입력을 가진 쓰기 도구가 필터로 제외되었거나 없음",
+      "evaluated_at": "2026-10-26T13:37:45Z"
+    },
+    {
+      "evaluation_id": "eval-S3-C1-b8402b1fa3",
+      "scenario_id": "S3",
+      "rule_id": "S3-C1",
+      "rule_version": "draft-1",
+      "asset_ids": [
+        "tool_195991a776278649"
+      ],
+      "relation_ids": [],
+      "evidence_refs": [
+        "ev-cap-asset-catalog",
+        "ev-cap-demo-everything",
+        "ev-cap-fs-workspace"
+      ],
+      "policy_refs": [],
+      "result": "not_detected",
+      "reason": "서버 간 원래 도구 이름 40개 모두 고유",
+      "evaluated_at": "2026-10-26T13:37:45Z",
+      "details": {
+        "tool_names_checked": 40
+      }
+    },
+    {
+      "evaluation_id": "eval-S4-C1-a0406c2ae8",
+      "scenario_id": "S4",
+      "rule_id": "S4-C1",
+      "rule_version": "draft-1",
+      "asset_ids": [
+        "pa_235029938a7bca8e",
+        "pa_e6737fd6d4009fbc",
+        "srv_82d252784c25ade0",
+        "srv_8d8aec91ec656a07"
+      ],
+      "relation_ids": [
+        "rel_28664295b287ff48",
+        "rel_b6ef56a0e28fab1e"
+      ],
+      "evidence_refs": [
+        "ev-decl-tb-gw-fs-workspace",
+        "ev-decl-tb-gw-inventory-remote"
+      ],
+      "policy_refs": [],
+      "result": "detected",
+      "reason": "같은 저장소(tb-gw:~/.openclaw/.env)의 `env:INVENTORY_MCP_TOKEN`를 서버 2곳이 공유",
+      "evaluated_at": "2026-10-26T13:37:45Z",
+      "details": {
+        "reference": "env:INVENTORY_MCP_TOKEN",
+        "servers": [
+          "fs-workspace",
+          "inventory-remote"
+        ],
+        "namespace": "tb-gw:~/.openclaw/.env"
+      }
+    },
+    {
+      "evaluation_id": "eval-S4-C1-8bb9e00a72",
+      "scenario_id": "S4",
+      "rule_id": "S4-C1",
+      "rule_version": "draft-1",
+      "asset_ids": [
+        "pa_deb5ffb01d66a469",
+        "srv_eee2566222d9bc33"
+      ],
+      "relation_ids": [
+        "rel_258b8e7b6d8227ea"
+      ],
+      "evidence_refs": [
+        "ev-decl-tb-node-demo-everything"
+      ],
+      "policy_refs": [],
+      "result": "not_detected",
+      "reason": "`env:INVENTORY_MCP_TOKEN`는 tb-node:~/.openclaw/.env에서 서버 1곳(demo-everything)만 참조",
+      "evaluated_at": "2026-10-26T13:37:45Z"
+    },
+    {
+      "evaluation_id": "eval-S4-C2-3f3200cdef",
+      "scenario_id": "S4",
+      "rule_id": "S4-C2",
+      "rule_version": "draft-1",
+      "asset_ids": [
+        "pa_235029938a7bca8e",
+        "pa_deb5ffb01d66a469",
+        "pa_e6737fd6d4009fbc",
+        "srv_82d252784c25ade0",
+        "srv_8d8aec91ec656a07",
+        "srv_eee2566222d9bc33"
+      ],
+      "relation_ids": [
+        "rel_258b8e7b6d8227ea",
+        "rel_28664295b287ff48",
+        "rel_b6ef56a0e28fab1e"
+      ],
+      "evidence_refs": [
+        "ev-decl-tb-gw-fs-workspace",
+        "ev-decl-tb-gw-inventory-remote",
+        "ev-decl-tb-node-demo-everything"
+      ],
+      "policy_refs": [],
+      "result": "unknown",
+      "reason": "같은 이름 `env:INVENTORY_MCP_TOKEN`이 서로 다른 저장소(tb-gw:~/.openclaw/.env, tb-node:~/.openclaw/.env)에서 참조됨 — 이름만으로 동일 자격증명이라 단정하지 않음",
+      "evaluated_at": "2026-10-26T13:37:45Z",
+      "details": {
+        "reference": "env:INVENTORY_MCP_TOKEN",
+        "servers": [
+          "fs-workspace",
+          "inventory-remote",
+          "demo-everything"
+        ],
+        "namespaces": [
+          "tb-gw:~/.openclaw/.env",
+          "tb-node:~/.openclaw/.env"
+        ]
+      }
+    },
+    {
+      "evaluation_id": "eval-S5-00-878d50802f",
+      "scenario_id": "S5",
+      "rule_id": "S5-00",
+      "rule_version": "draft-1",
+      "asset_ids": [
+        "srv_82d252784c25ade0"
+      ],
+      "relation_ids": [],
+      "evidence_refs": [
+        "ev-decl-tb-gw-fs-workspace"
+      ],
+      "policy_refs": [],
+      "result": "not_applicable",
+      "reason": "stdio 로컬 실행 — 네트워크 전송 검증 대상 아님",
+      "evaluated_at": "2026-10-26T13:37:45Z"
+    },
+    {
+      "evaluation_id": "eval-S5-02-416aa966c6",
+      "scenario_id": "S5",
+      "rule_id": "S5-02",
+      "rule_version": "draft-1",
+      "asset_ids": [
+        "srv_8d8aec91ec656a07"
+      ],
+      "relation_ids": [
+        "rel_7dc61339ce7bc959",
+        "rel_c36eb59fbde7d2ad"
+      ],
+      "evidence_refs": [
+        "ev-decl-tb-gw-inventory-remote"
+      ],
+      "policy_refs": [],
+      "result": "not_detected",
+      "reason": "HTTPS + sslVerify true",
+      "evaluated_at": "2026-10-26T13:37:45Z"
+    },
+    {
+      "evaluation_id": "eval-S5-00-22f378e660",
+      "scenario_id": "S5",
+      "rule_id": "S5-00",
+      "rule_version": "draft-1",
+      "asset_ids": [
+        "srv_ec1aa5ba6ea61ff0"
+      ],
+      "relation_ids": [],
+      "evidence_refs": [
+        "ev-decl-tb-node-kg-memory"
+      ],
+      "policy_refs": [],
+      "result": "not_applicable",
+      "reason": "stdio 로컬 실행 — 네트워크 전송 검증 대상 아님",
+      "evaluated_at": "2026-10-26T13:37:45Z"
+    },
+    {
+      "evaluation_id": "eval-S5-00-0a8894c2f5",
+      "scenario_id": "S5",
+      "rule_id": "S5-00",
+      "rule_version": "draft-1",
+      "asset_ids": [
+        "srv_eee2566222d9bc33"
+      ],
+      "relation_ids": [],
+      "evidence_refs": [
+        "ev-decl-tb-node-demo-everything"
+      ],
+      "policy_refs": [],
+      "result": "not_applicable",
+      "reason": "stdio 로컬 실행 — 네트워크 전송 검증 대상 아님",
+      "evaluated_at": "2026-10-26T13:37:45Z"
+    },
+    {
+      "evaluation_id": "eval-S5-00-f1c6b8778e",
+      "scenario_id": "S5",
+      "rule_id": "S5-00",
+      "rule_version": "draft-1",
+      "asset_ids": [
+        "srv_bbb764ffe6b99467"
+      ],
+      "relation_ids": [],
+      "evidence_refs": [
+        "ev-plugin-srv-agentscope-asset-catalog-asset-catalog"
+      ],
+      "policy_refs": [],
+      "result": "not_applicable",
+      "reason": "stdio 로컬 실행 — 네트워크 전송 검증 대상 아님",
+      "evaluated_at": "2026-10-26T13:37:45Z"
+    }
+  ],
+  "alerts": [
+    {
+      "alert_id": "alert-96e9fa6e4aec",
+      "evaluation_id": "eval-S4-C1-a0406c2ae8",
+      "finding_key": "96e9fa6e4aec363e6f68cb35",
+      "scenario_id": "S4",
+      "rule_id": "S4-C1",
+      "rule_version": "draft-1",
+      "severity": "high",
+      "confidence": "high",
+      "title": "하나의 자격증명을 여러 서버가 공유",
+      "message": "`env:INVENTORY_MCP_TOKEN` 참조를 fs-workspace, inventory-remote가 함께 사용합니다. 한 서버가 침해되면 다른 서버 접근 권한까지 노출될 수 있습니다.",
+      "asset_ids": [
+        "pa_235029938a7bca8e",
+        "pa_e6737fd6d4009fbc",
+        "srv_82d252784c25ade0",
+        "srv_8d8aec91ec656a07"
+      ],
+      "relation_ids": [
+        "rel_28664295b287ff48",
+        "rel_b6ef56a0e28fab1e"
+      ],
+      "evidence_refs": [
+        "ev-decl-tb-gw-fs-workspace",
+        "ev-decl-tb-gw-inventory-remote"
+      ],
+      "detected_at": "2026-10-26T13:37:45Z",
+      "recommendation": "서버별로 별도 자격증명을 발급하고 최소 권한 scope를 지정하세요."
+    }
+  ]
+}

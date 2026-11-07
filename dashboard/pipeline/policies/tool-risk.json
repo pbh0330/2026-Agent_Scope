@@ -1,0 +1,9 @@
+{
+  "policy_id": "pol-s2-tool-risk",
+  "version": "scenario-s2@2026-10-11",
+  "source_ref": "docs/threat-scenarios/scenario-s2.md#6-static-detection",
+  "note": "고위험 입력 항목은 detector.py HIGH_RISK_INPUTS, 서버별 기대 파일 접근 범위는 테스트베드 정상 기준",
+  "expected_filesystem_scope": {
+    "fs-workspace": "/home/<TB_USER>/workspace"
+  }
+}

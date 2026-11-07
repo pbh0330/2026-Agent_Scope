@@ -1,0 +1,126 @@
+{
+  "schema_version": "0.6.0-draft",
+  "report_id": "det-snap-p0-20261026T133744Z",
+  "environment_id": "agentscope-testbed",
+  "profile_id": "tb-openclaw",
+  "snapshot_id": "snap-p0-20261026T133744Z",
+  "generated_at": "2026-10-26T13:37:44Z",
+  "producer": {
+    "name": "agentscope-dashboard-pipeline",
+    "version": "0.1.0",
+    "component": "static-detector"
+  },
+  "ruleset": {
+    "id": "agentscope-static",
+    "version": "draft-1"
+  },
+  "evaluations": [
+    {
+      "evaluation_id": "eval-S1-C1-cc162bb8d0",
+      "scenario_id": "S1",
+      "rule_id": "S1-C1",
+      "rule_version": "draft-1",
+      "asset_ids": [
+        "srv_82d252784c25ade0"
+      ],
+      "relation_ids": [
+        "rel_4f5c464bf781a31b"
+      ],
+      "evidence_refs": [
+        "ev-decl-tb-gw-fs-workspace"
+      ],
+      "policy_refs": [
+        {
+          "id": "pol-s1-approved-servers",
+          "version": "testbed-P2@2026-10-04",
+          "source_ref": "testbed/profiles/README.md#승인-서버-목록-s1-allowlist"
+        }
+      ],
+      "result": "not_detected",
+      "reason": "승인 목록의 이름·등록 주체·Endpoint와 일치",
+      "evaluated_at": "2026-10-26T13:37:44Z",
+      "details": {
+        "name": "fs-workspace",
+        "declared_by": "gateway",
+        "host": "tb-gw",
+        "endpoint": "command:mcp-server-filesystem"
+      }
+    },
+    {
+      "evaluation_id": "eval-S2-C1-b30bdc16fa",
+      "scenario_id": "S2",
+      "rule_id": "S2-C1",
+      "rule_version": "draft-1",
+      "asset_ids": [
+        "srv_82d252784c25ade0"
+      ],
+      "relation_ids": [],
+      "evidence_refs": [
+        "ev-decl-tb-gw-fs-workspace"
+      ],
+      "policy_refs": [
+        {
+          "id": "pol-s2-tool-risk",
+          "version": "scenario-s2@2026-10-11",
+          "source_ref": "docs/threat-scenarios/scenario-s2.md#6-static-detection"
+        }
+      ],
+      "result": "not_detected",
+      "reason": "고위험 입력을 가진 쓰기 도구가 필터로 제외되었거나 없음",
+      "evaluated_at": "2026-10-26T13:37:44Z"
+    },
+    {
+      "evaluation_id": "eval-S3-C1-b8402b1fa3",
+      "scenario_id": "S3",
+      "rule_id": "S3-C1",
+      "rule_version": "draft-1",
+      "asset_ids": [
+        "tool_195991a776278649"
+      ],
+      "relation_ids": [],
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "policy_refs": [],
+      "result": "not_detected",
+      "reason": "서버 간 원래 도구 이름 14개 모두 고유",
+      "evaluated_at": "2026-10-26T13:37:44Z",
+      "details": {
+        "tool_names_checked": 14
+      }
+    },
+    {
+      "evaluation_id": "eval-S4-C1-7638a55048",
+      "scenario_id": "S4",
+      "rule_id": "S4-C1",
+      "rule_version": "draft-1",
+      "asset_ids": [
+        "pa_10415b79168a91f6"
+      ],
+      "relation_ids": [],
+      "evidence_refs": [],
+      "policy_refs": [],
+      "result": "unknown",
+      "reason": "식별 가능한 자격증명 참조가 없음",
+      "evaluated_at": "2026-10-26T13:37:44Z"
+    },
+    {
+      "evaluation_id": "eval-S5-00-878d50802f",
+      "scenario_id": "S5",
+      "rule_id": "S5-00",
+      "rule_version": "draft-1",
+      "asset_ids": [
+        "srv_82d252784c25ade0"
+      ],
+      "relation_ids": [],
+      "evidence_refs": [
+        "ev-decl-tb-gw-fs-workspace"
+      ],
+      "policy_refs": [],
+      "result": "not_applicable",
+      "reason": "stdio 로컬 실행 — 네트워크 전송 검증 대상 아님",
+      "evaluated_at": "2026-10-26T13:37:44Z"
+    }
+  ],
+  "alerts": []
+}

@@ -1,0 +1,13 @@
+{
+  "policy_id": "pol-s1-approved-servers",
+  "version": "testbed-P2@2026-10-04",
+  "source_ref": "testbed/profiles/README.md#승인-서버-목록-s1-allowlist",
+  "note": "S1 비교 기준. 테스트베드 담당이 정리한 승인 서버 목록을 기계가 읽는 형태로 옮김",
+  "servers": [
+    { "name": "fs-workspace", "declared_by": "gateway", "host": "tb-gw", "endpoint": "command:mcp-server-filesystem" },
+    { "name": "kg-memory", "declared_by": "node", "host": "tb-node", "endpoint": "command:mcp-server-memory" },
+    { "name": "demo-everything", "declared_by": "node", "host": "tb-node", "endpoint": "command:mcp-server-everything" },
+    { "name": "inventory-remote", "declared_by": "gateway", "host": "tb-gw", "endpoint": "url:https://tb-node:8443/mcp" },
+    { "name": "asset-catalog", "declared_by": "plugin", "host": "tb-gw", "endpoint": "command:node" }
+  ]
+}

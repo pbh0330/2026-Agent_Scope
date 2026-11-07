@@ -1,0 +1,78 @@
+{
+  "schema_version": "0.6.0-draft",
+  "diff_id": "diff-snap-p2-20261026T133744Z--snap-s3-20261026T133744Z",
+  "environment_id": "agentscope-testbed",
+  "profile_id": "tb-openclaw",
+  "previous_snapshot_id": "snap-p2-20261026T133744Z",
+  "current_snapshot_id": "snap-s3-20261026T133744Z",
+  "previous_report_id": "det-snap-p2-20261026T133744Z",
+  "current_report_id": "det-snap-s3-20261026T133744Z",
+  "generated_at": "2026-10-26T13:37:45Z",
+  "comparison_status": "complete",
+  "changes": [
+    {
+      "asset_id": "srv_8d8aec91ec656a07",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-10-26T13:37:44Z",
+      "evidence_refs": [
+        "ev-decl-tb-gw-inventory-remote"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_eb4353d48a76c254",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-10-26T13:37:44Z",
+      "evidence_refs": [
+        "ev-cap-inventory-remote"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_53b93b83f270bcc8",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-10-26T13:37:44Z",
+      "evidence_refs": [
+        "ev-cap-inventory-remote"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_18db4b32752e5e66",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-10-26T13:37:44Z",
+      "evidence_refs": [
+        "ev-cap-inventory-remote"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    }
+  ],
+  "relation_changes": [
+    {
+      "relation_id": "rel_53e62aaa28dee886",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    }
+  ],
+  "alert_changes": [
+    {
+      "finding_key": "6b38b71e97e1b7e8cd61ce5f",
+      "change_type": "opened",
+      "previous_alert_id": null,
+      "current_alert_id": "alert-6b38b71e97e1",
+      "reason": "이번 평가에서 새로 탐지"
+    }
+  ],
+  "limitations": []
+}

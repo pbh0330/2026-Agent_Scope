@@ -1,0 +1,99 @@
+{
+  "format": "agent-scope.scanner.openclaw-mcp-config",
+  "format_version": "0.1.0-draft",
+  "format_status": "스캐너 내부 협의용 초안입니다. 팀 공통 스키마가 아니며, 필드명과 구조는 협의 후 변경될 수 있습니다. 전역 자산 ID는 정하지 않았으며 registration_key와 declaration_path로 항목을 구분합니다.",
+  "producer": {
+    "name": "agent-scope-asset-scanner",
+    "version": "0.1.0"
+  },
+  "generated_at": "2026-10-26T13:37:44Z",
+  "source": {
+    "source_path": "/home/claude/br/feature_testbed-profiles/testbed/profiles/P1/tb-node.openclaw.json",
+    "source_path_redacted": false,
+    "source_kind": "openclaw_config_file",
+    "evidence_type": "config",
+    "registry_path": "nodeHost.mcp.servers"
+  },
+  "scope": {
+    "method": "설정 파일 정적 읽기",
+    "values_resolved": false,
+    "not_verified": [
+      "connection",
+      "tools",
+      "resources_prompts",
+      "capabilities",
+      "protocol_version",
+      "exposure",
+      "callability"
+    ],
+    "note": "servers[]는 설정에 선언된 사실만 담습니다. 연결·도구·노출·호출 가능 상태는 확인하지 않았습니다."
+  },
+  "collection": {
+    "status": "complete",
+    "outcome": "servers_found",
+    "server_count": 2,
+    "reasons": [],
+    "unresolved": [],
+    "key_redactions": []
+  },
+  "servers": [
+    {
+      "registration_key": "kg-memory",
+      "source_path": "/home/claude/br/feature_testbed-profiles/testbed/profiles/P1/tb-node.openclaw.json",
+      "declaration_path": "nodeHost.mcp.servers.kg-memory",
+      "declaration_pointer": "/nodeHost/mcp/servers/kg-memory",
+      "collection_status": "complete",
+      "declared": {
+        "command": "mcp-server-memory"
+      },
+      "declared_keys": [
+        "command",
+        "env"
+      ],
+      "credentials": {
+        "env": {
+          "present": true,
+          "names": [
+            "MEMORY_FILE_PATH"
+          ],
+          "entries": [
+            {
+              "name": "MEMORY_FILE_PATH",
+              "value_kind": "literal"
+            }
+          ],
+          "values_withheld": true
+        }
+      },
+      "other_declared_keys": [],
+      "unresolved": [],
+      "redactions": [],
+      "issues": []
+    },
+    {
+      "registration_key": "demo-everything",
+      "source_path": "/home/claude/br/feature_testbed-profiles/testbed/profiles/P1/tb-node.openclaw.json",
+      "declaration_path": "nodeHost.mcp.servers.demo-everything",
+      "declaration_pointer": "/nodeHost/mcp/servers/demo-everything",
+      "collection_status": "complete",
+      "declared": {
+        "command": "mcp-server-everything",
+        "args": [
+          "stdio"
+        ]
+      },
+      "declared_keys": [
+        "command",
+        "args",
+        "toolFilter"
+      ],
+      "credentials": {},
+      "other_declared_keys": [
+        "toolFilter"
+      ],
+      "unresolved": [],
+      "redactions": [],
+      "issues": []
+    }
+  ]
+}
