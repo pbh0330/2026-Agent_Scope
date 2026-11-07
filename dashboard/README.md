@@ -29,6 +29,7 @@ feature/token-collector    usage.json ──┘
 ## 실행
 
 ```powershell
+cd dashboard
 npm install
 npm run dev        # http://localhost:5173
 npm run build      # dist/
@@ -38,15 +39,26 @@ npm run build      # dist/
 
 ## 데이터 다시 만들기
 
-팀 브랜치를 각각 받아 둔 뒤(예: `..\team\scanner`, `..\team\testbed`, `..\team\token`) 스캐너의 가상환경 Python으로 실행합니다.
+develop에 팀원 작업이 합쳐지면 저장소 구조는 아래와 같습니다. `dashboard/` 폴더에서 스캐너의 가상환경 Python으로 실행합니다.
 스캐너를 실제로 실행하므로 스캐너의 `requirements.txt`(json5)가 설치된 Python이어야 합니다.
 
-```powershell
-..\team\scanner\asset-scanner\.venv\Scripts\python.exe pipeline\build_data.py `
-  --scanner ..\team\scanner\asset-scanner `
-  --testbed ..\team\testbed\testbed `
-  --usage   ..\team\token\token-collector\collector\usagereport\testdata\example.usage.json
+```text
+2026-Agent_Scope/
+├── asset-scanner/     feature/scanner-config
+├── testbed/           feature/testbed-profiles
+├── token-collector/   feature/token-collector
+└── dashboard/         이 폴더
 ```
+
+```powershell
+cd dashboard
+..\asset-scanner\.venv\Scripts\python.exe pipeline\build_data.py `
+  --scanner ..\asset-scanner `
+  --testbed ..\testbed `
+  --usage   ..\token-collector\collector\usagereport\testdata\example.usage.json
+```
+
+브랜치가 아직 합쳐지지 않았다면 각 브랜치를 따로 받아 둔 폴더 경로를 넘기면 됩니다.
 
 출력 (`public/data/`)
 
