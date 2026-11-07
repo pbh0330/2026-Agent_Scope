@@ -1,0 +1,2380 @@
+{
+  "schema_version": "0.6.0-draft",
+  "snapshot_id": "snap-p0-20261026T133744Z",
+  "environment_id": "agentscope-testbed",
+  "profile_id": "tb-openclaw",
+  "context": {
+    "gateway_ref": "gwctx_e3e14de28133"
+  },
+  "basis": {
+    "mcp_spec_version": "2026-07-28"
+  },
+  "environment": {
+    "openclaw_version": "2026.9.6",
+    "openclaw_commit": null,
+    "version_note": "설정 meta.lastTouchedVersion 기준. commit 미확인"
+  },
+  "producer": {
+    "name": "agentscope-dashboard-pipeline",
+    "version": "0.1.0",
+    "upstream": [
+      {
+        "name": "agent-scope-asset-scanner",
+        "version": "0.1.0"
+      }
+    ]
+  },
+  "generated_at": "2026-10-26T13:37:44Z",
+  "scan": {
+    "started_at": "2026-10-26T13:37:43Z",
+    "finished_at": "2026-10-26T13:37:44Z",
+    "status": "success"
+  },
+  "testbed_context": {
+    "configuration_id": "P0",
+    "scenario_id": null,
+    "vm_snapshot_label": "SNAP-2-P0",
+    "label": "P0 · 기본 구성",
+    "kind": "normal",
+    "captured_at": "2026-10-04T06:38:32Z",
+    "notes": []
+  },
+  "assets": [
+    {
+      "asset_id": "gw_4261ac71d127a248",
+      "asset_type": "gateway",
+      "name": "tb-gw",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-gw"
+      },
+      "evidence_refs": [
+        "ev-gw-config",
+        "ev-gw-identity"
+      ],
+      "project": {
+        "canonical_key": "tb-gw/gateway",
+        "state_assessments": [
+          {
+            "state": "DECLARED",
+            "value": true,
+            "evidence_refs": [
+              "ev-gw-config"
+            ]
+          },
+          {
+            "state": "DISCOVERED",
+            "value": true,
+            "evidence_refs": [
+              "ev-gw-identity"
+            ]
+          }
+        ],
+        "device_id": "e3e14de2813332ecf443e9e8400ad142f50d89b3af238d162826b31785eddaa4",
+        "openclaw_version": "2026.9.6",
+        "tools_profile": "full",
+        "auth_mode": "token"
+      },
+      "product": {
+        "name": "openclaw",
+        "source_ref": "tb-gw:~/.openclaw/openclaw.json",
+        "config_path": "gateway",
+        "config": {
+          "mode": "local",
+          "bind": "lan",
+          "port": 18789
+        }
+      }
+    },
+    {
+      "asset_id": "pa_10415b79168a91f6",
+      "asset_type": "permission_auth",
+      "name": "Gateway 접속 인증",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-gw"
+      },
+      "evidence_refs": [
+        "ev-gw-auth"
+      ],
+      "project": {
+        "canonical_key": "tb-gw/authentication/gateway.auth",
+        "state_assessments": [
+          {
+            "state": "DECLARED",
+            "value": true,
+            "evidence_refs": [
+              "ev-gw-auth"
+            ]
+          }
+        ],
+        "permission_auth": {
+          "source_ref": "tb-gw:~/.openclaw/openclaw.json",
+          "source_field": "gateway.auth",
+          "target_refs": [
+            "gw_4261ac71d127a248"
+          ],
+          "assessment_status": "declared",
+          "credential_refs": [
+            {
+              "reference_id": null,
+              "namespace": "tb-gw",
+              "source_field": "gateway.auth.token",
+              "kind": "gateway_token",
+              "presence": true,
+              "evidence_refs": [
+                "ev-gw-auth"
+              ],
+              "reason": "환경변수 참조가 아닌 설정 내 값 — 값은 수집하지 않음"
+            }
+          ]
+        }
+      },
+      "asset_subtype": "authentication",
+      "product": {
+        "name": "openclaw",
+        "source_ref": "tb-gw:~/.openclaw/openclaw.json",
+        "config_path": "gateway.auth",
+        "config": {
+          "mode": "token"
+        }
+      }
+    },
+    {
+      "asset_id": "pa_0547cf3234bd24fd",
+      "asset_type": "permission_auth",
+      "name": "에이전트 도구 정책 · full",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-gw"
+      },
+      "evidence_refs": [
+        "ev-gw-tools-profile"
+      ],
+      "project": {
+        "canonical_key": "tb-gw/permission/tools.profile",
+        "state_assessments": [
+          {
+            "state": "DECLARED",
+            "value": true,
+            "evidence_refs": [
+              "ev-gw-tools-profile"
+            ]
+          }
+        ],
+        "permission_auth": {
+          "source_ref": "tb-gw:~/.openclaw/openclaw.json",
+          "source_field": "tools.profile",
+          "target_refs": [
+            "gw_4261ac71d127a248"
+          ],
+          "assessment_status": "declared",
+          "effect": "allow",
+          "patterns": [
+            "*"
+          ],
+          "reason": "OpenClaw 프로필 이름만 확인. 프로필이 허용하는 실제 도구 범위는 미해석"
+        }
+      },
+      "asset_subtype": "permission",
+      "product": {
+        "name": "openclaw",
+        "source_ref": "tb-gw:~/.openclaw/openclaw.json",
+        "config_path": "tools.profile",
+        "config": {
+          "profile": "full"
+        }
+      }
+    },
+    {
+      "asset_id": "node_1ca37e363256f7fb",
+      "asset_type": "node",
+      "name": "tb-node",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-node"
+      },
+      "evidence_refs": [
+        "ev-node-identity"
+      ],
+      "project": {
+        "canonical_key": "tb-node/node",
+        "state_assessments": [
+          {
+            "state": "DECLARED",
+            "value": true,
+            "evidence_refs": [
+              "ev-node-identity"
+            ]
+          },
+          {
+            "state": "DISCOVERED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "describe 미수집"
+          }
+        ],
+        "device_id": "b8cd252a851642463b068cdb75c716c7e472114557924c8e472355e0848da921",
+        "platform": null,
+        "openclaw_version": null,
+        "caps": null,
+        "connected": null
+      }
+    },
+    {
+      "asset_id": "srv_82d252784c25ade0",
+      "asset_type": "mcp_server",
+      "name": "fs-workspace",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-gw"
+      },
+      "evidence_refs": [
+        "ev-decl-tb-gw-fs-workspace"
+      ],
+      "project": {
+        "canonical_key": "tb-gw/mcp_server/fs-workspace",
+        "state_assessments": [
+          {
+            "state": "DECLARED",
+            "value": true,
+            "evidence_refs": [
+              "ev-decl-tb-gw-fs-workspace"
+            ]
+          },
+          {
+            "state": "DISCOVERED",
+            "value": true,
+            "evidence_refs": [
+              "ev-cap-fs-workspace"
+            ]
+          },
+          {
+            "state": "EXPOSED",
+            "value": true,
+            "evidence_refs": [
+              "ev-expo-fs-workspace"
+            ],
+            "subject_ref": {
+              "kind": "agent",
+              "profile_id": "tb-openclaw",
+              "agent_key": "main"
+            }
+          },
+          {
+            "state": "CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
+          },
+          {
+            "state": "USED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
+          }
+        ],
+        "declared_by": "gateway",
+        "host": "tb-gw",
+        "transport": "stdio",
+        "credential_refs": [],
+        "normalizations": [
+          {
+            "source_field": "mcp.servers.fs-workspace.toolFilter",
+            "target_field": "product.config.toolFilter",
+            "rule_id": "adapter-supplement-non-secret",
+            "evidence_refs": [
+              "ev-decl-tb-gw-fs-workspace"
+            ]
+          }
+        ],
+        "scanner_metadata": {
+          "declared_keys": [
+            "command",
+            "args",
+            "toolFilter",
+            "enabled"
+          ],
+          "other_declared_keys": [
+            "toolFilter"
+          ],
+          "collection_status": "complete"
+        }
+      },
+      "product": {
+        "name": "openclaw",
+        "source_ref": "tb-gw:~/.openclaw/openclaw.json",
+        "config_path": "mcp.servers.fs-workspace",
+        "config": {
+          "command": "mcp-server-filesystem",
+          "args": [
+            "/home/<TB_USER>/workspace"
+          ],
+          "enabled": true,
+          "toolFilter": {
+            "include": [
+              "read_text_file",
+              "list_directory"
+            ]
+          }
+        }
+      },
+      "mcp": {
+        "protocol_version": "2025-11-25",
+        "version_note": "requested 2026-07-28, negotiated 2025-11-25",
+        "discovery": {
+          "serverInfo": {
+            "name": "secure-filesystem-server",
+            "version": "0.2.0"
+          },
+          "capabilities": {
+            "tools": {
+              "listChanged": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "asset_id": "pa_3a3c5f7d09203be0",
+      "asset_type": "permission_auth",
+      "name": "fs-workspace · toolFilter",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-gw"
+      },
+      "evidence_refs": [
+        "ev-decl-tb-gw-fs-workspace"
+      ],
+      "project": {
+        "canonical_key": "tb-gw/permission/mcp.servers.fs-workspace.toolFilter",
+        "state_assessments": [
+          {
+            "state": "DECLARED",
+            "value": true,
+            "evidence_refs": [
+              "ev-decl-tb-gw-fs-workspace"
+            ]
+          }
+        ],
+        "permission_auth": {
+          "source_ref": "tb-gw:~/.openclaw/openclaw.json",
+          "source_field": "mcp.servers.fs-workspace.toolFilter",
+          "target_refs": [
+            "srv_82d252784c25ade0"
+          ],
+          "assessment_status": "declared",
+          "effect": "allow",
+          "patterns": [
+            "read_text_file",
+            "list_directory"
+          ],
+          "access_scope": {}
+        }
+      },
+      "asset_subtype": "permission",
+      "product": {
+        "name": "openclaw",
+        "source_ref": "tb-gw:~/.openclaw/openclaw.json",
+        "config_path": "mcp.servers.fs-workspace.toolFilter",
+        "config": {
+          "include": [
+            "read_text_file",
+            "list_directory"
+          ]
+        }
+      }
+    },
+    {
+      "asset_id": "tool_195991a776278649",
+      "asset_type": "tool",
+      "name": "read_file",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-gw"
+      },
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "project": {
+        "canonical_key": "fs-workspace/tool/read_file",
+        "state_assessments": [
+          {
+            "state": "DISCOVERED",
+            "value": true,
+            "evidence_refs": [
+              "ev-cap-fs-workspace"
+            ]
+          },
+          {
+            "state": "EXPOSED",
+            "value": false,
+            "evidence_refs": [
+              "ev-expo-fs-workspace"
+            ],
+            "reason": "toolFilter.include에 없음",
+            "subject_ref": {
+              "kind": "agent",
+              "profile_id": "tb-openclaw",
+              "agent_key": "main"
+            }
+          },
+          {
+            "state": "POTENTIALLY_CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "정적 호출 조건 미평가"
+          },
+          {
+            "state": "CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
+          },
+          {
+            "state": "USED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
+          }
+        ],
+        "trust": "untrusted_server_provided",
+        "synthetic": null
+      },
+      "owner_ref": "srv_82d252784c25ade0",
+      "mcp": {
+        "protocol_version": "2025-11-25",
+        "definition": {
+          "name": "read_file",
+          "title": "Read File (Deprecated)",
+          "description": "Read the complete contents of a file as text. DEPRECATED: Use read_text_file instead.",
+          "inputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "tail": {
+                "description": "If provided, returns only the last N lines of the file",
+                "type": "number"
+              },
+              "head": {
+                "description": "If provided, returns only the first N lines of the file",
+                "type": "number"
+              }
+            },
+            "required": [
+              "path"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": false
+          },
+          "execution": {
+            "taskSupport": "forbidden"
+          },
+          "outputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "content": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "content"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "asset_id": "tool_808858ad67b2571e",
+      "asset_type": "tool",
+      "name": "read_text_file",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-gw"
+      },
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "project": {
+        "canonical_key": "fs-workspace/tool/read_text_file",
+        "state_assessments": [
+          {
+            "state": "DISCOVERED",
+            "value": true,
+            "evidence_refs": [
+              "ev-cap-fs-workspace"
+            ]
+          },
+          {
+            "state": "EXPOSED",
+            "value": true,
+            "evidence_refs": [
+              "ev-expo-fs-workspace"
+            ],
+            "subject_ref": {
+              "kind": "agent",
+              "profile_id": "tb-openclaw",
+              "agent_key": "main"
+            }
+          },
+          {
+            "state": "POTENTIALLY_CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "정적 호출 조건 미평가"
+          },
+          {
+            "state": "CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
+          },
+          {
+            "state": "USED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
+          }
+        ],
+        "trust": "untrusted_server_provided",
+        "synthetic": null
+      },
+      "owner_ref": "srv_82d252784c25ade0",
+      "mcp": {
+        "protocol_version": "2025-11-25",
+        "definition": {
+          "name": "read_text_file",
+          "title": "Read Text File",
+          "description": "Read the complete contents of a file from the file system as text. Handles various text encodings and provides detailed error messages if the file cannot be read. Use this tool when you need to examine the contents of a single file. Use the 'head' parameter to read only the first N lines of a file, or the 'tail' parameter to read only the last N lines of a file. Operates on the file as text regardless of extension. Only works within allowed directories.",
+          "inputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "tail": {
+                "description": "If provided, returns only the last N lines of the file",
+                "type": "number"
+              },
+              "head": {
+                "description": "If provided, returns only the first N lines of the file",
+                "type": "number"
+              }
+            },
+            "required": [
+              "path"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": false
+          },
+          "execution": {
+            "taskSupport": "forbidden"
+          },
+          "outputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "content": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "content"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "asset_id": "tool_024b0ecd7f1ef493",
+      "asset_type": "tool",
+      "name": "read_media_file",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-gw"
+      },
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "project": {
+        "canonical_key": "fs-workspace/tool/read_media_file",
+        "state_assessments": [
+          {
+            "state": "DISCOVERED",
+            "value": true,
+            "evidence_refs": [
+              "ev-cap-fs-workspace"
+            ]
+          },
+          {
+            "state": "EXPOSED",
+            "value": false,
+            "evidence_refs": [
+              "ev-expo-fs-workspace"
+            ],
+            "reason": "toolFilter.include에 없음",
+            "subject_ref": {
+              "kind": "agent",
+              "profile_id": "tb-openclaw",
+              "agent_key": "main"
+            }
+          },
+          {
+            "state": "POTENTIALLY_CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "정적 호출 조건 미평가"
+          },
+          {
+            "state": "CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
+          },
+          {
+            "state": "USED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
+          }
+        ],
+        "trust": "untrusted_server_provided",
+        "synthetic": null
+      },
+      "owner_ref": "srv_82d252784c25ade0",
+      "mcp": {
+        "protocol_version": "2025-11-25",
+        "definition": {
+          "name": "read_media_file",
+          "title": "Read Media File",
+          "description": "Read a file and return it as a base64-encoded content block with its MIME type. Image and audio files are returned as image/audio content; any other file type is returned as an embedded resource. Only works within allowed directories.",
+          "inputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": false
+          },
+          "execution": {
+            "taskSupport": "forbidden"
+          },
+          "outputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "content": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "image",
+                            "audio"
+                          ]
+                        },
+                        "data": {
+                          "type": "string"
+                        },
+                        "mimeType": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "data",
+                        "mimeType"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "const": "resource"
+                        },
+                        "resource": {
+                          "type": "object",
+                          "properties": {
+                            "uri": {
+                              "type": "string"
+                            },
+                            "mimeType": {
+                              "type": "string"
+                            },
+                            "blob": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "uri",
+                            "blob"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "resource"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            },
+            "required": [
+              "content"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "asset_id": "tool_dd5b0d8c51c2703a",
+      "asset_type": "tool",
+      "name": "read_multiple_files",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-gw"
+      },
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "project": {
+        "canonical_key": "fs-workspace/tool/read_multiple_files",
+        "state_assessments": [
+          {
+            "state": "DISCOVERED",
+            "value": true,
+            "evidence_refs": [
+              "ev-cap-fs-workspace"
+            ]
+          },
+          {
+            "state": "EXPOSED",
+            "value": false,
+            "evidence_refs": [
+              "ev-expo-fs-workspace"
+            ],
+            "reason": "toolFilter.include에 없음",
+            "subject_ref": {
+              "kind": "agent",
+              "profile_id": "tb-openclaw",
+              "agent_key": "main"
+            }
+          },
+          {
+            "state": "POTENTIALLY_CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "정적 호출 조건 미평가"
+          },
+          {
+            "state": "CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
+          },
+          {
+            "state": "USED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
+          }
+        ],
+        "trust": "untrusted_server_provided",
+        "synthetic": null
+      },
+      "owner_ref": "srv_82d252784c25ade0",
+      "mcp": {
+        "protocol_version": "2025-11-25",
+        "definition": {
+          "name": "read_multiple_files",
+          "title": "Read Multiple Files",
+          "description": "Read the contents of multiple files simultaneously. This is more efficient than reading files one by one when you need to analyze or compare multiple files. Each file's content is returned with its path as a reference. Failed reads for individual files won't stop the entire operation. Only works within allowed directories.",
+          "inputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "paths": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Array of file paths to read. Each path must be a string pointing to a valid file within allowed directories."
+              }
+            },
+            "required": [
+              "paths"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": false
+          },
+          "execution": {
+            "taskSupport": "forbidden"
+          },
+          "outputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "content": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "content"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "asset_id": "tool_ae3a16e72cd51e20",
+      "asset_type": "tool",
+      "name": "write_file",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-gw"
+      },
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "project": {
+        "canonical_key": "fs-workspace/tool/write_file",
+        "state_assessments": [
+          {
+            "state": "DISCOVERED",
+            "value": true,
+            "evidence_refs": [
+              "ev-cap-fs-workspace"
+            ]
+          },
+          {
+            "state": "EXPOSED",
+            "value": false,
+            "evidence_refs": [
+              "ev-expo-fs-workspace"
+            ],
+            "reason": "toolFilter.include에 없음",
+            "subject_ref": {
+              "kind": "agent",
+              "profile_id": "tb-openclaw",
+              "agent_key": "main"
+            }
+          },
+          {
+            "state": "POTENTIALLY_CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "정적 호출 조건 미평가"
+          },
+          {
+            "state": "CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
+          },
+          {
+            "state": "USED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
+          }
+        ],
+        "trust": "untrusted_server_provided",
+        "synthetic": null
+      },
+      "owner_ref": "srv_82d252784c25ade0",
+      "mcp": {
+        "protocol_version": "2025-11-25",
+        "definition": {
+          "name": "write_file",
+          "title": "Write File",
+          "description": "Create a new file or completely overwrite an existing file with new content. Use with caution as it will overwrite existing files without warning. Handles text content with proper encoding. Only works within allowed directories.",
+          "inputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "content": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path",
+              "content"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "idempotentHint": true,
+            "destructiveHint": true,
+            "openWorldHint": false
+          },
+          "execution": {
+            "taskSupport": "forbidden"
+          },
+          "outputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "content": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "content"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "asset_id": "tool_48ebc84cc788d189",
+      "asset_type": "tool",
+      "name": "edit_file",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-gw"
+      },
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "project": {
+        "canonical_key": "fs-workspace/tool/edit_file",
+        "state_assessments": [
+          {
+            "state": "DISCOVERED",
+            "value": true,
+            "evidence_refs": [
+              "ev-cap-fs-workspace"
+            ]
+          },
+          {
+            "state": "EXPOSED",
+            "value": false,
+            "evidence_refs": [
+              "ev-expo-fs-workspace"
+            ],
+            "reason": "toolFilter.include에 없음",
+            "subject_ref": {
+              "kind": "agent",
+              "profile_id": "tb-openclaw",
+              "agent_key": "main"
+            }
+          },
+          {
+            "state": "POTENTIALLY_CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "정적 호출 조건 미평가"
+          },
+          {
+            "state": "CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
+          },
+          {
+            "state": "USED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
+          }
+        ],
+        "trust": "untrusted_server_provided",
+        "synthetic": null
+      },
+      "owner_ref": "srv_82d252784c25ade0",
+      "mcp": {
+        "protocol_version": "2025-11-25",
+        "definition": {
+          "name": "edit_file",
+          "title": "Edit File",
+          "description": "Make line-based edits to a text file. Each edit replaces exact line sequences with new content. Returns a git-style diff showing the changes made. Only works within allowed directories.",
+          "inputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "edits": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "oldText": {
+                      "type": "string",
+                      "description": "Text to search for - must match exactly"
+                    },
+                    "newText": {
+                      "type": "string",
+                      "description": "Text to replace with"
+                    }
+                  },
+                  "required": [
+                    "oldText",
+                    "newText"
+                  ]
+                }
+              },
+              "dryRun": {
+                "default": false,
+                "description": "Preview changes using git-style diff format",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "path",
+              "edits"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "idempotentHint": false,
+            "destructiveHint": true,
+            "openWorldHint": false
+          },
+          "execution": {
+            "taskSupport": "forbidden"
+          },
+          "outputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "content": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "content"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "asset_id": "tool_6d81dcbe721e8c45",
+      "asset_type": "tool",
+      "name": "create_directory",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-gw"
+      },
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "project": {
+        "canonical_key": "fs-workspace/tool/create_directory",
+        "state_assessments": [
+          {
+            "state": "DISCOVERED",
+            "value": true,
+            "evidence_refs": [
+              "ev-cap-fs-workspace"
+            ]
+          },
+          {
+            "state": "EXPOSED",
+            "value": false,
+            "evidence_refs": [
+              "ev-expo-fs-workspace"
+            ],
+            "reason": "toolFilter.include에 없음",
+            "subject_ref": {
+              "kind": "agent",
+              "profile_id": "tb-openclaw",
+              "agent_key": "main"
+            }
+          },
+          {
+            "state": "POTENTIALLY_CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "정적 호출 조건 미평가"
+          },
+          {
+            "state": "CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
+          },
+          {
+            "state": "USED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
+          }
+        ],
+        "trust": "untrusted_server_provided",
+        "synthetic": null
+      },
+      "owner_ref": "srv_82d252784c25ade0",
+      "mcp": {
+        "protocol_version": "2025-11-25",
+        "definition": {
+          "name": "create_directory",
+          "title": "Create Directory",
+          "description": "Create a new directory or ensure a directory exists. Can create multiple nested directories in one operation. If the directory already exists, this operation will succeed silently. Perfect for setting up directory structures for projects or ensuring required paths exist. Only works within allowed directories.",
+          "inputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "idempotentHint": true,
+            "destructiveHint": false,
+            "openWorldHint": false
+          },
+          "execution": {
+            "taskSupport": "forbidden"
+          },
+          "outputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "content": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "content"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "asset_id": "tool_194d79b6acffacf6",
+      "asset_type": "tool",
+      "name": "list_directory",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-gw"
+      },
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "project": {
+        "canonical_key": "fs-workspace/tool/list_directory",
+        "state_assessments": [
+          {
+            "state": "DISCOVERED",
+            "value": true,
+            "evidence_refs": [
+              "ev-cap-fs-workspace"
+            ]
+          },
+          {
+            "state": "EXPOSED",
+            "value": true,
+            "evidence_refs": [
+              "ev-expo-fs-workspace"
+            ],
+            "subject_ref": {
+              "kind": "agent",
+              "profile_id": "tb-openclaw",
+              "agent_key": "main"
+            }
+          },
+          {
+            "state": "POTENTIALLY_CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "정적 호출 조건 미평가"
+          },
+          {
+            "state": "CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
+          },
+          {
+            "state": "USED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
+          }
+        ],
+        "trust": "untrusted_server_provided",
+        "synthetic": null
+      },
+      "owner_ref": "srv_82d252784c25ade0",
+      "mcp": {
+        "protocol_version": "2025-11-25",
+        "definition": {
+          "name": "list_directory",
+          "title": "List Directory",
+          "description": "Get a detailed listing of all files and directories in a specified path. Results clearly distinguish between files and directories with [FILE] and [DIR] prefixes. This tool is essential for understanding directory structure and finding specific files within a directory. Only works within allowed directories.",
+          "inputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": false
+          },
+          "execution": {
+            "taskSupport": "forbidden"
+          },
+          "outputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "content": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "content"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "asset_id": "tool_a3b41a1ef6d32f7b",
+      "asset_type": "tool",
+      "name": "list_directory_with_sizes",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-gw"
+      },
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "project": {
+        "canonical_key": "fs-workspace/tool/list_directory_with_sizes",
+        "state_assessments": [
+          {
+            "state": "DISCOVERED",
+            "value": true,
+            "evidence_refs": [
+              "ev-cap-fs-workspace"
+            ]
+          },
+          {
+            "state": "EXPOSED",
+            "value": false,
+            "evidence_refs": [
+              "ev-expo-fs-workspace"
+            ],
+            "reason": "toolFilter.include에 없음",
+            "subject_ref": {
+              "kind": "agent",
+              "profile_id": "tb-openclaw",
+              "agent_key": "main"
+            }
+          },
+          {
+            "state": "POTENTIALLY_CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "정적 호출 조건 미평가"
+          },
+          {
+            "state": "CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
+          },
+          {
+            "state": "USED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
+          }
+        ],
+        "trust": "untrusted_server_provided",
+        "synthetic": null
+      },
+      "owner_ref": "srv_82d252784c25ade0",
+      "mcp": {
+        "protocol_version": "2025-11-25",
+        "definition": {
+          "name": "list_directory_with_sizes",
+          "title": "List Directory with Sizes",
+          "description": "Get a detailed listing of all files and directories in a specified path, including sizes. Results clearly distinguish between files and directories with [FILE] and [DIR] prefixes. This tool is useful for understanding directory structure and finding specific files within a directory. Only works within allowed directories.",
+          "inputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "sortBy": {
+                "default": "name",
+                "description": "Sort entries by name or size",
+                "type": "string",
+                "enum": [
+                  "name",
+                  "size"
+                ]
+              }
+            },
+            "required": [
+              "path"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": false
+          },
+          "execution": {
+            "taskSupport": "forbidden"
+          },
+          "outputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "content": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "content"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "asset_id": "tool_db2ee601e1be0f61",
+      "asset_type": "tool",
+      "name": "directory_tree",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-gw"
+      },
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "project": {
+        "canonical_key": "fs-workspace/tool/directory_tree",
+        "state_assessments": [
+          {
+            "state": "DISCOVERED",
+            "value": true,
+            "evidence_refs": [
+              "ev-cap-fs-workspace"
+            ]
+          },
+          {
+            "state": "EXPOSED",
+            "value": false,
+            "evidence_refs": [
+              "ev-expo-fs-workspace"
+            ],
+            "reason": "toolFilter.include에 없음",
+            "subject_ref": {
+              "kind": "agent",
+              "profile_id": "tb-openclaw",
+              "agent_key": "main"
+            }
+          },
+          {
+            "state": "POTENTIALLY_CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "정적 호출 조건 미평가"
+          },
+          {
+            "state": "CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
+          },
+          {
+            "state": "USED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
+          }
+        ],
+        "trust": "untrusted_server_provided",
+        "synthetic": null
+      },
+      "owner_ref": "srv_82d252784c25ade0",
+      "mcp": {
+        "protocol_version": "2025-11-25",
+        "definition": {
+          "name": "directory_tree",
+          "title": "Directory Tree",
+          "description": "Get a recursive tree view of files and directories as a JSON structure. Each entry includes 'name', 'type' (file/directory), and 'children' for directories. Files have no children array, while directories always have a children array (which may be empty). The output is formatted with 2-space indentation for readability. Only works within allowed directories.",
+          "inputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "excludePatterns": {
+                "default": [],
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "path"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": false
+          },
+          "execution": {
+            "taskSupport": "forbidden"
+          },
+          "outputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "content": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "content"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "asset_id": "tool_885804152d454da3",
+      "asset_type": "tool",
+      "name": "move_file",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-gw"
+      },
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "project": {
+        "canonical_key": "fs-workspace/tool/move_file",
+        "state_assessments": [
+          {
+            "state": "DISCOVERED",
+            "value": true,
+            "evidence_refs": [
+              "ev-cap-fs-workspace"
+            ]
+          },
+          {
+            "state": "EXPOSED",
+            "value": false,
+            "evidence_refs": [
+              "ev-expo-fs-workspace"
+            ],
+            "reason": "toolFilter.include에 없음",
+            "subject_ref": {
+              "kind": "agent",
+              "profile_id": "tb-openclaw",
+              "agent_key": "main"
+            }
+          },
+          {
+            "state": "POTENTIALLY_CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "정적 호출 조건 미평가"
+          },
+          {
+            "state": "CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
+          },
+          {
+            "state": "USED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
+          }
+        ],
+        "trust": "untrusted_server_provided",
+        "synthetic": null
+      },
+      "owner_ref": "srv_82d252784c25ade0",
+      "mcp": {
+        "protocol_version": "2025-11-25",
+        "definition": {
+          "name": "move_file",
+          "title": "Move File",
+          "description": "Move or rename files and directories. Can move files between directories and rename them in a single operation. If the destination exists, the operation will fail. Works across different directories and can be used for simple renaming within the same directory. Both source and destination must be within allowed directories.",
+          "inputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string"
+              },
+              "destination": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "source",
+              "destination"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": false,
+            "idempotentHint": false,
+            "destructiveHint": true,
+            "openWorldHint": false
+          },
+          "execution": {
+            "taskSupport": "forbidden"
+          },
+          "outputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "content": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "content"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "asset_id": "tool_6674705e458e8b17",
+      "asset_type": "tool",
+      "name": "search_files",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-gw"
+      },
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "project": {
+        "canonical_key": "fs-workspace/tool/search_files",
+        "state_assessments": [
+          {
+            "state": "DISCOVERED",
+            "value": true,
+            "evidence_refs": [
+              "ev-cap-fs-workspace"
+            ]
+          },
+          {
+            "state": "EXPOSED",
+            "value": false,
+            "evidence_refs": [
+              "ev-expo-fs-workspace"
+            ],
+            "reason": "toolFilter.include에 없음",
+            "subject_ref": {
+              "kind": "agent",
+              "profile_id": "tb-openclaw",
+              "agent_key": "main"
+            }
+          },
+          {
+            "state": "POTENTIALLY_CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "정적 호출 조건 미평가"
+          },
+          {
+            "state": "CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
+          },
+          {
+            "state": "USED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
+          }
+        ],
+        "trust": "untrusted_server_provided",
+        "synthetic": null
+      },
+      "owner_ref": "srv_82d252784c25ade0",
+      "mcp": {
+        "protocol_version": "2025-11-25",
+        "definition": {
+          "name": "search_files",
+          "title": "Search Files",
+          "description": "Recursively search for files and directories matching a pattern. The patterns should be glob-style patterns that match paths relative to the working directory. Use pattern like '*.ext' to match files in current directory, and '**/*.ext' to match files in all subdirectories. Returns full paths to all matching items. Great for finding files when you don't know their exact location. Only searches within allowed directories.",
+          "inputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "pattern": {
+                "type": "string"
+              },
+              "excludePatterns": {
+                "default": [],
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "path",
+              "pattern"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": false
+          },
+          "execution": {
+            "taskSupport": "forbidden"
+          },
+          "outputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "content": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "content"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "asset_id": "tool_e18ee8a4b7d18ab1",
+      "asset_type": "tool",
+      "name": "get_file_info",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-gw"
+      },
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "project": {
+        "canonical_key": "fs-workspace/tool/get_file_info",
+        "state_assessments": [
+          {
+            "state": "DISCOVERED",
+            "value": true,
+            "evidence_refs": [
+              "ev-cap-fs-workspace"
+            ]
+          },
+          {
+            "state": "EXPOSED",
+            "value": false,
+            "evidence_refs": [
+              "ev-expo-fs-workspace"
+            ],
+            "reason": "toolFilter.include에 없음",
+            "subject_ref": {
+              "kind": "agent",
+              "profile_id": "tb-openclaw",
+              "agent_key": "main"
+            }
+          },
+          {
+            "state": "POTENTIALLY_CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "정적 호출 조건 미평가"
+          },
+          {
+            "state": "CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
+          },
+          {
+            "state": "USED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
+          }
+        ],
+        "trust": "untrusted_server_provided",
+        "synthetic": null
+      },
+      "owner_ref": "srv_82d252784c25ade0",
+      "mcp": {
+        "protocol_version": "2025-11-25",
+        "definition": {
+          "name": "get_file_info",
+          "title": "Get File Info",
+          "description": "Retrieve detailed metadata about a file or directory. Returns comprehensive information including size, creation time, last modified time, permissions, and type. This tool is perfect for understanding file characteristics without reading the actual content. Only works within allowed directories.",
+          "inputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": false
+          },
+          "execution": {
+            "taskSupport": "forbidden"
+          },
+          "outputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "content": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "content"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "asset_id": "tool_1168c52833bf45ae",
+      "asset_type": "tool",
+      "name": "list_allowed_directories",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-gw"
+      },
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "project": {
+        "canonical_key": "fs-workspace/tool/list_allowed_directories",
+        "state_assessments": [
+          {
+            "state": "DISCOVERED",
+            "value": true,
+            "evidence_refs": [
+              "ev-cap-fs-workspace"
+            ]
+          },
+          {
+            "state": "EXPOSED",
+            "value": false,
+            "evidence_refs": [
+              "ev-expo-fs-workspace"
+            ],
+            "reason": "toolFilter.include에 없음",
+            "subject_ref": {
+              "kind": "agent",
+              "profile_id": "tb-openclaw",
+              "agent_key": "main"
+            }
+          },
+          {
+            "state": "POTENTIALLY_CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "정적 호출 조건 미평가"
+          },
+          {
+            "state": "CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
+          },
+          {
+            "state": "USED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
+          }
+        ],
+        "trust": "untrusted_server_provided",
+        "synthetic": null
+      },
+      "owner_ref": "srv_82d252784c25ade0",
+      "mcp": {
+        "protocol_version": "2025-11-25",
+        "definition": {
+          "name": "list_allowed_directories",
+          "title": "List Allowed Directories",
+          "description": "Returns the list of directories that this server is allowed to access. Subdirectories within these allowed directories are also accessible. Use this to understand which directories and their nested paths are available before trying to access files.",
+          "inputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {}
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": false
+          },
+          "execution": {
+            "taskSupport": "forbidden"
+          },
+          "outputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "content": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "content"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    }
+  ],
+  "relations": [
+    {
+      "relation_id": "rel_040ec11f907253e1",
+      "relation_type": "APPLIES_TO",
+      "source_asset_ref": "pa_10415b79168a91f6",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "gw_4261ac71d127a248"
+      },
+      "evidence_refs": [
+        "ev-gw-auth"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "declared"
+    },
+    {
+      "relation_id": "rel_42fd26c2f225ddbd",
+      "relation_type": "APPLIES_TO",
+      "source_asset_ref": "pa_0547cf3234bd24fd",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "gw_4261ac71d127a248"
+      },
+      "evidence_refs": [
+        "ev-gw-tools-profile"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "declared"
+    },
+    {
+      "relation_id": "rel_4f5c464bf781a31b",
+      "relation_type": "DECLARES",
+      "source_asset_ref": "gw_4261ac71d127a248",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "srv_82d252784c25ade0"
+      },
+      "evidence_refs": [
+        "ev-decl-tb-gw-fs-workspace"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "declared"
+    },
+    {
+      "relation_id": "rel_25ca556d24c877ae",
+      "relation_type": "APPLIES_TO",
+      "source_asset_ref": "pa_3a3c5f7d09203be0",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "srv_82d252784c25ade0"
+      },
+      "evidence_refs": [
+        "ev-decl-tb-gw-fs-workspace"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "declared"
+    },
+    {
+      "relation_id": "rel_be849b7de907f3c1",
+      "relation_type": "ADVERTISES",
+      "source_asset_ref": "srv_82d252784c25ade0",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "tool_195991a776278649"
+      },
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "observed"
+    },
+    {
+      "relation_id": "rel_6d64c5506334b9b7",
+      "relation_type": "ADVERTISES",
+      "source_asset_ref": "srv_82d252784c25ade0",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "tool_808858ad67b2571e"
+      },
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "observed"
+    },
+    {
+      "relation_id": "rel_152a5a1e24dfdf61",
+      "relation_type": "ADVERTISES",
+      "source_asset_ref": "srv_82d252784c25ade0",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "tool_024b0ecd7f1ef493"
+      },
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "observed"
+    },
+    {
+      "relation_id": "rel_d5ae9d2648d63345",
+      "relation_type": "ADVERTISES",
+      "source_asset_ref": "srv_82d252784c25ade0",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "tool_dd5b0d8c51c2703a"
+      },
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "observed"
+    },
+    {
+      "relation_id": "rel_36d7834c552f4b89",
+      "relation_type": "ADVERTISES",
+      "source_asset_ref": "srv_82d252784c25ade0",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "tool_ae3a16e72cd51e20"
+      },
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "observed"
+    },
+    {
+      "relation_id": "rel_32f69556da17db81",
+      "relation_type": "ADVERTISES",
+      "source_asset_ref": "srv_82d252784c25ade0",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "tool_48ebc84cc788d189"
+      },
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "observed"
+    },
+    {
+      "relation_id": "rel_8f4940bea9811914",
+      "relation_type": "ADVERTISES",
+      "source_asset_ref": "srv_82d252784c25ade0",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "tool_6d81dcbe721e8c45"
+      },
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "observed"
+    },
+    {
+      "relation_id": "rel_e47520caa52a319b",
+      "relation_type": "ADVERTISES",
+      "source_asset_ref": "srv_82d252784c25ade0",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "tool_194d79b6acffacf6"
+      },
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "observed"
+    },
+    {
+      "relation_id": "rel_9a29627efa887d7e",
+      "relation_type": "ADVERTISES",
+      "source_asset_ref": "srv_82d252784c25ade0",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "tool_a3b41a1ef6d32f7b"
+      },
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "observed"
+    },
+    {
+      "relation_id": "rel_37023c68cdeb9242",
+      "relation_type": "ADVERTISES",
+      "source_asset_ref": "srv_82d252784c25ade0",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "tool_db2ee601e1be0f61"
+      },
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "observed"
+    },
+    {
+      "relation_id": "rel_d4ec38c96e65c452",
+      "relation_type": "ADVERTISES",
+      "source_asset_ref": "srv_82d252784c25ade0",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "tool_885804152d454da3"
+      },
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "observed"
+    },
+    {
+      "relation_id": "rel_156f2e7570569cf1",
+      "relation_type": "ADVERTISES",
+      "source_asset_ref": "srv_82d252784c25ade0",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "tool_6674705e458e8b17"
+      },
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "observed"
+    },
+    {
+      "relation_id": "rel_2512438fc9f9f989",
+      "relation_type": "ADVERTISES",
+      "source_asset_ref": "srv_82d252784c25ade0",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "tool_e18ee8a4b7d18ab1"
+      },
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "observed"
+    },
+    {
+      "relation_id": "rel_cdcaf63e1a05307a",
+      "relation_type": "ADVERTISES",
+      "source_asset_ref": "srv_82d252784c25ade0",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "tool_1168c52833bf45ae"
+      },
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "observed"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "ev-gw-config",
+      "evidence_type": "config",
+      "source_ref": "tb-gw:~/.openclaw/openclaw.json",
+      "observed_at": "2026-10-26T13:37:43Z",
+      "collection_ref": "col-gw-config",
+      "redaction_status": "redacted",
+      "field_path": "gateway",
+      "redacted_fields": [
+        "gateway.auth.token"
+      ]
+    },
+    {
+      "evidence_id": "ev-gw-identity",
+      "evidence_type": "protocol",
+      "source_ref": "tb-gw:gateway.identity.get",
+      "observed_at": "2026-10-04T06:38:32Z",
+      "collection_ref": "col-gateway-identity",
+      "redaction_status": "not_needed"
+    },
+    {
+      "evidence_id": "ev-gw-auth",
+      "evidence_type": "config",
+      "source_ref": "tb-gw:~/.openclaw/openclaw.json",
+      "observed_at": "2026-10-26T13:37:43Z",
+      "collection_ref": "col-gw-config",
+      "redaction_status": "redacted",
+      "field_path": "gateway.auth",
+      "redacted_fields": [
+        "gateway.auth.token"
+      ]
+    },
+    {
+      "evidence_id": "ev-gw-tools-profile",
+      "evidence_type": "config",
+      "source_ref": "tb-gw:~/.openclaw/openclaw.json",
+      "observed_at": "2026-10-26T13:37:43Z",
+      "collection_ref": "col-gw-config",
+      "redaction_status": "not_needed",
+      "field_path": "tools.profile"
+    },
+    {
+      "evidence_id": "ev-node-identity",
+      "evidence_type": "protocol",
+      "source_ref": "tb-node:openclaw node identity",
+      "observed_at": "2026-10-04T06:38:32Z",
+      "collection_ref": "col-node-identity",
+      "redaction_status": "not_needed"
+    },
+    {
+      "evidence_id": "ev-decl-tb-gw-fs-workspace",
+      "evidence_type": "config",
+      "source_ref": "tb-gw:~/.openclaw/openclaw.json",
+      "observed_at": "2026-10-26T13:37:43Z",
+      "collection_ref": "col-gw-config",
+      "redaction_status": "not_needed",
+      "field_path": "mcp.servers.fs-workspace"
+    },
+    {
+      "evidence_id": "ev-cap-fs-workspace",
+      "evidence_type": "protocol",
+      "source_ref": "fs-workspace:advertised",
+      "observed_at": "2026-10-04T06:38:32Z",
+      "collection_ref": "col-tools_list-fs-workspace",
+      "redaction_status": "not_needed",
+      "note": "실제 협상 버전이 설계 기준(2026-07-28)과 다름"
+    },
+    {
+      "evidence_id": "ev-expo-fs-workspace",
+      "evidence_type": "protocol",
+      "source_ref": "tb-gw:openclaw mcp probe --json",
+      "observed_at": "2026-10-04T06:38:32Z",
+      "collection_ref": "col-exposure",
+      "redaction_status": "not_needed"
+    }
+  ],
+  "collection_results": [
+    {
+      "collection_id": "col-gateway-identity",
+      "source_ref": "tb-gw:openclaw gateway call gateway.identity.get --json",
+      "scope": "gateway_identity",
+      "target_ref": null,
+      "mode": "imported_catalog",
+      "status": "success",
+      "collected_at": "2026-10-04T06:38:32Z"
+    },
+    {
+      "collection_id": "col-node-identity",
+      "source_ref": "tb-node:openclaw node identity --json",
+      "scope": "node_identity",
+      "target_ref": null,
+      "mode": "imported_catalog",
+      "status": "success",
+      "collected_at": "2026-10-04T06:38:32Z"
+    },
+    {
+      "collection_id": "col-gw-config",
+      "source_ref": "tb-gw:~/.openclaw/openclaw.json#mcp.servers",
+      "scope": "gateway_config",
+      "target_ref": null,
+      "mode": "local_file",
+      "status": "success",
+      "collected_at": "2026-10-26T13:37:43Z",
+      "reason": "profile-scoped configuration collection",
+      "details": {
+        "outcome": "servers_found",
+        "reported_count": 1,
+        "values_resolved": false,
+        "not_verified": [
+          "connection",
+          "tools",
+          "resources_prompts",
+          "capabilities",
+          "protocol_version",
+          "exposure",
+          "callability"
+        ],
+        "producer": {
+          "name": "agent-scope-asset-scanner",
+          "version": "0.1.0"
+        },
+        "format": "agent-scope.scanner.openclaw-mcp-config@0.1.0-draft",
+        "unresolved": []
+      }
+    },
+    {
+      "collection_id": "col-node-config",
+      "source_ref": "tb-node:~/.openclaw/openclaw.json#nodeHost.mcp.servers",
+      "scope": "node_config",
+      "target_ref": null,
+      "mode": "local_file",
+      "status": "success",
+      "collected_at": "2026-10-26T13:37:44Z",
+      "reason": "profile-scoped configuration collection · registry_absent",
+      "details": {
+        "outcome": "registry_absent",
+        "reported_count": null,
+        "values_resolved": false,
+        "not_verified": [
+          "connection",
+          "tools",
+          "resources_prompts",
+          "capabilities",
+          "protocol_version",
+          "exposure",
+          "callability"
+        ],
+        "producer": {
+          "name": "agent-scope-asset-scanner",
+          "version": "0.1.0"
+        },
+        "format": "agent-scope.scanner.openclaw-mcp-config@0.1.0-draft",
+        "unresolved": []
+      }
+    },
+    {
+      "collection_id": "col-adapter-supplement",
+      "source_ref": "pipeline:adapter",
+      "scope": "adapter_supplement",
+      "target_ref": null,
+      "mode": "local_file",
+      "status": "success",
+      "collected_at": "2026-10-26T13:37:43Z",
+      "reason": "스캐너 0.1.0은 sslVerify·toolFilter의 키 이름만 수집 — 비밀이 아닌 값을 어댑터가 설정에서 보강",
+      "details": {
+        "fields": [
+          "mcp.servers.fs-workspace.toolFilter"
+        ]
+      }
+    },
+    {
+      "collection_id": "col-tools_list-fs-workspace",
+      "source_ref": "fs-workspace:advertised",
+      "scope": "tools_list",
+      "target_ref": "srv_82d252784c25ade0",
+      "mode": "imported_catalog",
+      "status": "success",
+      "collected_at": "2026-10-04T06:38:32Z",
+      "protocol_version": "2025-11-25",
+      "auth_context_ref": "anonymous-testbed",
+      "details": {
+        "reported_count": 14,
+        "requested_protocol_version": "2026-07-28",
+        "capabilities_not_advertised": [
+          "resources",
+          "resourceTemplates",
+          "prompts"
+        ],
+        "synthetic": false
+      }
+    },
+    {
+      "collection_id": "col-exposure",
+      "source_ref": "tb-gw:openclaw mcp probe / tb-node:nodes describe",
+      "scope": "agent_exposure",
+      "target_ref": null,
+      "mode": "imported_catalog",
+      "status": "success",
+      "collected_at": "2026-10-04T06:38:32Z",
+      "reason": "에이전트에 투영된 도구 목록(OpenClaw CLI 출력)"
+    }
+  ]
+}

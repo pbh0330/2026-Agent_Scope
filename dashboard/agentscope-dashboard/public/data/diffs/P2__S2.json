@@ -1,0 +1,228 @@
+{
+  "schema_version": "0.6.0-draft",
+  "diff_id": "diff-snap-p2-20261026T133744Z--snap-s2-20261026T133744Z",
+  "environment_id": "agentscope-testbed",
+  "profile_id": "tb-openclaw",
+  "previous_snapshot_id": "snap-p2-20261026T133744Z",
+  "current_snapshot_id": "snap-s2-20261026T133744Z",
+  "previous_report_id": "det-snap-p2-20261026T133744Z",
+  "current_report_id": "det-snap-s2-20261026T133744Z",
+  "generated_at": "2026-10-26T13:37:45Z",
+  "comparison_status": "complete",
+  "changes": [
+    {
+      "asset_id": "srv_82d252784c25ade0",
+      "change_type": "modified",
+      "changed_fields": [
+        "/product/config",
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-10-26T13:37:44Z",
+      "evidence_refs": [
+        "ev-decl-tb-gw-fs-workspace"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_195991a776278649",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-10-26T13:37:44Z",
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_808858ad67b2571e",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-10-26T13:37:44Z",
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_024b0ecd7f1ef493",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-10-26T13:37:44Z",
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_dd5b0d8c51c2703a",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-10-26T13:37:44Z",
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_ae3a16e72cd51e20",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-10-26T13:37:44Z",
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_48ebc84cc788d189",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-10-26T13:37:44Z",
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_6d81dcbe721e8c45",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-10-26T13:37:44Z",
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_194d79b6acffacf6",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-10-26T13:37:44Z",
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_a3b41a1ef6d32f7b",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-10-26T13:37:44Z",
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_db2ee601e1be0f61",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-10-26T13:37:44Z",
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_885804152d454da3",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-10-26T13:37:44Z",
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_6674705e458e8b17",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-10-26T13:37:44Z",
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_e18ee8a4b7d18ab1",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-10-26T13:37:44Z",
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_1168c52833bf45ae",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-10-26T13:37:44Z",
+      "evidence_refs": [
+        "ev-cap-fs-workspace"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "pa_3a3c5f7d09203be0",
+      "change_type": "removed_from_scope",
+      "changed_fields": [],
+      "detected_at": "2026-10-26T13:37:44Z",
+      "evidence_refs": [],
+      "reason": "같은 범위를 끝까지 조회했지만 이번 결과에 없음(설치 삭제를 뜻하지 않음)",
+      "previous": {
+        "name": "fs-workspace · toolFilter",
+        "asset_type": "permission_auth"
+      }
+    }
+  ],
+  "relation_changes": [
+    {
+      "relation_id": "rel_25ca556d24c877ae",
+      "change_type": "not_observed",
+      "changed_fields": [],
+      "reason": "이번 결과에 없음",
+      "previous": {
+        "relation_type": "APPLIES_TO"
+      }
+    }
+  ],
+  "alert_changes": [
+    {
+      "finding_key": "5527a3affcb8b9e082bc9174",
+      "change_type": "opened",
+      "previous_alert_id": null,
+      "current_alert_id": "alert-5527a3affcb8",
+      "reason": "이번 평가에서 새로 탐지"
+    }
+  ],
+  "limitations": []
+}
