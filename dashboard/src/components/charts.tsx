@@ -130,7 +130,8 @@ export function AreaChart({ points, unit = '' }: { points: { label: string; valu
   const W = 1100, H = 280, padL = 44, padR = 16, padT = 16, padB = 32
   const vals = points.map(p => p.value ?? 0)
   const max = Math.max(1, ...vals)
-  const step = max <= 50 ? 10 : max <= 200 ? 50 : max <= 500 ? 100 : 200
+  const raw = max / 5, mag = 10 ** Math.floor(Math.log10(raw))
+  const step = Math.max(1, [1, 2, 5, 10].map(m => m * mag).find(s => s >= raw) ?? 10 * mag)
   const top = Math.ceil(max / step) * step
   const ticks = Array.from({ length: top / step + 1 }, (_, i) => i * step)
   const n = Math.max(points.length - 1, 1)

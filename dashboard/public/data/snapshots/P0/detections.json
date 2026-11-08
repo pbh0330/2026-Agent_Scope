@@ -1,10 +1,10 @@
 {
   "schema_version": "0.6.0-draft",
-  "report_id": "det-snap-p0-20261108T191519Z",
+  "report_id": "det-snap-p0-20261108T195706Z",
   "environment_id": "agentscope-testbed",
   "profile_id": "tb-openclaw",
-  "snapshot_id": "snap-p0-20261108T191519Z",
-  "generated_at": "2026-11-08T19:15:19Z",
+  "snapshot_id": "snap-p0-20261108T195706Z",
+  "generated_at": "2026-11-08T19:57:06Z",
   "producer": {
     "name": "agentscope-dashboard-pipeline",
     "version": "0.1.0",
@@ -39,7 +39,7 @@
       ],
       "result": "not_detected",
       "reason": "이름이 승인 목록에 있음",
-      "evaluated_at": "2026-11-08T19:15:19Z"
+      "evaluated_at": "2026-11-08T19:57:06Z"
     },
     {
       "evaluation_id": "eval-S1-C4-d272ffcd00",
@@ -65,7 +65,7 @@
       ],
       "result": "not_detected",
       "reason": "선언 위치·등록 주체가 승인 목록과 같음",
-      "evaluated_at": "2026-11-08T19:15:19Z"
+      "evaluated_at": "2026-11-08T19:57:06Z"
     },
     {
       "evaluation_id": "eval-S1-C2-f5869ae6a9",
@@ -91,7 +91,7 @@
       ],
       "result": "not_detected",
       "reason": "Endpoint가 승인 목록과 같음",
-      "evaluated_at": "2026-11-08T19:15:19Z"
+      "evaluated_at": "2026-11-08T19:57:06Z"
     },
     {
       "evaluation_id": "eval-S2-C1-b30bdc16fa",
@@ -116,7 +116,7 @@
       ],
       "result": "not_detected",
       "reason": "노출 도구 2개 모두 정책 허용 범위",
-      "evaluated_at": "2026-11-08T19:15:19Z"
+      "evaluated_at": "2026-11-08T19:57:06Z"
     },
     {
       "evaluation_id": "eval-S2-C2-b64ea9728d",
@@ -141,7 +141,7 @@
       ],
       "result": "not_detected",
       "reason": "파일 범위가 기준 /home/<TB_USER>/workspace 안",
-      "evaluated_at": "2026-11-08T19:15:19Z"
+      "evaluated_at": "2026-11-08T19:57:06Z"
     },
     {
       "evaluation_id": "eval-S2-C3-db2c4f7e54",
@@ -166,7 +166,7 @@
       ],
       "result": "not_detected",
       "reason": "정책 허용 도구 중 명령·네트워크 고위험 입력 없음",
-      "evaluated_at": "2026-11-08T19:15:19Z"
+      "evaluated_at": "2026-11-08T19:57:06Z"
     },
     {
       "evaluation_id": "eval-S2-C4-3ba41e5950",
@@ -191,7 +191,7 @@
       ],
       "result": "not_detected",
       "reason": "정책 허용 도구 중 인증정보 고위험 입력 없음",
-      "evaluated_at": "2026-11-08T19:15:19Z"
+      "evaluated_at": "2026-11-08T19:57:06Z"
     },
     {
       "evaluation_id": "eval-S4-C1-d6f6ab7e42",
@@ -207,7 +207,7 @@
       "policy_refs": [],
       "result": "unknown",
       "reason": "식별 가능한 자격증명 참조가 없음",
-      "evaluated_at": "2026-11-08T19:15:19Z"
+      "evaluated_at": "2026-11-08T19:57:06Z"
     },
     {
       "evaluation_id": "eval-S3-C1-e3f773c150",
@@ -225,7 +225,7 @@
       "policy_refs": [],
       "result": "not_detected",
       "reason": "수집한 서버들의 도구 이름 14개가 모두 고유",
-      "evaluated_at": "2026-11-08T19:15:19Z",
+      "evaluated_at": "2026-11-08T19:57:06Z",
       "details": {
         "tool_names_checked": 14
       }
@@ -246,7 +246,7 @@
       "policy_refs": [],
       "result": "not_applicable",
       "reason": "stdio 로컬 실행 — 네트워크 전송 검증 대상 아님",
-      "evaluated_at": "2026-11-08T19:15:19Z"
+      "evaluated_at": "2026-11-08T19:57:06Z"
     }
   ],
   "alerts": []

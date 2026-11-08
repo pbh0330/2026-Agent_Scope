@@ -63,6 +63,28 @@ def run_scanner(scanner: Path, config: Path, out: Path, registry: str) -> dict:
     return load(out)
 
 
+USAGE_API_FILES = {  # 정적 사본 파일 이름 → API 경로 (token-collector/backend/usageapi README)
+    "health.json": "health",
+    "summary.json": "summary",
+    "by-asset.asset.json": "by-asset?group=asset",
+    "by-asset.server.json": "by-asset?group=server",
+    "by-asset.pattern.json": "by-asset?group=pattern",
+    "records.json": "records?limit=500",
+    "timeseries.json": "timeseries",
+    "brake-events.json": "brake-events?limit=500",
+}
+
+
+def snapshot_usage_api(base: str, out: Path) -> dict:
+    """실행 중인 사용 현황 API의 응답을 그대로 저장한다(대시보드가 API 없이 열릴 때 쓰는 정적 사본)."""
+    import urllib.request
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    for name, path in USAGE_API_FILES.items():
+        with opener.open(f"{base.rstrip('/')}/api/v1/usage/{path}", timeout=10) as r:
+            dump(out / name, json.loads(r.read().decode("utf-8")))
+    return load(out / "health.json")
+
+
 def skills_for(testbed: Path, profile: str) -> list[SkillInput]:
     order = NORMAL[: NORMAL.index(profile) + 1]
     out = []
@@ -173,6 +195,7 @@ def main() -> None:
     ap.add_argument("--scanner", type=Path, required=True, help="asset-scanner 폴더 (feature/scanner-config)")
     ap.add_argument("--testbed", type=Path, required=True, help="testbed 폴더 (feature/testbed-threat-s1 또는 feature/testbed-profiles)")
     ap.add_argument("--usage", type=Path, help="토큰 수집기 usage.json (feature/token-collector)")
+    ap.add_argument("--usage-api", help="실행 중인 사용 현황 API 주소(예: http://127.0.0.1:8088). 응답을 public/data/usage-api에 저장")
     ap.add_argument("--scenarios", type=Path, help="docs/threat-scenarios 폴더 (생략 시 pipeline/policies 사본)")
     ap.add_argument("--out", type=Path, default=HERE.parent / "public" / "data")
     ap.add_argument("--work", type=Path, default=HERE / ".work")
@@ -275,6 +298,14 @@ def main() -> None:
                                   "counts": {t: sum(1 for c in diff["changes"] if c["change_type"] == t)
                                              for t in ("added", "modified", "removed_from_scope", "not_observed")}})
 
+    if args.usage_api:
+        health = snapshot_usage_api(args.usage_api, out / "usage-api")
+        manifest["usage_api"] = {
+            "dir": "usage-api", "api_base": "/api/v1/usage", "captured_at": manifest["generated_at"],
+            "mode": health.get("mode"), "sources": health.get("sources"), "records": health.get("records"),
+            "inventory_snapshot_id": health.get("inventory_snapshot_id"),
+            "source": "feature/token-collector · backend/usageapi (agentscope-usage-api)"}
+        print(f"사용 현황 API 응답 저장: {args.usage_api} → usage-api/ (기록 {health.get('records')}건)")
     if args.usage:
         usage = load(args.usage)
         dump(out / "usage.json", usage)
@@ -286,7 +317,7 @@ def main() -> None:
         "testbed": "feature/testbed-threat-s1 · profiles P0~P2·S1, ground-truth/raw, approved-servers.json",
         "threat_rules": f"docs/threat-scenarios v{policies['catalog']['catalog_version']} · scenario-catalog.json, 부록 A",
         "schema": "docs/mcp-attack-surface-definition · schema-design-draft v0.6",
-        "usage": "feature/token-collector · usagereport" if args.usage else None,
+        "usage": "feature/token-collector · backend/usageapi" if args.usage_api else ("feature/token-collector · usagereport" if args.usage else None),
     }
     dump(out / "manifest.json", manifest)
     print(f"완료 → {out}")

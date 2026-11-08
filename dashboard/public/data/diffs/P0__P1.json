@@ -1,13 +1,13 @@
 {
   "schema_version": "0.6.0-draft",
-  "diff_id": "diff-snap-p0-20261108T191519Z--snap-p1-20261108T191520Z",
+  "diff_id": "diff-snap-p0-20261108T195706Z--snap-p1-20261108T195707Z",
   "environment_id": "agentscope-testbed",
   "profile_id": "tb-openclaw",
-  "previous_snapshot_id": "snap-p0-20261108T191519Z",
-  "current_snapshot_id": "snap-p1-20261108T191520Z",
-  "previous_report_id": "det-snap-p0-20261108T191519Z",
-  "current_report_id": "det-snap-p1-20261108T191520Z",
-  "generated_at": "2026-11-08T19:15:21Z",
+  "previous_snapshot_id": "snap-p0-20261108T195706Z",
+  "current_snapshot_id": "snap-p1-20261108T195707Z",
+  "previous_report_id": "det-snap-p0-20261108T195706Z",
+  "current_report_id": "det-snap-p1-20261108T195707Z",
+  "generated_at": "2026-11-08T19:57:08Z",
   "comparison_status": "complete",
   "changes": [
     {
@@ -16,7 +16,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-node-identity"
       ],
@@ -26,7 +26,7 @@
       "asset_id": "srv_ec1aa5ba6ea61ff0",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-decl-tb-node-kg-memory"
       ],
@@ -36,7 +36,7 @@
       "asset_id": "srv_eee2566222d9bc33",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-decl-tb-node-demo-everything"
       ],
@@ -46,7 +46,7 @@
       "asset_id": "pa_087042e2e785a2d2",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-decl-tb-node-demo-everything"
       ],
@@ -56,7 +56,7 @@
       "asset_id": "tool_ded3c41f9a823fb4",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-kg-memory"
       ],
@@ -66,7 +66,7 @@
       "asset_id": "tool_d85dcf8b7b833e9b",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-kg-memory"
       ],
@@ -76,7 +76,7 @@
       "asset_id": "tool_763c5440832c799e",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-kg-memory"
       ],
@@ -86,7 +86,7 @@
       "asset_id": "tool_51cd31965b8f4f26",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-kg-memory"
       ],
@@ -96,7 +96,7 @@
       "asset_id": "tool_98df43243ff1156e",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-kg-memory"
       ],
@@ -106,7 +106,7 @@
       "asset_id": "tool_26a81ed81be3943b",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-kg-memory"
       ],
@@ -116,7 +116,7 @@
       "asset_id": "tool_7a3adaad7a6c35e4",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-kg-memory"
       ],
@@ -126,7 +126,7 @@
       "asset_id": "tool_d80f6ea24fe9c75b",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-kg-memory"
       ],
@@ -136,7 +136,7 @@
       "asset_id": "tool_8fcf3d9415d68c1a",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-kg-memory"
       ],
@@ -146,7 +146,7 @@
       "asset_id": "rp_29e54f6426a13653",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-kg-memory"
       ],
@@ -156,7 +156,7 @@
       "asset_id": "tool_67a64e6145413178",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -166,7 +166,7 @@
       "asset_id": "tool_e20c9eb5420403d1",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -176,7 +176,7 @@
       "asset_id": "tool_762c09336caad7d0",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -186,7 +186,7 @@
       "asset_id": "tool_93f12ac4f2ea5fff",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -196,7 +196,7 @@
       "asset_id": "tool_64612d3c4e5415b6",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -206,7 +206,7 @@
       "asset_id": "tool_d83c2aa31dee5dc4",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -216,7 +216,7 @@
       "asset_id": "tool_0ee651414b0e8849",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -226,7 +226,7 @@
       "asset_id": "tool_bd297168f8839140",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -236,7 +236,7 @@
       "asset_id": "tool_d364d522832496d7",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -246,7 +246,7 @@
       "asset_id": "tool_c96e12e3082b2372",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -256,7 +256,7 @@
       "asset_id": "tool_8593712d5cdd263c",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -266,7 +266,7 @@
       "asset_id": "tool_75995a93ada69d48",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -276,7 +276,7 @@
       "asset_id": "tool_c0285092845c94d5",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -286,7 +286,7 @@
       "asset_id": "rp_a768125d19b14a0e",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -296,7 +296,7 @@
       "asset_id": "rp_bb6bcc335c627639",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -306,7 +306,7 @@
       "asset_id": "rp_0c44f11d568ffe23",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -316,7 +316,7 @@
       "asset_id": "rp_5b5f742bb857f02c",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -326,7 +326,7 @@
       "asset_id": "rp_fd660ea2629ba4eb",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -336,7 +336,7 @@
       "asset_id": "rp_d7b03965165de3c7",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -346,7 +346,7 @@
       "asset_id": "rp_b117b808b5d2930a",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -356,7 +356,7 @@
       "asset_id": "rp_e0f4ab24265f111f",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -366,7 +366,7 @@
       "asset_id": "rp_26e9867da8b3f4ae",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -376,7 +376,7 @@
       "asset_id": "rp_272815b746abd40c",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -386,7 +386,7 @@
       "asset_id": "rp_ba0cd1f86ea81c59",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -396,7 +396,7 @@
       "asset_id": "rp_7191c74da4522626",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -406,7 +406,7 @@
       "asset_id": "rp_eba916112fc2cd01",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -416,7 +416,7 @@
       "asset_id": "skill_d15583d662a535f2",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-skill-tb-node-node-disk-report"
       ],
@@ -426,7 +426,7 @@
       "asset_id": "skill_3486e732139325f5",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:15:20Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-skill-tb-node-node-notes-summary"
       ],

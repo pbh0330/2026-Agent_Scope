@@ -1,13 +1,13 @@
 {
   "schema_version": "0.6.0-draft",
-  "diff_id": "diff-snap-p2-20261108T191520Z--snap-s5-t2-20261108T191521Z",
+  "diff_id": "diff-snap-p2-20261108T195707Z--snap-s5-t2-20261108T195707Z",
   "environment_id": "agentscope-testbed",
   "profile_id": "tb-openclaw",
-  "previous_snapshot_id": "snap-p2-20261108T191520Z",
-  "current_snapshot_id": "snap-s5-t2-20261108T191521Z",
-  "previous_report_id": "det-snap-p2-20261108T191520Z",
-  "current_report_id": "det-snap-s5-t2-20261108T191521Z",
-  "generated_at": "2026-11-08T19:15:21Z",
+  "previous_snapshot_id": "snap-p2-20261108T195707Z",
+  "current_snapshot_id": "snap-s5-t2-20261108T195707Z",
+  "previous_report_id": "det-snap-p2-20261108T195707Z",
+  "current_report_id": "det-snap-s5-t2-20261108T195707Z",
+  "generated_at": "2026-11-08T19:57:08Z",
   "comparison_status": "complete",
   "changes": [
     {
@@ -17,7 +17,7 @@
         "/product/config",
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:15:21Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-decl-tb-gw-inventory-remote"
       ],
@@ -29,7 +29,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:15:21Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-inventory-remote"
       ],
@@ -41,7 +41,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:15:21Z",
+      "detected_at": "2026-11-08T19:57:07Z",
       "evidence_refs": [
         "ev-cap-inventory-remote"
       ],

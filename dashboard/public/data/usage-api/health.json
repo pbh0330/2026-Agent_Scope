@@ -1,0 +1,26 @@
+{
+  "status": "ok",
+  "mode": "fixed",
+  "data_window": {
+    "start": "2026-10-29T05:24:02.000Z",
+    "end": "2026-10-29T05:29:03.000Z"
+  },
+  "records": 16,
+  "brake_events": null,
+  "sources": [
+    "pc-1029.traces.jsonl"
+  ],
+  "loaded_at": "2026-11-08T19:54:23.997Z",
+  "last_error": null,
+  "inventory_snapshot_id": null,
+  "missing_counts": 0,
+  "limitations": [
+    "approx_input_tokens is an estimate of how much a tool result added to the next model input; it is not billed usage and must not be added to model-level input/output/cache totals.",
+    "environment_id and profile_id are injected by the adapter because the telemetry carries only host-level resource attributes.",
+    "Parallel and batch segments split their measured input increase using per-result token counts from the token-count API (attribution_method=parallel-token-count / batch-token-count): each result first gets a fixed per-result overhead k, the rest is split in proportion to the counts, and the split preserves the segment total.",
+    "Per-result overhead k for claude-haiku-4-5-20251001 is 16 tokens: the median of (measured increase - counted tokens) over 3 sequential segment(s) in this data.",
+    "inventory_snapshot_id is null: no InventorySnapshot was provided, so every record is unmatched.",
+    "pricing.source=reference_list_price uses public list prices for reference because the configured price is zero or missing; it is not the actual bill.",
+    "A run cut off at the end of the capture can leave its last tools unattributed; re-run the adapter on a later capture that contains the whole run."
+  ]
+}

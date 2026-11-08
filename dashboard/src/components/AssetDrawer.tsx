@@ -1,13 +1,17 @@
 import { X } from 'lucide-react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import type { Model } from '../data/model'
 import { RELATION_LABEL, SCENARIOS, STATE_HINT, STATE_LABEL, STATE_ORDER, SUBTYPE_LABEL, TYPE_LABEL } from '../data/model'
 import { Glyph, ResultMark, Scn, Sev, SeverityTag } from './ui'
+import { loadUsageBundle, usageForAsset, type UsageBundle } from '../data/usage'
+import type { Manifest } from '../types/contracts'
 
-export function AssetDrawer({ model, id, onSelect, onClose, onAlert }: {
-  model: Model; id: string; onSelect: (id: string) => void; onClose: () => void; onAlert: (alertId: string) => void
+export function AssetDrawer({ model, manifest, id, onSelect, onClose, onAlert }: {
+  model: Model; manifest: Manifest; id: string; onSelect: (id: string) => void; onClose: () => void; onAlert: (alertId: string) => void
 }) {
   const a = model.byId.get(id)
+  const [usage, setUsage] = useState<UsageBundle | null>(null)
+  useEffect(() => { loadUsageBundle(manifest).then(setUsage) }, [manifest])
   useEffect(() => {
     const k = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
     window.addEventListener('keydown', k)
@@ -70,6 +74,25 @@ export function AssetDrawer({ model, id, onSelect, onClose, onAlert }: {
               })}
             </div>
           </div>
+
+          {usage && (a.asset_type === 'tool' || a.asset_type === 'mcp_server') && (() => {
+            const u = usageForAsset(usage, a.asset_id)
+            return (
+              <div className="sect">
+                <h3>실제 사용 <span className="muted small">토큰 수집기</span></h3>
+                {u ? (
+                  <dl className="kv">
+                    <dt>호출</dt><dd>{u.calls}건{u.calls_not_computed ? ` (토큰 계산 못 함 ${u.calls_not_computed})` : ''}</dd>
+                    <dt>귀속 토큰</dt><dd>{u.tokens.toLocaleString('ko-KR')} <span className="muted small">추정 · 전체의 {Math.round(u.share * 1000) / 10}%</span></dd>
+                    <dt>마지막 사용</dt><dd>{u.last_used_at ? new Date(u.last_used_at).toLocaleString('ko-KR', { hour12: false }) : '—'}</dd>
+                  </dl>
+                ) : (
+                  <p className="small muted">이 자산에 연결된 사용 기록이 없습니다. 사용 기록 {usage.summary.calls}건 중 자산 연결 {usage.summary.by_mapping.matched}건 —
+                    사용 현황 API를 이 스냅샷(<code>--inventory</code>)과 같은 환경에서 띄워야 연결됩니다. "사용됨" 상태는 바꾸지 않습니다.</p>
+                )}
+              </div>
+            )
+          })()}
 
           {(alerts.length > 0 || evals.length > 0) && (
             <div className="sect">

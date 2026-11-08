@@ -24,7 +24,7 @@ const PAGES: { key: PageKey; label: string; icon: typeof MapIcon; group: string;
   { key: 'security', label: '보안 경고', icon: AlertTriangle, group: '분석', title: '보안 경고', desc: 'S1~S5 정적 탐지 결과입니다. 경고마다 관련 자산·관계·근거를 함께 보여줍니다.' },
   { key: 'changes', label: '변경 비교', icon: ArrowLeftRight, group: '분석', title: '변경 비교', desc: '두 스냅샷 사이에 추가·변경된 자산과 새로 열리거나 해결된 경고를 비교합니다.' },
   { key: 'collection', label: '수집과 검증', icon: DatabaseZap, group: '데이터', title: '수집과 검증', desc: '어떤 원본을 어떤 방식으로 읽었는지, 테스트베드 정답 목록과 얼마나 맞는지 확인합니다.' },
-  { key: 'usage', label: '토큰 사용', icon: Coins, group: '데이터', title: '토큰 사용', desc: '토큰 수집기가 귀속한 도구 호출별 추정 입력 토큰과 비용입니다.' },
+  { key: 'usage', label: '토큰 사용', icon: Coins, group: '데이터', title: '토큰 사용', desc: '토큰 수집기 사용 현황 API가 귀속한 도구 호출별 추정 토큰·비용과 소비 브레이크 기록입니다.' },
 ]
 
 type Theme = 'system' | 'light' | 'dark'
@@ -196,14 +196,14 @@ export default function App() {
                 onMap={id => { setSelected(id); setDrawer(false); go('map') }} />}
               {page === 'changes' && <ChangesPage model={model} manifest={manifest} current={entry.key} onSelect={select} />}
               {page === 'collection' && <CollectionPage model={model} manifest={manifest} onSelect={select} />}
-              {page === 'usage' && <UsagePage manifest={manifest} snapshotId={model.snapshot.snapshot_id} />}
+              {page === 'usage' && <UsagePage manifest={manifest} model={model} onSelect={select} />}
             </div>
           )}
         </main>
       </div>
 
       {model && drawer && selected && (
-        <AssetDrawer model={model} id={selected} onSelect={select} onClose={() => setDrawer(false)}
+        <AssetDrawer model={model} manifest={manifest!} id={selected} onSelect={select} onClose={() => setDrawer(false)}
           onAlert={id => { setDrawer(false); go('security', { alert: id }) }} />
       )}
       {dragging && <div className="drop">snapshot.json과 detections.json을 놓으세요</div>}

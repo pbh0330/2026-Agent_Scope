@@ -248,4 +248,95 @@ export interface Manifest {
   snapshots: ManifestSnapshot[]
   diffs: { from: string; to: string; file: string; counts: Record<string, number> }[]
   usage: { file: string; source: string; linked_snapshot: string | null; note: string } | null
+  usage_api?: { dir: string; api_base: string; captured_at: string; mode: string | null; sources: string[] | null
+    records: number | null; inventory_snapshot_id: string | null; source: string }
 }
+
+// ---- 사용 현황 API (token-collector/backend/usageapi, agentscope-usage-api) ----
+// 응답 모양은 usageapi README 기준. 모든 값은 추정치(estimated: true)이며 청구 금액이 아니다.
+export interface UsageWindow { start: string; end: string }
+export type UsageMethod = 'sequential' | 'allocated' | 'not_computed'
+export type UsagePattern = 'sequential' | 'parallel' | 'batch' | 'unattributed'
+
+export interface UsageHealth {
+  status: 'ok' | 'degraded' | 'loading'
+  mode: 'fixed' | 'live'
+  data_window: UsageWindow | null
+  records: number
+  brake_events: number | null
+  sources: string[]
+  loaded_at: string
+  last_error: string | null
+  inventory_snapshot_id: string | null
+  missing_counts: number
+  limitations?: string[]
+}
+
+export interface UsageSummary {
+  window: UsageWindow
+  estimated: true
+  calls: number
+  attributed_tokens: number
+  estimated_cost_usd: number | null
+  pricing: { currency: string; sources: string[] }
+  by_method: { sequential: { calls: number; tokens: number }; allocated: { calls: number; tokens: number }; not_computed: { calls: number } }
+  by_mapping: { matched: number; ambiguous: number; unmatched: number }
+  data_quality: { missing_counts: number; not_computed: number; negative_delta: number; calls_without_cost: number; inventory_snapshot_id: string | null }
+}
+
+export interface UsageItem {
+  key: string
+  label: string
+  asset_id: string | null
+  asset_type: string | null
+  mapping_status: 'matched' | 'ambiguous' | 'unmatched' | null
+  tool_source?: string
+  mcp_server?: string | null
+  calls: number
+  calls_not_computed: number
+  tokens: number
+  tokens_sequential: number
+  tokens_allocated: number
+  estimated_cost_usd: number | null
+  share: number
+  relative: number
+  last_used_at: string | null
+  last_trace_id: string | null
+}
+export interface UsageByAsset { window: UsageWindow; group: 'asset' | 'tool' | 'server' | 'pattern'; total_tokens: number; inventory_snapshot_id: string | null; items: UsageItem[] }
+
+export interface UsageApiRecord {
+  usage_id: string
+  time: string
+  tool_name: string
+  tool_source: string
+  mcp_server: string | null
+  asset_id: string | null
+  mapping_status: string
+  pattern: UsagePattern
+  method: UsageMethod
+  attribution_method: string
+  tokens: number | null
+  estimated_cost_usd: number | null
+  duration_ms: number | null
+  model: string | null
+  trace_id: string | null
+  tool_call_id?: string | null
+}
+export interface UsageRecords { window: UsageWindow; total: number; next_cursor: string | null; items: UsageApiRecord[] }
+
+export interface UsagePoint { t: string; tokens: number; calls: number }
+export interface UsageTimeseries { window: UsageWindow; group: string; step: string; total: { key: string; tokens: number; points: UsagePoint[] }; series: { key: string; label: string; tokens: number; points: UsagePoint[] }[] }
+
+export interface BrakeEventItem {
+  time: string
+  level: 'warn' | 'approve' | 'block'
+  mode: string
+  enforced: boolean
+  tool_name: string
+  reasons: { scope: string; metric: string; value: number; limit: number }[]
+  run_usage: { result_bytes: number; counted_tokens: number; tool_calls: number; same_tool_streak: number } | null
+  resolution: { decision: string; time: string } | null
+  trace_id: string | null
+}
+export interface BrakeEvents { window: UsageWindow; available: boolean; by_level: Record<'warn' | 'approve' | 'block', number>; total: number; items: BrakeEventItem[]; next_cursor: string | null }

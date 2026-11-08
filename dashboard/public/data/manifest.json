@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-11-08T19:15:19Z",
+  "generated_at": "2026-11-08T19:57:06Z",
   "environment_id": "agentscope-testbed",
   "sources": {
     "scanner": "feature/scanner-config · asset_scanner (openclaw-mcp-config 0.1.0-draft)",
     "testbed": "feature/testbed-threat-s1 · profiles P0~P2·S1, ground-truth/raw, approved-servers.json",
     "threat_rules": "docs/threat-scenarios v2.1 · scenario-catalog.json, 부록 A",
     "schema": "docs/mcp-attack-surface-definition · schema-design-draft v0.6",
-    "usage": "feature/token-collector · usagereport"
+    "usage": "feature/token-collector · backend/usageapi"
   },
   "snapshots": [
     {
@@ -16,7 +16,7 @@
       "scenario_id": null,
       "synthetic": false,
       "test_case_ids": [],
-      "snapshot_id": "snap-p0-20261108T191519Z",
+      "snapshot_id": "snap-p0-20261108T195706Z",
       "files": {
         "snapshot": "snapshots/P0/snapshot.json",
         "detections": "snapshots/P0/detections.json",
@@ -35,7 +35,7 @@
       "scenario_id": null,
       "synthetic": false,
       "test_case_ids": [],
-      "snapshot_id": "snap-p1-20261108T191520Z",
+      "snapshot_id": "snap-p1-20261108T195707Z",
       "files": {
         "snapshot": "snapshots/P1/snapshot.json",
         "detections": "snapshots/P1/detections.json",
@@ -54,7 +54,7 @@
       "scenario_id": null,
       "synthetic": false,
       "test_case_ids": [],
-      "snapshot_id": "snap-p2-20261108T191520Z",
+      "snapshot_id": "snap-p2-20261108T195707Z",
       "files": {
         "snapshot": "snapshots/P2/snapshot.json",
         "detections": "snapshots/P2/detections.json",
@@ -79,7 +79,7 @@
         "S1-T3",
         "S1-T4"
       ],
-      "snapshot_id": "snap-s1-20261108T191520Z",
+      "snapshot_id": "snap-s1-20261108T195707Z",
       "files": {
         "snapshot": "snapshots/S1/snapshot.json",
         "detections": "snapshots/S1/detections.json",
@@ -100,7 +100,7 @@
       "test_case_ids": [
         "S1-T5"
       ],
-      "snapshot_id": "snap-s1-t5-20261108T191520Z",
+      "snapshot_id": "snap-s1-t5-20261108T195707Z",
       "files": {
         "snapshot": "snapshots/S1-T5/snapshot.json",
         "detections": "snapshots/S1-T5/detections.json",
@@ -122,7 +122,7 @@
         "S2-T1",
         "S2-T2"
       ],
-      "snapshot_id": "snap-s2-20261108T191520Z",
+      "snapshot_id": "snap-s2-20261108T195707Z",
       "files": {
         "snapshot": "snapshots/S2/snapshot.json",
         "detections": "snapshots/S2/detections.json",
@@ -144,7 +144,7 @@
         "S4-T1",
         "S4-T2"
       ],
-      "snapshot_id": "snap-s4-20261108T191520Z",
+      "snapshot_id": "snap-s4-20261108T195707Z",
       "files": {
         "snapshot": "snapshots/S4/snapshot.json",
         "detections": "snapshots/S4/detections.json",
@@ -166,7 +166,7 @@
         "S3-T1",
         "S3-T2"
       ],
-      "snapshot_id": "snap-s3-20261108T191520Z",
+      "snapshot_id": "snap-s3-20261108T195707Z",
       "files": {
         "snapshot": "snapshots/S3/snapshot.json",
         "detections": "snapshots/S3/detections.json",
@@ -187,7 +187,7 @@
       "test_case_ids": [
         "S5-T1"
       ],
-      "snapshot_id": "snap-s5-t1-20261108T191520Z",
+      "snapshot_id": "snap-s5-t1-20261108T195707Z",
       "files": {
         "snapshot": "snapshots/S5-T1/snapshot.json",
         "detections": "snapshots/S5-T1/detections.json",
@@ -208,7 +208,7 @@
       "test_case_ids": [
         "S5-T2"
       ],
-      "snapshot_id": "snap-s5-t2-20261108T191521Z",
+      "snapshot_id": "snap-s5-t2-20261108T195707Z",
       "files": {
         "snapshot": "snapshots/S5-T2/snapshot.json",
         "detections": "snapshots/S5-T2/detections.json",
@@ -229,7 +229,7 @@
       "test_case_ids": [
         "S5-T3"
       ],
-      "snapshot_id": "snap-s5-t3-20261108T191521Z",
+      "snapshot_id": "snap-s5-t3-20261108T195708Z",
       "files": {
         "snapshot": "snapshots/S5-T3/snapshot.json",
         "detections": "snapshots/S5-T3/detections.json",
@@ -354,12 +354,7 @@
       }
     }
   ],
-  "usage": {
-    "file": "usage.json",
-    "source": "token-collector/collector/usagereport",
-    "linked_snapshot": "snap-test-fs",
-    "note": "토큰 수집기 3주차 검증 로그로 만든 usage.json. 테스트베드 스냅샷과 다른 환경(environment_id)"
-  },
+  "usage": null,
   "ruleset": {
     "id": "agent-scope-threat-scenarios",
     "version": "2.1"
@@ -367,5 +362,17 @@
   "policies": {
     "approved_servers": "testbed/ground-truth/approved-servers.json",
     "tool_policy": "pol-s2-expected-tool-policy 2.1"
+  },
+  "usage_api": {
+    "dir": "usage-api",
+    "api_base": "/api/v1/usage",
+    "captured_at": "2026-11-08T19:57:06Z",
+    "mode": "fixed",
+    "sources": [
+      "pc-1029.traces.jsonl"
+    ],
+    "records": 16,
+    "inventory_snapshot_id": null,
+    "source": "feature/token-collector · backend/usageapi (agentscope-usage-api)"
   }
 }

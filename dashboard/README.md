@@ -8,7 +8,7 @@ feature/scanner-config      자산 스캐너 ──┐
 feature/testbed-threat-s1   테스트베드 원본·정답·S1 구성·승인 목록 ─┤
 docs/threat-scenarios       S1~S5 규칙 v2.1 (카탈로그·S2 정책) ─┼─▶ pipeline/build_data.py ─▶ public/data/*.json ─▶ 대시보드
 docs/mcp-attack-surface     공통 스키마 v0.6 ─┤
-feature/token-collector     usage.json ──┘
+feature/token-collector     사용 현황 API(usageapi) ──┘
 ```
 
 ## 화면
@@ -21,7 +21,7 @@ feature/token-collector     usage.json ──┘
 | 보안 경고 | 규칙별 평가 행렬, 경고마다 관련 자산·관계·근거·기준 정책, 전체 평가 기록(조건 ID와 이름) | detections |
 | 변경 비교 | P0→P1→P2, P2→각 위험 구성의 자산·관계·경고 변화 | diffs |
 | 수집과 검증 | 수집 작업별 성공·부분·미수행, 정답 목록 수집률 | snapshot, qa |
-| 토큰 사용 | 도구 호출별 추정 입력 토큰·비용·자산 연결 | usage |
+| 토큰 사용 | 호출 수·귀속 토큰·추정 비용, 시간대별 토큰, 계산 방식(순차/배분), 도구·서버·구간별 사용량, 소비 브레이크 기록, 호출 기록 | 사용 현황 API 또는 `usage-api/` 사본 |
 
 자산을 누르면 오른쪽에 상세(식별 키, 6단계 상태와 사유, 보안 평가, 자격증명 참조, 서버 정의, 설정 값, 관계, 근거)가 열립니다.
 위쪽 타임라인에서 스냅샷을 바꾸고, 왼쪽 아래 버튼으로 테마(시스템/밝게/어둡게)를 바꿉니다.
@@ -34,6 +34,18 @@ npm install
 npm run dev        # http://localhost:5173
 npm run build      # dist/
 ```
+
+### 토큰 사용 화면을 실시간 API로 보기
+
+정철님 토큰 수집기의 사용 현황 API를 띄우면 개발 서버가 `/api`를 그쪽으로 넘깁니다(`vite.config.ts` 프록시). API가 꺼져 있으면 `public/data/usage-api`의 저장된 응답을 보여 줍니다.
+
+```bash
+# token-collector/backend/usageapi (Go 1.24 이상)
+go run ./cmd/agentscope-usage-api --env env-pc --profile profile-pc --input testdata/pc-1029.traces.jsonl
+# 테스트베드: --live --input '~/agentscope/data/agentscope-traces*.jsonl' --tool-results ~/.openclaw/agentscope/agentscope-tool-results.jsonl
+```
+
+자산 상세의 "실제 사용"은 API를 `--inventory <snapshot.json>`과 같은 environment_id·profile_id로 띄웠을 때만 채워집니다. 대시보드는 이름으로 추측해서 연결하지 않습니다.
 
 `public/data`에 생성된 데이터가 들어 있으므로 바로 실행됩니다.
 
@@ -61,7 +73,8 @@ cd dashboard
 
 - `--scenarios`를 생략하면 `pipeline/policies`의 사본(카탈로그·S2 정책)을 씁니다.
 - `--testbed`에 `profiles/S1`이 없으면(예: feature/testbed-profiles) S1 스냅샷을 건너뛰고, `ground-truth/approved-servers.json`이 없으면 `pipeline/policies` 사본을 씁니다.
-- `--usage`(선택): 토큰 수집기가 웹 API(`backend/usageapi`)로 바뀌어 지금은 넘길 파일이 없습니다. `public/data/usage.json`은 이전 형식 검증 로그이며, API 연동은 다음 작업입니다.
+- `--usage-api http://127.0.0.1:8088`(선택): 실행 중인 사용 현황 API의 응답(summary, by-asset, records, timeseries, brake-events, health)을 `public/data/usage-api/`에 저장합니다. 지금 사본은 10/29 PC 실측 16건(고정 응답 모드)이고 플러그인 기록이 없어 브레이크는 비어 있습니다.
+- `--usage`(선택, 이전 방식): usage.json 파일을 그대로 복사합니다(`token-collector/backend/usagereport/testdata/example.usage.json`). 화면은 API 형식만 읽습니다.
 
 브랜치가 아직 합쳐지지 않았다면 각 브랜치를 따로 받아 둔 폴더 경로를 넘기면 됩니다.
 
@@ -76,7 +89,8 @@ cd dashboard
 | `snapshots/<P>/qa.json` | 16.2 QAResult | 정상군만, 정답 목록 비교 |
 | `snapshots/<P>/scanner/*.json` | — | 스캐너 원본 출력(참고용) |
 | `diffs/<A>__<B>.json` | 12.5·12.9 SnapshotDiff | 자산·관계·경고 변화 |
-| `usage.json` | 14 UsageReport | 토큰 수집기 출력 그대로 |
+| `usage-api/*.json` | 14 (API 응답) | 사용 현황 API 응답 사본 |
+| `usage.json` | 14 UsageReport | `--usage`를 줬을 때만, 토큰 수집기 출력 그대로 |
 
 ### 스냅샷 구성
 
@@ -106,7 +120,7 @@ cd dashboard
 - **스캐너 보강**: 스캐너 0.1.0은 `sslVerify`, `toolFilter`의 키 이름만 남깁니다. S2·S5 판정에 값이 필요해 어댑터가 설정에서 비밀이 아닌 두 값만 보강하고, 수집 작업 `adapter_supplement`와 자산의 `normalizations`에 기록했습니다. **스캐너에서 값을 수집하도록 바뀌면 이 보강은 지워도 됩니다.**
 - **MCP 버전**: 테스트베드 실제 협상 버전은 `2025-11-25`라 스캐너의 tools_catalog(2026-07-28 전용)를 쓰지 않고 `*.advertised.json`을 직접 읽었습니다. 근거에 버전 차이를 표시합니다.
 - **탐지기**: 팀 탐지 모듈이 아직 없어 위협 시나리오 v2.1(부록 A, `scenario-catalog.json`)을 옮긴 구현(`detector.py`)을 넣었습니다. 조건 ID(`S1-C1` 등)와 기본 심각도·신뢰도는 카탈로그에서 읽고, 판정 기준은 S1·S4-C3 `approved-servers.json`, S2 `expected-tool-policy.json`입니다. 모든 위험 구성에서 `expected-results.md`의 필수 경고·비경고·판단 불가와 일치하는 것을 확인했습니다. 평가를 항상 함께 출력해 "이상 없음"과 "판단 불가"를 구분하며, 탐지 모듈이 생기면 같은 `detections.json` 형식으로 교체하면 화면은 그대로입니다.
-- **토큰 사용**: 현재 usage.json은 토큰 수집기 검증 로그(`env-test-01`)라 테스트베드 스냅샷과 연결되지 않습니다. 테스트베드에서 텔레메트리를 수집하면 자산별로 이어집니다.
+- **토큰 사용**: 사용 현황 API 응답 필드를 그대로 씁니다(`src/types/contracts.ts`의 Usage* 타입, `src/data/usage.ts`). 지금 사본은 PC 실측 데이터(`env-pc`)라 테스트베드 스냅샷과 자산 연결이 0건입니다. 테스트베드 실시간 모드에서 `--inventory`로 띄우면 이어집니다. 사용 기록은 자산의 "사용됨" 상태를 바꾸지 않고 따로 표시합니다(스키마 14.2).
 
 ## 구조
 
@@ -122,6 +136,7 @@ pipeline/
 src/
   types/contracts.ts             공통 스키마 타입
   data/load.ts, model.ts         로딩, 색인, 보안 판정 요약
+  data/usage.ts                  사용 현황 API 연결(실시간 → 저장 사본)
   pages/                         화면 7개
   components/                    상세 패널, 공통 표시 요소
   styles.css                     디자인 토큰(밝게/어둡게)
