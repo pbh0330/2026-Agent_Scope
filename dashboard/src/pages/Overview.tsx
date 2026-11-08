@@ -129,7 +129,7 @@ export function Overview({ model, entry, go }: {
         ) : (
           <Panel title="변경 내용" note="P2 설정에서 바꾼 부분">
             <ul className="notes">{(s.testbed_context?.notes ?? []).map(n => <li key={n}>{n}</li>)}</ul>
-            <p className="foot-note">테스트베드에 실제로 주입한 결과가 아닌 합성 구성입니다.</p>
+            <p className="foot-note">{entry.synthetic ? '테스트베드에 실제로 주입한 결과가 아닌 합성 구성입니다.' : '테스트베드 담당이 만든 위험 구성 사본입니다.'}</p>
           </Panel>
         )}
       </section>
@@ -177,7 +177,7 @@ export function Overview({ model, entry, go }: {
           </Panel>
         )}
       </section>
-      {entry.kind === 'scenario' && <p className="foot-note">S1~S5는 P2 설정을 바꿔 만든 합성 위험 구성입니다.</p>}
+      {entry.kind === 'scenario' && <p className="foot-note">{entry.synthetic ? 'P2 설정을 바꿔 만든 합성 위험 구성입니다.' : '테스트베드 S1 구성 사본입니다. 노출 목록은 아직 S1에서 다시 수집하지 않았습니다.'}{entry.test_case_ids?.length ? ` 테스트 ${entry.test_case_ids.join(', ')}` : ''}</p>}
     </div>
   )
 }

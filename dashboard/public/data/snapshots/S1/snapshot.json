@@ -1,6 +1,6 @@
 {
   "schema_version": "0.6.0-draft",
-  "snapshot_id": "snap-s1-20261026T133744Z",
+  "snapshot_id": "snap-s1-20261108T191520Z",
   "environment_id": "agentscope-testbed",
   "profile_id": "tb-openclaw",
   "context": {
@@ -24,22 +24,25 @@
       }
     ]
   },
-  "generated_at": "2026-10-26T13:37:44Z",
+  "generated_at": "2026-11-08T19:15:20Z",
   "scan": {
-    "started_at": "2026-10-26T13:37:44Z",
-    "finished_at": "2026-10-26T13:37:44Z",
+    "started_at": "2026-11-08T19:15:20Z",
+    "finished_at": "2026-11-08T19:15:20Z",
     "status": "partial"
   },
   "testbed_context": {
-    "configuration_id": "P2",
+    "configuration_id": "S1",
     "scenario_id": "S1",
-    "vm_snapshot_label": "SNAP-S1",
+    "vm_snapshot_label": "SNAP-3-S1",
     "label": "S1 · 비인가 서버 등록",
     "kind": "scenario",
     "captured_at": "2026-10-04T06:49:26Z",
     "notes": [
-      "Case 1: Gateway에 승인 목록 밖 서버 `shadow-files` 추가",
-      "Case 2: 승인 서버 `inventory-remote`의 Endpoint 변경"
+      "테스트베드 profiles/S1 설정 사본(구축 전 예상본) + raw/S1 광고 원본",
+      "Case 1-gw shadow-notes, 1-node node-helper: 승인 목록 밖 서버",
+      "Case 2: inventory-remote url 8443 → 9443",
+      "Case 3: 미승인 플러그인 agentscope-notes-sync가 notes-sync 등록",
+      "노출 목록(mcp probe·nodes describe)은 아직 S1에서 다시 수집하지 않아 P2 기준으로 두고, 바뀐 서버는 미확인"
     ]
   },
   "assets": [
@@ -498,7 +501,7 @@
         "source_ref": "tb-gw:~/.openclaw/openclaw.json",
         "config_path": "mcp.servers.inventory-remote",
         "config": {
-          "url": "https://inventory-sync.example.net/mcp",
+          "url": "https://tb-node:9443/mcp",
           "transport": "streamable-http",
           "enabled": true,
           "sslVerify": true
@@ -583,38 +586,39 @@
       }
     },
     {
-      "asset_id": "srv_7ee7133eefa2c1a1",
+      "asset_id": "srv_0e63a468ce58a5e3",
       "asset_type": "mcp_server",
-      "name": "shadow-files",
+      "name": "shadow-notes",
       "context": {
         "profile_id": "tb-openclaw",
         "gateway_ref": "gwctx_e3e14de28133",
         "host": "tb-gw"
       },
       "evidence_refs": [
-        "ev-decl-tb-gw-shadow-files"
+        "ev-decl-tb-gw-shadow-notes"
       ],
       "project": {
-        "canonical_key": "tb-gw/mcp_server/shadow-files",
+        "canonical_key": "tb-gw/mcp_server/shadow-notes",
         "state_assessments": [
           {
             "state": "DECLARED",
             "value": true,
             "evidence_refs": [
-              "ev-decl-tb-gw-shadow-files"
+              "ev-decl-tb-gw-shadow-notes"
             ]
           },
           {
             "state": "DISCOVERED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "광고 목록 미수집"
+            "value": true,
+            "evidence_refs": [
+              "ev-cap-shadow-notes"
+            ]
           },
           {
             "state": "EXPOSED",
             "value": null,
             "evidence_refs": [],
-            "reason": "노출 목록 미수집",
+            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -642,7 +646,8 @@
         "scanner_metadata": {
           "declared_keys": [
             "command",
-            "args"
+            "args",
+            "enabled"
           ],
           "other_declared_keys": [],
           "collection_status": "complete"
@@ -651,14 +656,28 @@
       "product": {
         "name": "openclaw",
         "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-        "config_path": "mcp.servers.shadow-files",
+        "config_path": "mcp.servers.shadow-notes",
         "config": {
-          "command": "npx",
+          "command": "node",
           "args": [
-            "-y",
-            "@unknown-vendor/mcp-files",
-            "/home/<TB_USER>"
-          ]
+            "/home/<TB_USER>/mcp-servers/notes-stub/server.mjs",
+            "--name",
+            "shadow-notes"
+          ],
+          "enabled": true
+        }
+      },
+      "mcp": {
+        "protocol_version": "2025-11-25",
+        "version_note": "requested 2026-07-28, negotiated 2025-11-25",
+        "discovery": {
+          "serverInfo": {
+            "name": "agentscope-shadow-notes",
+            "version": "0.1.0"
+          },
+          "capabilities": {
+            "tools": {}
+          }
         }
       }
     },
@@ -1010,6 +1029,100 @@
       }
     },
     {
+      "asset_id": "srv_d9420a7c62492bdb",
+      "asset_type": "mcp_server",
+      "name": "node-helper",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-node"
+      },
+      "evidence_refs": [
+        "ev-decl-tb-node-node-helper"
+      ],
+      "project": {
+        "canonical_key": "tb-node/mcp_server/node-helper",
+        "state_assessments": [
+          {
+            "state": "DECLARED",
+            "value": true,
+            "evidence_refs": [
+              "ev-decl-tb-node-node-helper"
+            ]
+          },
+          {
+            "state": "DISCOVERED",
+            "value": true,
+            "evidence_refs": [
+              "ev-cap-node-helper"
+            ]
+          },
+          {
+            "state": "EXPOSED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "subject_ref": {
+              "kind": "agent",
+              "profile_id": "tb-openclaw",
+              "agent_key": "main"
+            }
+          },
+          {
+            "state": "CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
+          },
+          {
+            "state": "USED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
+          }
+        ],
+        "declared_by": "node",
+        "host": "tb-node",
+        "transport": "stdio",
+        "credential_refs": [],
+        "normalizations": [],
+        "scanner_metadata": {
+          "declared_keys": [
+            "command",
+            "args"
+          ],
+          "other_declared_keys": [],
+          "collection_status": "complete"
+        }
+      },
+      "product": {
+        "name": "openclaw",
+        "source_ref": "tb-node:~/.openclaw/openclaw.json",
+        "config_path": "nodeHost.mcp.servers.node-helper",
+        "config": {
+          "command": "node",
+          "args": [
+            "/home/<TB_USER>/mcp-servers/notes-stub/server.mjs",
+            "--name",
+            "node-helper"
+          ]
+        }
+      },
+      "mcp": {
+        "protocol_version": "2025-11-25",
+        "version_note": "requested 2026-07-28, negotiated 2025-11-25",
+        "discovery": {
+          "serverInfo": {
+            "name": "agentscope-node-helper",
+            "version": "0.1.0"
+          },
+          "capabilities": {
+            "tools": {}
+          }
+        }
+      }
+    },
+    {
       "asset_id": "plg_3ca6b0bd236ecae6",
       "asset_type": "plugin",
       "name": "agentscope-asset-catalog",
@@ -1142,6 +1255,148 @@
         "discovery": {
           "serverInfo": {
             "name": "agentscope-asset-catalog",
+            "version": "0.1.0"
+          },
+          "capabilities": {
+            "tools": {}
+          }
+        }
+      }
+    },
+    {
+      "asset_id": "plg_853848be22d0c397",
+      "asset_type": "plugin",
+      "name": "agentscope-notes-sync",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-gw"
+      },
+      "evidence_refs": [
+        "ev-plugin-agentscope-notes-sync",
+        "ev-plugin-cfg-agentscope-notes-sync"
+      ],
+      "project": {
+        "canonical_key": "tb-gw/plugin/agentscope-notes-sync",
+        "state_assessments": [
+          {
+            "state": "DECLARED",
+            "value": true,
+            "evidence_refs": [
+              "ev-plugin-cfg-agentscope-notes-sync"
+            ]
+          },
+          {
+            "state": "DISCOVERED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "런타임 점검 원본 미수집"
+          }
+        ],
+        "description": "Testbed S1 plugin that contributes the unapproved notes-sync stdio MCP server through the manifest mcpServers field.",
+        "supply_chain": {
+          "provider": "local",
+          "package_id": "@agentscope/openclaw-notes-sync",
+          "version": "0.1.0",
+          "source_uri": "path:/home/<TB_USER>/.openclaw/extensions/agentscope-notes-sync",
+          "integrity_status": "unknown",
+          "install_path": "/home/<TB_USER>/.openclaw/extensions/agentscope-notes-sync",
+          "active": null,
+          "evidence_refs": [
+            "ev-plugin-agentscope-notes-sync"
+          ]
+        },
+        "trust": "unverified: manifest only",
+        "status": null
+      },
+      "product": {
+        "name": "openclaw",
+        "source_ref": "tb-gw:~/.openclaw/openclaw.json",
+        "config_path": "plugins.entries.agentscope-notes-sync",
+        "config": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "asset_id": "srv_9407dbfbf579b00d",
+      "asset_type": "mcp_server",
+      "name": "notes-sync",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-gw"
+      },
+      "evidence_refs": [
+        "ev-plugin-srv-agentscope-notes-sync-notes-sync"
+      ],
+      "project": {
+        "canonical_key": "tb-gw/mcp_server/notes-sync",
+        "state_assessments": [
+          {
+            "state": "DECLARED",
+            "value": true,
+            "evidence_refs": [
+              "ev-plugin-srv-agentscope-notes-sync-notes-sync"
+            ]
+          },
+          {
+            "state": "DISCOVERED",
+            "value": true,
+            "evidence_refs": [
+              "ev-cap-notes-sync"
+            ]
+          },
+          {
+            "state": "EXPOSED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "subject_ref": {
+              "kind": "agent",
+              "profile_id": "tb-openclaw",
+              "agent_key": "main"
+            }
+          },
+          {
+            "state": "CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
+          },
+          {
+            "state": "USED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
+          }
+        ],
+        "declared_by": "plugin",
+        "host": "tb-gw",
+        "transport": "stdio",
+        "credential_refs": [],
+        "declared_via_plugin": "agentscope-notes-sync"
+      },
+      "product": {
+        "name": "openclaw",
+        "source_ref": "tb-gw:~/.openclaw/extensions/agentscope-notes-sync/openclaw.plugin.json",
+        "config_path": "mcpServers.notes-sync",
+        "config": {
+          "transport": "stdio",
+          "command": "node",
+          "args": [
+            "./mcp-server.mjs",
+            "--name",
+            "notes-sync"
+          ]
+        }
+      },
+      "mcp": {
+        "protocol_version": "2025-11-25",
+        "version_note": "requested 2026-07-28, negotiated 2025-11-25",
+        "discovery": {
+          "serverInfo": {
+            "name": "agentscope-notes-sync",
             "version": "0.1.0"
           },
           "capabilities": {
@@ -2962,6 +3217,159 @@
               "required": true
             }
           ]
+        }
+      }
+    },
+    {
+      "asset_id": "tool_d311b54f4f37952c",
+      "asset_type": "tool",
+      "name": "shadow_notes_list_notes",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-gw"
+      },
+      "evidence_refs": [
+        "ev-cap-shadow-notes"
+      ],
+      "project": {
+        "canonical_key": "shadow-notes/tool/shadow_notes_list_notes",
+        "state_assessments": [
+          {
+            "state": "DISCOVERED",
+            "value": true,
+            "evidence_refs": [
+              "ev-cap-shadow-notes"
+            ]
+          },
+          {
+            "state": "EXPOSED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "subject_ref": {
+              "kind": "agent",
+              "profile_id": "tb-openclaw",
+              "agent_key": "main"
+            }
+          },
+          {
+            "state": "POTENTIALLY_CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "정적 호출 조건 미평가"
+          },
+          {
+            "state": "CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
+          },
+          {
+            "state": "USED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
+          }
+        ],
+        "trust": "untrusted_server_provided",
+        "synthetic": null
+      },
+      "owner_ref": "srv_0e63a468ce58a5e3",
+      "mcp": {
+        "protocol_version": "2025-11-25",
+        "definition": {
+          "name": "shadow_notes_list_notes",
+          "title": "List notes",
+          "description": "List the fictional note IDs and titles.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {}
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": false
+          }
+        }
+      }
+    },
+    {
+      "asset_id": "tool_1be37ac74f040141",
+      "asset_type": "tool",
+      "name": "shadow_notes_get_note",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-gw"
+      },
+      "evidence_refs": [
+        "ev-cap-shadow-notes"
+      ],
+      "project": {
+        "canonical_key": "shadow-notes/tool/shadow_notes_get_note",
+        "state_assessments": [
+          {
+            "state": "DISCOVERED",
+            "value": true,
+            "evidence_refs": [
+              "ev-cap-shadow-notes"
+            ]
+          },
+          {
+            "state": "EXPOSED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "subject_ref": {
+              "kind": "agent",
+              "profile_id": "tb-openclaw",
+              "agent_key": "main"
+            }
+          },
+          {
+            "state": "POTENTIALLY_CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "정적 호출 조건 미평가"
+          },
+          {
+            "state": "CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
+          },
+          {
+            "state": "USED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
+          }
+        ],
+        "trust": "untrusted_server_provided",
+        "synthetic": null
+      },
+      "owner_ref": "srv_0e63a468ce58a5e3",
+      "mcp": {
+        "protocol_version": "2025-11-25",
+        "definition": {
+          "name": "shadow_notes_get_note",
+          "title": "Get note",
+          "description": "Get one fictional note by ID.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": false
+          }
         }
       }
     },
@@ -6261,6 +6669,159 @@
       }
     },
     {
+      "asset_id": "tool_52e786d6dffeccc6",
+      "asset_type": "tool",
+      "name": "node_helper_list_notes",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-node"
+      },
+      "evidence_refs": [
+        "ev-cap-node-helper"
+      ],
+      "project": {
+        "canonical_key": "node-helper/tool/node_helper_list_notes",
+        "state_assessments": [
+          {
+            "state": "DISCOVERED",
+            "value": true,
+            "evidence_refs": [
+              "ev-cap-node-helper"
+            ]
+          },
+          {
+            "state": "EXPOSED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "subject_ref": {
+              "kind": "agent",
+              "profile_id": "tb-openclaw",
+              "agent_key": "main"
+            }
+          },
+          {
+            "state": "POTENTIALLY_CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "정적 호출 조건 미평가"
+          },
+          {
+            "state": "CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
+          },
+          {
+            "state": "USED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
+          }
+        ],
+        "trust": "untrusted_server_provided",
+        "synthetic": null
+      },
+      "owner_ref": "srv_d9420a7c62492bdb",
+      "mcp": {
+        "protocol_version": "2025-11-25",
+        "definition": {
+          "name": "node_helper_list_notes",
+          "title": "List notes",
+          "description": "List the fictional note IDs and titles.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {}
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": false
+          }
+        }
+      }
+    },
+    {
+      "asset_id": "tool_747f342ae27aa806",
+      "asset_type": "tool",
+      "name": "node_helper_get_note",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-node"
+      },
+      "evidence_refs": [
+        "ev-cap-node-helper"
+      ],
+      "project": {
+        "canonical_key": "node-helper/tool/node_helper_get_note",
+        "state_assessments": [
+          {
+            "state": "DISCOVERED",
+            "value": true,
+            "evidence_refs": [
+              "ev-cap-node-helper"
+            ]
+          },
+          {
+            "state": "EXPOSED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "subject_ref": {
+              "kind": "agent",
+              "profile_id": "tb-openclaw",
+              "agent_key": "main"
+            }
+          },
+          {
+            "state": "POTENTIALLY_CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "정적 호출 조건 미평가"
+          },
+          {
+            "state": "CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
+          },
+          {
+            "state": "USED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
+          }
+        ],
+        "trust": "untrusted_server_provided",
+        "synthetic": null
+      },
+      "owner_ref": "srv_d9420a7c62492bdb",
+      "mcp": {
+        "protocol_version": "2025-11-25",
+        "definition": {
+          "name": "node_helper_get_note",
+          "title": "Get note",
+          "description": "Get one fictional note by ID.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": false
+          }
+        }
+      }
+    },
+    {
       "asset_id": "tool_caf48a52b85bb3bf",
       "asset_type": "tool",
       "name": "catalog_search",
@@ -6402,6 +6963,159 @@
           "name": "catalog_get_entry",
           "title": "Get catalog entry",
           "description": "Get one fictional catalog entry by ID.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": false
+          }
+        }
+      }
+    },
+    {
+      "asset_id": "tool_7d50d15944838b94",
+      "asset_type": "tool",
+      "name": "notes_sync_list_notes",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-gw"
+      },
+      "evidence_refs": [
+        "ev-cap-notes-sync"
+      ],
+      "project": {
+        "canonical_key": "notes-sync/tool/notes_sync_list_notes",
+        "state_assessments": [
+          {
+            "state": "DISCOVERED",
+            "value": true,
+            "evidence_refs": [
+              "ev-cap-notes-sync"
+            ]
+          },
+          {
+            "state": "EXPOSED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "subject_ref": {
+              "kind": "agent",
+              "profile_id": "tb-openclaw",
+              "agent_key": "main"
+            }
+          },
+          {
+            "state": "POTENTIALLY_CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "정적 호출 조건 미평가"
+          },
+          {
+            "state": "CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
+          },
+          {
+            "state": "USED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
+          }
+        ],
+        "trust": "untrusted_server_provided",
+        "synthetic": null
+      },
+      "owner_ref": "srv_9407dbfbf579b00d",
+      "mcp": {
+        "protocol_version": "2025-11-25",
+        "definition": {
+          "name": "notes_sync_list_notes",
+          "title": "List notes",
+          "description": "List the fictional note IDs and titles.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {}
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": false
+          }
+        }
+      }
+    },
+    {
+      "asset_id": "tool_ad357f43b2437c0a",
+      "asset_type": "tool",
+      "name": "notes_sync_get_note",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-gw"
+      },
+      "evidence_refs": [
+        "ev-cap-notes-sync"
+      ],
+      "project": {
+        "canonical_key": "notes-sync/tool/notes_sync_get_note",
+        "state_assessments": [
+          {
+            "state": "DISCOVERED",
+            "value": true,
+            "evidence_refs": [
+              "ev-cap-notes-sync"
+            ]
+          },
+          {
+            "state": "EXPOSED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "subject_ref": {
+              "kind": "agent",
+              "profile_id": "tb-openclaw",
+              "agent_key": "main"
+            }
+          },
+          {
+            "state": "POTENTIALLY_CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "정적 호출 조건 미평가"
+          },
+          {
+            "state": "CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
+          },
+          {
+            "state": "USED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
+          }
+        ],
+        "trust": "untrusted_server_provided",
+        "synthetic": null
+      },
+      "owner_ref": "srv_9407dbfbf579b00d",
+      "mcp": {
+        "protocol_version": "2025-11-25",
+        "definition": {
+          "name": "notes_sync_get_note",
+          "title": "Get note",
+          "description": "Get one fictional note by ID.",
           "inputSchema": {
             "type": "object",
             "properties": {
@@ -6644,15 +7358,15 @@
       "basis_kind": "declared"
     },
     {
-      "relation_id": "rel_c07256f8f8ef1cbe",
+      "relation_id": "rel_52e74202bb9d8316",
       "relation_type": "DECLARES",
       "source_asset_ref": "gw_4261ac71d127a248",
       "target": {
         "kind": "asset",
-        "asset_ref": "srv_7ee7133eefa2c1a1"
+        "asset_ref": "srv_0e63a468ce58a5e3"
       },
       "evidence_refs": [
-        "ev-decl-tb-gw-shadow-files"
+        "ev-decl-tb-gw-shadow-notes"
       ],
       "confidence": "confirmed",
       "basis_kind": "declared"
@@ -6714,6 +7428,20 @@
       "basis_kind": "declared"
     },
     {
+      "relation_id": "rel_febdb311daae2c02",
+      "relation_type": "DECLARES",
+      "source_asset_ref": "node_1ca37e363256f7fb",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "srv_d9420a7c62492bdb"
+      },
+      "evidence_refs": [
+        "ev-decl-tb-node-node-helper"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "declared"
+    },
+    {
       "relation_id": "rel_8c8bf9469da7ca03",
       "relation_type": "DECLARES",
       "source_asset_ref": "gw_4261ac71d127a248",
@@ -6737,6 +7465,34 @@
       },
       "evidence_refs": [
         "ev-plugin-srv-agentscope-asset-catalog-asset-catalog"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "declared"
+    },
+    {
+      "relation_id": "rel_733a33db86f92274",
+      "relation_type": "DECLARES",
+      "source_asset_ref": "gw_4261ac71d127a248",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "plg_853848be22d0c397"
+      },
+      "evidence_refs": [
+        "ev-plugin-cfg-agentscope-notes-sync"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "declared"
+    },
+    {
+      "relation_id": "rel_09d5bee82e292891",
+      "relation_type": "ASSOCIATED_WITH",
+      "source_asset_ref": "plg_853848be22d0c397",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "srv_9407dbfbf579b00d"
+      },
+      "evidence_refs": [
+        "ev-plugin-srv-agentscope-notes-sync-notes-sync"
       ],
       "confidence": "confirmed",
       "basis_kind": "declared"
@@ -6989,6 +7745,34 @@
       },
       "evidence_refs": [
         "ev-cap-inventory-remote"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "observed"
+    },
+    {
+      "relation_id": "rel_ee86b9b4f4dbb0c0",
+      "relation_type": "ADVERTISES",
+      "source_asset_ref": "srv_0e63a468ce58a5e3",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "tool_d311b54f4f37952c"
+      },
+      "evidence_refs": [
+        "ev-cap-shadow-notes"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "observed"
+    },
+    {
+      "relation_id": "rel_2fe0edefa490290d",
+      "relation_type": "ADVERTISES",
+      "source_asset_ref": "srv_0e63a468ce58a5e3",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "tool_1be37ac74f040141"
+      },
+      "evidence_refs": [
+        "ev-cap-shadow-notes"
       ],
       "confidence": "confirmed",
       "basis_kind": "observed"
@@ -7498,6 +8282,34 @@
       "basis_kind": "observed"
     },
     {
+      "relation_id": "rel_a1c9eb6c6ea7c84e",
+      "relation_type": "ADVERTISES",
+      "source_asset_ref": "srv_d9420a7c62492bdb",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "tool_52e786d6dffeccc6"
+      },
+      "evidence_refs": [
+        "ev-cap-node-helper"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "observed"
+    },
+    {
+      "relation_id": "rel_ea1f9f31c9a5a2bf",
+      "relation_type": "ADVERTISES",
+      "source_asset_ref": "srv_d9420a7c62492bdb",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "tool_747f342ae27aa806"
+      },
+      "evidence_refs": [
+        "ev-cap-node-helper"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "observed"
+    },
+    {
       "relation_id": "rel_d1dddff131297a85",
       "relation_type": "ADVERTISES",
       "source_asset_ref": "srv_bbb764ffe6b99467",
@@ -7521,6 +8333,34 @@
       },
       "evidence_refs": [
         "ev-cap-asset-catalog"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "observed"
+    },
+    {
+      "relation_id": "rel_b6437cedf9b4e3ae",
+      "relation_type": "ADVERTISES",
+      "source_asset_ref": "srv_9407dbfbf579b00d",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "tool_7d50d15944838b94"
+      },
+      "evidence_refs": [
+        "ev-cap-notes-sync"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "observed"
+    },
+    {
+      "relation_id": "rel_be14836fb72bbfff",
+      "relation_type": "ADVERTISES",
+      "source_asset_ref": "srv_9407dbfbf579b00d",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "tool_ad357f43b2437c0a"
+      },
+      "evidence_refs": [
+        "ev-cap-notes-sync"
       ],
       "confidence": "confirmed",
       "basis_kind": "observed"
@@ -7588,7 +8428,7 @@
       "evidence_id": "ev-gw-config",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:44Z",
+      "observed_at": "2026-11-08T19:15:20Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "redacted",
       "field_path": "gateway",
@@ -7608,7 +8448,7 @@
       "evidence_id": "ev-gw-auth",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:44Z",
+      "observed_at": "2026-11-08T19:15:20Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "redacted",
       "field_path": "gateway.auth",
@@ -7620,7 +8460,7 @@
       "evidence_id": "ev-gw-tools-profile",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:44Z",
+      "observed_at": "2026-11-08T19:15:20Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "not_needed",
       "field_path": "tools.profile"
@@ -7646,7 +8486,7 @@
       "evidence_id": "ev-decl-tb-gw-fs-workspace",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:44Z",
+      "observed_at": "2026-11-08T19:15:20Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "not_needed",
       "field_path": "mcp.servers.fs-workspace"
@@ -7655,7 +8495,7 @@
       "evidence_id": "ev-decl-tb-gw-inventory-remote",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:44Z",
+      "observed_at": "2026-11-08T19:15:20Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "redacted",
       "field_path": "mcp.servers.inventory-remote",
@@ -7664,19 +8504,19 @@
       ]
     },
     {
-      "evidence_id": "ev-decl-tb-gw-shadow-files",
+      "evidence_id": "ev-decl-tb-gw-shadow-notes",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:44Z",
+      "observed_at": "2026-11-08T19:15:20Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "not_needed",
-      "field_path": "mcp.servers.shadow-files"
+      "field_path": "mcp.servers.shadow-notes"
     },
     {
       "evidence_id": "ev-decl-tb-node-kg-memory",
       "evidence_type": "config",
       "source_ref": "tb-node:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:44Z",
+      "observed_at": "2026-11-08T19:15:20Z",
       "collection_ref": "col-node-config",
       "redaction_status": "redacted",
       "field_path": "nodeHost.mcp.servers.kg-memory",
@@ -7688,13 +8528,22 @@
       "evidence_id": "ev-decl-tb-node-demo-everything",
       "evidence_type": "config",
       "source_ref": "tb-node:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:44Z",
+      "observed_at": "2026-11-08T19:15:20Z",
       "collection_ref": "col-node-config",
       "redaction_status": "redacted",
       "field_path": "nodeHost.mcp.servers.demo-everything",
       "redacted_fields": [
         "nodeHost.mcp.servers.demo-everything.env"
       ]
+    },
+    {
+      "evidence_id": "ev-decl-tb-node-node-helper",
+      "evidence_type": "config",
+      "source_ref": "tb-node:~/.openclaw/openclaw.json",
+      "observed_at": "2026-11-08T19:15:20Z",
+      "collection_ref": "col-node-config",
+      "redaction_status": "not_needed",
+      "field_path": "nodeHost.mcp.servers.node-helper"
     },
     {
       "evidence_id": "ev-plugin-agentscope-asset-catalog",
@@ -7708,7 +8557,7 @@
       "evidence_id": "ev-plugin-cfg-agentscope-asset-catalog",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:44Z",
+      "observed_at": "2026-11-08T19:15:20Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "not_needed",
       "field_path": "plugins.entries.agentscope-asset-catalog"
@@ -7721,6 +8570,32 @@
       "collection_ref": "col-plugin-agentscope-asset-catalog",
       "redaction_status": "not_needed",
       "field_path": "mcpServers.asset-catalog"
+    },
+    {
+      "evidence_id": "ev-plugin-agentscope-notes-sync",
+      "evidence_type": "manifest",
+      "source_ref": "tb-gw:~/.openclaw/extensions/agentscope-notes-sync/openclaw.plugin.json",
+      "observed_at": "2026-10-04T06:49:26Z",
+      "collection_ref": "col-plugin-agentscope-notes-sync",
+      "redaction_status": "not_needed"
+    },
+    {
+      "evidence_id": "ev-plugin-cfg-agentscope-notes-sync",
+      "evidence_type": "config",
+      "source_ref": "tb-gw:~/.openclaw/openclaw.json",
+      "observed_at": "2026-11-08T19:15:20Z",
+      "collection_ref": "col-gw-config",
+      "redaction_status": "not_needed",
+      "field_path": "plugins.entries.agentscope-notes-sync"
+    },
+    {
+      "evidence_id": "ev-plugin-srv-agentscope-notes-sync-notes-sync",
+      "evidence_type": "manifest",
+      "source_ref": "tb-gw:~/.openclaw/extensions/agentscope-notes-sync/openclaw.plugin.json",
+      "observed_at": "2026-10-04T06:49:26Z",
+      "collection_ref": "col-plugin-agentscope-notes-sync",
+      "redaction_status": "not_needed",
+      "field_path": "mcpServers.notes-sync"
     },
     {
       "evidence_id": "ev-cap-fs-workspace",
@@ -7745,6 +8620,15 @@
       "source_ref": "inventory-remote:advertised",
       "observed_at": "2026-10-04T06:49:26Z",
       "collection_ref": "col-tools_list-inventory-remote",
+      "redaction_status": "not_needed",
+      "note": "실제 협상 버전이 설계 기준(2026-07-28)과 다름"
+    },
+    {
+      "evidence_id": "ev-cap-shadow-notes",
+      "evidence_type": "protocol",
+      "source_ref": "shadow-notes:advertised",
+      "observed_at": "2026-10-04T06:49:26Z",
+      "collection_ref": "col-tools_list-shadow-notes",
       "redaction_status": "not_needed",
       "note": "실제 협상 버전이 설계 기준(2026-07-28)과 다름"
     },
@@ -7783,11 +8667,29 @@
       "redaction_status": "not_needed"
     },
     {
+      "evidence_id": "ev-cap-node-helper",
+      "evidence_type": "protocol",
+      "source_ref": "node-helper:advertised",
+      "observed_at": "2026-10-04T06:49:26Z",
+      "collection_ref": "col-tools_list-node-helper",
+      "redaction_status": "not_needed",
+      "note": "실제 협상 버전이 설계 기준(2026-07-28)과 다름"
+    },
+    {
       "evidence_id": "ev-cap-asset-catalog",
       "evidence_type": "protocol",
       "source_ref": "asset-catalog:advertised",
       "observed_at": "2026-10-04T06:49:26Z",
       "collection_ref": "col-tools_list-asset-catalog",
+      "redaction_status": "not_needed",
+      "note": "실제 협상 버전이 설계 기준(2026-07-28)과 다름"
+    },
+    {
+      "evidence_id": "ev-cap-notes-sync",
+      "evidence_type": "protocol",
+      "source_ref": "notes-sync:advertised",
+      "observed_at": "2026-10-04T06:49:26Z",
+      "collection_ref": "col-tools_list-notes-sync",
       "redaction_status": "not_needed",
       "note": "실제 협상 버전이 설계 기준(2026-07-28)과 다름"
     },
@@ -7851,7 +8753,7 @@
       "target_ref": null,
       "mode": "local_file",
       "status": "partial",
-      "collected_at": "2026-10-26T13:37:44Z",
+      "collected_at": "2026-11-08T19:15:20Z",
       "reason": "profile-scoped configuration collection · server_entries_incomplete",
       "details": {
         "outcome": "servers_found",
@@ -7887,11 +8789,11 @@
       "target_ref": null,
       "mode": "local_file",
       "status": "partial",
-      "collected_at": "2026-10-26T13:37:44Z",
+      "collected_at": "2026-11-08T19:15:20Z",
       "reason": "profile-scoped configuration collection · server_entries_incomplete",
       "details": {
         "outcome": "servers_found",
-        "reported_count": 2,
+        "reported_count": 3,
         "values_resolved": false,
         "not_verified": [
           "connection",
@@ -7923,7 +8825,7 @@
       "target_ref": null,
       "mode": "local_file",
       "status": "success",
-      "collected_at": "2026-10-26T13:37:44Z",
+      "collected_at": "2026-11-08T19:15:20Z",
       "reason": "스캐너 0.1.0은 sslVerify·toolFilter의 키 이름만 수집 — 비밀이 아닌 값을 어댑터가 설정에서 보강",
       "details": {
         "fields": [
@@ -7941,6 +8843,16 @@
       "mode": "imported_catalog",
       "status": "success",
       "collected_at": "2026-10-04T06:49:26Z"
+    },
+    {
+      "collection_id": "col-plugin-agentscope-notes-sync",
+      "source_ref": "testbed:plugins/agentscope-notes-sync/openclaw.plugin.json",
+      "scope": "plugin_manifest",
+      "target_ref": null,
+      "mode": "local_file",
+      "status": "partial",
+      "collected_at": "2026-10-04T06:49:26Z",
+      "reason": "런타임 점검 원본(plugins inspect) 미수집 — 저장소의 manifest로 대신 읽음"
     },
     {
       "collection_id": "col-tools_list-fs-workspace",
@@ -8023,37 +8935,25 @@
       }
     },
     {
-      "collection_id": "col-tools_list-shadow-files",
-      "source_ref": "shadow-files:tools/list",
+      "collection_id": "col-tools_list-shadow-notes",
+      "source_ref": "shadow-notes:advertised",
       "scope": "tools_list",
-      "target_ref": "srv_7ee7133eefa2c1a1",
+      "target_ref": "srv_0e63a468ce58a5e3",
       "mode": "imported_catalog",
-      "status": "not_attempted",
+      "status": "success",
       "collected_at": "2026-10-04T06:49:26Z",
-      "reason": "서버 광고 원본(advertised capture)이 없음 — 목록 미수집",
-      "auth_context_ref": "anonymous-testbed"
-    },
-    {
-      "collection_id": "col-resources_list-shadow-files",
-      "source_ref": "shadow-files:resources/list",
-      "scope": "resources_list",
-      "target_ref": "srv_7ee7133eefa2c1a1",
-      "mode": "imported_catalog",
-      "status": "not_attempted",
-      "collected_at": "2026-10-04T06:49:26Z",
-      "reason": "서버 광고 원본(advertised capture)이 없음 — 목록 미수집",
-      "auth_context_ref": "anonymous-testbed"
-    },
-    {
-      "collection_id": "col-prompts_list-shadow-files",
-      "source_ref": "shadow-files:prompts/list",
-      "scope": "prompts_list",
-      "target_ref": "srv_7ee7133eefa2c1a1",
-      "mode": "imported_catalog",
-      "status": "not_attempted",
-      "collected_at": "2026-10-04T06:49:26Z",
-      "reason": "서버 광고 원본(advertised capture)이 없음 — 목록 미수집",
-      "auth_context_ref": "anonymous-testbed"
+      "protocol_version": "2025-11-25",
+      "auth_context_ref": "anonymous-testbed",
+      "details": {
+        "reported_count": 2,
+        "requested_protocol_version": "2026-07-28",
+        "capabilities_not_advertised": [
+          "resources",
+          "resourceTemplates",
+          "prompts"
+        ],
+        "synthetic": false
+      }
     },
     {
       "collection_id": "col-tools_list-kg-memory",
@@ -8162,10 +9062,52 @@
       }
     },
     {
+      "collection_id": "col-tools_list-node-helper",
+      "source_ref": "node-helper:advertised",
+      "scope": "tools_list",
+      "target_ref": "srv_d9420a7c62492bdb",
+      "mode": "imported_catalog",
+      "status": "success",
+      "collected_at": "2026-10-04T06:49:26Z",
+      "protocol_version": "2025-11-25",
+      "auth_context_ref": "anonymous-testbed",
+      "details": {
+        "reported_count": 2,
+        "requested_protocol_version": "2026-07-28",
+        "capabilities_not_advertised": [
+          "resources",
+          "resourceTemplates",
+          "prompts"
+        ],
+        "synthetic": false
+      }
+    },
+    {
       "collection_id": "col-tools_list-asset-catalog",
       "source_ref": "asset-catalog:advertised",
       "scope": "tools_list",
       "target_ref": "srv_bbb764ffe6b99467",
+      "mode": "imported_catalog",
+      "status": "success",
+      "collected_at": "2026-10-04T06:49:26Z",
+      "protocol_version": "2025-11-25",
+      "auth_context_ref": "anonymous-testbed",
+      "details": {
+        "reported_count": 2,
+        "requested_protocol_version": "2026-07-28",
+        "capabilities_not_advertised": [
+          "resources",
+          "resourceTemplates",
+          "prompts"
+        ],
+        "synthetic": false
+      }
+    },
+    {
+      "collection_id": "col-tools_list-notes-sync",
+      "source_ref": "notes-sync:advertised",
+      "scope": "tools_list",
+      "target_ref": "srv_9407dbfbf579b00d",
       "mode": "imported_catalog",
       "status": "success",
       "collected_at": "2026-10-04T06:49:26Z",

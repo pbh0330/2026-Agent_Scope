@@ -1,6 +1,6 @@
 {
   "schema_version": "0.6.0-draft",
-  "snapshot_id": "snap-s2-20261026T133744Z",
+  "snapshot_id": "snap-s2-20261108T191520Z",
   "environment_id": "agentscope-testbed",
   "profile_id": "tb-openclaw",
   "context": {
@@ -24,22 +24,22 @@
       }
     ]
   },
-  "generated_at": "2026-10-26T13:37:44Z",
+  "generated_at": "2026-11-08T19:15:20Z",
   "scan": {
-    "started_at": "2026-10-26T13:37:44Z",
-    "finished_at": "2026-10-26T13:37:44Z",
+    "started_at": "2026-11-08T19:15:20Z",
+    "finished_at": "2026-11-08T19:15:20Z",
     "status": "partial"
   },
   "testbed_context": {
-    "configuration_id": "P2",
+    "configuration_id": "S2",
     "scenario_id": "S2",
-    "vm_snapshot_label": "SNAP-S2",
+    "vm_snapshot_label": null,
     "label": "S2 · 과도한 도구 권한",
     "kind": "scenario",
     "captured_at": "2026-10-04T06:49:26Z",
     "notes": [
-      "Case 1: fs-workspace 접근 범위를 홈 디렉터리 전체로 확대",
-      "Case 2: toolFilter 제거 — 쓰기·이동 도구까지 노출 대상"
+      "S2-T1: fs-workspace 파일 범위를 /home/<TB_USER> 전체로 확대 (toolFilter 유지)",
+      "S2-T2: demo-everything toolFilter 삭제 — get-env, gzip-file-as-resource 노출"
     ]
   },
   "assets": [
@@ -292,14 +292,26 @@
         "host": "tb-gw",
         "transport": "stdio",
         "credential_refs": [],
-        "normalizations": [],
+        "normalizations": [
+          {
+            "source_field": "mcp.servers.fs-workspace.toolFilter",
+            "target_field": "product.config.toolFilter",
+            "rule_id": "adapter-supplement-non-secret",
+            "evidence_refs": [
+              "ev-decl-tb-gw-fs-workspace"
+            ]
+          }
+        ],
         "scanner_metadata": {
           "declared_keys": [
             "command",
             "args",
+            "toolFilter",
             "enabled"
           ],
-          "other_declared_keys": [],
+          "other_declared_keys": [
+            "toolFilter"
+          ],
           "collection_status": "complete"
         }
       },
@@ -312,7 +324,13 @@
           "args": [
             "/home/<TB_USER>"
           ],
-          "enabled": true
+          "enabled": true,
+          "toolFilter": {
+            "include": [
+              "read_text_file",
+              "list_directory"
+            ]
+          }
         }
       },
       "mcp": {
@@ -328,6 +346,57 @@
               "listChanged": true
             }
           }
+        }
+      }
+    },
+    {
+      "asset_id": "pa_3a3c5f7d09203be0",
+      "asset_type": "permission_auth",
+      "name": "fs-workspace · toolFilter",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-gw"
+      },
+      "evidence_refs": [
+        "ev-decl-tb-gw-fs-workspace"
+      ],
+      "project": {
+        "canonical_key": "tb-gw/permission/mcp.servers.fs-workspace.toolFilter",
+        "state_assessments": [
+          {
+            "state": "DECLARED",
+            "value": true,
+            "evidence_refs": [
+              "ev-decl-tb-gw-fs-workspace"
+            ]
+          }
+        ],
+        "permission_auth": {
+          "source_ref": "tb-gw:~/.openclaw/openclaw.json",
+          "source_field": "mcp.servers.fs-workspace.toolFilter",
+          "target_refs": [
+            "srv_82d252784c25ade0"
+          ],
+          "assessment_status": "declared",
+          "effect": "allow",
+          "patterns": [
+            "read_text_file",
+            "list_directory"
+          ],
+          "access_scope": {}
+        }
+      },
+      "asset_subtype": "permission",
+      "product": {
+        "name": "openclaw",
+        "source_ref": "tb-gw:~/.openclaw/openclaw.json",
+        "config_path": "mcp.servers.fs-workspace.toolFilter",
+        "config": {
+          "include": [
+            "read_text_file",
+            "list_directory"
+          ]
         }
       }
     },
@@ -640,10 +709,9 @@
           },
           {
             "state": "EXPOSED",
-            "value": true,
-            "evidence_refs": [
-              "ev-expo-demo-everything"
-            ],
+            "value": null,
+            "evidence_refs": [],
+            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -678,26 +746,14 @@
             ]
           }
         ],
-        "normalizations": [
-          {
-            "source_field": "nodeHost.mcp.servers.demo-everything.toolFilter",
-            "target_field": "product.config.toolFilter",
-            "rule_id": "adapter-supplement-non-secret",
-            "evidence_refs": [
-              "ev-decl-tb-node-demo-everything"
-            ]
-          }
-        ],
+        "normalizations": [],
         "scanner_metadata": {
           "declared_keys": [
             "command",
             "args",
-            "env",
-            "toolFilter"
+            "env"
           ],
-          "other_declared_keys": [
-            "toolFilter"
-          ],
+          "other_declared_keys": [],
           "collection_status": "partial"
         }
       },
@@ -709,13 +765,7 @@
           "command": "mcp-server-everything",
           "args": [
             "stdio"
-          ],
-          "toolFilter": {
-            "exclude": [
-              "get-env",
-              "gzip-file-as-resource"
-            ]
-          }
+          ]
         }
       },
       "mcp": {
@@ -750,57 +800,6 @@
             },
             "completions": {}
           }
-        }
-      }
-    },
-    {
-      "asset_id": "pa_087042e2e785a2d2",
-      "asset_type": "permission_auth",
-      "name": "demo-everything · toolFilter",
-      "context": {
-        "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
-        "host": "tb-node"
-      },
-      "evidence_refs": [
-        "ev-decl-tb-node-demo-everything"
-      ],
-      "project": {
-        "canonical_key": "tb-node/permission/nodeHost.mcp.servers.demo-everything.toolFilter",
-        "state_assessments": [
-          {
-            "state": "DECLARED",
-            "value": true,
-            "evidence_refs": [
-              "ev-decl-tb-node-demo-everything"
-            ]
-          }
-        ],
-        "permission_auth": {
-          "source_ref": "tb-node:~/.openclaw/openclaw.json",
-          "source_field": "nodeHost.mcp.servers.demo-everything.toolFilter",
-          "target_refs": [
-            "srv_eee2566222d9bc33"
-          ],
-          "assessment_status": "declared",
-          "effect": "deny",
-          "patterns": [
-            "get-env",
-            "gzip-file-as-resource"
-          ],
-          "access_scope": {}
-        }
-      },
-      "asset_subtype": "permission",
-      "product": {
-        "name": "openclaw",
-        "source_ref": "tb-node:~/.openclaw/openclaw.json",
-        "config_path": "nodeHost.mcp.servers.demo-everything.toolFilter",
-        "config": {
-          "exclude": [
-            "get-env",
-            "gzip-file-as-resource"
-          ]
         }
       }
     },
@@ -4127,10 +4126,9 @@
           },
           {
             "state": "EXPOSED",
-            "value": true,
-            "evidence_refs": [
-              "ev-expo-demo-everything"
-            ],
+            "value": null,
+            "evidence_refs": [],
+            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -4215,10 +4213,9 @@
           },
           {
             "state": "EXPOSED",
-            "value": true,
-            "evidence_refs": [
-              "ev-expo-demo-everything"
-            ],
+            "value": null,
+            "evidence_refs": [],
+            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -4313,11 +4310,9 @@
           },
           {
             "state": "EXPOSED",
-            "value": false,
-            "evidence_refs": [
-              "ev-expo-demo-everything"
-            ],
-            "reason": "toolFilter.exclude",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -4394,10 +4389,9 @@
           },
           {
             "state": "EXPOSED",
-            "value": true,
-            "evidence_refs": [
-              "ev-expo-demo-everything"
-            ],
+            "value": null,
+            "evidence_refs": [],
+            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -4482,10 +4476,9 @@
           },
           {
             "state": "EXPOSED",
-            "value": true,
-            "evidence_refs": [
-              "ev-expo-demo-everything"
-            ],
+            "value": null,
+            "evidence_refs": [],
+            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -4576,10 +4569,9 @@
           },
           {
             "state": "EXPOSED",
-            "value": true,
-            "evidence_refs": [
-              "ev-expo-demo-everything"
-            ],
+            "value": null,
+            "evidence_refs": [],
+            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -4693,10 +4685,9 @@
           },
           {
             "state": "EXPOSED",
-            "value": true,
-            "evidence_refs": [
-              "ev-expo-demo-everything"
-            ],
+            "value": null,
+            "evidence_refs": [],
+            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -4786,10 +4777,9 @@
           },
           {
             "state": "EXPOSED",
-            "value": true,
-            "evidence_refs": [
-              "ev-expo-demo-everything"
-            ],
+            "value": null,
+            "evidence_refs": [],
+            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -4866,11 +4856,9 @@
           },
           {
             "state": "EXPOSED",
-            "value": false,
-            "evidence_refs": [
-              "ev-expo-demo-everything"
-            ],
-            "reason": "toolFilter.exclude",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -4968,10 +4956,9 @@
           },
           {
             "state": "EXPOSED",
-            "value": true,
-            "evidence_refs": [
-              "ev-expo-demo-everything"
-            ],
+            "value": null,
+            "evidence_refs": [],
+            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -5048,10 +5035,9 @@
           },
           {
             "state": "EXPOSED",
-            "value": true,
-            "evidence_refs": [
-              "ev-expo-demo-everything"
-            ],
+            "value": null,
+            "evidence_refs": [],
+            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -5128,10 +5114,9 @@
           },
           {
             "state": "EXPOSED",
-            "value": true,
-            "evidence_refs": [
-              "ev-expo-demo-everything"
-            ],
+            "value": null,
+            "evidence_refs": [],
+            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -5219,11 +5204,9 @@
           },
           {
             "state": "EXPOSED",
-            "value": false,
-            "evidence_refs": [
-              "ev-expo-demo-everything"
-            ],
-            "reason": "taskSupport: required — OpenClaw가 게시하지 않음",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -6429,6 +6412,20 @@
       "basis_kind": "declared"
     },
     {
+      "relation_id": "rel_25ca556d24c877ae",
+      "relation_type": "APPLIES_TO",
+      "source_asset_ref": "pa_3a3c5f7d09203be0",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "srv_82d252784c25ade0"
+      },
+      "evidence_refs": [
+        "ev-decl-tb-gw-fs-workspace"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "declared"
+    },
+    {
       "relation_id": "rel_7dc61339ce7bc959",
       "relation_type": "DECLARES",
       "source_asset_ref": "gw_4261ac71d127a248",
@@ -6474,20 +6471,6 @@
       "relation_id": "rel_dcf5e77d71f2150e",
       "relation_type": "DECLARES",
       "source_asset_ref": "node_1ca37e363256f7fb",
-      "target": {
-        "kind": "asset",
-        "asset_ref": "srv_eee2566222d9bc33"
-      },
-      "evidence_refs": [
-        "ev-decl-tb-node-demo-everything"
-      ],
-      "confidence": "confirmed",
-      "basis_kind": "declared"
-    },
-    {
-      "relation_id": "rel_aec40614c2934d60",
-      "relation_type": "APPLIES_TO",
-      "source_asset_ref": "pa_087042e2e785a2d2",
       "target": {
         "kind": "asset",
         "asset_ref": "srv_eee2566222d9bc33"
@@ -7387,7 +7370,7 @@
       "evidence_id": "ev-gw-config",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:44Z",
+      "observed_at": "2026-11-08T19:15:20Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "redacted",
       "field_path": "gateway",
@@ -7407,7 +7390,7 @@
       "evidence_id": "ev-gw-auth",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:44Z",
+      "observed_at": "2026-11-08T19:15:20Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "redacted",
       "field_path": "gateway.auth",
@@ -7419,7 +7402,7 @@
       "evidence_id": "ev-gw-tools-profile",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:44Z",
+      "observed_at": "2026-11-08T19:15:20Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "not_needed",
       "field_path": "tools.profile"
@@ -7445,7 +7428,7 @@
       "evidence_id": "ev-decl-tb-gw-fs-workspace",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:44Z",
+      "observed_at": "2026-11-08T19:15:20Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "not_needed",
       "field_path": "mcp.servers.fs-workspace"
@@ -7454,7 +7437,7 @@
       "evidence_id": "ev-decl-tb-gw-inventory-remote",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:44Z",
+      "observed_at": "2026-11-08T19:15:20Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "redacted",
       "field_path": "mcp.servers.inventory-remote",
@@ -7466,7 +7449,7 @@
       "evidence_id": "ev-decl-tb-node-kg-memory",
       "evidence_type": "config",
       "source_ref": "tb-node:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:44Z",
+      "observed_at": "2026-11-08T19:15:20Z",
       "collection_ref": "col-node-config",
       "redaction_status": "redacted",
       "field_path": "nodeHost.mcp.servers.kg-memory",
@@ -7478,7 +7461,7 @@
       "evidence_id": "ev-decl-tb-node-demo-everything",
       "evidence_type": "config",
       "source_ref": "tb-node:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:44Z",
+      "observed_at": "2026-11-08T19:15:20Z",
       "collection_ref": "col-node-config",
       "redaction_status": "redacted",
       "field_path": "nodeHost.mcp.servers.demo-everything",
@@ -7498,7 +7481,7 @@
       "evidence_id": "ev-plugin-cfg-agentscope-asset-catalog",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:44Z",
+      "observed_at": "2026-11-08T19:15:20Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "not_needed",
       "field_path": "plugins.entries.agentscope-asset-catalog"
@@ -7563,14 +7546,6 @@
       "collection_ref": "col-tools_list-demo-everything",
       "redaction_status": "not_needed",
       "note": "실제 협상 버전이 설계 기준(2026-07-28)과 다름"
-    },
-    {
-      "evidence_id": "ev-expo-demo-everything",
-      "evidence_type": "protocol",
-      "source_ref": "tb-node:openclaw nodes describe --json",
-      "observed_at": "2026-10-04T06:49:26Z",
-      "collection_ref": "col-exposure",
-      "redaction_status": "not_needed"
     },
     {
       "evidence_id": "ev-cap-asset-catalog",
@@ -7641,7 +7616,7 @@
       "target_ref": null,
       "mode": "local_file",
       "status": "partial",
-      "collected_at": "2026-10-26T13:37:44Z",
+      "collected_at": "2026-11-08T19:15:20Z",
       "reason": "profile-scoped configuration collection · server_entries_incomplete",
       "details": {
         "outcome": "servers_found",
@@ -7677,7 +7652,7 @@
       "target_ref": null,
       "mode": "local_file",
       "status": "partial",
-      "collected_at": "2026-10-26T13:37:44Z",
+      "collected_at": "2026-11-08T19:15:20Z",
       "reason": "profile-scoped configuration collection · server_entries_incomplete",
       "details": {
         "outcome": "servers_found",
@@ -7713,12 +7688,12 @@
       "target_ref": null,
       "mode": "local_file",
       "status": "success",
-      "collected_at": "2026-10-26T13:37:44Z",
+      "collected_at": "2026-11-08T19:15:20Z",
       "reason": "스캐너 0.1.0은 sslVerify·toolFilter의 키 이름만 수집 — 비밀이 아닌 값을 어댑터가 설정에서 보강",
       "details": {
         "fields": [
-          "mcp.servers.inventory-remote.sslVerify",
-          "nodeHost.mcp.servers.demo-everything.toolFilter"
+          "mcp.servers.fs-workspace.toolFilter",
+          "mcp.servers.inventory-remote.sslVerify"
         ]
       }
     },

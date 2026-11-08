@@ -6,9 +6,9 @@
     "name": "agent-scope-asset-scanner",
     "version": "0.1.0"
   },
-  "generated_at": "2026-10-26T13:37:44Z",
+  "generated_at": "2026-11-08T19:15:20Z",
   "source": {
-    "source_path": "/home/claude/agentscope-dashboard/pipeline/.work/S1/tb-node.openclaw.json",
+    "source_path": "/home/claude/br/feature_testbed-threat-s1/testbed/profiles/S1/tb-node.openclaw.json",
     "source_path_redacted": false,
     "source_kind": "openclaw_config_file",
     "evidence_type": "config",
@@ -31,7 +31,7 @@
   "collection": {
     "status": "partial",
     "outcome": "servers_found",
-    "server_count": 2,
+    "server_count": 3,
     "reasons": [
       {
         "code": "server_entries_incomplete",
@@ -47,7 +47,7 @@
   "servers": [
     {
       "registration_key": "kg-memory",
-      "source_path": "/home/claude/agentscope-dashboard/pipeline/.work/S1/tb-node.openclaw.json",
+      "source_path": "/home/claude/br/feature_testbed-threat-s1/testbed/profiles/S1/tb-node.openclaw.json",
       "declaration_path": "nodeHost.mcp.servers.kg-memory",
       "declaration_pointer": "/nodeHost/mcp/servers/kg-memory",
       "collection_status": "complete",
@@ -80,7 +80,7 @@
     },
     {
       "registration_key": "demo-everything",
-      "source_path": "/home/claude/agentscope-dashboard/pipeline/.work/S1/tb-node.openclaw.json",
+      "source_path": "/home/claude/br/feature_testbed-threat-s1/testbed/profiles/S1/tb-node.openclaw.json",
       "declaration_path": "nodeHost.mcp.servers.demo-everything",
       "declaration_pointer": "/nodeHost/mcp/servers/demo-everything",
       "collection_status": "partial",
@@ -124,6 +124,30 @@
           "field_path": "nodeHost.mcp.servers.demo-everything.env.EVERYTHING_DEMO_KEY"
         }
       ],
+      "redactions": [],
+      "issues": []
+    },
+    {
+      "registration_key": "node-helper",
+      "source_path": "/home/claude/br/feature_testbed-threat-s1/testbed/profiles/S1/tb-node.openclaw.json",
+      "declaration_path": "nodeHost.mcp.servers.node-helper",
+      "declaration_pointer": "/nodeHost/mcp/servers/node-helper",
+      "collection_status": "complete",
+      "declared": {
+        "command": "node",
+        "args": [
+          "/home/<TB_USER>/mcp-servers/notes-stub/server.mjs",
+          "--name",
+          "node-helper"
+        ]
+      },
+      "declared_keys": [
+        "command",
+        "args"
+      ],
+      "credentials": {},
+      "other_declared_keys": [],
+      "unresolved": [],
       "redactions": [],
       "issues": []
     }

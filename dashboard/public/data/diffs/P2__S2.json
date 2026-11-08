@@ -1,13 +1,13 @@
 {
   "schema_version": "0.6.0-draft",
-  "diff_id": "diff-snap-p2-20261026T133744Z--snap-s2-20261026T133744Z",
+  "diff_id": "diff-snap-p2-20261108T191520Z--snap-s2-20261108T191520Z",
   "environment_id": "agentscope-testbed",
   "profile_id": "tb-openclaw",
-  "previous_snapshot_id": "snap-p2-20261026T133744Z",
-  "current_snapshot_id": "snap-s2-20261026T133744Z",
-  "previous_report_id": "det-snap-p2-20261026T133744Z",
-  "current_report_id": "det-snap-s2-20261026T133744Z",
-  "generated_at": "2026-10-26T13:37:45Z",
+  "previous_snapshot_id": "snap-p2-20261108T191520Z",
+  "current_snapshot_id": "snap-s2-20261108T191520Z",
+  "previous_report_id": "det-snap-p2-20261108T191520Z",
+  "current_report_id": "det-snap-s2-20261108T191520Z",
+  "generated_at": "2026-11-08T19:15:21Z",
   "comparison_status": "complete",
   "changes": [
     {
@@ -17,9 +17,22 @@
         "/product/config",
         "/project/state_assessments"
       ],
-      "detected_at": "2026-10-26T13:37:44Z",
+      "detected_at": "2026-11-08T19:15:20Z",
       "evidence_refs": [
         "ev-decl-tb-gw-fs-workspace"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "srv_eee2566222d9bc33",
+      "change_type": "modified",
+      "changed_fields": [
+        "/product/config",
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-11-08T19:15:20Z",
+      "evidence_refs": [
+        "ev-decl-tb-node-demo-everything"
       ],
       "reason": "비교 필드 변경"
     },
@@ -29,7 +42,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-10-26T13:37:44Z",
+      "detected_at": "2026-11-08T19:15:20Z",
       "evidence_refs": [
         "ev-cap-fs-workspace"
       ],
@@ -41,7 +54,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-10-26T13:37:44Z",
+      "detected_at": "2026-11-08T19:15:20Z",
       "evidence_refs": [
         "ev-cap-fs-workspace"
       ],
@@ -53,7 +66,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-10-26T13:37:44Z",
+      "detected_at": "2026-11-08T19:15:20Z",
       "evidence_refs": [
         "ev-cap-fs-workspace"
       ],
@@ -65,7 +78,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-10-26T13:37:44Z",
+      "detected_at": "2026-11-08T19:15:20Z",
       "evidence_refs": [
         "ev-cap-fs-workspace"
       ],
@@ -77,7 +90,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-10-26T13:37:44Z",
+      "detected_at": "2026-11-08T19:15:20Z",
       "evidence_refs": [
         "ev-cap-fs-workspace"
       ],
@@ -89,7 +102,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-10-26T13:37:44Z",
+      "detected_at": "2026-11-08T19:15:20Z",
       "evidence_refs": [
         "ev-cap-fs-workspace"
       ],
@@ -101,7 +114,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-10-26T13:37:44Z",
+      "detected_at": "2026-11-08T19:15:20Z",
       "evidence_refs": [
         "ev-cap-fs-workspace"
       ],
@@ -113,7 +126,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-10-26T13:37:44Z",
+      "detected_at": "2026-11-08T19:15:20Z",
       "evidence_refs": [
         "ev-cap-fs-workspace"
       ],
@@ -125,7 +138,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-10-26T13:37:44Z",
+      "detected_at": "2026-11-08T19:15:20Z",
       "evidence_refs": [
         "ev-cap-fs-workspace"
       ],
@@ -137,7 +150,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-10-26T13:37:44Z",
+      "detected_at": "2026-11-08T19:15:20Z",
       "evidence_refs": [
         "ev-cap-fs-workspace"
       ],
@@ -149,7 +162,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-10-26T13:37:44Z",
+      "detected_at": "2026-11-08T19:15:20Z",
       "evidence_refs": [
         "ev-cap-fs-workspace"
       ],
@@ -161,7 +174,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-10-26T13:37:44Z",
+      "detected_at": "2026-11-08T19:15:20Z",
       "evidence_refs": [
         "ev-cap-fs-workspace"
       ],
@@ -173,7 +186,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-10-26T13:37:44Z",
+      "detected_at": "2026-11-08T19:15:20Z",
       "evidence_refs": [
         "ev-cap-fs-workspace"
       ],
@@ -185,28 +198,184 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-10-26T13:37:44Z",
+      "detected_at": "2026-11-08T19:15:20Z",
       "evidence_refs": [
         "ev-cap-fs-workspace"
       ],
       "reason": "비교 필드 변경"
     },
     {
-      "asset_id": "pa_3a3c5f7d09203be0",
+      "asset_id": "tool_67a64e6145413178",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-11-08T19:15:20Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_e20c9eb5420403d1",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-11-08T19:15:20Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_762c09336caad7d0",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-11-08T19:15:20Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_93f12ac4f2ea5fff",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-11-08T19:15:20Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_64612d3c4e5415b6",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-11-08T19:15:20Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_d83c2aa31dee5dc4",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-11-08T19:15:20Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_0ee651414b0e8849",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-11-08T19:15:20Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_bd297168f8839140",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-11-08T19:15:20Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_d364d522832496d7",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-11-08T19:15:20Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_c96e12e3082b2372",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-11-08T19:15:20Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_8593712d5cdd263c",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-11-08T19:15:20Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_75995a93ada69d48",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-11-08T19:15:20Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_c0285092845c94d5",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-11-08T19:15:20Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "pa_087042e2e785a2d2",
       "change_type": "removed_from_scope",
       "changed_fields": [],
-      "detected_at": "2026-10-26T13:37:44Z",
+      "detected_at": "2026-11-08T19:15:20Z",
       "evidence_refs": [],
       "reason": "같은 범위를 끝까지 조회했지만 이번 결과에 없음(설치 삭제를 뜻하지 않음)",
       "previous": {
-        "name": "fs-workspace · toolFilter",
+        "name": "demo-everything · toolFilter",
         "asset_type": "permission_auth"
       }
     }
   ],
   "relation_changes": [
     {
-      "relation_id": "rel_25ca556d24c877ae",
+      "relation_id": "rel_aec40614c2934d60",
       "change_type": "not_observed",
       "changed_fields": [],
       "reason": "이번 결과에 없음",
@@ -217,10 +386,24 @@
   ],
   "alert_changes": [
     {
-      "finding_key": "5527a3affcb8b9e082bc9174",
+      "finding_key": "41427410155c8145ad5fad31",
       "change_type": "opened",
       "previous_alert_id": null,
-      "current_alert_id": "alert-5527a3affcb8",
+      "current_alert_id": "alert-41427410155c",
+      "reason": "이번 평가에서 새로 탐지"
+    },
+    {
+      "finding_key": "1973a9effa5a2b9e27004622",
+      "change_type": "opened",
+      "previous_alert_id": null,
+      "current_alert_id": "alert-1973a9effa5a",
+      "reason": "이번 평가에서 새로 탐지"
+    },
+    {
+      "finding_key": "a590a0e0b80b80589d69e893",
+      "change_type": "opened",
+      "previous_alert_id": null,
+      "current_alert_id": "alert-a590a0e0b80b",
       "reason": "이번 평가에서 새로 탐지"
     }
   ],

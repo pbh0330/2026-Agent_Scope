@@ -1,20 +1,20 @@
 {
   "schema_version": "0.6.0-draft",
-  "diff_id": "diff-snap-p1-20261026T133744Z--snap-p2-20261026T133744Z",
+  "diff_id": "diff-snap-p1-20261108T191520Z--snap-p2-20261108T191520Z",
   "environment_id": "agentscope-testbed",
   "profile_id": "tb-openclaw",
-  "previous_snapshot_id": "snap-p1-20261026T133744Z",
-  "current_snapshot_id": "snap-p2-20261026T133744Z",
-  "previous_report_id": "det-snap-p1-20261026T133744Z",
-  "current_report_id": "det-snap-p2-20261026T133744Z",
-  "generated_at": "2026-10-26T13:37:45Z",
+  "previous_snapshot_id": "snap-p1-20261108T191520Z",
+  "current_snapshot_id": "snap-p2-20261108T191520Z",
+  "previous_report_id": "det-snap-p1-20261108T191520Z",
+  "current_report_id": "det-snap-p2-20261108T191520Z",
+  "generated_at": "2026-11-08T19:15:21Z",
   "comparison_status": "complete",
   "changes": [
     {
       "asset_id": "srv_8d8aec91ec656a07",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-10-26T13:37:44Z",
+      "detected_at": "2026-11-08T19:15:20Z",
       "evidence_refs": [
         "ev-decl-tb-gw-inventory-remote"
       ],
@@ -24,7 +24,7 @@
       "asset_id": "pa_235029938a7bca8e",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-10-26T13:37:44Z",
+      "detected_at": "2026-11-08T19:15:20Z",
       "evidence_refs": [
         "ev-decl-tb-gw-inventory-remote"
       ],
@@ -34,7 +34,7 @@
       "asset_id": "pa_deb5ffb01d66a469",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-10-26T13:37:44Z",
+      "detected_at": "2026-11-08T19:15:20Z",
       "evidence_refs": [
         "ev-decl-tb-node-demo-everything"
       ],
@@ -44,7 +44,7 @@
       "asset_id": "plg_3ca6b0bd236ecae6",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-10-26T13:37:44Z",
+      "detected_at": "2026-11-08T19:15:20Z",
       "evidence_refs": [
         "ev-plugin-agentscope-asset-catalog",
         "ev-plugin-cfg-agentscope-asset-catalog"
@@ -55,7 +55,7 @@
       "asset_id": "srv_bbb764ffe6b99467",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-10-26T13:37:44Z",
+      "detected_at": "2026-11-08T19:15:20Z",
       "evidence_refs": [
         "ev-plugin-srv-agentscope-asset-catalog-asset-catalog"
       ],
@@ -65,7 +65,7 @@
       "asset_id": "tool_eb4353d48a76c254",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-10-26T13:37:44Z",
+      "detected_at": "2026-11-08T19:15:20Z",
       "evidence_refs": [
         "ev-cap-inventory-remote"
       ],
@@ -75,7 +75,7 @@
       "asset_id": "tool_53b93b83f270bcc8",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-10-26T13:37:44Z",
+      "detected_at": "2026-11-08T19:15:20Z",
       "evidence_refs": [
         "ev-cap-inventory-remote"
       ],
@@ -85,7 +85,7 @@
       "asset_id": "rp_acf254f9205b49ea",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-10-26T13:37:44Z",
+      "detected_at": "2026-11-08T19:15:20Z",
       "evidence_refs": [
         "ev-cap-inventory-remote"
       ],
@@ -95,7 +95,7 @@
       "asset_id": "rp_478bd7cc89873d71",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-10-26T13:37:44Z",
+      "detected_at": "2026-11-08T19:15:20Z",
       "evidence_refs": [
         "ev-cap-inventory-remote"
       ],
@@ -105,7 +105,7 @@
       "asset_id": "tool_caf48a52b85bb3bf",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-10-26T13:37:44Z",
+      "detected_at": "2026-11-08T19:15:20Z",
       "evidence_refs": [
         "ev-cap-asset-catalog"
       ],
@@ -115,7 +115,7 @@
       "asset_id": "tool_42196862e9e14229",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-10-26T13:37:44Z",
+      "detected_at": "2026-11-08T19:15:20Z",
       "evidence_refs": [
         "ev-cap-asset-catalog"
       ],
@@ -125,7 +125,7 @@
       "asset_id": "skill_588bddbd8a291ebf",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-10-26T13:37:44Z",
+      "detected_at": "2026-11-08T19:15:20Z",
       "evidence_refs": [
         "ev-skill-tb-gw-inventory-owner-report"
       ],

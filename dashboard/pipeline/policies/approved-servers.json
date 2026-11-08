@@ -1,13 +1,53 @@
 {
-  "policy_id": "pol-s1-approved-servers",
-  "version": "testbed-P2@2026-10-04",
-  "source_ref": "testbed/profiles/README.md#승인-서버-목록-s1-allowlist",
-  "note": "S1 비교 기준. 테스트베드 담당이 정리한 승인 서버 목록을 기계가 읽는 형태로 옮김",
+  "description": "S1 판정 기준인 승인 MCP 서버 목록(allowlist). profiles/README.md 3절 표의 기계 판독용 사본. 정상군 SNAP-2-P2 기준",
+  "version": "2026-10-31",
+  "match_keys": ["name", "declared_at_vm", "registered_by", "endpoint"],
   "servers": [
-    { "name": "fs-workspace", "declared_by": "gateway", "host": "tb-gw", "endpoint": "command:mcp-server-filesystem" },
-    { "name": "kg-memory", "declared_by": "node", "host": "tb-node", "endpoint": "command:mcp-server-memory" },
-    { "name": "demo-everything", "declared_by": "node", "host": "tb-node", "endpoint": "command:mcp-server-everything" },
-    { "name": "inventory-remote", "declared_by": "gateway", "host": "tb-gw", "endpoint": "url:https://tb-node:8443/mcp" },
-    { "name": "asset-catalog", "declared_by": "plugin", "host": "tb-gw", "endpoint": "command:node" }
-  ]
+    {
+      "name": "fs-workspace",
+      "registered_by": "tb-gw:config",
+      "declared_at_vm": "tb-gw",
+      "declared_at": "tb-gw:~/.openclaw/openclaw.json#mcp.servers.fs-workspace",
+      "runs_on": "tb-gw",
+      "endpoint": { "transport": "stdio", "command": "mcp-server-filesystem", "args": ["/home/<TB_USER>/workspace"] },
+      "source": "@modelcontextprotocol/server-filesystem@2026.8.31"
+    },
+    {
+      "name": "kg-memory",
+      "registered_by": "tb-node:config",
+      "declared_at_vm": "tb-node",
+      "declared_at": "tb-node:~/.openclaw/openclaw.json#nodeHost.mcp.servers.kg-memory",
+      "runs_on": "tb-node",
+      "endpoint": { "transport": "stdio", "command": "mcp-server-memory", "args": [] },
+      "source": "@modelcontextprotocol/server-memory@2026.8.31"
+    },
+    {
+      "name": "demo-everything",
+      "registered_by": "tb-node:config",
+      "declared_at_vm": "tb-node",
+      "declared_at": "tb-node:~/.openclaw/openclaw.json#nodeHost.mcp.servers.demo-everything",
+      "runs_on": "tb-node",
+      "endpoint": { "transport": "stdio", "command": "mcp-server-everything", "args": ["stdio"] },
+      "source": "@modelcontextprotocol/server-everything@2026.8.31"
+    },
+    {
+      "name": "inventory-remote",
+      "registered_by": "tb-gw:config",
+      "declared_at_vm": "tb-gw",
+      "declared_at": "tb-gw:~/.openclaw/openclaw.json#mcp.servers.inventory-remote",
+      "runs_on": "tb-node",
+      "endpoint": { "transport": "streamable-http", "url": "https://tb-node:8443/mcp" },
+      "source": "testbed/mcp-servers/inventory-remote (자체 제작)"
+    },
+    {
+      "name": "asset-catalog",
+      "registered_by": "plugin:agentscope-asset-catalog",
+      "declared_at_vm": "tb-gw",
+      "declared_at": "tb-gw:~/.openclaw/extensions/agentscope-asset-catalog/openclaw.plugin.json#mcpServers.asset-catalog",
+      "runs_on": "tb-gw",
+      "endpoint": { "transport": "stdio", "command": "node", "args": ["./mcp-server.mjs"] },
+      "source": "testbed/plugins/agentscope-asset-catalog (자체 제작, 로컬 경로 설치)"
+    }
+  ],
+  "approved_plugins": ["agentscope-asset-catalog"]
 }

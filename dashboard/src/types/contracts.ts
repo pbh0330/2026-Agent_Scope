@@ -127,6 +127,7 @@ export interface DetectionEvaluation {
   scenario_id: string
   rule_id: string
   rule_version: string
+  rule_name?: string
   asset_ids: string[]
   relation_ids: string[]
   evidence_refs: string[]
@@ -234,6 +235,7 @@ export interface ManifestSnapshot {
   kind: 'normal' | 'scenario' | 'imported'
   scenario_id: string | null
   synthetic: boolean
+  test_case_ids?: string[]
   snapshot_id: string
   files: { snapshot: string; detections: string; audit?: string; qa?: string }
   counts: { assets: number; relations: number; alerts: number }

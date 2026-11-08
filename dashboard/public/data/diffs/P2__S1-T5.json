@@ -1,0 +1,199 @@
+{
+  "schema_version": "0.6.0-draft",
+  "diff_id": "diff-snap-p2-20261108T191520Z--snap-s1-t5-20261108T191520Z",
+  "environment_id": "agentscope-testbed",
+  "profile_id": "tb-openclaw",
+  "previous_snapshot_id": "snap-p2-20261108T191520Z",
+  "current_snapshot_id": "snap-s1-t5-20261108T191520Z",
+  "previous_report_id": "det-snap-p2-20261108T191520Z",
+  "current_report_id": "det-snap-s1-t5-20261108T191520Z",
+  "generated_at": "2026-11-08T19:15:21Z",
+  "comparison_status": "complete",
+  "changes": [
+    {
+      "asset_id": "srv_7758492c8abfaa79",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-08T19:15:20Z",
+      "evidence_refs": [
+        "ev-decl-tb-node-inventory-remote"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "pa_72d770cda97df56e",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-08T19:15:20Z",
+      "evidence_refs": [
+        "ev-decl-tb-node-inventory-remote"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "tool_eb4353d48a76c254",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-11-08T19:15:20Z",
+      "evidence_refs": [
+        "ev-cap-inventory-remote"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_53b93b83f270bcc8",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-11-08T19:15:20Z",
+      "evidence_refs": [
+        "ev-cap-inventory-remote"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "srv_8d8aec91ec656a07",
+      "change_type": "removed_from_scope",
+      "changed_fields": [],
+      "detected_at": "2026-11-08T19:15:20Z",
+      "evidence_refs": [],
+      "reason": "같은 범위를 끝까지 조회했지만 이번 결과에 없음(설치 삭제를 뜻하지 않음)",
+      "previous": {
+        "name": "inventory-remote",
+        "asset_type": "mcp_server"
+      }
+    },
+    {
+      "asset_id": "pa_235029938a7bca8e",
+      "change_type": "removed_from_scope",
+      "changed_fields": [],
+      "detected_at": "2026-11-08T19:15:20Z",
+      "evidence_refs": [],
+      "reason": "같은 범위를 끝까지 조회했지만 이번 결과에 없음(설치 삭제를 뜻하지 않음)",
+      "previous": {
+        "name": "inventory-remote · 자격증명 참조",
+        "asset_type": "permission_auth"
+      }
+    }
+  ],
+  "relation_changes": [
+    {
+      "relation_id": "rel_d6ea3d9224e0a866",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_9c76be7a25b4690e",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_cd5234bb835cc01e",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_f9a254adb647e0a3",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_8f7793c78327066c",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_f633e430c2608700",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_01bc2d771b9f22b1",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_7dc61339ce7bc959",
+      "change_type": "removed_from_scope",
+      "changed_fields": [],
+      "reason": "이번 결과에 없음",
+      "previous": {
+        "relation_type": "DECLARES"
+      }
+    },
+    {
+      "relation_id": "rel_28664295b287ff48",
+      "change_type": "removed_from_scope",
+      "changed_fields": [],
+      "reason": "이번 결과에 없음",
+      "previous": {
+        "relation_type": "AUTHENTICATES"
+      }
+    },
+    {
+      "relation_id": "rel_ac184dce792c2231",
+      "change_type": "not_observed",
+      "changed_fields": [],
+      "reason": "이번 결과에 없음",
+      "previous": {
+        "relation_type": "ADVERTISES"
+      }
+    },
+    {
+      "relation_id": "rel_10a828b967b46d72",
+      "change_type": "not_observed",
+      "changed_fields": [],
+      "reason": "이번 결과에 없음",
+      "previous": {
+        "relation_type": "ADVERTISES"
+      }
+    },
+    {
+      "relation_id": "rel_ceab7d83450a7c0d",
+      "change_type": "not_observed",
+      "changed_fields": [],
+      "reason": "이번 결과에 없음",
+      "previous": {
+        "relation_type": "ADVERTISES"
+      }
+    },
+    {
+      "relation_id": "rel_bbe8fbe77ddc98cd",
+      "change_type": "not_observed",
+      "changed_fields": [],
+      "reason": "이번 결과에 없음",
+      "previous": {
+        "relation_type": "ADVERTISES"
+      }
+    },
+    {
+      "relation_id": "rel_c36eb59fbde7d2ad",
+      "change_type": "removed_from_scope",
+      "changed_fields": [],
+      "reason": "이번 결과에 없음",
+      "previous": {
+        "relation_type": "ASSOCIATED_WITH"
+      }
+    }
+  ],
+  "alert_changes": [
+    {
+      "finding_key": "2620b071ae018e8328448f54",
+      "change_type": "opened",
+      "previous_alert_id": null,
+      "current_alert_id": "alert-2620b071ae01",
+      "reason": "이번 평가에서 새로 탐지"
+    }
+  ],
+  "limitations": []
+}

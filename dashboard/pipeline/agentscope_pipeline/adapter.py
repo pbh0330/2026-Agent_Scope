@@ -418,15 +418,21 @@ class SnapshotBuilder:
         for p in sorted(self.inp.raw_dir.glob("tb-gw.plugin-inspect.*.json")):
             data = load(p)["plugin"]
             pid = data["id"]
-            col = self.collect(f"col-plugin-{pid}", "plugin_manifest", f"tb-gw:openclaw plugins inspect {pid} --runtime --json",
-                               "imported_catalog", "success", None)
+            from_manifest = bool(data.get("_from_manifest"))
+            col = self.collect(f"col-plugin-{pid}", "plugin_manifest",
+                               f"testbed:plugins/{pid}/openclaw.plugin.json" if from_manifest
+                               else f"tb-gw:openclaw plugins inspect {pid} --runtime --json",
+                               "local_file" if from_manifest else "imported_catalog", "partial" if from_manifest else "success", None,
+                               reason="런타임 점검 원본(plugins inspect) 미수집 — 저장소의 manifest로 대신 읽음" if from_manifest else None)
             ev_m = self.ev(f"ev-plugin-{pid}", "manifest", f"tb-gw:~/.openclaw/extensions/{pid}/openclaw.plugin.json", self.captured_at, col)
             ev_c = self.ev(f"ev-plugin-cfg-{pid}", "config", "tb-gw:~/.openclaw/openclaw.json", utc(self.inp.gw_scan["generated_at"]),
                            "col-gw-config", field_path=f"plugins.entries.{pid}")
             enabled = dig(self.gw_cfg, f"plugins.entries.{pid}.enabled")
             plg = self.asset(
                 "plugin", f"tb-gw/plugin/{pid}", pid, [ev_m, ev_c],
-                [self.st("DECLARED", True, [ev_c]), self.st("DISCOVERED", data.get("status") == "loaded", [ev_m])],
+                [self.st("DECLARED", True, [ev_c]),
+                 self.st("DISCOVERED", None, reason="런타임 점검 원본 미수집") if from_manifest
+                 else self.st("DISCOVERED", data.get("status") == "loaded", [ev_m])],
                 product={"name": "openclaw", "source_ref": "tb-gw:~/.openclaw/openclaw.json", "config_path": f"plugins.entries.{pid}",
                          "config": {"enabled": enabled}},
                 extra_project={

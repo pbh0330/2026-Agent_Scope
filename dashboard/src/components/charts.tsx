@@ -102,7 +102,12 @@ export function GroupedBars({ groups, series }: {
                 const h = Math.max(v ? 3 : 0, (v / top) * plotH)
                 return <rect key={si} x={start + si * (bw + 4)} y={padT + plotH - h} width={bw} height={h} rx={Math.min(6, bw / 2)} fill={`url(#bar-g${si})`} />
               })}
-              <text x={cx} y={H - 12} textAnchor="middle" className="axis xl">{g.label}</text>
+              {gw >= 84 || !g.label.includes('-')
+                ? <text x={cx} y={H - 12} textAnchor="middle" className="axis xl">{g.label}</text>
+                : <text x={cx} y={H - 19} textAnchor="middle" className="axis xl">
+                    <tspan x={cx}>{g.label.slice(0, g.label.indexOf('-'))}</tspan>
+                    <tspan x={cx} dy="1.15em">{g.label.slice(g.label.indexOf('-'))}</tspan>
+                  </text>}
             </g>
           )
         })}

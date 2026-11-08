@@ -156,7 +156,7 @@ export default function App() {
                 ))}
               </div>
               {risky.length > 0 && (
-                <div className="snap-group risk" title="P2에서 설정을 바꿔 만든 합성 위험 구성">
+                <div className="snap-group risk" title="위험 구성: S1은 테스트베드 구성 사본, 나머지는 P2 설정을 바꾼 합성 구성">
                   {risky.map(s => (
                     <button key={s.key} className="snap" aria-pressed={entry?.key === s.key} onClick={() => setCurrent(s.key)}>
                       {s.key}{s.counts.alerts > 0 && <i className="snap-badge">{s.counts.alerts}</i>}
@@ -178,7 +178,7 @@ export default function App() {
         <main className="page">
           <header className="page-head">
             <div>
-              <p className="hello">{entry ? (entry.kind === 'scenario' ? 'P2 기반 합성 위험 구성' : entry.kind === 'imported' ? '불러온 데이터' : '테스트베드 정상 구성') : ''}</p>
+              <p className="hello">{entry ? (entry.kind === 'scenario' ? (entry.synthetic ? 'P2 기반 합성 위험 구성' : '테스트베드 위험 구성 사본') : entry.kind === 'imported' ? '불러온 데이터' : '테스트베드 정상 구성') : ''}</p>
               <h1>{entry ? (entry.label.split(' · ')[1] ? `${entry.key} ${entry.label.split(' · ')[1]}` : entry.label) : info.title}</h1>
               <p>{info.desc}</p>
             </div>

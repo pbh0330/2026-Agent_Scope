@@ -1,0 +1,54 @@
+{
+  "schema_version": "0.6.0-draft",
+  "diff_id": "diff-snap-p2-20261108T191520Z--snap-s5-t3-20261108T191521Z",
+  "environment_id": "agentscope-testbed",
+  "profile_id": "tb-openclaw",
+  "previous_snapshot_id": "snap-p2-20261108T191520Z",
+  "current_snapshot_id": "snap-s5-t3-20261108T191521Z",
+  "previous_report_id": "det-snap-p2-20261108T191520Z",
+  "current_report_id": "det-snap-s5-t3-20261108T191521Z",
+  "generated_at": "2026-11-08T19:15:21Z",
+  "comparison_status": "complete",
+  "changes": [
+    {
+      "asset_id": "srv_8d8aec91ec656a07",
+      "change_type": "modified",
+      "changed_fields": [
+        "/product/config",
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-11-08T19:15:21Z",
+      "evidence_refs": [
+        "ev-decl-tb-gw-inventory-remote"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_eb4353d48a76c254",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-11-08T19:15:21Z",
+      "evidence_refs": [
+        "ev-cap-inventory-remote"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_53b93b83f270bcc8",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-11-08T19:15:21Z",
+      "evidence_refs": [
+        "ev-cap-inventory-remote"
+      ],
+      "reason": "비교 필드 변경"
+    }
+  ],
+  "relation_changes": [],
+  "alert_changes": [],
+  "limitations": []
+}

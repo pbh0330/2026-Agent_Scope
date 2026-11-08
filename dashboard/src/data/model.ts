@@ -38,10 +38,11 @@ export const RELATION_LABEL: Record<string, string> = {
 }
 
 export const SCENARIOS: { id: string; title: string; short: string }[] = [
+  // 구현 우선순위 순서 (docs/threat-scenarios v2.1)
   { id: 'S1', title: '비인가 MCP 서버 등록', short: '비인가 서버' },
   { id: 'S2', title: '과도한 권한의 도구 광고', short: '도구 권한' },
-  { id: 'S3', title: '도구 이름 충돌', short: '이름 충돌' },
   { id: 'S4', title: '자격증명 공유', short: '자격증명' },
+  { id: 'S3', title: '도구 이름 충돌', short: '이름 충돌' },
   { id: 'S5', title: '약한 연결 보안', short: '연결 보안' },
 ]
 

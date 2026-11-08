@@ -1,13 +1,13 @@
 {
   "schema_version": "0.6.0-draft",
-  "diff_id": "diff-snap-p2-20261026T133744Z--snap-s5-20261026T133745Z",
+  "diff_id": "diff-snap-p2-20261108T191520Z--snap-s5-t1-20261108T191520Z",
   "environment_id": "agentscope-testbed",
   "profile_id": "tb-openclaw",
-  "previous_snapshot_id": "snap-p2-20261026T133744Z",
-  "current_snapshot_id": "snap-s5-20261026T133745Z",
-  "previous_report_id": "det-snap-p2-20261026T133744Z",
-  "current_report_id": "det-snap-s5-20261026T133745Z",
-  "generated_at": "2026-10-26T13:37:45Z",
+  "previous_snapshot_id": "snap-p2-20261108T191520Z",
+  "current_snapshot_id": "snap-s5-t1-20261108T191520Z",
+  "previous_report_id": "det-snap-p2-20261108T191520Z",
+  "current_report_id": "det-snap-s5-t1-20261108T191520Z",
+  "generated_at": "2026-11-08T19:15:21Z",
   "comparison_status": "complete",
   "changes": [
     {
@@ -17,7 +17,7 @@
         "/product/config",
         "/project/state_assessments"
       ],
-      "detected_at": "2026-10-26T13:37:45Z",
+      "detected_at": "2026-11-08T19:15:20Z",
       "evidence_refs": [
         "ev-decl-tb-gw-inventory-remote"
       ],
@@ -29,7 +29,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-10-26T13:37:45Z",
+      "detected_at": "2026-11-08T19:15:20Z",
       "evidence_refs": [
         "ev-cap-inventory-remote"
       ],
@@ -41,7 +41,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-10-26T13:37:45Z",
+      "detected_at": "2026-11-08T19:15:20Z",
       "evidence_refs": [
         "ev-cap-inventory-remote"
       ],
@@ -58,17 +58,17 @@
       "reason": "이번 평가에서 새로 탐지"
     },
     {
-      "finding_key": "c7e63ff00a72cadb70b93753",
+      "finding_key": "4a2b6879426c9334196ba941",
       "change_type": "opened",
       "previous_alert_id": null,
-      "current_alert_id": "alert-c7e63ff00a72",
+      "current_alert_id": "alert-4a2b6879426c",
       "reason": "이번 평가에서 새로 탐지"
     },
     {
-      "finding_key": "670d6457f40d4b06b3068ff5",
+      "finding_key": "e156c22369ab6ccd9037071b",
       "change_type": "opened",
       "previous_alert_id": null,
-      "current_alert_id": "alert-670d6457f40d",
+      "current_alert_id": "alert-e156c22369ab",
       "reason": "이번 평가에서 새로 탐지"
     }
   ],

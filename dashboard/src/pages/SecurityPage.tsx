@@ -66,7 +66,7 @@ export function SecurityPage({ model, scenario, alertId, onSelect, onMap }: {
                 <h3>{al.title}</h3>
                 <SeverityTag severity={al.severity} />
                 <span className="tag">근거 명확성 {al.confidence === 'high' ? '높음' : al.confidence === 'medium' ? '보통' : '낮음'}</span>
-                <span className="tiny muted" style={{ marginLeft: 'auto' }}><code>{al.rule_id}</code></span>
+                <span className="tiny muted" style={{ marginLeft: 'auto' }} title={ev?.rule_name}><code>{al.rule_id}</code></span>
               </div>
               <p className="alert-msg">{al.message}</p>
               <div className="chain">
@@ -109,12 +109,12 @@ export function SecurityPage({ model, scenario, alertId, onSelect, onMap }: {
       <Panel title="평가 기록" note={`${shownEvals.length}건. 탐지되지 않은 항목도 근거와 함께 남깁니다`} className="">
         {shownEvals.map(e => (
           <div className="eval-row" key={e.evaluation_id}>
-            <span><Scn id={e.scenario_id} /> <span className="tiny muted">{e.rule_id.replace(`${e.scenario_id}-`, '')}</span></span>
+            <span title={e.rule_name}><Scn id={e.scenario_id} /> <span className="tiny muted">{e.rule_id.replace(`${e.scenario_id}-`, '')}</span></span>
             <ResultMark result={e.result} />
             <span className="small">{e.asset_ids.slice(0, 3).map(id => (
               <button key={id} className="link" style={{ marginRight: 8 }} onClick={() => onSelect(id)}>{name(id)}</button>))}
               {e.asset_ids.length > 3 && <span className="muted">외 {e.asset_ids.length - 3}</span>}</span>
-            <span className="small muted">{e.reason}</span>
+            <span className="small muted">{e.rule_name && <b className="rule-name">{e.rule_name}</b>}{e.reason}</span>
           </div>
         ))}
       </Panel>

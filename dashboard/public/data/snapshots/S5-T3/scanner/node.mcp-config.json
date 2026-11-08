@@ -6,13 +6,13 @@
     "name": "agent-scope-asset-scanner",
     "version": "0.1.0"
   },
-  "generated_at": "2026-10-26T13:37:45Z",
+  "generated_at": "2026-11-08T19:15:21Z",
   "source": {
-    "source_path": "/home/claude/agentscope-dashboard/pipeline/.work/S5/tb-gw.openclaw.json",
+    "source_path": "/home/claude/agentscope-dashboard/pipeline/.work/S5-T3/tb-node.openclaw.json",
     "source_path_redacted": false,
     "source_kind": "openclaw_config_file",
     "evidence_type": "config",
-    "registry_path": "mcp.servers"
+    "registry_path": "nodeHost.mcp.servers"
   },
   "scope": {
     "method": "설정 파일 정적 읽기",
@@ -37,7 +37,7 @@
         "code": "server_entries_incomplete",
         "message": "일부 등록 항목을 완전히 수집하지 못했습니다. servers[].issues/unresolved를 확인하세요.",
         "registration_keys": [
-          "inventory-remote"
+          "demo-everything"
         ]
       }
     ],
@@ -46,62 +46,68 @@
   },
   "servers": [
     {
-      "registration_key": "fs-workspace",
-      "source_path": "/home/claude/agentscope-dashboard/pipeline/.work/S5/tb-gw.openclaw.json",
-      "declaration_path": "mcp.servers.fs-workspace",
-      "declaration_pointer": "/mcp/servers/fs-workspace",
+      "registration_key": "kg-memory",
+      "source_path": "/home/claude/agentscope-dashboard/pipeline/.work/S5-T3/tb-node.openclaw.json",
+      "declaration_path": "nodeHost.mcp.servers.kg-memory",
+      "declaration_pointer": "/nodeHost/mcp/servers/kg-memory",
       "collection_status": "complete",
       "declared": {
-        "command": "mcp-server-filesystem",
-        "args": [
-          "/home/<TB_USER>/workspace"
-        ],
-        "enabled": true
+        "command": "mcp-server-memory"
       },
       "declared_keys": [
         "command",
-        "args",
-        "toolFilter",
-        "enabled"
+        "env"
       ],
-      "credentials": {},
-      "other_declared_keys": [
-        "toolFilter"
-      ],
+      "credentials": {
+        "env": {
+          "present": true,
+          "names": [
+            "MEMORY_FILE_PATH"
+          ],
+          "entries": [
+            {
+              "name": "MEMORY_FILE_PATH",
+              "value_kind": "literal"
+            }
+          ],
+          "values_withheld": true
+        }
+      },
+      "other_declared_keys": [],
       "unresolved": [],
       "redactions": [],
       "issues": []
     },
     {
-      "registration_key": "inventory-remote",
-      "source_path": "/home/claude/agentscope-dashboard/pipeline/.work/S5/tb-gw.openclaw.json",
-      "declaration_path": "mcp.servers.inventory-remote",
-      "declaration_pointer": "/mcp/servers/inventory-remote",
+      "registration_key": "demo-everything",
+      "source_path": "/home/claude/agentscope-dashboard/pipeline/.work/S5-T3/tb-node.openclaw.json",
+      "declaration_path": "nodeHost.mcp.servers.demo-everything",
+      "declaration_pointer": "/nodeHost/mcp/servers/demo-everything",
       "collection_status": "partial",
       "declared": {
-        "url": "http://tb-node:8080/mcp",
-        "transport": "streamable-http",
-        "enabled": true
+        "command": "mcp-server-everything",
+        "args": [
+          "stdio"
+        ]
       },
       "declared_keys": [
-        "url",
-        "transport",
-        "headers",
-        "sslVerify",
-        "enabled"
+        "command",
+        "args",
+        "env",
+        "toolFilter"
       ],
       "credentials": {
-        "headers": {
+        "env": {
           "present": true,
           "names": [
-            "Authorization"
+            "EVERYTHING_DEMO_KEY"
           ],
           "entries": [
             {
-              "name": "Authorization",
-              "value_kind": "literal_with_env_ref",
+              "name": "EVERYTHING_DEMO_KEY",
+              "value_kind": "env_ref",
               "ref_names": [
-                "INVENTORY_MCP_TOKEN"
+                "EVERYTHING_DEMO_KEY"
               ]
             }
           ],
@@ -109,13 +115,13 @@
         }
       },
       "other_declared_keys": [
-        "sslVerify"
+        "toolFilter"
       ],
       "unresolved": [
         {
           "kind": "env_var",
-          "name": "INVENTORY_MCP_TOKEN",
-          "field_path": "mcp.servers.inventory-remote.headers.Authorization"
+          "name": "EVERYTHING_DEMO_KEY",
+          "field_path": "nodeHost.mcp.servers.demo-everything.env.EVERYTHING_DEMO_KEY"
         }
       ],
       "redactions": [],

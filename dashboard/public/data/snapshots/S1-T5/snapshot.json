@@ -1,6 +1,6 @@
 {
   "schema_version": "0.6.0-draft",
-  "snapshot_id": "snap-s5-20261026T133745Z",
+  "snapshot_id": "snap-s1-t5-20261108T191520Z",
   "environment_id": "agentscope-testbed",
   "profile_id": "tb-openclaw",
   "context": {
@@ -24,22 +24,21 @@
       }
     ]
   },
-  "generated_at": "2026-10-26T13:37:45Z",
+  "generated_at": "2026-11-08T19:15:20Z",
   "scan": {
-    "started_at": "2026-10-26T13:37:45Z",
-    "finished_at": "2026-10-26T13:37:45Z",
+    "started_at": "2026-11-08T19:15:20Z",
+    "finished_at": "2026-11-08T19:15:20Z",
     "status": "partial"
   },
   "testbed_context": {
-    "configuration_id": "P2",
-    "scenario_id": "S5",
-    "vm_snapshot_label": "SNAP-S5",
-    "label": "S5 · 약한 연결 보안",
+    "configuration_id": "S1-T5",
+    "scenario_id": "S1",
+    "vm_snapshot_label": null,
+    "label": "S1-T5 · 선언 위치 이상",
     "kind": "scenario",
     "captured_at": "2026-10-04T06:49:26Z",
     "notes": [
-      "inventory-remote를 평문 HTTP로 변경",
-      "sslVerify를 명시적으로 false로 설정"
+      "S1-T5: 승인 서버 inventory-remote 선언을 tb-gw mcp.servers에서 tb-node nodeHost.mcp.servers로 이동 (url 그대로)"
     ]
   },
   "assets": [
@@ -402,187 +401,6 @@
       }
     },
     {
-      "asset_id": "srv_8d8aec91ec656a07",
-      "asset_type": "mcp_server",
-      "name": "inventory-remote",
-      "context": {
-        "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
-        "host": "tb-gw"
-      },
-      "evidence_refs": [
-        "ev-decl-tb-gw-inventory-remote"
-      ],
-      "project": {
-        "canonical_key": "tb-gw/mcp_server/inventory-remote",
-        "state_assessments": [
-          {
-            "state": "DECLARED",
-            "value": true,
-            "evidence_refs": [
-              "ev-decl-tb-gw-inventory-remote"
-            ]
-          },
-          {
-            "state": "DISCOVERED",
-            "value": true,
-            "evidence_refs": [
-              "ev-cap-inventory-remote"
-            ]
-          },
-          {
-            "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
-            "subject_ref": {
-              "kind": "agent",
-              "profile_id": "tb-openclaw",
-              "agent_key": "main"
-            }
-          },
-          {
-            "state": "CALLABLE",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
-          },
-          {
-            "state": "USED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
-          }
-        ],
-        "declared_by": "gateway",
-        "host": "tb-gw",
-        "transport": "streamable-http",
-        "credential_refs": [
-          {
-            "reference_id": "env:INVENTORY_MCP_TOKEN",
-            "namespace": "tb-gw:~/.openclaw/.env",
-            "source_field": "mcp.servers.inventory-remote.headers.Authorization",
-            "kind": "headers",
-            "presence": true,
-            "evidence_refs": [
-              "ev-decl-tb-gw-inventory-remote"
-            ]
-          }
-        ],
-        "normalizations": [
-          {
-            "source_field": "mcp.servers.inventory-remote.sslVerify",
-            "target_field": "product.config.sslVerify",
-            "rule_id": "adapter-supplement-non-secret",
-            "evidence_refs": [
-              "ev-decl-tb-gw-inventory-remote"
-            ]
-          }
-        ],
-        "scanner_metadata": {
-          "declared_keys": [
-            "url",
-            "transport",
-            "headers",
-            "sslVerify",
-            "enabled"
-          ],
-          "other_declared_keys": [
-            "sslVerify"
-          ],
-          "collection_status": "partial"
-        }
-      },
-      "product": {
-        "name": "openclaw",
-        "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-        "config_path": "mcp.servers.inventory-remote",
-        "config": {
-          "url": "http://tb-node:8080/mcp",
-          "transport": "streamable-http",
-          "enabled": true,
-          "sslVerify": false
-        }
-      },
-      "mcp": {
-        "protocol_version": "2025-11-25",
-        "version_note": "requested 2026-07-28, negotiated 2025-11-25",
-        "discovery": {
-          "serverInfo": {
-            "name": "agentscope-inventory-remote",
-            "version": "0.1.0"
-          },
-          "capabilities": {
-            "tools": {
-              "listChanged": true
-            },
-            "resources": {
-              "listChanged": true
-            },
-            "prompts": {
-              "listChanged": true
-            }
-          }
-        }
-      }
-    },
-    {
-      "asset_id": "pa_235029938a7bca8e",
-      "asset_type": "permission_auth",
-      "name": "inventory-remote · 자격증명 참조",
-      "context": {
-        "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
-        "host": "tb-gw"
-      },
-      "evidence_refs": [
-        "ev-decl-tb-gw-inventory-remote"
-      ],
-      "project": {
-        "canonical_key": "tb-gw/authentication/mcp.servers.inventory-remote",
-        "state_assessments": [
-          {
-            "state": "DECLARED",
-            "value": true,
-            "evidence_refs": [
-              "ev-decl-tb-gw-inventory-remote"
-            ]
-          }
-        ],
-        "permission_auth": {
-          "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-          "source_field": "mcp.servers.inventory-remote",
-          "target_refs": [
-            "srv_8d8aec91ec656a07"
-          ],
-          "assessment_status": "declared",
-          "credential_refs": [
-            {
-              "reference_id": "env:INVENTORY_MCP_TOKEN",
-              "namespace": "tb-gw:~/.openclaw/.env",
-              "source_field": "mcp.servers.inventory-remote.headers.Authorization",
-              "kind": "headers",
-              "presence": true,
-              "evidence_refs": [
-                "ev-decl-tb-gw-inventory-remote"
-              ]
-            }
-          ]
-        }
-      },
-      "asset_subtype": "authentication",
-      "product": {
-        "name": "openclaw",
-        "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-        "config_path": "mcp.servers.inventory-remote",
-        "config": {
-          "fields": [
-            "headers"
-          ]
-        }
-      }
-    },
-    {
       "asset_id": "srv_ec1aa5ba6ea61ff0",
       "asset_type": "mcp_server",
       "name": "kg-memory",
@@ -925,6 +743,187 @@
         "config": {
           "fields": [
             "env"
+          ]
+        }
+      }
+    },
+    {
+      "asset_id": "srv_7758492c8abfaa79",
+      "asset_type": "mcp_server",
+      "name": "inventory-remote",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-node"
+      },
+      "evidence_refs": [
+        "ev-decl-tb-node-inventory-remote"
+      ],
+      "project": {
+        "canonical_key": "tb-node/mcp_server/inventory-remote",
+        "state_assessments": [
+          {
+            "state": "DECLARED",
+            "value": true,
+            "evidence_refs": [
+              "ev-decl-tb-node-inventory-remote"
+            ]
+          },
+          {
+            "state": "DISCOVERED",
+            "value": true,
+            "evidence_refs": [
+              "ev-cap-inventory-remote"
+            ]
+          },
+          {
+            "state": "EXPOSED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "subject_ref": {
+              "kind": "agent",
+              "profile_id": "tb-openclaw",
+              "agent_key": "main"
+            }
+          },
+          {
+            "state": "CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
+          },
+          {
+            "state": "USED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
+          }
+        ],
+        "declared_by": "node",
+        "host": "tb-node",
+        "transport": "streamable-http",
+        "credential_refs": [
+          {
+            "reference_id": "env:INVENTORY_MCP_TOKEN",
+            "namespace": "tb-node:~/.openclaw/.env",
+            "source_field": "nodeHost.mcp.servers.inventory-remote.headers.Authorization",
+            "kind": "headers",
+            "presence": true,
+            "evidence_refs": [
+              "ev-decl-tb-node-inventory-remote"
+            ]
+          }
+        ],
+        "normalizations": [
+          {
+            "source_field": "nodeHost.mcp.servers.inventory-remote.sslVerify",
+            "target_field": "product.config.sslVerify",
+            "rule_id": "adapter-supplement-non-secret",
+            "evidence_refs": [
+              "ev-decl-tb-node-inventory-remote"
+            ]
+          }
+        ],
+        "scanner_metadata": {
+          "declared_keys": [
+            "url",
+            "transport",
+            "headers",
+            "sslVerify",
+            "enabled"
+          ],
+          "other_declared_keys": [
+            "sslVerify"
+          ],
+          "collection_status": "partial"
+        }
+      },
+      "product": {
+        "name": "openclaw",
+        "source_ref": "tb-node:~/.openclaw/openclaw.json",
+        "config_path": "nodeHost.mcp.servers.inventory-remote",
+        "config": {
+          "url": "https://tb-node:8443/mcp",
+          "transport": "streamable-http",
+          "enabled": true,
+          "sslVerify": true
+        }
+      },
+      "mcp": {
+        "protocol_version": "2025-11-25",
+        "version_note": "requested 2026-07-28, negotiated 2025-11-25",
+        "discovery": {
+          "serverInfo": {
+            "name": "agentscope-inventory-remote",
+            "version": "0.1.0"
+          },
+          "capabilities": {
+            "tools": {
+              "listChanged": true
+            },
+            "resources": {
+              "listChanged": true
+            },
+            "prompts": {
+              "listChanged": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "asset_id": "pa_72d770cda97df56e",
+      "asset_type": "permission_auth",
+      "name": "inventory-remote · 자격증명 참조",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-node"
+      },
+      "evidence_refs": [
+        "ev-decl-tb-node-inventory-remote"
+      ],
+      "project": {
+        "canonical_key": "tb-node/authentication/nodeHost.mcp.servers.inventory-remote",
+        "state_assessments": [
+          {
+            "state": "DECLARED",
+            "value": true,
+            "evidence_refs": [
+              "ev-decl-tb-node-inventory-remote"
+            ]
+          }
+        ],
+        "permission_auth": {
+          "source_ref": "tb-node:~/.openclaw/openclaw.json",
+          "source_field": "nodeHost.mcp.servers.inventory-remote",
+          "target_refs": [
+            "srv_7758492c8abfaa79"
+          ],
+          "assessment_status": "declared",
+          "credential_refs": [
+            {
+              "reference_id": "env:INVENTORY_MCP_TOKEN",
+              "namespace": "tb-node:~/.openclaw/.env",
+              "source_field": "nodeHost.mcp.servers.inventory-remote.headers.Authorization",
+              "kind": "headers",
+              "presence": true,
+              "evidence_refs": [
+                "ev-decl-tb-node-inventory-remote"
+              ]
+            }
+          ]
+        }
+      },
+      "asset_subtype": "authentication",
+      "product": {
+        "name": "openclaw",
+        "source_ref": "tb-node:~/.openclaw/openclaw.json",
+        "config_path": "nodeHost.mcp.servers.inventory-remote",
+        "config": {
+          "fields": [
+            "headers"
           ]
         }
       }
@@ -2595,293 +2594,6 @@
             ],
             "additionalProperties": false
           }
-        }
-      }
-    },
-    {
-      "asset_id": "tool_eb4353d48a76c254",
-      "asset_type": "tool",
-      "name": "inventory_list_hosts",
-      "context": {
-        "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
-        "host": "tb-gw"
-      },
-      "evidence_refs": [
-        "ev-cap-inventory-remote"
-      ],
-      "project": {
-        "canonical_key": "inventory-remote/tool/inventory_list_hosts",
-        "state_assessments": [
-          {
-            "state": "DISCOVERED",
-            "value": true,
-            "evidence_refs": [
-              "ev-cap-inventory-remote"
-            ]
-          },
-          {
-            "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
-            "subject_ref": {
-              "kind": "agent",
-              "profile_id": "tb-openclaw",
-              "agent_key": "main"
-            }
-          },
-          {
-            "state": "POTENTIALLY_CALLABLE",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "정적 호출 조건 미평가"
-          },
-          {
-            "state": "CALLABLE",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
-          },
-          {
-            "state": "USED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
-          }
-        ],
-        "trust": "untrusted_server_provided",
-        "synthetic": null
-      },
-      "owner_ref": "srv_8d8aec91ec656a07",
-      "mcp": {
-        "protocol_version": "2025-11-25",
-        "definition": {
-          "name": "inventory_list_hosts",
-          "title": "List inventory hosts",
-          "description": "List the host IDs in the testbed's fictional inventory.",
-          "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "type": "object",
-            "properties": {}
-          },
-          "annotations": {
-            "readOnlyHint": true,
-            "openWorldHint": false
-          },
-          "execution": {
-            "taskSupport": "forbidden"
-          }
-        }
-      }
-    },
-    {
-      "asset_id": "tool_53b93b83f270bcc8",
-      "asset_type": "tool",
-      "name": "inventory_get_host",
-      "context": {
-        "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
-        "host": "tb-gw"
-      },
-      "evidence_refs": [
-        "ev-cap-inventory-remote"
-      ],
-      "project": {
-        "canonical_key": "inventory-remote/tool/inventory_get_host",
-        "state_assessments": [
-          {
-            "state": "DISCOVERED",
-            "value": true,
-            "evidence_refs": [
-              "ev-cap-inventory-remote"
-            ]
-          },
-          {
-            "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
-            "subject_ref": {
-              "kind": "agent",
-              "profile_id": "tb-openclaw",
-              "agent_key": "main"
-            }
-          },
-          {
-            "state": "POTENTIALLY_CALLABLE",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "정적 호출 조건 미평가"
-          },
-          {
-            "state": "CALLABLE",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
-          },
-          {
-            "state": "USED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
-          }
-        ],
-        "trust": "untrusted_server_provided",
-        "synthetic": null
-      },
-      "owner_ref": "srv_8d8aec91ec656a07",
-      "mcp": {
-        "protocol_version": "2025-11-25",
-        "definition": {
-          "name": "inventory_get_host",
-          "title": "Get inventory host",
-          "description": "Get one fictional inventory host record by ID.",
-          "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string",
-                "description": "Host ID, e.g. web-01"
-              }
-            },
-            "required": [
-              "id"
-            ]
-          },
-          "annotations": {
-            "readOnlyHint": true,
-            "openWorldHint": false
-          },
-          "execution": {
-            "taskSupport": "forbidden"
-          }
-        }
-      }
-    },
-    {
-      "asset_id": "rp_acf254f9205b49ea",
-      "asset_type": "resource_prompt",
-      "name": "inventory-hosts",
-      "context": {
-        "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
-        "host": "tb-gw"
-      },
-      "evidence_refs": [
-        "ev-cap-inventory-remote"
-      ],
-      "project": {
-        "canonical_key": "inventory-remote/resource/inventory://hosts",
-        "state_assessments": [
-          {
-            "state": "DISCOVERED",
-            "value": true,
-            "evidence_refs": [
-              "ev-cap-inventory-remote"
-            ]
-          },
-          {
-            "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "리소스·프롬프트의 에이전트 노출 경로는 미해석",
-            "subject_ref": {
-              "kind": "agent",
-              "profile_id": "tb-openclaw",
-              "agent_key": "main"
-            }
-          },
-          {
-            "state": "CALLABLE",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
-          },
-          {
-            "state": "USED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
-          }
-        ]
-      },
-      "asset_subtype": "resource",
-      "owner_ref": "srv_8d8aec91ec656a07",
-      "mcp": {
-        "protocol_version": "2025-11-25",
-        "definition": {
-          "uri": "inventory://hosts",
-          "name": "inventory-hosts",
-          "title": "Inventory hosts",
-          "description": "All fictional hosts as JSON",
-          "mimeType": "application/json"
-        }
-      }
-    },
-    {
-      "asset_id": "rp_478bd7cc89873d71",
-      "asset_type": "resource_prompt",
-      "name": "inventory_owner_report",
-      "context": {
-        "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
-        "host": "tb-gw"
-      },
-      "evidence_refs": [
-        "ev-cap-inventory-remote"
-      ],
-      "project": {
-        "canonical_key": "inventory-remote/prompt/inventory_owner_report",
-        "state_assessments": [
-          {
-            "state": "DISCOVERED",
-            "value": true,
-            "evidence_refs": [
-              "ev-cap-inventory-remote"
-            ]
-          },
-          {
-            "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "리소스·프롬프트의 에이전트 노출 경로는 미해석",
-            "subject_ref": {
-              "kind": "agent",
-              "profile_id": "tb-openclaw",
-              "agent_key": "main"
-            }
-          },
-          {
-            "state": "CALLABLE",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
-          },
-          {
-            "state": "USED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
-          }
-        ]
-      },
-      "asset_subtype": "prompt",
-      "owner_ref": "srv_8d8aec91ec656a07",
-      "mcp": {
-        "protocol_version": "2025-11-25",
-        "definition": {
-          "name": "inventory_owner_report",
-          "title": "Inventory owner report",
-          "description": "Ask for a short report of hosts owned by one team.",
-          "arguments": [
-            {
-              "name": "owner",
-              "description": "Owner team, e.g. team-a",
-              "required": true
-            }
-          ]
         }
       }
     },
@@ -6181,6 +5893,293 @@
       }
     },
     {
+      "asset_id": "tool_eb4353d48a76c254",
+      "asset_type": "tool",
+      "name": "inventory_list_hosts",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-node"
+      },
+      "evidence_refs": [
+        "ev-cap-inventory-remote"
+      ],
+      "project": {
+        "canonical_key": "inventory-remote/tool/inventory_list_hosts",
+        "state_assessments": [
+          {
+            "state": "DISCOVERED",
+            "value": true,
+            "evidence_refs": [
+              "ev-cap-inventory-remote"
+            ]
+          },
+          {
+            "state": "EXPOSED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "subject_ref": {
+              "kind": "agent",
+              "profile_id": "tb-openclaw",
+              "agent_key": "main"
+            }
+          },
+          {
+            "state": "POTENTIALLY_CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "정적 호출 조건 미평가"
+          },
+          {
+            "state": "CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
+          },
+          {
+            "state": "USED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
+          }
+        ],
+        "trust": "untrusted_server_provided",
+        "synthetic": null
+      },
+      "owner_ref": "srv_7758492c8abfaa79",
+      "mcp": {
+        "protocol_version": "2025-11-25",
+        "definition": {
+          "name": "inventory_list_hosts",
+          "title": "List inventory hosts",
+          "description": "List the host IDs in the testbed's fictional inventory.",
+          "inputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {}
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": false
+          },
+          "execution": {
+            "taskSupport": "forbidden"
+          }
+        }
+      }
+    },
+    {
+      "asset_id": "tool_53b93b83f270bcc8",
+      "asset_type": "tool",
+      "name": "inventory_get_host",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-node"
+      },
+      "evidence_refs": [
+        "ev-cap-inventory-remote"
+      ],
+      "project": {
+        "canonical_key": "inventory-remote/tool/inventory_get_host",
+        "state_assessments": [
+          {
+            "state": "DISCOVERED",
+            "value": true,
+            "evidence_refs": [
+              "ev-cap-inventory-remote"
+            ]
+          },
+          {
+            "state": "EXPOSED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "subject_ref": {
+              "kind": "agent",
+              "profile_id": "tb-openclaw",
+              "agent_key": "main"
+            }
+          },
+          {
+            "state": "POTENTIALLY_CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "정적 호출 조건 미평가"
+          },
+          {
+            "state": "CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
+          },
+          {
+            "state": "USED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
+          }
+        ],
+        "trust": "untrusted_server_provided",
+        "synthetic": null
+      },
+      "owner_ref": "srv_7758492c8abfaa79",
+      "mcp": {
+        "protocol_version": "2025-11-25",
+        "definition": {
+          "name": "inventory_get_host",
+          "title": "Get inventory host",
+          "description": "Get one fictional inventory host record by ID.",
+          "inputSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Host ID, e.g. web-01"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "annotations": {
+            "readOnlyHint": true,
+            "openWorldHint": false
+          },
+          "execution": {
+            "taskSupport": "forbidden"
+          }
+        }
+      }
+    },
+    {
+      "asset_id": "rp_acf254f9205b49ea",
+      "asset_type": "resource_prompt",
+      "name": "inventory-hosts",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-node"
+      },
+      "evidence_refs": [
+        "ev-cap-inventory-remote"
+      ],
+      "project": {
+        "canonical_key": "inventory-remote/resource/inventory://hosts",
+        "state_assessments": [
+          {
+            "state": "DISCOVERED",
+            "value": true,
+            "evidence_refs": [
+              "ev-cap-inventory-remote"
+            ]
+          },
+          {
+            "state": "EXPOSED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "리소스·프롬프트의 에이전트 노출 경로는 미해석",
+            "subject_ref": {
+              "kind": "agent",
+              "profile_id": "tb-openclaw",
+              "agent_key": "main"
+            }
+          },
+          {
+            "state": "CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
+          },
+          {
+            "state": "USED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
+          }
+        ]
+      },
+      "asset_subtype": "resource",
+      "owner_ref": "srv_7758492c8abfaa79",
+      "mcp": {
+        "protocol_version": "2025-11-25",
+        "definition": {
+          "uri": "inventory://hosts",
+          "name": "inventory-hosts",
+          "title": "Inventory hosts",
+          "description": "All fictional hosts as JSON",
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "asset_id": "rp_478bd7cc89873d71",
+      "asset_type": "resource_prompt",
+      "name": "inventory_owner_report",
+      "context": {
+        "profile_id": "tb-openclaw",
+        "gateway_ref": "gwctx_e3e14de28133",
+        "host": "tb-node"
+      },
+      "evidence_refs": [
+        "ev-cap-inventory-remote"
+      ],
+      "project": {
+        "canonical_key": "inventory-remote/prompt/inventory_owner_report",
+        "state_assessments": [
+          {
+            "state": "DISCOVERED",
+            "value": true,
+            "evidence_refs": [
+              "ev-cap-inventory-remote"
+            ]
+          },
+          {
+            "state": "EXPOSED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "리소스·프롬프트의 에이전트 노출 경로는 미해석",
+            "subject_ref": {
+              "kind": "agent",
+              "profile_id": "tb-openclaw",
+              "agent_key": "main"
+            }
+          },
+          {
+            "state": "CALLABLE",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "런타임 호출 검증은 정적 수집 범위 밖"
+          },
+          {
+            "state": "USED",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "실행 로그 기반 사용 관찰은 정적 수집 범위 밖"
+          }
+        ]
+      },
+      "asset_subtype": "prompt",
+      "owner_ref": "srv_7758492c8abfaa79",
+      "mcp": {
+        "protocol_version": "2025-11-25",
+        "definition": {
+          "name": "inventory_owner_report",
+          "title": "Inventory owner report",
+          "description": "Ask for a short report of hosts owned by one team.",
+          "arguments": [
+            {
+              "name": "owner",
+              "description": "Owner team, e.g. team-a",
+              "required": true
+            }
+          ]
+        }
+      }
+    },
+    {
       "asset_id": "tool_caf48a52b85bb3bf",
       "asset_type": "tool",
       "name": "catalog_search",
@@ -6536,34 +6535,6 @@
       "basis_kind": "declared"
     },
     {
-      "relation_id": "rel_7dc61339ce7bc959",
-      "relation_type": "DECLARES",
-      "source_asset_ref": "gw_4261ac71d127a248",
-      "target": {
-        "kind": "asset",
-        "asset_ref": "srv_8d8aec91ec656a07"
-      },
-      "evidence_refs": [
-        "ev-decl-tb-gw-inventory-remote"
-      ],
-      "confidence": "confirmed",
-      "basis_kind": "declared"
-    },
-    {
-      "relation_id": "rel_28664295b287ff48",
-      "relation_type": "AUTHENTICATES",
-      "source_asset_ref": "pa_235029938a7bca8e",
-      "target": {
-        "kind": "asset",
-        "asset_ref": "srv_8d8aec91ec656a07"
-      },
-      "evidence_refs": [
-        "ev-decl-tb-gw-inventory-remote"
-      ],
-      "confidence": "confirmed",
-      "basis_kind": "declared"
-    },
-    {
       "relation_id": "rel_dc821a5d3c34c5e4",
       "relation_type": "DECLARES",
       "source_asset_ref": "node_1ca37e363256f7fb",
@@ -6615,6 +6586,34 @@
       },
       "evidence_refs": [
         "ev-decl-tb-node-demo-everything"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "declared"
+    },
+    {
+      "relation_id": "rel_d6ea3d9224e0a866",
+      "relation_type": "DECLARES",
+      "source_asset_ref": "node_1ca37e363256f7fb",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "srv_7758492c8abfaa79"
+      },
+      "evidence_refs": [
+        "ev-decl-tb-node-inventory-remote"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "declared"
+    },
+    {
+      "relation_id": "rel_9c76be7a25b4690e",
+      "relation_type": "AUTHENTICATES",
+      "source_asset_ref": "pa_72d770cda97df56e",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "srv_7758492c8abfaa79"
+      },
+      "evidence_refs": [
+        "ev-decl-tb-node-inventory-remote"
       ],
       "confidence": "confirmed",
       "basis_kind": "declared"
@@ -6839,62 +6838,6 @@
       },
       "evidence_refs": [
         "ev-cap-fs-workspace"
-      ],
-      "confidence": "confirmed",
-      "basis_kind": "observed"
-    },
-    {
-      "relation_id": "rel_ac184dce792c2231",
-      "relation_type": "ADVERTISES",
-      "source_asset_ref": "srv_8d8aec91ec656a07",
-      "target": {
-        "kind": "asset",
-        "asset_ref": "tool_eb4353d48a76c254"
-      },
-      "evidence_refs": [
-        "ev-cap-inventory-remote"
-      ],
-      "confidence": "confirmed",
-      "basis_kind": "observed"
-    },
-    {
-      "relation_id": "rel_10a828b967b46d72",
-      "relation_type": "ADVERTISES",
-      "source_asset_ref": "srv_8d8aec91ec656a07",
-      "target": {
-        "kind": "asset",
-        "asset_ref": "tool_53b93b83f270bcc8"
-      },
-      "evidence_refs": [
-        "ev-cap-inventory-remote"
-      ],
-      "confidence": "confirmed",
-      "basis_kind": "observed"
-    },
-    {
-      "relation_id": "rel_ceab7d83450a7c0d",
-      "relation_type": "ADVERTISES",
-      "source_asset_ref": "srv_8d8aec91ec656a07",
-      "target": {
-        "kind": "asset",
-        "asset_ref": "rp_acf254f9205b49ea"
-      },
-      "evidence_refs": [
-        "ev-cap-inventory-remote"
-      ],
-      "confidence": "confirmed",
-      "basis_kind": "observed"
-    },
-    {
-      "relation_id": "rel_bbe8fbe77ddc98cd",
-      "relation_type": "ADVERTISES",
-      "source_asset_ref": "srv_8d8aec91ec656a07",
-      "target": {
-        "kind": "asset",
-        "asset_ref": "rp_478bd7cc89873d71"
-      },
-      "evidence_refs": [
-        "ev-cap-inventory-remote"
       ],
       "confidence": "confirmed",
       "basis_kind": "observed"
@@ -7404,6 +7347,62 @@
       "basis_kind": "observed"
     },
     {
+      "relation_id": "rel_cd5234bb835cc01e",
+      "relation_type": "ADVERTISES",
+      "source_asset_ref": "srv_7758492c8abfaa79",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "tool_eb4353d48a76c254"
+      },
+      "evidence_refs": [
+        "ev-cap-inventory-remote"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "observed"
+    },
+    {
+      "relation_id": "rel_f9a254adb647e0a3",
+      "relation_type": "ADVERTISES",
+      "source_asset_ref": "srv_7758492c8abfaa79",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "tool_53b93b83f270bcc8"
+      },
+      "evidence_refs": [
+        "ev-cap-inventory-remote"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "observed"
+    },
+    {
+      "relation_id": "rel_8f7793c78327066c",
+      "relation_type": "ADVERTISES",
+      "source_asset_ref": "srv_7758492c8abfaa79",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "rp_acf254f9205b49ea"
+      },
+      "evidence_refs": [
+        "ev-cap-inventory-remote"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "observed"
+    },
+    {
+      "relation_id": "rel_f633e430c2608700",
+      "relation_type": "ADVERTISES",
+      "source_asset_ref": "srv_7758492c8abfaa79",
+      "target": {
+        "kind": "asset",
+        "asset_ref": "rp_478bd7cc89873d71"
+      },
+      "evidence_refs": [
+        "ev-cap-inventory-remote"
+      ],
+      "confidence": "confirmed",
+      "basis_kind": "observed"
+    },
+    {
       "relation_id": "rel_d1dddff131297a85",
       "relation_type": "ADVERTISES",
       "source_asset_ref": "srv_bbb764ffe6b99467",
@@ -7474,12 +7473,12 @@
       "basis_kind": "declared"
     },
     {
-      "relation_id": "rel_c36eb59fbde7d2ad",
+      "relation_id": "rel_01bc2d771b9f22b1",
       "relation_type": "ASSOCIATED_WITH",
       "source_asset_ref": "skill_588bddbd8a291ebf",
       "target": {
         "kind": "asset",
-        "asset_ref": "srv_8d8aec91ec656a07"
+        "asset_ref": "srv_7758492c8abfaa79"
       },
       "evidence_refs": [
         "ev-skill-tb-gw-inventory-owner-report"
@@ -7494,7 +7493,7 @@
       "evidence_id": "ev-gw-config",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:45Z",
+      "observed_at": "2026-11-08T19:15:20Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "redacted",
       "field_path": "gateway",
@@ -7514,7 +7513,7 @@
       "evidence_id": "ev-gw-auth",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:45Z",
+      "observed_at": "2026-11-08T19:15:20Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "redacted",
       "field_path": "gateway.auth",
@@ -7526,7 +7525,7 @@
       "evidence_id": "ev-gw-tools-profile",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:45Z",
+      "observed_at": "2026-11-08T19:15:20Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "not_needed",
       "field_path": "tools.profile"
@@ -7552,28 +7551,16 @@
       "evidence_id": "ev-decl-tb-gw-fs-workspace",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:45Z",
+      "observed_at": "2026-11-08T19:15:20Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "not_needed",
       "field_path": "mcp.servers.fs-workspace"
     },
     {
-      "evidence_id": "ev-decl-tb-gw-inventory-remote",
-      "evidence_type": "config",
-      "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:45Z",
-      "collection_ref": "col-gw-config",
-      "redaction_status": "redacted",
-      "field_path": "mcp.servers.inventory-remote",
-      "redacted_fields": [
-        "mcp.servers.inventory-remote.headers"
-      ]
-    },
-    {
       "evidence_id": "ev-decl-tb-node-kg-memory",
       "evidence_type": "config",
       "source_ref": "tb-node:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:45Z",
+      "observed_at": "2026-11-08T19:15:20Z",
       "collection_ref": "col-node-config",
       "redaction_status": "redacted",
       "field_path": "nodeHost.mcp.servers.kg-memory",
@@ -7585,12 +7572,24 @@
       "evidence_id": "ev-decl-tb-node-demo-everything",
       "evidence_type": "config",
       "source_ref": "tb-node:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:45Z",
+      "observed_at": "2026-11-08T19:15:20Z",
       "collection_ref": "col-node-config",
       "redaction_status": "redacted",
       "field_path": "nodeHost.mcp.servers.demo-everything",
       "redacted_fields": [
         "nodeHost.mcp.servers.demo-everything.env"
+      ]
+    },
+    {
+      "evidence_id": "ev-decl-tb-node-inventory-remote",
+      "evidence_type": "config",
+      "source_ref": "tb-node:~/.openclaw/openclaw.json",
+      "observed_at": "2026-11-08T19:15:20Z",
+      "collection_ref": "col-node-config",
+      "redaction_status": "redacted",
+      "field_path": "nodeHost.mcp.servers.inventory-remote",
+      "redacted_fields": [
+        "nodeHost.mcp.servers.inventory-remote.headers"
       ]
     },
     {
@@ -7605,7 +7604,7 @@
       "evidence_id": "ev-plugin-cfg-agentscope-asset-catalog",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:45Z",
+      "observed_at": "2026-11-08T19:15:20Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "not_needed",
       "field_path": "plugins.entries.agentscope-asset-catalog"
@@ -7635,15 +7634,6 @@
       "observed_at": "2026-10-04T06:49:26Z",
       "collection_ref": "col-exposure",
       "redaction_status": "not_needed"
-    },
-    {
-      "evidence_id": "ev-cap-inventory-remote",
-      "evidence_type": "protocol",
-      "source_ref": "inventory-remote:advertised",
-      "observed_at": "2026-10-04T06:49:26Z",
-      "collection_ref": "col-tools_list-inventory-remote",
-      "redaction_status": "not_needed",
-      "note": "실제 협상 버전이 설계 기준(2026-07-28)과 다름"
     },
     {
       "evidence_id": "ev-cap-kg-memory",
@@ -7678,6 +7668,15 @@
       "observed_at": "2026-10-04T06:49:26Z",
       "collection_ref": "col-exposure",
       "redaction_status": "not_needed"
+    },
+    {
+      "evidence_id": "ev-cap-inventory-remote",
+      "evidence_type": "protocol",
+      "source_ref": "inventory-remote:advertised",
+      "observed_at": "2026-10-04T06:49:26Z",
+      "collection_ref": "col-tools_list-inventory-remote",
+      "redaction_status": "not_needed",
+      "note": "실제 협상 버전이 설계 기준(2026-07-28)과 다름"
     },
     {
       "evidence_id": "ev-cap-asset-catalog",
@@ -7747,12 +7746,12 @@
       "scope": "gateway_config",
       "target_ref": null,
       "mode": "local_file",
-      "status": "partial",
-      "collected_at": "2026-10-26T13:37:45Z",
-      "reason": "profile-scoped configuration collection · server_entries_incomplete",
+      "status": "success",
+      "collected_at": "2026-11-08T19:15:20Z",
+      "reason": "profile-scoped configuration collection",
       "details": {
         "outcome": "servers_found",
-        "reported_count": 2,
+        "reported_count": 1,
         "values_resolved": false,
         "not_verified": [
           "connection",
@@ -7768,13 +7767,7 @@
           "version": "0.1.0"
         },
         "format": "agent-scope.scanner.openclaw-mcp-config@0.1.0-draft",
-        "unresolved": [
-          {
-            "kind": "env_var",
-            "name": "INVENTORY_MCP_TOKEN",
-            "field_path": "mcp.servers.inventory-remote.headers.Authorization"
-          }
-        ]
+        "unresolved": []
       }
     },
     {
@@ -7784,11 +7777,11 @@
       "target_ref": null,
       "mode": "local_file",
       "status": "partial",
-      "collected_at": "2026-10-26T13:37:45Z",
+      "collected_at": "2026-11-08T19:15:20Z",
       "reason": "profile-scoped configuration collection · server_entries_incomplete",
       "details": {
         "outcome": "servers_found",
-        "reported_count": 2,
+        "reported_count": 3,
         "values_resolved": false,
         "not_verified": [
           "connection",
@@ -7809,6 +7802,11 @@
             "kind": "env_var",
             "name": "EVERYTHING_DEMO_KEY",
             "field_path": "nodeHost.mcp.servers.demo-everything.env.EVERYTHING_DEMO_KEY"
+          },
+          {
+            "kind": "env_var",
+            "name": "INVENTORY_MCP_TOKEN",
+            "field_path": "nodeHost.mcp.servers.inventory-remote.headers.Authorization"
           }
         ]
       }
@@ -7820,13 +7818,13 @@
       "target_ref": null,
       "mode": "local_file",
       "status": "success",
-      "collected_at": "2026-10-26T13:37:45Z",
+      "collected_at": "2026-11-08T19:15:20Z",
       "reason": "스캐너 0.1.0은 sslVerify·toolFilter의 키 이름만 수집 — 비밀이 아닌 값을 어댑터가 설정에서 보강",
       "details": {
         "fields": [
           "mcp.servers.fs-workspace.toolFilter",
-          "mcp.servers.inventory-remote.sslVerify",
-          "nodeHost.mcp.servers.demo-everything.toolFilter"
+          "nodeHost.mcp.servers.demo-everything.toolFilter",
+          "nodeHost.mcp.servers.inventory-remote.sslVerify"
         ]
       }
     },
@@ -7858,65 +7856,6 @@
           "prompts"
         ],
         "synthetic": false
-      }
-    },
-    {
-      "collection_id": "col-tools_list-inventory-remote",
-      "source_ref": "inventory-remote:advertised",
-      "scope": "tools_list",
-      "target_ref": "srv_8d8aec91ec656a07",
-      "mode": "imported_catalog",
-      "status": "success",
-      "collected_at": "2026-10-04T06:49:26Z",
-      "protocol_version": "2025-11-25",
-      "auth_context_ref": "anonymous-testbed",
-      "details": {
-        "reported_count": 2,
-        "requested_protocol_version": "2026-07-28",
-        "capabilities_not_advertised": [],
-        "synthetic": false
-      }
-    },
-    {
-      "collection_id": "col-resources_list-inventory-remote",
-      "source_ref": "inventory-remote:advertised",
-      "scope": "resources_list",
-      "target_ref": "srv_8d8aec91ec656a07",
-      "mode": "imported_catalog",
-      "status": "success",
-      "collected_at": "2026-10-04T06:49:26Z",
-      "protocol_version": "2025-11-25",
-      "auth_context_ref": "anonymous-testbed",
-      "details": {
-        "reported_count": 1
-      }
-    },
-    {
-      "collection_id": "col-resource_templates_list-inventory-remote",
-      "source_ref": "inventory-remote:advertised",
-      "scope": "resource_templates_list",
-      "target_ref": "srv_8d8aec91ec656a07",
-      "mode": "imported_catalog",
-      "status": "success",
-      "collected_at": "2026-10-04T06:49:26Z",
-      "protocol_version": "2025-11-25",
-      "auth_context_ref": "anonymous-testbed",
-      "details": {
-        "reported_count": 0
-      }
-    },
-    {
-      "collection_id": "col-prompts_list-inventory-remote",
-      "source_ref": "inventory-remote:advertised",
-      "scope": "prompts_list",
-      "target_ref": "srv_8d8aec91ec656a07",
-      "mode": "imported_catalog",
-      "status": "success",
-      "collected_at": "2026-10-04T06:49:26Z",
-      "protocol_version": "2025-11-25",
-      "auth_context_ref": "anonymous-testbed",
-      "details": {
-        "reported_count": 1
       }
     },
     {
@@ -8023,6 +7962,65 @@
       "auth_context_ref": "anonymous-testbed",
       "details": {
         "reported_count": 4
+      }
+    },
+    {
+      "collection_id": "col-tools_list-inventory-remote",
+      "source_ref": "inventory-remote:advertised",
+      "scope": "tools_list",
+      "target_ref": "srv_7758492c8abfaa79",
+      "mode": "imported_catalog",
+      "status": "success",
+      "collected_at": "2026-10-04T06:49:26Z",
+      "protocol_version": "2025-11-25",
+      "auth_context_ref": "anonymous-testbed",
+      "details": {
+        "reported_count": 2,
+        "requested_protocol_version": "2026-07-28",
+        "capabilities_not_advertised": [],
+        "synthetic": false
+      }
+    },
+    {
+      "collection_id": "col-resources_list-inventory-remote",
+      "source_ref": "inventory-remote:advertised",
+      "scope": "resources_list",
+      "target_ref": "srv_7758492c8abfaa79",
+      "mode": "imported_catalog",
+      "status": "success",
+      "collected_at": "2026-10-04T06:49:26Z",
+      "protocol_version": "2025-11-25",
+      "auth_context_ref": "anonymous-testbed",
+      "details": {
+        "reported_count": 1
+      }
+    },
+    {
+      "collection_id": "col-resource_templates_list-inventory-remote",
+      "source_ref": "inventory-remote:advertised",
+      "scope": "resource_templates_list",
+      "target_ref": "srv_7758492c8abfaa79",
+      "mode": "imported_catalog",
+      "status": "success",
+      "collected_at": "2026-10-04T06:49:26Z",
+      "protocol_version": "2025-11-25",
+      "auth_context_ref": "anonymous-testbed",
+      "details": {
+        "reported_count": 0
+      }
+    },
+    {
+      "collection_id": "col-prompts_list-inventory-remote",
+      "source_ref": "inventory-remote:advertised",
+      "scope": "prompts_list",
+      "target_ref": "srv_7758492c8abfaa79",
+      "mode": "imported_catalog",
+      "status": "success",
+      "collected_at": "2026-10-04T06:49:26Z",
+      "protocol_version": "2025-11-25",
+      "auth_context_ref": "anonymous-testbed",
+      "details": {
+        "reported_count": 1
       }
     },
     {

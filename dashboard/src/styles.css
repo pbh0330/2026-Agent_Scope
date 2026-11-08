@@ -392,6 +392,7 @@ p { margin: 0; }
 .reco { font-size: .86rem; color: var(--ink-2); background: var(--accent-wash); padding: 8px 12px; border-radius: 10px; }
 .eval-row { display: grid; grid-template-columns: 74px 96px minmax(0, 1fr) minmax(0, 1.4fr); gap: 12px; padding: 10px 4px; border-bottom: 1px solid var(--line); font-size: .86rem; align-items: center; }
 .eval-row:last-child { border-bottom: 0; }
+.eval-row .rule-name { display: block; font-weight: 600; color: var(--ink-2); font-size: .8rem; margin-bottom: 2px; }
 
 /* ── Drawer ── */
 .drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(460px, 100vw); z-index: 20; background: var(--surface); box-shadow: var(--shadow-drawer); display: flex; flex-direction: column; border-radius: 22px 0 0 22px; animation: slide .22s cubic-bezier(.2, .7, .2, 1); }

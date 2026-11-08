@@ -1,6 +1,6 @@
 {
   "schema_version": "0.6.0-draft",
-  "snapshot_id": "snap-p0-20261026T133744Z",
+  "snapshot_id": "snap-p0-20261108T191519Z",
   "environment_id": "agentscope-testbed",
   "profile_id": "tb-openclaw",
   "context": {
@@ -24,10 +24,10 @@
       }
     ]
   },
-  "generated_at": "2026-10-26T13:37:44Z",
+  "generated_at": "2026-11-08T19:15:19Z",
   "scan": {
-    "started_at": "2026-10-26T13:37:43Z",
-    "finished_at": "2026-10-26T13:37:44Z",
+    "started_at": "2026-11-08T19:15:19Z",
+    "finished_at": "2026-11-08T19:15:19Z",
     "status": "success"
   },
   "testbed_context": {
@@ -2179,7 +2179,7 @@
       "evidence_id": "ev-gw-config",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:43Z",
+      "observed_at": "2026-11-08T19:15:19Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "redacted",
       "field_path": "gateway",
@@ -2199,7 +2199,7 @@
       "evidence_id": "ev-gw-auth",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:43Z",
+      "observed_at": "2026-11-08T19:15:19Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "redacted",
       "field_path": "gateway.auth",
@@ -2211,7 +2211,7 @@
       "evidence_id": "ev-gw-tools-profile",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:43Z",
+      "observed_at": "2026-11-08T19:15:19Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "not_needed",
       "field_path": "tools.profile"
@@ -2228,7 +2228,7 @@
       "evidence_id": "ev-decl-tb-gw-fs-workspace",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:43Z",
+      "observed_at": "2026-11-08T19:15:19Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "not_needed",
       "field_path": "mcp.servers.fs-workspace"
@@ -2277,7 +2277,7 @@
       "target_ref": null,
       "mode": "local_file",
       "status": "success",
-      "collected_at": "2026-10-26T13:37:43Z",
+      "collected_at": "2026-11-08T19:15:19Z",
       "reason": "profile-scoped configuration collection",
       "details": {
         "outcome": "servers_found",
@@ -2307,7 +2307,7 @@
       "target_ref": null,
       "mode": "local_file",
       "status": "success",
-      "collected_at": "2026-10-26T13:37:44Z",
+      "collected_at": "2026-11-08T19:15:19Z",
       "reason": "profile-scoped configuration collection · registry_absent",
       "details": {
         "outcome": "registry_absent",
@@ -2337,7 +2337,7 @@
       "target_ref": null,
       "mode": "local_file",
       "status": "success",
-      "collected_at": "2026-10-26T13:37:43Z",
+      "collected_at": "2026-11-08T19:15:19Z",
       "reason": "스캐너 0.1.0은 sslVerify·toolFilter의 키 이름만 수집 — 비밀이 아닌 값을 어댑터가 설정에서 보강",
       "details": {
         "fields": [

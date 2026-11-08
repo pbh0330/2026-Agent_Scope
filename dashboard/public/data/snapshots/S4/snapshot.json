@@ -1,6 +1,6 @@
 {
   "schema_version": "0.6.0-draft",
-  "snapshot_id": "snap-s4-20261026T133745Z",
+  "snapshot_id": "snap-s4-20261108T191520Z",
   "environment_id": "agentscope-testbed",
   "profile_id": "tb-openclaw",
   "context": {
@@ -24,22 +24,23 @@
       }
     ]
   },
-  "generated_at": "2026-10-26T13:37:45Z",
+  "generated_at": "2026-11-08T19:15:20Z",
   "scan": {
-    "started_at": "2026-10-26T13:37:44Z",
-    "finished_at": "2026-10-26T13:37:44Z",
+    "started_at": "2026-11-08T19:15:20Z",
+    "finished_at": "2026-11-08T19:15:20Z",
     "status": "partial"
   },
   "testbed_context": {
-    "configuration_id": "P2",
+    "configuration_id": "S4",
     "scenario_id": "S4",
-    "vm_snapshot_label": "SNAP-S4",
+    "vm_snapshot_label": null,
     "label": "S4 · 자격증명 공유",
     "kind": "scenario",
     "captured_at": "2026-10-04T06:49:26Z",
     "notes": [
-      "Gateway의 fs-workspace가 inventory-remote와 같은 `INVENTORY_MCP_TOKEN` 참조",
-      "Node의 demo-everything도 같은 이름 참조 — 저장소가 달라 동일 자격증명으로 단정하지 않음"
+      "S4-T1: tb-gw fs-workspace가 inventory-remote와 같은 INVENTORY_MCP_TOKEN(tb-gw .env) 참조",
+      "S4-T2: tb-node demo-everything도 INVENTORY_MCP_TOKEN 참조 — 저장소(tb-node .env)가 달라 판단 불가",
+      "S4-T3은 S1 스냅샷의 inventory-remote Endpoint 변경에서 확인"
     ]
   },
   "assets": [
@@ -266,9 +267,10 @@
           },
           {
             "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "value": true,
+            "evidence_refs": [
+              "ev-expo-fs-workspace"
+            ],
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -777,9 +779,10 @@
           },
           {
             "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "value": true,
+            "evidence_refs": [
+              "ev-expo-demo-everything"
+            ],
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -1161,9 +1164,11 @@
           },
           {
             "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "value": false,
+            "evidence_refs": [
+              "ev-expo-fs-workspace"
+            ],
+            "reason": "toolFilter.include에 없음",
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -1266,9 +1271,10 @@
           },
           {
             "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "value": true,
+            "evidence_refs": [
+              "ev-expo-fs-workspace"
+            ],
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -1371,9 +1377,11 @@
           },
           {
             "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "value": false,
+            "evidence_refs": [
+              "ev-expo-fs-workspace"
+            ],
+            "reason": "toolFilter.include에 없음",
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -1529,9 +1537,11 @@
           },
           {
             "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "value": false,
+            "evidence_refs": [
+              "ev-expo-fs-workspace"
+            ],
+            "reason": "toolFilter.include에 없음",
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -1631,9 +1641,11 @@
           },
           {
             "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "value": false,
+            "evidence_refs": [
+              "ev-expo-fs-workspace"
+            ],
+            "reason": "toolFilter.include에 없음",
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -1734,9 +1746,11 @@
           },
           {
             "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "value": false,
+            "evidence_refs": [
+              "ev-expo-fs-workspace"
+            ],
+            "reason": "toolFilter.include에 없음",
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -1859,9 +1873,11 @@
           },
           {
             "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "value": false,
+            "evidence_refs": [
+              "ev-expo-fs-workspace"
+            ],
+            "reason": "toolFilter.include에 없음",
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -1958,9 +1974,10 @@
           },
           {
             "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "value": true,
+            "evidence_refs": [
+              "ev-expo-fs-workspace"
+            ],
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -2055,9 +2072,11 @@
           },
           {
             "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "value": false,
+            "evidence_refs": [
+              "ev-expo-fs-workspace"
+            ],
+            "reason": "toolFilter.include에 없음",
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -2161,9 +2180,11 @@
           },
           {
             "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "value": false,
+            "evidence_refs": [
+              "ev-expo-fs-workspace"
+            ],
+            "reason": "toolFilter.include에 없음",
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -2265,9 +2286,11 @@
           },
           {
             "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "value": false,
+            "evidence_refs": [
+              "ev-expo-fs-workspace"
+            ],
+            "reason": "toolFilter.include에 없음",
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -2368,9 +2391,11 @@
           },
           {
             "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "value": false,
+            "evidence_refs": [
+              "ev-expo-fs-workspace"
+            ],
+            "reason": "toolFilter.include에 없음",
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -2476,9 +2501,11 @@
           },
           {
             "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "value": false,
+            "evidence_refs": [
+              "ev-expo-fs-workspace"
+            ],
+            "reason": "toolFilter.include에 없음",
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -2573,9 +2600,11 @@
           },
           {
             "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "value": false,
+            "evidence_refs": [
+              "ev-expo-fs-workspace"
+            ],
+            "reason": "toolFilter.include에 없음",
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -4263,9 +4292,10 @@
           },
           {
             "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "value": true,
+            "evidence_refs": [
+              "ev-expo-demo-everything"
+            ],
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -4350,9 +4380,10 @@
           },
           {
             "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "value": true,
+            "evidence_refs": [
+              "ev-expo-demo-everything"
+            ],
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -4447,9 +4478,11 @@
           },
           {
             "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "value": false,
+            "evidence_refs": [
+              "ev-expo-demo-everything"
+            ],
+            "reason": "toolFilter.exclude",
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -4526,9 +4559,10 @@
           },
           {
             "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "value": true,
+            "evidence_refs": [
+              "ev-expo-demo-everything"
+            ],
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -4613,9 +4647,10 @@
           },
           {
             "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "value": true,
+            "evidence_refs": [
+              "ev-expo-demo-everything"
+            ],
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -4706,9 +4741,10 @@
           },
           {
             "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "value": true,
+            "evidence_refs": [
+              "ev-expo-demo-everything"
+            ],
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -4822,9 +4858,10 @@
           },
           {
             "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "value": true,
+            "evidence_refs": [
+              "ev-expo-demo-everything"
+            ],
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -4914,9 +4951,10 @@
           },
           {
             "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "value": true,
+            "evidence_refs": [
+              "ev-expo-demo-everything"
+            ],
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -4993,9 +5031,11 @@
           },
           {
             "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "value": false,
+            "evidence_refs": [
+              "ev-expo-demo-everything"
+            ],
+            "reason": "toolFilter.exclude",
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -5093,9 +5133,10 @@
           },
           {
             "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "value": true,
+            "evidence_refs": [
+              "ev-expo-demo-everything"
+            ],
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -5172,9 +5213,10 @@
           },
           {
             "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "value": true,
+            "evidence_refs": [
+              "ev-expo-demo-everything"
+            ],
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -5251,9 +5293,10 @@
           },
           {
             "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "value": true,
+            "evidence_refs": [
+              "ev-expo-demo-everything"
+            ],
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -5341,9 +5384,11 @@
           },
           {
             "state": "EXPOSED",
-            "value": null,
-            "evidence_refs": [],
-            "reason": "위험 구성은 설정 변경으로 생성 — 에이전트 노출 목록을 다시 수집하지 않음",
+            "value": false,
+            "evidence_refs": [
+              "ev-expo-demo-everything"
+            ],
+            "reason": "taskSupport: required — OpenClaw가 게시하지 않음",
             "subject_ref": {
               "kind": "agent",
               "profile_id": "tb-openclaw",
@@ -7535,7 +7580,7 @@
       "evidence_id": "ev-gw-config",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:44Z",
+      "observed_at": "2026-11-08T19:15:20Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "redacted",
       "field_path": "gateway",
@@ -7555,7 +7600,7 @@
       "evidence_id": "ev-gw-auth",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:44Z",
+      "observed_at": "2026-11-08T19:15:20Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "redacted",
       "field_path": "gateway.auth",
@@ -7567,7 +7612,7 @@
       "evidence_id": "ev-gw-tools-profile",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:44Z",
+      "observed_at": "2026-11-08T19:15:20Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "not_needed",
       "field_path": "tools.profile"
@@ -7593,7 +7638,7 @@
       "evidence_id": "ev-decl-tb-gw-fs-workspace",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:44Z",
+      "observed_at": "2026-11-08T19:15:20Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "redacted",
       "field_path": "mcp.servers.fs-workspace",
@@ -7605,7 +7650,7 @@
       "evidence_id": "ev-decl-tb-gw-inventory-remote",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:44Z",
+      "observed_at": "2026-11-08T19:15:20Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "redacted",
       "field_path": "mcp.servers.inventory-remote",
@@ -7617,7 +7662,7 @@
       "evidence_id": "ev-decl-tb-node-kg-memory",
       "evidence_type": "config",
       "source_ref": "tb-node:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:44Z",
+      "observed_at": "2026-11-08T19:15:20Z",
       "collection_ref": "col-node-config",
       "redaction_status": "redacted",
       "field_path": "nodeHost.mcp.servers.kg-memory",
@@ -7629,7 +7674,7 @@
       "evidence_id": "ev-decl-tb-node-demo-everything",
       "evidence_type": "config",
       "source_ref": "tb-node:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:44Z",
+      "observed_at": "2026-11-08T19:15:20Z",
       "collection_ref": "col-node-config",
       "redaction_status": "redacted",
       "field_path": "nodeHost.mcp.servers.demo-everything",
@@ -7649,7 +7694,7 @@
       "evidence_id": "ev-plugin-cfg-agentscope-asset-catalog",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-10-26T13:37:44Z",
+      "observed_at": "2026-11-08T19:15:20Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "not_needed",
       "field_path": "plugins.entries.agentscope-asset-catalog"
@@ -7671,6 +7716,14 @@
       "collection_ref": "col-tools_list-fs-workspace",
       "redaction_status": "not_needed",
       "note": "실제 협상 버전이 설계 기준(2026-07-28)과 다름"
+    },
+    {
+      "evidence_id": "ev-expo-fs-workspace",
+      "evidence_type": "protocol",
+      "source_ref": "tb-gw:openclaw mcp probe --json",
+      "observed_at": "2026-10-04T06:49:26Z",
+      "collection_ref": "col-exposure",
+      "redaction_status": "not_needed"
     },
     {
       "evidence_id": "ev-cap-inventory-remote",
@@ -7714,6 +7767,14 @@
       "collection_ref": "col-tools_list-demo-everything",
       "redaction_status": "not_needed",
       "note": "실제 협상 버전이 설계 기준(2026-07-28)과 다름"
+    },
+    {
+      "evidence_id": "ev-expo-demo-everything",
+      "evidence_type": "protocol",
+      "source_ref": "tb-node:openclaw nodes describe --json",
+      "observed_at": "2026-10-04T06:49:26Z",
+      "collection_ref": "col-exposure",
+      "redaction_status": "not_needed"
     },
     {
       "evidence_id": "ev-cap-asset-catalog",
@@ -7784,7 +7845,7 @@
       "target_ref": null,
       "mode": "local_file",
       "status": "partial",
-      "collected_at": "2026-10-26T13:37:44Z",
+      "collected_at": "2026-11-08T19:15:20Z",
       "reason": "profile-scoped configuration collection · server_entries_incomplete",
       "details": {
         "outcome": "servers_found",
@@ -7825,7 +7886,7 @@
       "target_ref": null,
       "mode": "local_file",
       "status": "partial",
-      "collected_at": "2026-10-26T13:37:44Z",
+      "collected_at": "2026-11-08T19:15:20Z",
       "reason": "profile-scoped configuration collection · server_entries_incomplete",
       "details": {
         "outcome": "servers_found",
@@ -7861,7 +7922,7 @@
       "target_ref": null,
       "mode": "local_file",
       "status": "success",
-      "collected_at": "2026-10-26T13:37:44Z",
+      "collected_at": "2026-11-08T19:15:20Z",
       "reason": "스캐너 0.1.0은 sslVerify·toolFilter의 키 이름만 수집 — 비밀이 아닌 값을 어댑터가 설정에서 보강",
       "details": {
         "fields": [
