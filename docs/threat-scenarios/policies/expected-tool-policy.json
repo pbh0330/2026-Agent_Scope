@@ -1,0 +1,49 @@
+{
+  "policy_id": "pol-s2-expected-tool-policy",
+  "version": "2.1",
+  "baseline": "SNAP-2-P2",
+  "source_ref": "docs/threat-scenarios/scenario-s2.md#18-v21-확정-사항",
+  "description": "S2 판정 기준. 서버별로 에이전트에 노출돼도 되는 Tool과 파일 접근 범위. P2 정상 설정에서 옮겼다. 테스트베드 정답 폴더(testbed/ground-truth)로 옮겨도 된다.",
+  "high_risk_inputs": {
+    "path": ["path", "paths", "file_path", "directory", "source", "destination"],
+    "command": ["command", "cmd", "exec", "shell", "script"],
+    "network": ["url", "uri", "host", "address", "endpoint", "sync_url"],
+    "credential": ["token", "credential", "api_key", "apikey", "secret", "password"]
+  },
+  "servers": {
+    "fs-workspace": {
+      "declared_at_vm": "tb-gw",
+      "filesystem_scope": ["/home/<TB_USER>/workspace"],
+      "allowed_exposed_tools": ["read_text_file", "list_directory"],
+      "allow_state_changing_tools": false
+    },
+    "kg-memory": {
+      "declared_at_vm": "tb-node",
+      "filesystem_scope": ["/home/<TB_USER>/node-data/memory.jsonl"],
+      "allowed_exposed_tools": "*",
+      "allow_state_changing_tools": true,
+      "note": "지식 그래프 쓰기·삭제가 이 서버의 정상 기능이다. 데이터는 지정 파일 하나에 한정"
+    },
+    "demo-everything": {
+      "declared_at_vm": "tb-node",
+      "filesystem_scope": [],
+      "allowed_exposed_tools": "*",
+      "denied_exposed_tools": ["get-env", "gzip-file-as-resource"],
+      "allow_state_changing_tools": true,
+      "note": "P2 toolFilter.exclude와 같다. get-env는 서버 프로세스 환경변수를 돌려준다"
+    },
+    "inventory-remote": {
+      "declared_at_vm": "tb-gw",
+      "filesystem_scope": [],
+      "allowed_exposed_tools": ["inventory_list_hosts", "inventory_get_host"],
+      "allow_state_changing_tools": false
+    },
+    "asset-catalog": {
+      "declared_at_vm": "tb-gw",
+      "filesystem_scope": [],
+      "allowed_exposed_tools": ["catalog_search", "catalog_get_entry"],
+      "allow_state_changing_tools": false
+    }
+  },
+  "unlisted_server": "정책에 없는 서버는 S2-C0(unknown). 승인 여부는 S1이 판정한다"
+}

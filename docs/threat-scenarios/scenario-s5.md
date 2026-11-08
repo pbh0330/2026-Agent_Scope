@@ -7,6 +7,8 @@
 | 시나리오 ID | S5 |
 | 시나리오명 | 보안이 약한 연결을 통한 MCP Server 위장 가능성 |
 | 우선순위 | P3 |
+| 구현 우선순위 | 5 / 5 |
+| 문서 버전 | 2.1 (2026-11-08) — 확정 사항은 [부록 A](#부록-a-v21-확정-사항-2026-11-08) |
 | 주요 공격 표면 | A. MCP 통신 경계 |
 | 관련 공격 표면 | C. 권한·자격증명 |
 | 분석 방식 | 정적 설정 분석 |
@@ -307,3 +309,65 @@ Asset Graph에서는 다음 관계를 확인할 수 있도록 한다.
 - 테스트베드에 적용된 MCP Client 및 MCP Server의 연결 설정 문서
 
 ※ 세부 탐지 조건은 실제 테스트베드에서 사용하는 전송 방식과 설정 항목을 확인한 뒤 확정한다.
+
+---
+
+## 부록 A. v2.1 확정 사항 (2026-11-08)
+
+### A.1 버전과 우선순위
+
+| 항목 | v2.1 |
+|---|---|
+| 문서 버전 | `2.1` (2026-11-08) |
+| 위험 등급 | `P3` (v2.0과 같음) |
+| 구현 우선순위 | **5** / 5 — 구현 순서 S1 → S2 → S4 → S3 → S5 |
+| 상태 | `draft` (카탈로그 기준: draft → implemented → verified) |
+| 카탈로그 | [`scenario-catalog.json`](scenario-catalog.json) |
+| 기대 결과 | [`expected-results.md`](expected-results.md#7-s5-보안이-약한-연결-우선순위-5) |
+
+이 부록은 2026-11-08 담당자 확정 사항이다. 본문과 다르면 **이 부록이 우선**한다.
+
+### A.2 조건 ID
+
+본문 탐지 ID `S5-01`~`S5-05`를 공통 형식 `S5-C1`~`S5-C5`로 바꾼다. 번호는 그대로다.
+
+| 조건 ID | 본문 ID | 탐지 항목 | 충족 시 | 기본 severity / confidence |
+|---|---|---|---|---|
+| `S5-C1` | S5-01 | 암호화되지 않은 전송 (`http://`, `ws://`) | detected | high / high |
+| `S5-C2` | S5-02 | 인증서 검증 명시적 비활성화 (`sslVerify: false`) | detected | high / high |
+| `S5-C3` | S5-03 | https인데 `sslVerify` 항목 없음 | **unknown** (경고 없음) | — |
+| `S5-C4` | S5-04 | 연결 대상 검증 정보 부족 | not_evaluated | 후속 |
+| `S5-C5` | S5-05 | 보안 설정 적용 범위 불명확 | not_evaluated | 후속 |
+| `S5-NA` | — | stdio 로컬 실행 | not_applicable | — |
+
+- `S5-C3`: 결정 사항 3. 4.3절 "설정을 확인할 수 없다는 이유만으로 비활성화로 판단하지 않는다"를 그대로 적용한다. OpenClaw의 `sslVerify` 기본값이 문서로 확인되면 `S5-C2` 또는 `not_detected`로 바꿀 수 있다.
+- 스캐너 0.1.0은 `sslVerify`의 키 이름만 남긴다. 값이 없으면 `S5-C2`는 판정할 수 없으므로 스캐너 값 수집 또는 어댑터 보강이 필요하다.
+
+### A.3 검증 케이스
+
+원격 서버가 inventory-remote 하나라 세 케이스를 한 구성에 넣을 수 없다. 설정 사본 3개로 정적 검증하는 것을 제안한다(VM 반영 여부는 테스트베드 담당 판단).
+
+| 테스트 | 구성 (P2 대비, tb-gw inventory-remote) | 기대 |
+|---|---|---|
+| `S5-T0` | P2 정상: https + `sslVerify: true` | `not_detected`, stdio 4개 `not_applicable` |
+| `S5-T1` | url → `http://tb-node:8080/mcp`, `sslVerify` 삭제 | `S5-C1` (+ 동반 `S1-C2`, `S4-C3`) |
+| `S5-T2` | `sslVerify: false` | `S5-C2` |
+| `S5-T3` | `sslVerify` 항목 삭제 | `S5-C3` unknown, 경고 없음 |
+
+7.1절 Ground Truth 표의 "위험 설정 1·2"는 T1·T2, "불확실 설정"은 T3이다.
+
+QA 대응: `QA-S5-01` = T1~T3, `QA-S5-02` = T0.
+
+### A.4 관계 이름 (공통 스키마 0.7 대응)
+
+본문의 관계 이름은 v2.0 기준이다. 탐지 결과·대시보드에서는 오른쪽 이름을 쓴다(스키마 12.3·12.8절).
+
+| 본문 (v2.0) | 스키마 0.7 | 비고 |
+|---|---|---|
+| `DECLARES` | `DECLARES` | Gateway/Node/Plugin → Server |
+| `PROVIDES` | `ADVERTISES` | Server → Tool/Resource/Prompt. 서버 목록 근거가 있을 때만 |
+| `CONNECTS_TO` | `MAY_SEND_TO` (Server → 외부 목적지), `PAIRED_WITH` (Gateway → Node) | 선언을 연결 성공으로 바꾸지 않음 |
+| `EXPOSES` | `MAY_EXPOSE_TO` / `EXPOSES_TO` | 노출 목록 근거가 있으면 `EXPOSES_TO` |
+| `USES`, `REFERENCES`, `AUTHENTICATES`, `APPLIES_TO` | permission_auth 자산의 `target_refs` | 의미·방향 합의 전 확정 간선을 만들지 않음 |
+| `CONTAINS` | `CONTAINS` 후보 | Plugin → Skill |
+| Severity `High/Medium/Low`, Confidence `High/Medium/Low` | `high/medium/low` (소문자) | severity와 confidence는 따로 기록 |

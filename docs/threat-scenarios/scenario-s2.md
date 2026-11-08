@@ -4,8 +4,10 @@
 > Scenario Name: 악성 또는 과도한 권한의 도구 광고  
 > Priority: `P2`  
 > Attack Surface: `A — MCP 통신 경계`, `C — 권한·자격증명`  
-> 문서 기준: 2026-10-06  
-> 적용 Spec: `threat-scenario-spec.md v2.0`
+> 문서 기준: 2026-11-08 (v2.0: 2026-10-06)  
+> 적용 Spec: `threat-scenario-spec.md v2.1`  
+> 문서 버전: `2.1` (2026-11-08) — 확정 사항은 [부록 A](#부록-a-v21-확정-사항-2026-11-08)  
+> 구현 우선순위: `2` / 5
 
 ---
 
@@ -549,6 +551,69 @@ MCP Server가 제공하는 Tool에서 고위험 입력 항목과
 
 ## 17. References
 
-- `threat-scenario-spec.md v2.0`
+- `threat-scenario-spec.md v2.1`
 - `AI Agent MCP 공격표면 정의 v2.0`
 - `프로젝트 세부수행 보고서 2026-09-30`
+
+---
+
+## 부록 A. v2.1 확정 사항 (2026-11-08)
+
+### A.1 버전과 우선순위
+
+| 항목 | v2.1 |
+|---|---|
+| 문서 버전 | `2.1` (2026-11-08) |
+| 위험 등급 | `P2` (v2.0과 같음) |
+| 구현 우선순위 | **2** / 5 — 구현 순서 S1 → S2 → S4 → S3 → S5 |
+| 상태 | `draft` (카탈로그 기준: draft → implemented → verified) |
+| 카탈로그 | [`scenario-catalog.json`](scenario-catalog.json) |
+| 기대 결과 | [`expected-results.md`](expected-results.md#4-s2-악성-또는-과도한-권한의-도구-광고-우선순위-2) |
+
+이 부록은 2026-11-08 담당자 확정 사항이다. 본문과 다르면 **이 부록이 우선**한다.
+
+### A.2 공격 표면
+
+본문대로 `A — MCP 통신 경계`, `C — 권한·자격증명`을 유지한다. 공통 스키마 0.7 13.3절은 S2를 "PR #7 기준 B"로 적고 있는데, PR #7(이 문서) 원문은 A·C다. 스키마 문서 정정을 요청한다.
+
+### A.3 조건 ID
+
+| 조건 ID | 본문 위험 조건 (4절) | 충족 시 | 기본 severity / confidence |
+|---|---|---|---|
+| `S2-C1` | 승인 정책 누락 + 권한 범위 과다 — Tool Filter 제거·약화로 정책이 막은 Tool이 노출 | detected | high / high |
+| `S2-C2` | 파일 접근 범위 과다 — 서버 파일 범위가 기대 범위 밖으로 확대 | detected | 노출 Tool이 모두 읽기 전용이면 **medium**, 쓰기·이동·삭제 Tool이 함께 노출되면 high / high |
+| `S2-C3` | 고위험 입력(명령·네트워크) + 네트워크 범위 과다 | detected | medium / medium |
+| `S2-C4` | 인증정보 입력 | detected | medium / medium |
+| `S2-C0` | Tool 광고를 수집하지 못했거나 기대 도구 정책에 없는 서버 | unknown (경고 없음) | — |
+
+- 기준 정책: [`policies/expected-tool-policy.json`](policies/expected-tool-policy.json). 서버별 허용 노출 도구, 파일 범위, 상태 변경 도구 허용 여부를 P2 정상 설정에서 옮겼다.
+- 노출 여부는 선언된 toolFilter를 적용해 판단한다. 필터로 숨겨진 도구는 위험 입력이 있어도 S2 대상이 아니다.
+- `S2-C2`: 결정 사항 4. 읽기 전용 Tool만 노출돼도 접근 범위가 넓어지면 탐지하되 medium이다.
+- `S2-C3`: 입력 이름(6.2절 표)만으로 탐지하지 않는다. `readOnlyHint: false` 또는 `openWorldHint: true`가 함께 있을 때만 탐지한다. 경로 입력(`path`)은 `S2-C2`에서 범위로 판단하고 `S2-C3`에서 제외한다.
+- 9.3절 Case 3(과도한 Permission/Auth)은 OpenClaw 설정에 Tool 단위 권한 항목이 없어 v2.1에서는 `S2-C1`·`S2-C2`로 대체한다.
+
+### A.4 검증 케이스 (병하님 S2 프로파일 요청안)
+
+| 테스트 | 구성 (P2 대비) | 기대 |
+|---|---|---|
+| `S2-T0` | P2 정상 | S2 경고 없음 |
+| `S2-T1` | tb-gw fs-workspace `args` → `/home/<TB_USER>`, toolFilter 유지 | `S2-C2` medium |
+| `S2-T2` | tb-node demo-everything `toolFilter` 삭제 → `get-env`, `gzip-file-as-resource` 노출 | `S2-C1` high |
+
+두 변경은 서로 다른 서버라 한 프로파일(`SNAP-3-S2`)에 함께 넣는다. S2-T1에서 toolFilter까지 지우면 high가 되어 결정 사항 4를 검증할 수 없으니 유지한다. `S2-C3`·`S2-C4`는 테스트베드에 해당 도구가 없어 후속 케이스로 둔다.
+
+QA 대응: `QA-S2-01` = T1, T2, `QA-S2-02` = T0.
+
+### A.5 관계 이름 (공통 스키마 0.7 대응)
+
+본문의 관계 이름은 v2.0 기준이다. 탐지 결과·대시보드에서는 오른쪽 이름을 쓴다(스키마 12.3·12.8절).
+
+| 본문 (v2.0) | 스키마 0.7 | 비고 |
+|---|---|---|
+| `DECLARES` | `DECLARES` | Gateway/Node/Plugin → Server |
+| `PROVIDES` | `ADVERTISES` | Server → Tool/Resource/Prompt. 서버 목록 근거가 있을 때만 |
+| `CONNECTS_TO` | `MAY_SEND_TO` (Server → 외부 목적지), `PAIRED_WITH` (Gateway → Node) | 선언을 연결 성공으로 바꾸지 않음 |
+| `EXPOSES` | `MAY_EXPOSE_TO` / `EXPOSES_TO` | 노출 목록 근거가 있으면 `EXPOSES_TO` |
+| `USES`, `REFERENCES`, `AUTHENTICATES`, `APPLIES_TO` | permission_auth 자산의 `target_refs` | 의미·방향 합의 전 확정 간선을 만들지 않음 |
+| `CONTAINS` | `CONTAINS` 후보 | Plugin → Skill |
+| Severity `High/Medium/Low`, Confidence `High/Medium/Low` | `high/medium/low` (소문자) | severity와 confidence는 따로 기록 |

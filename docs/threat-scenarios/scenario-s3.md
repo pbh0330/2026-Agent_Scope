@@ -7,7 +7,9 @@
 - **Priority:** P3
 - **Attack Surface:** A. MCP 통신 경계
 - **Analysis Type:** Static Analysis
-- **Status:** Defined
+- **Status:** Defined (카탈로그 `draft`)
+- **Priority Order:** 4 / 5
+- **Version:** 2.1 (2026-11-08) — 확정 사항은 [부록 A](#부록-a-v21-확정-사항-2026-11-08)
 
 ### 목적
 
@@ -470,3 +472,60 @@ Alert는 이름 충돌과 확인된 차이를 안내한다.
 - Threat Scenario Specification v2.0
 - MCP 관련 보안 및 구성 기준
 - OpenClaw 환경 구성 및 테스트베드 정의
+
+---
+
+## 부록 A. v2.1 확정 사항 (2026-11-08)
+
+### A.1 버전과 우선순위
+
+| 항목 | v2.1 |
+|---|---|
+| 문서 버전 | `2.1` (2026-11-08) |
+| 위험 등급 | `P3` (v2.0과 같음) |
+| 구현 우선순위 | **4** / 5 — 구현 순서 S1 → S2 → S4 → S3 → S5 |
+| 상태 | `draft` (카탈로그 기준: draft → implemented → verified) |
+| 카탈로그 | [`scenario-catalog.json`](scenario-catalog.json) |
+| 기대 결과 | [`expected-results.md`](expected-results.md#6-s3-tool-이름-충돌-우선순위-4) |
+
+이 부록은 2026-11-08 담당자 확정 사항이다. 본문과 다르면 **이 부록이 우선**한다.
+
+### A.2 조건 ID
+
+| 조건 ID | 본문 조건 (6절) | 충족 시 | 기본 severity / confidence |
+|---|---|---|---|
+| `S3-C1` | 서로 다른 Server가 같은 Tool name 광고 + Provider·Endpoint·inputSchema·annotations 중 하나 이상 차이 | detected | medium / high |
+| `S3-C2` | 서로 다른 Server가 같은 Tool name 광고 + 정의 동일 | detected | low / **medium** |
+| `S3-C3` | 같은 이름이지만 한쪽 정의를 수집하지 못함 | unknown (경고 없음) | — |
+
+- `S3-C2`: 결정 사항 5. 본문 6절 탐지 로직은 차이가 있을 때만 경고를 내지만, v2.1에서는 정의가 같아도 이름 충돌 자체를 탐지한다. 어느 서버가 호출될지 이름 말고 구분할 근거가 없기 때문이다. 근거가 약해 confidence는 medium이다.
+- 비교 대상은 서버가 광고한 공식 `name`이다. 같은 Agent에 노출되는 이름 충돌(필터 적용 후)은 런타임 문맥이 필요해 후속으로 둔다.
+- 동명 Tool은 각각 별도 자산으로 유지하고, 경고의 `asset_ids`에 양쪽을 모두 넣는다.
+
+### A.3 검증 케이스 (병하님 S3 프로파일 요청안)
+
+설정은 그대로 두고, 자체 제작 서버 inventory-remote가 도구 2개를 더 광고하도록 서버 시작 옵션을 추가한다.
+
+| 테스트 | 구성 | 기대 |
+|---|---|---|
+| `S3-T0` | P2 정상: 서버 간 이름 중복 없음 | S3 경고 없음 |
+| `S3-T1` | inventory-remote가 `read_text_file` 광고 (입력 `path`, `sync_url`, `openWorldHint: true`) | `S3-C1` medium / high |
+| `S3-T2` | inventory-remote가 asset-catalog의 `catalog_search`와 정의가 완전히 같은 도구 광고 | `S3-C2` low / medium |
+
+설정이 같으니 S1 경고는 나오면 안 된다. inventory-remote에 toolFilter가 없어 S2-C1 동반 경고는 나올 수 있다.
+
+QA 대응: `QA-S3-01` = T1, T2, `QA-S3-02` = T0.
+
+### A.4 관계 이름 (공통 스키마 0.7 대응)
+
+본문의 관계 이름은 v2.0 기준이다. 탐지 결과·대시보드에서는 오른쪽 이름을 쓴다(스키마 12.3·12.8절).
+
+| 본문 (v2.0) | 스키마 0.7 | 비고 |
+|---|---|---|
+| `DECLARES` | `DECLARES` | Gateway/Node/Plugin → Server |
+| `PROVIDES` | `ADVERTISES` | Server → Tool/Resource/Prompt. 서버 목록 근거가 있을 때만 |
+| `CONNECTS_TO` | `MAY_SEND_TO` (Server → 외부 목적지), `PAIRED_WITH` (Gateway → Node) | 선언을 연결 성공으로 바꾸지 않음 |
+| `EXPOSES` | `MAY_EXPOSE_TO` / `EXPOSES_TO` | 노출 목록 근거가 있으면 `EXPOSES_TO` |
+| `USES`, `REFERENCES`, `AUTHENTICATES`, `APPLIES_TO` | permission_auth 자산의 `target_refs` | 의미·방향 합의 전 확정 간선을 만들지 않음 |
+| `CONTAINS` | `CONTAINS` 후보 | Plugin → Skill |
+| Severity `High/Medium/Low`, Confidence `High/Medium/Low` | `high/medium/low` (소문자) | severity와 confidence는 따로 기록 |

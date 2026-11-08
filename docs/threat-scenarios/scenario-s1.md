@@ -4,8 +4,10 @@
 > Scenario Name: 비인가 MCP Server 등록 및 노출  
 > Priority: `P1`  
 > Attack Surface: `A — MCP 통신 경계`  
-> 문서 기준: 2026-10-06  
-> 적용 Spec: `threat-scenario-spec.md v2.0`
+> 문서 기준: 2026-11-08 (v2.0: 2026-10-06)  
+> 적용 Spec: `threat-scenario-spec.md v2.1`  
+> 문서 버전: `2.1` (2026-11-08) — 확정 사항은 [부록 A](#부록-a-v21-확정-사항-2026-11-08)  
+> 구현 우선순위: `1` / 5
 
 ---
 
@@ -574,6 +576,71 @@ Gateway 또는 Node 설정에 선언되어 있습니다.
 
 ## 17. References
 
-- `threat-scenario-spec.md v2.0`
+- `threat-scenario-spec.md v2.1`
 - `AI Agent MCP 공격표면 정의 v2.0`
 - `프로젝트 세부수행 보고서 2026-09-30`
+
+---
+
+## 부록 A. v2.1 확정 사항 (2026-11-08)
+
+### A.1 버전과 우선순위
+
+| 항목 | v2.1 |
+|---|---|
+| 문서 버전 | `2.1` (2026-11-08) |
+| 위험 등급 | `P1` (v2.0과 같음) |
+| 구현 우선순위 | **1** / 5 — 구현 순서 S1 → S2 → S4 → S3 → S5 |
+| 상태 | `draft` (카탈로그 기준: draft → implemented → verified) |
+| 카탈로그 | [`scenario-catalog.json`](scenario-catalog.json) |
+| 기대 결과 | [`expected-results.md`](expected-results.md#3-s1-비인가-mcp-server-등록-및-노출-우선순위-1) |
+
+이 부록은 2026-11-08 담당자 확정 사항이다. 본문과 다르면 **이 부록이 우선**한다.
+
+### A.2 조건 ID
+
+| 조건 ID | 본문 위험 조건 (4절) | 충족 시 | 기본 severity / confidence |
+|---|---|---|---|
+| `S1-C1` | 신규 Server 선언 + 승인되지 않은 Server | detected | high / high |
+| `S1-C2` | Endpoint 불일치 | detected | high / high |
+| `S1-C3` | 출처 이상 — 승인되지 않은 Plugin/Skill이 Server 등록 | detected | high / high |
+| `S1-C4` | 선언 위치 이상 — 승인 Server가 승인 목록과 다른 VM·선언 위치·등록 주체에서 선언 | detected | **medium** / high |
+| `S1-C0` | 승인 목록이 없음 | unknown (경고 없음) | — |
+| 제외 | 무결성 이상 | v2.1 범위 밖 | 스캐너가 패키지 해시·서명을 수집하지 않음. 후속 |
+
+- 비교 기준은 `testbed/ground-truth/approved-servers.json` (`match_keys`: name, declared_at_vm, registered_by, endpoint)와 `approved_plugins`다. 탐지 결과의 `policy_refs`에 이 파일의 id·version을 남긴다.
+- `S1-C4`: 이름과 Endpoint가 승인 목록과 같아도 선언 위치가 다르면 탐지한다. 같은 이름이므로 `S1-C1`(미승인 서버)로 내지 않는다. 결정 사항 6.
+- `S1-C3`은 Server 단위 경고가 필수이고, Plugin 단위 경고는 같은 경고에 묶어 내도 된다.
+
+### A.3 검증 케이스 (테스트베드 S1 프로파일)
+
+9.3절 Case 1~3을 박병하님 `testbed/profiles/S1`(`SNAP-3-S1`) 구성으로 확정한다.
+
+| 테스트 | 병하님 case | 구성 | 기대 |
+|---|---|---|---|
+| `S1-T0` | — | P2 정상 | S1 경고 없음 |
+| `S1-T1` | 1-gw | tb-gw `mcp.servers.shadow-notes` (stdio notes-stub) | `S1-C1` |
+| `S1-T2` | 1-node | tb-node `nodeHost.mcp.servers.node-helper` | `S1-C1` |
+| `S1-T3` | 2 | inventory-remote url `https://tb-node:8443/mcp` → `https://tb-node:9443/mcp` | `S1-C2` (+ 동반 `S4-C3`) |
+| `S1-T4` | 3 | 미승인 플러그인 `agentscope-notes-sync`가 `notes-sync` 등록 | `S1-C3` |
+| `S1-T5` | (신규, 선택) | inventory-remote 선언을 tb-gw → tb-node로 이동, url 그대로 | `S1-C4` medium |
+
+QA 대응: `QA-S1-01` = T1~T5, `QA-S1-02` = T0.
+
+### A.4 동반 경고
+
+Case 2(Endpoint 변경)는 inventory-remote의 Bearer `${INVENTORY_MCP_TOKEN}`을 바뀐 Endpoint로 보낸다. 이것은 S4 조건 `S4-C3`(자격증명이 승인되지 않은 Endpoint로 전송, high / medium)로 따로 낸다. S1 채점에는 넣지 않는다.
+
+### A.5 관계 이름 (공통 스키마 0.7 대응)
+
+본문의 관계 이름은 v2.0 기준이다. 탐지 결과·대시보드에서는 오른쪽 이름을 쓴다(스키마 12.3·12.8절).
+
+| 본문 (v2.0) | 스키마 0.7 | 비고 |
+|---|---|---|
+| `DECLARES` | `DECLARES` | Gateway/Node/Plugin → Server |
+| `PROVIDES` | `ADVERTISES` | Server → Tool/Resource/Prompt. 서버 목록 근거가 있을 때만 |
+| `CONNECTS_TO` | `MAY_SEND_TO` (Server → 외부 목적지), `PAIRED_WITH` (Gateway → Node) | 선언을 연결 성공으로 바꾸지 않음 |
+| `EXPOSES` | `MAY_EXPOSE_TO` / `EXPOSES_TO` | 노출 목록 근거가 있으면 `EXPOSES_TO` |
+| `USES`, `REFERENCES`, `AUTHENTICATES`, `APPLIES_TO` | permission_auth 자산의 `target_refs` | 의미·방향 합의 전 확정 간선을 만들지 않음 |
+| `CONTAINS` | `CONTAINS` 후보 | Plugin → Skill |
+| Severity `High/Medium/Low`, Confidence `High/Medium/Low` | `high/medium/low` (소문자) | severity와 confidence는 따로 기록 |

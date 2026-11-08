@@ -7,6 +7,8 @@
 | 시나리오 ID | S4 |
 | 위협 시나리오 | 과도한 자격증명 공유로 인한 피해 범위 확대 |
 | 우선순위 | P2 |
+| 구현 우선순위 | 3 / 5 |
+| 문서 버전 | 2.1 (2026-11-08) — 확정 사항은 [부록 A](#부록-a-v21-확정-사항-2026-11-08) |
 | 주요 공격 표면 | C. 권한·자격증명 |
 | 연관 공격 표면 | A. MCP 통신 경계, B. Skill·Plugin 공급망 |
 | 분석 방식 | 정적 자산 분석 |
@@ -247,3 +249,61 @@ Ground Truth는 테스트베드의 실제 설정을 기준으로 사전에 작�
 - NIST Artificial Intelligence Risk Management Framework (AI RMF)
 - OWASP Top 10 for Large Language Model Applications
 - Model Context Protocol 공식 문서
+
+---
+
+## 부록 A. v2.1 확정 사항 (2026-11-08)
+
+### A.1 버전과 우선순위
+
+| 항목 | v2.1 |
+|---|---|
+| 문서 버전 | `2.1` (2026-11-08) |
+| 위험 등급 | `P2` (v2.0과 같음) |
+| 구현 우선순위 | **3** / 5 — 구현 순서 S1 → S2 → S4 → S3 → S5 |
+| 상태 | `draft` (카탈로그 기준: draft → implemented → verified) |
+| 카탈로그 | [`scenario-catalog.json`](scenario-catalog.json) |
+| 기대 결과 | [`expected-results.md`](expected-results.md#5-s4-과도한-자격증명-공유-우선순위-3) |
+
+이 부록은 2026-11-08 담당자 확정 사항이다. 본문과 다르면 **이 부록이 우선**한다.
+
+### A.2 조건 ID
+
+| 조건 ID | 본문 탐지 항목 (4.1절) | 충족 시 | 기본 severity / confidence |
+|---|---|---|---|
+| `S4-C1` | 자격증명 참조 중복 + 서버별 분리 부족 — 같은 **저장소**의 같은 참조를 서로 다른 Server가 사용 | detected | medium / high |
+| `S4-C2` | 다른 저장소의 같은 참조 이름 | **unknown** (경고 없음) | — |
+| `S4-C3` | 인증 대상 불일치 — 자격증명을 붙인 Server의 Endpoint가 승인 목록과 다름 | detected | high / medium |
+| `S4-C4` | 권한 범위 과다, 참조 경로 확대(scope·audience) | not_evaluated | 스캐너가 scope·audience를 수집하지 않음. 후속 |
+
+- 참조 식별자(`credential_reference_id`)는 `저장소 + 참조 이름`이다. 예: `tb-gw:~/.openclaw/.env#INVENTORY_MCP_TOKEN`. 실제 값은 수집·비교하지 않는다.
+- `S4-C2`: 결정 사항 2. 4.2절 규칙 4의 "확인 필요 상태"를 `unknown`으로 기록한다. 같은 env 이름이라도 저장소가 다르면 같은 자격증명으로 단정하지 않는다.
+- `S4-C3`: 결정 사항 7. S1 Case 2와 같은 구성에서 나오는 동반 경고다. confidence가 medium인 이유는 바뀐 Endpoint가 실제로 자격증명을 받는지 정적으로 확인할 수 없어서다.
+- `S4-C1`에 `S4-C3` 근거가 함께 있으면 severity를 high로 올린다(4.2절 규칙 3).
+
+### A.3 검증 케이스
+
+| 테스트 | 구성 (P2 대비) | 기대 |
+|---|---|---|
+| `S4-T0` | P2 정상: 참조 2개가 각각 서버 1곳 | S4 경고 없음 |
+| `S4-T1` | tb-gw fs-workspace `env.FS_SYNC_TOKEN = ${INVENTORY_MCP_TOKEN}` 추가 | `S4-C1` |
+| `S4-T2` | tb-node demo-everything `env.EVERYTHING_DEMO_KEY = ${INVENTORY_MCP_TOKEN}` | `S4-C2` unknown |
+| `S4-T3` | S1 프로파일 Case 2 재사용 | `S4-C3` |
+
+S4-T2를 VM에 반영할 때 tb-node `.env`에 같은 이름의 가짜 값을 넣는다. tb-gw 값과 같게 넣지 않는다.
+
+QA 대응: `QA-S4-01` = T1~T3, `QA-S4-02` = T0.
+
+### A.4 관계 이름 (공통 스키마 0.7 대응)
+
+본문의 관계 이름은 v2.0 기준이다. 탐지 결과·대시보드에서는 오른쪽 이름을 쓴다(스키마 12.3·12.8절).
+
+| 본문 (v2.0) | 스키마 0.7 | 비고 |
+|---|---|---|
+| `DECLARES` | `DECLARES` | Gateway/Node/Plugin → Server |
+| `PROVIDES` | `ADVERTISES` | Server → Tool/Resource/Prompt. 서버 목록 근거가 있을 때만 |
+| `CONNECTS_TO` | `MAY_SEND_TO` (Server → 외부 목적지), `PAIRED_WITH` (Gateway → Node) | 선언을 연결 성공으로 바꾸지 않음 |
+| `EXPOSES` | `MAY_EXPOSE_TO` / `EXPOSES_TO` | 노출 목록 근거가 있으면 `EXPOSES_TO` |
+| `USES`, `REFERENCES`, `AUTHENTICATES`, `APPLIES_TO` | permission_auth 자산의 `target_refs` | 의미·방향 합의 전 확정 간선을 만들지 않음 |
+| `CONTAINS` | `CONTAINS` 후보 | Plugin → Skill |
+| Severity `High/Medium/Low`, Confidence `High/Medium/Low` | `high/medium/low` (소문자) | severity와 confidence는 따로 기록 |

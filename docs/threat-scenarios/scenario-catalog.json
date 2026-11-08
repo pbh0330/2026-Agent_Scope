@@ -1,0 +1,471 @@
+{
+  "catalog_id": "agent-scope-threat-scenarios",
+  "catalog_version": "2.1",
+  "schema_version": "0.7.0-draft",
+  "generated_from": "docs/threat-scenarios/scenario-s1..s5.md v2.1 (2026-11-08)",
+  "owner": "고혜림 (위협 시나리오)",
+  "note": "필수 필드는 schema-design-draft 13절 ScenarioDefinition. conditions·priority_grade·related_surfaces·qa_case_ids·doc·excluded는 이 카탈로그의 확장 필드. severity·confidence는 조건 충족 시 기본값이며 규칙 정책에서 결정한다.",
+  "priority_basis": "구현 순서 S1→S2→S4→S3→S5 (PR #4 순서, 2026-11-08 담당자 확정). priority_grade(P1~P3)는 위험 등급으로 별도 유지",
+  "scenarios": [
+    {
+      "scenario_id": "S1",
+      "scenario_version": "2.1",
+      "name": "비인가 MCP Server 등록 및 노출",
+      "risk_category": "unauthorized_server",
+      "attack_surfaces": [
+        "A"
+      ],
+      "priority": 1,
+      "status": "draft",
+      "normal_condition": "선언된 모든 MCP Server가 승인 목록(approved-servers.json)의 이름·선언 위치·등록 주체·Endpoint와 일치하고, Server를 등록한 Plugin이 approved_plugins에 있다.",
+      "risk_condition": "승인 목록에 없는 Server 선언, 승인 Server의 Endpoint 변경, 승인되지 않은 Plugin/Skill을 통한 Server 등록, 승인 Server의 선언 위치 변경 중 하나 이상.",
+      "rule_refs": [
+        {
+          "id": "S1-C1",
+          "version": "2.1"
+        },
+        {
+          "id": "S1-C2",
+          "version": "2.1"
+        },
+        {
+          "id": "S1-C3",
+          "version": "2.1"
+        },
+        {
+          "id": "S1-C4",
+          "version": "2.1"
+        },
+        {
+          "id": "S1-C0",
+          "version": "2.1"
+        }
+      ],
+      "test_case_ids": [
+        "S1-T0",
+        "S1-T1",
+        "S1-T2",
+        "S1-T3",
+        "S1-T4",
+        "S1-T5"
+      ],
+      "priority_grade": "P1",
+      "related_surfaces": [
+        "B"
+      ],
+      "doc": "scenario-s1.md",
+      "conditions": [
+        {
+          "condition_id": "S1-C1",
+          "name": "승인 목록에 없는 Server 선언",
+          "result_when_met": "detected",
+          "severity": "high",
+          "confidence": "high"
+        },
+        {
+          "condition_id": "S1-C2",
+          "name": "승인 Server의 Endpoint 불일치",
+          "result_when_met": "detected",
+          "severity": "high",
+          "confidence": "high"
+        },
+        {
+          "condition_id": "S1-C3",
+          "name": "출처 이상: 승인되지 않은 Plugin/Skill이 Server 등록",
+          "result_when_met": "detected",
+          "severity": "high",
+          "confidence": "high"
+        },
+        {
+          "condition_id": "S1-C4",
+          "name": "선언 위치 이상: 승인 Server가 다른 위치·등록 주체에서 선언",
+          "result_when_met": "detected",
+          "severity": "medium",
+          "confidence": "high"
+        },
+        {
+          "condition_id": "S1-C0",
+          "name": "승인 목록 미제공",
+          "result_when_met": "unknown",
+          "severity": null,
+          "confidence": null,
+          "note": "판정 기준이 없으면 경고 없이 unknown"
+        }
+      ],
+      "excluded": [
+        "무결성 이상(패키지 해시·서명): 스캐너 수집 범위 밖, 후속"
+      ],
+      "qa_case_ids": {
+        "QA-S1-01": [
+          "S1-T1",
+          "S1-T2",
+          "S1-T3",
+          "S1-T4",
+          "S1-T5"
+        ],
+        "QA-S1-02": [
+          "S1-T0"
+        ]
+      }
+    },
+    {
+      "scenario_id": "S2",
+      "scenario_version": "2.1",
+      "name": "악성 또는 과도한 권한의 도구 광고",
+      "risk_category": "excessive_tool_capability",
+      "attack_surfaces": [
+        "A",
+        "C"
+      ],
+      "priority": 2,
+      "status": "draft",
+      "normal_condition": "각 Server에서 에이전트에 노출되는 Tool이 기대 도구 정책(policies/expected-tool-policy.json)의 허용 목록·파일 접근 범위 안에 있다.",
+      "risk_condition": "정책이 막은 변경 가능 Tool 노출, 기대 범위를 넘는 파일 접근 범위, 제한 없는 명령·네트워크 입력, 인증정보 입력 필드 중 하나 이상.",
+      "rule_refs": [
+        {
+          "id": "S2-C1",
+          "version": "2.1"
+        },
+        {
+          "id": "S2-C2",
+          "version": "2.1"
+        },
+        {
+          "id": "S2-C3",
+          "version": "2.1"
+        },
+        {
+          "id": "S2-C4",
+          "version": "2.1"
+        },
+        {
+          "id": "S2-C0",
+          "version": "2.1"
+        }
+      ],
+      "test_case_ids": [
+        "S2-T0",
+        "S2-T1",
+        "S2-T2"
+      ],
+      "priority_grade": "P2",
+      "related_surfaces": [],
+      "doc": "scenario-s2.md",
+      "conditions": [
+        {
+          "condition_id": "S2-C1",
+          "name": "Tool Filter 제거·약화로 정책 밖 Tool 노출",
+          "result_when_met": "detected",
+          "severity": "high",
+          "confidence": "high"
+        },
+        {
+          "condition_id": "S2-C2",
+          "name": "파일 접근 범위 과다",
+          "result_when_met": "detected",
+          "severity": "medium",
+          "confidence": "high",
+          "note": "노출 Tool이 모두 읽기 전용이면 medium, 쓰기·이동·삭제 Tool이 함께 노출되면 high"
+        },
+        {
+          "condition_id": "S2-C3",
+          "name": "명령·네트워크 고위험 입력 Tool 노출",
+          "result_when_met": "detected",
+          "severity": "medium",
+          "confidence": "medium",
+          "note": "입력 이름만으로 확정하지 않음. readOnlyHint=false 또는 openWorldHint=true와 함께일 때만"
+        },
+        {
+          "condition_id": "S2-C4",
+          "name": "인증정보 입력 필드 Tool 노출",
+          "result_when_met": "detected",
+          "severity": "medium",
+          "confidence": "medium"
+        },
+        {
+          "condition_id": "S2-C0",
+          "name": "Tool 광고 미수집 또는 정책 없음",
+          "result_when_met": "unknown",
+          "severity": null,
+          "confidence": null
+        }
+      ],
+      "excluded": [
+        "Permission/Auth의 실효 권한 범위: OpenClaw 설정에 Tool 단위 권한이 없어 S2-C1·C2로 대체"
+      ],
+      "qa_case_ids": {
+        "QA-S2-01": [
+          "S2-T1",
+          "S2-T2"
+        ],
+        "QA-S2-02": [
+          "S2-T0"
+        ]
+      }
+    },
+    {
+      "scenario_id": "S4",
+      "scenario_version": "2.1",
+      "name": "과도한 자격증명 공유로 인한 피해 범위 확대",
+      "risk_category": "credential_sharing",
+      "attack_surfaces": [
+        "C"
+      ],
+      "priority": 3,
+      "status": "draft",
+      "normal_condition": "각 자격증명 참조(저장소+참조 이름)를 Server 하나만 사용하고, 참조를 보내는 Endpoint가 승인 목록과 같다.",
+      "risk_condition": "같은 저장소의 같은 참조를 여러 Server가 사용하거나, 자격증명을 붙인 Server의 Endpoint가 승인되지 않은 곳으로 바뀜.",
+      "rule_refs": [
+        {
+          "id": "S4-C1",
+          "version": "2.1"
+        },
+        {
+          "id": "S4-C2",
+          "version": "2.1"
+        },
+        {
+          "id": "S4-C3",
+          "version": "2.1"
+        },
+        {
+          "id": "S4-C4",
+          "version": "2.1"
+        }
+      ],
+      "test_case_ids": [
+        "S4-T0",
+        "S4-T1",
+        "S4-T2",
+        "S4-T3"
+      ],
+      "priority_grade": "P2",
+      "related_surfaces": [
+        "A",
+        "B"
+      ],
+      "doc": "scenario-s4.md",
+      "conditions": [
+        {
+          "condition_id": "S4-C1",
+          "name": "같은 저장소의 자격증명 참조를 여러 Server가 공유",
+          "result_when_met": "detected",
+          "severity": "medium",
+          "confidence": "high"
+        },
+        {
+          "condition_id": "S4-C2",
+          "name": "다른 저장소의 같은 참조 이름",
+          "result_when_met": "unknown",
+          "severity": null,
+          "confidence": null,
+          "note": "같은 자격증명인지 확정할 수 없어 경고 없이 unknown"
+        },
+        {
+          "condition_id": "S4-C3",
+          "name": "자격증명이 승인되지 않은 Endpoint로 전송",
+          "result_when_met": "detected",
+          "severity": "high",
+          "confidence": "medium"
+        },
+        {
+          "condition_id": "S4-C4",
+          "name": "권한 범위(scope)·대상(audience) 과다",
+          "result_when_met": "not_evaluated",
+          "severity": null,
+          "confidence": null,
+          "note": "scope·audience 미수집, 후속"
+        }
+      ],
+      "excluded": [],
+      "qa_case_ids": {
+        "QA-S4-01": [
+          "S4-T1",
+          "S4-T2",
+          "S4-T3"
+        ],
+        "QA-S4-02": [
+          "S4-T0"
+        ]
+      }
+    },
+    {
+      "scenario_id": "S3",
+      "scenario_version": "2.1",
+      "name": "Tool 이름 충돌을 이용한 호출 대상 위장",
+      "risk_category": "tool_name_collision",
+      "attack_surfaces": [
+        "A"
+      ],
+      "priority": 4,
+      "status": "draft",
+      "normal_condition": "서로 다른 Server가 광고한 Tool의 공식 name이 겹치지 않는다.",
+      "risk_condition": "서로 다른 Server(owner)가 같은 Tool name을 광고한다.",
+      "rule_refs": [
+        {
+          "id": "S3-C1",
+          "version": "2.1"
+        },
+        {
+          "id": "S3-C2",
+          "version": "2.1"
+        },
+        {
+          "id": "S3-C3",
+          "version": "2.1"
+        }
+      ],
+      "test_case_ids": [
+        "S3-T0",
+        "S3-T1",
+        "S3-T2"
+      ],
+      "priority_grade": "P3",
+      "related_surfaces": [],
+      "doc": "scenario-s3.md",
+      "conditions": [
+        {
+          "condition_id": "S3-C1",
+          "name": "같은 이름, 정의(Provider·Endpoint·inputSchema·annotations) 차이",
+          "result_when_met": "detected",
+          "severity": "medium",
+          "confidence": "high"
+        },
+        {
+          "condition_id": "S3-C2",
+          "name": "같은 이름, 정의 동일",
+          "result_when_met": "detected",
+          "severity": "low",
+          "confidence": "medium"
+        },
+        {
+          "condition_id": "S3-C3",
+          "name": "같은 이름, 한쪽 정의 미수집",
+          "result_when_met": "unknown",
+          "severity": null,
+          "confidence": null
+        }
+      ],
+      "excluded": [
+        "같은 Agent 노출명 충돌·실제 호출 대상 선택: 런타임 문맥 필요, 후속"
+      ],
+      "qa_case_ids": {
+        "QA-S3-01": [
+          "S3-T1",
+          "S3-T2"
+        ],
+        "QA-S3-02": [
+          "S3-T0"
+        ]
+      }
+    },
+    {
+      "scenario_id": "S5",
+      "scenario_version": "2.1",
+      "name": "보안이 약한 연결을 통한 MCP Server 위장 가능성",
+      "risk_category": "weak_transport",
+      "attack_surfaces": [
+        "A"
+      ],
+      "priority": 5,
+      "status": "draft",
+      "normal_condition": "원격 Server가 https를 쓰고 sslVerify가 true로 명시돼 있다. stdio Server는 대상 아님.",
+      "risk_condition": "평문 전송(http/ws)이거나 sslVerify가 false로 명시됨.",
+      "rule_refs": [
+        {
+          "id": "S5-C1",
+          "version": "2.1"
+        },
+        {
+          "id": "S5-C2",
+          "version": "2.1"
+        },
+        {
+          "id": "S5-C3",
+          "version": "2.1"
+        },
+        {
+          "id": "S5-C4",
+          "version": "2.1"
+        },
+        {
+          "id": "S5-C5",
+          "version": "2.1"
+        },
+        {
+          "id": "S5-NA",
+          "version": "2.1"
+        }
+      ],
+      "test_case_ids": [
+        "S5-T0",
+        "S5-T1",
+        "S5-T2",
+        "S5-T3"
+      ],
+      "priority_grade": "P3",
+      "related_surfaces": [
+        "C"
+      ],
+      "doc": "scenario-s5.md",
+      "conditions": [
+        {
+          "condition_id": "S5-C1",
+          "name": "암호화되지 않은 전송 (구 S5-01)",
+          "result_when_met": "detected",
+          "severity": "high",
+          "confidence": "high"
+        },
+        {
+          "condition_id": "S5-C2",
+          "name": "인증서 검증 명시적 비활성화 (구 S5-02)",
+          "result_when_met": "detected",
+          "severity": "high",
+          "confidence": "high"
+        },
+        {
+          "condition_id": "S5-C3",
+          "name": "https인데 sslVerify 항목 없음 (구 S5-03)",
+          "result_when_met": "unknown",
+          "severity": null,
+          "confidence": null,
+          "note": "생략은 false가 아님"
+        },
+        {
+          "condition_id": "S5-C4",
+          "name": "연결 대상 검증 정보 부족 (구 S5-04)",
+          "result_when_met": "not_evaluated",
+          "severity": null,
+          "confidence": null,
+          "note": "후속"
+        },
+        {
+          "condition_id": "S5-C5",
+          "name": "보안 설정 적용 범위 불명확 (구 S5-05)",
+          "result_when_met": "not_evaluated",
+          "severity": null,
+          "confidence": null,
+          "note": "후속"
+        },
+        {
+          "condition_id": "S5-NA",
+          "name": "stdio 로컬 실행",
+          "result_when_met": "not_applicable",
+          "severity": null,
+          "confidence": null
+        }
+      ],
+      "excluded": [],
+      "qa_case_ids": {
+        "QA-S5-01": [
+          "S5-T1",
+          "S5-T2",
+          "S5-T3"
+        ],
+        "QA-S5-02": [
+          "S5-T0"
+        ]
+      }
+    }
+  ]
+}

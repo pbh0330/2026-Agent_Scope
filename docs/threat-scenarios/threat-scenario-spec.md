@@ -1,9 +1,10 @@
-# Threat Scenario Specification v2.0
+# Threat Scenario Specification v2.1
 
 > AI Agent 보안을 위한 자산 식별 및 가시화 도구의 위협 시나리오 작성·검증 공통 규격
 
-- **Version:** v2.0
-- **작성일:** 2026-10-06
+- **Version:** v2.1 (v2.0: 2026-10-06)
+- **작성일:** 2026-10-06 · **개정일:** 2026-11-08
+- **v2.1 변경:** [부록 A](#부록-a-v21-변경-사항-2026-11-08) — 구현 우선순위, 조건 ID, 평가 결과, 카탈로그·기대 결과 문서, 관계 이름 대응
 - **문서 유형:** Threat Scenario Specification
 - **적용 범위:** AI Agent / MCP / OpenClaw 기반 환경
 - **분석 방식:** Static Analysis 우선
@@ -339,7 +340,7 @@ Permission / Authentication Asset은 대상 자산과의 관계를 통해 적용
 |---|---|
 | Scenario ID | S1 ~ S5 |
 | Title | 위협 시나리오 명칭 |
-| Priority | 우선순위 |
+| Priority | 위험 등급 P1~P3 (v2.1: 구현 우선순위 1~5는 별도, 부록 A.1) |
 | Attack Surface | A / B / C |
 | Analysis Type | Static / Runtime |
 | Status | Draft / Defined / Validated 등 |
@@ -622,12 +623,17 @@ Dummy Value 또는 Reference Name을 사용한다.
 
     docs/
     └── threat-scenarios/
+        ├── README.md                  목차·버전·상태 (v2.1 추가)
         ├── threat-scenario-spec.md
         ├── scenario-s1.md
         ├── scenario-s2.md
         ├── scenario-s3.md
         ├── scenario-s4.md
-        └── scenario-s5.md
+        ├── scenario-s5.md
+        ├── scenario-catalog.json      ScenarioDefinition 카탈로그 (v2.1 추가)
+        ├── expected-results.md        S1~S5 기대 결과 (v2.1 추가)
+        └── policies/
+            └── expected-tool-policy.json   S2 기준 정책 (v2.1 추가)
 
 ---
 
@@ -783,3 +789,82 @@ Dummy Value 또는 Reference Name을 사용한다.
         └── scenario-s5.md
 
 ---
+
+---
+
+## 부록 A. v2.1 변경 사항 (2026-11-08)
+
+2026-11-08 담당자 확정 사항이다. 본문과 다르면 이 부록이 우선한다.
+
+### A.1 위험 등급과 구현 우선순위
+
+v2.0의 `P1~P3`은 위험 등급으로 유지하고, 구현·검증 순서는 정수 우선순위로 따로 둔다. 순서는 테스트베드 PR #4의 S1 → S2 → S4 → S3 → S5를 따른다. 공통 스키마 0.7 13.3절의 미합의 항목을 이것으로 닫는다.
+
+| 우선순위 | 시나리오 | 위험 등급 | 주요 공격 표면 | 문서 |
+|---|---|---|---|---|
+| 1 | S1 비인가 MCP Server 등록 및 노출 | P1 | A (관련 B) | [scenario-s1.md](scenario-s1.md) |
+| 2 | S2 악성 또는 과도한 권한의 도구 광고 | P2 | A, C | [scenario-s2.md](scenario-s2.md) |
+| 3 | S4 과도한 자격증명 공유 | P2 | C (관련 A, B) | [scenario-s4.md](scenario-s4.md) |
+| 4 | S3 Tool 이름 충돌 | P3 | A | [scenario-s3.md](scenario-s3.md) |
+| 5 | S5 보안이 약한 연결 | P3 | A (관련 C) | [scenario-s5.md](scenario-s5.md) |
+
+S2 공격 표면은 원문대로 A·C다. 공통 스키마 0.7 13.3절의 "PR #7 기준 B"는 정정 대상이다.
+
+### A.2 식별자 규칙
+
+| 식별자 | 형식 | 예 | 쓰는 곳 |
+|---|---|---|---|
+| 시나리오 | `S1`~`S5` | `S1` | `scenario_id` |
+| 조건 | `S<n>-C<m>` | `S1-C2` | 탐지 결과 `rule_id`, 기대 결과 `condition_id` |
+| 판정 기준 없음·미수집 | `S<n>-C0` | `S2-C0` | `unknown` 평가 |
+| 적용 제외 | `S<n>-NA` | `S5-NA` | `not_applicable` 평가 |
+| 테스트 | `S<n>-T<k>` (`T0` = P2 정상) | `S1-T3` | 카탈로그 `test_case_ids` |
+| QA 케이스 | `QA-S<n>-01` 위험, `QA-S<n>-02` 정상 | `QA-S4-01` | QA 테스트케이스 |
+
+- 시나리오 문서 v2.0의 `S5-01`~`S5-05`는 `S5-C1`~`S5-C5`로 바꾼다.
+- 구현 작업 번호(`S1-01`, `S3-01` 등)는 작업 목록 번호이며 조건 ID와 다르다.
+- 규칙 버전(`rule_version`)은 카탈로그 버전 `2.1`이다.
+
+### A.3 평가 결과
+
+탐지 결과는 공통 스키마 0.7 13절 DetectionReport를 따른다. 경고 목록만으로 정상과 미평가를 구분할 수 없으므로 평가를 함께 낸다.
+
+| 결과 | 기준 | 경고 |
+|---|---|---|
+| `detected` | 근거·기준 정책으로 위험 조건 확인 | 생성 |
+| `not_detected` | 근거·기준 정책으로 위험 조건이 없음을 확인 | 없음 |
+| `unknown` | 입력·근거 부족 | 없음. 정상으로 집계하지 않음 |
+| `not_applicable` | 대상 아님 | 없음 |
+| `not_evaluated` | 이번 버전에서 평가하지 않음 | 없음 |
+| `error` | 평가 실행 오류 | 없음 |
+
+v2.1에서 `unknown`으로 확정한 경우: 승인 목록 없음(S1-C0), 다른 저장소의 같은 참조 이름(S4-C2), https인데 sslVerify 항목 없음(S5-C3), 한쪽 Tool 정의 미수집(S3-C3).
+
+severity(영향·대응 우선순위)와 confidence(근거의 확실성)는 따로 정한다. 조건별 기본값은 카탈로그에 있고 규칙 정책으로 조정한다. 18절 Confidence 기준은 그대로다.
+
+### A.4 함께 관리하는 문서
+
+| 문서 | 내용 | 주 독자 |
+|---|---|---|
+| [README.md](README.md) | 목차, 버전, 상태, 우선순위 | 전체 |
+| [scenario-catalog.json](scenario-catalog.json) | 공통 스키마 13절 ScenarioDefinition. 조건·기본 severity/confidence·테스트·QA 대응 | 탐지 모듈, 대시보드 |
+| [expected-results.md](expected-results.md) | S1~S5 기대 경고·비경고·판단 불가. 테스트베드 형식(P2 대비 변경분 + `expected_alerts`)과 16.1절 변환 규칙 | QA, 테스트베드 |
+| [policies/expected-tool-policy.json](policies/expected-tool-policy.json) | S2 기준 정책 | 탐지 모듈 |
+
+S1 기준 정책은 테스트베드의 `testbed/ground-truth/approved-servers.json`을 쓴다.
+
+20절 Ground Truth는 테스트베드 정답 파일(`testbed/ground-truth/<profile>.json`)이 원본이고, 위협 시나리오 쪽은 그중 `expected_alerts`·`expected_no_alert`·`expected_unknown`을 정한다.
+
+### A.5 관계 이름 대응 (공통 스키마 0.7)
+
+7절 관계 이름은 v2.0 기준이다. 탐지 결과와 대시보드에서는 공통 스키마 0.7 이름을 쓴다(12.3·12.8절).
+
+| v2.0 | 스키마 0.7 | 비고 |
+|---|---|---|
+| `DECLARES` | `DECLARES` | Gateway/Node/Plugin → Server |
+| `PROVIDES` | `ADVERTISES` | 서버 목록 근거가 있을 때만 |
+| `CONNECTS_TO` | `MAY_SEND_TO`, `PAIRED_WITH` | 선언을 연결 성공으로 바꾸지 않음 |
+| `EXPOSES` | `MAY_EXPOSE_TO` / `EXPOSES_TO` | 노출 목록 근거가 있으면 `EXPOSES_TO` |
+| `USES`, `REFERENCES`, `AUTHENTICATES`, `APPLIES_TO` | permission_auth 자산의 `target_refs` | 의미·방향 합의 전 확정 간선을 만들지 않음 |
+| `CONTAINS` | `CONTAINS` 후보 | Plugin → Skill |
+| (없음) | `ASSOCIATED_WITH` | Skill/Plugin → Server/Tool |
