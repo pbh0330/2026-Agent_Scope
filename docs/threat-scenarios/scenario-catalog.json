@@ -326,14 +326,15 @@
       "conditions": [
         {
           "condition_id": "S3-C1",
-          "name": "같은 이름, 정의(Provider·Endpoint·inputSchema·annotations) 차이",
+          "name": "같은 이름, 정의(title·description·inputSchema·annotations) 차이",
           "result_when_met": "detected",
           "severity": "medium",
-          "confidence": "high"
+          "confidence": "high",
+          "note": "제공 서버·Endpoint는 충돌이면 항상 다르므로 판정 기준에서 빼고 근거로만 기록"
         },
         {
           "condition_id": "S3-C2",
-          "name": "같은 이름, 정의 동일",
+          "name": "같은 이름, 정의 동일 (제공 서버·Endpoint만 다름)",
           "result_when_met": "detected",
           "severity": "low",
           "confidence": "medium"

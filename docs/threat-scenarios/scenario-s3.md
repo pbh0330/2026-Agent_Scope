@@ -494,11 +494,12 @@ Alert는 이름 충돌과 확인된 차이를 안내한다.
 
 | 조건 ID | 본문 조건 (6절) | 충족 시 | 기본 severity / confidence |
 |---|---|---|---|
-| `S3-C1` | 서로 다른 Server가 같은 Tool name 광고 + Provider·Endpoint·inputSchema·annotations 중 하나 이상 차이 | detected | medium / high |
+| `S3-C1` | 서로 다른 Server가 같은 Tool name 광고 + Tool 정의(title·description·inputSchema·annotations) 중 하나 이상 차이 | detected | medium / high |
 | `S3-C2` | 서로 다른 Server가 같은 Tool name 광고 + 정의 동일 | detected | low / **medium** |
 | `S3-C3` | 같은 이름이지만 한쪽 정의를 수집하지 못함 | unknown (경고 없음) | — |
 
 - `S3-C2`: 결정 사항 5. 본문 6절 탐지 로직은 차이가 있을 때만 경고를 내지만, v2.1에서는 정의가 같아도 이름 충돌 자체를 탐지한다. 어느 서버가 호출될지 이름 말고 구분할 근거가 없기 때문이다. 근거가 약해 confidence는 medium이다.
+- 본문 6절의 비교 항목 중 Provider·Endpoint는 이름 충돌이면 항상 다르므로 C1·C2를 가르는 기준에서 빼고 근거(`details.endpoints`)로만 기록한다. Permission은 OpenClaw 설정에 Tool 단위 항목이 없어 v2.1에서 비교하지 않는다.
 - 비교 대상은 서버가 광고한 공식 `name`이다. 같은 Agent에 노출되는 이름 충돌(필터 적용 후)은 런타임 문맥이 필요해 후속으로 둔다.
 - 동명 Tool은 각각 별도 자산으로 유지하고, 경고의 `asset_ids`에 양쪽을 모두 넣는다.
 
