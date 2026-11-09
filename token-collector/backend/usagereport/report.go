@@ -289,7 +289,7 @@ func Build(spans []attribution.Span, opt Options) (*UsageReport, error) {
 	} else {
 		id := opt.Inventory.SnapshotID
 		snapID = &id
-		lim = append(lim, "Tool mapping reproduces OpenClaw's provider-safe tool names (<server>__<tool>, 64-char limit) from the snapshot; names that OpenClaw de-duplicated with a -N suffix cannot be resolved statically.")
+		lim = append(lim, "Tool mapping reproduces OpenClaw's provider-safe tool names (<server>__<tool>, 64-char limit) and node-hosted tool names (<server>_<tool>, servers declared under nodeHost.mcp.servers) from the snapshot; names that OpenClaw de-duplicated with a -N suffix cannot be resolved statically.")
 	}
 	if unmatchedSuffix {
 		lim = append(lim, "Some MCP tool names end in a -N suffix that may come from OpenClaw collision handling; they were left unmatched.")

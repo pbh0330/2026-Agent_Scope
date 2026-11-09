@@ -32,7 +32,7 @@ type Record struct {
 	usagereport.UsageRecord
 	Start     time.Time
 	Method    string
-	MCPServer string // MCP 도구면 노출 이름의 서버 부분(fs__read_text_file → fs)
+	MCPServer string // MCP 도구면 서버 키(fs__read_text_file → fs, 노드 도구는 매핑된 스냅샷의 서버 키)
 	ServerRef string // 매핑된 Tool의 소속 MCP 서버 asset_id(모르면 "")
 }
 
@@ -87,6 +87,12 @@ func NewDataset(rep *usagereport.UsageReport, inv *usagereport.Inventory, source
 		if u.AssetRef != nil {
 			if owner, ok := inv.ToolOwner(*u.AssetRef); ok {
 				r.ServerRef = owner
+			}
+			// 노드 쪽 도구(<서버>_<도구>)는 이름으로 서버를 가를 수 없어 스냅샷의 서버 키를 쓴다.
+			if r.MCPServer == "" {
+				if key, ok := inv.ToolServerKey(*u.AssetRef); ok {
+					r.MCPServer = key
+				}
 			}
 		}
 		ds.Records = append(ds.Records, r)

@@ -92,9 +92,9 @@ func TestMapUnmatchedCases(t *testing.T) {
 	}
 }
 
-// 같은 서버 키가 Gateway·Node 양쪽에 선언되면 OpenClaw가 실행 시점에 -2를 붙이므로 스냅샷만으로는
-// 어느 쪽인지 모른다 → ambiguous.
-func TestMapAmbiguousWhenServerKeyCollides(t *testing.T) {
+// 노드 쪽 서버(nodeHost.mcp.servers)의 도구는 "<서버>_<도구>"(밑줄 1개)로 노출된다(테스트베드 P2 실측,
+// nodes describe의 nodePluginTools). 같은 서버 키가 Gateway·Node 양쪽에 있어도 이름 규칙이 달라 겹치지 않는다.
+func TestMapNodeHostedTools(t *testing.T) {
 	inv := loadInv(t, func(m map[string]any) {
 		assets := m["assets"].([]any)
 		assets = append(assets,
@@ -102,14 +102,50 @@ func TestMapAmbiguousWhenServerKeyCollides(t *testing.T) {
 				"product": map[string]any{"config_path": "nodeHost.mcp.servers.fs"}},
 			map[string]any{"asset_id": "tool-fs-node-read", "asset_type": "tool", "name": "read_text_file", "owner_ref": "srv-fs-node",
 				"evidence_refs": []string{"ev-node-tools"}, "mcp": map[string]any{"definition": map[string]any{"name": "read_text_file"}}},
+			map[string]any{"asset_id": "srv-kg", "asset_type": "mcp_server", "name": "kg-memory", "evidence_refs": []string{"ev-node"},
+				"product": map[string]any{"config_path": "nodeHost.mcp.servers.kg-memory"}},
+			map[string]any{"asset_id": "tool-kg-add", "asset_type": "tool", "name": "add_observations", "owner_ref": "srv-kg",
+				"evidence_refs": []string{"ev-kg-tools"}, "mcp": map[string]any{"definition": map[string]any{"name": "add_observations"}}},
 		)
 		m["assets"] = assets
 	})
+	// 게이트웨이 쪽 이름은 게이트웨이 서버 도구에만 연결된다.
+	if m := inv.Map("fs__read_text_file", "mcp"); m.Status != MappingMatched || *m.AssetRef != "tool-fs-read" {
+		t.Fatalf("gateway: %+v", m)
+	}
+	// 노드 쪽 이름. 도구 이름 안의 밑줄(add_observations)이 있어도 서버 키로 정확히 맞춘다.
+	for _, src := range []string{"mcp", "plugin", ""} {
+		m := inv.Map("kg-memory_add_observations", src)
+		if m.Status != MappingMatched || *m.AssetRef != "tool-kg-add" || !strings.Contains(m.Reason, "node-hosted") {
+			t.Fatalf("node(%q): %+v", src, m)
+		}
+	}
+	if m := inv.Map("fs_read_text_file", "plugin"); m.Status != MappingMatched || *m.AssetRef != "tool-fs-node-read" {
+		t.Fatalf("node fs: %+v", m)
+	}
+	// 내장 도구 출처면 연결하지 않고, 노드 서버를 게이트웨이 규칙(__)으로 부르면 후보가 없다.
+	if m := inv.Map("kg-memory_add_observations", "core"); m.Status != MappingUnmatched {
+		t.Fatalf("core: %+v", m)
+	}
+	if m := inv.Map("kg-memory__add_observations", "mcp"); m.Status != MappingUnmatched {
+		t.Fatalf("node via __: %+v", m)
+	}
+	if k, ok := inv.ToolServerKey("tool-kg-add"); !ok || k != "kg-memory" {
+		t.Fatalf("server key: %q %v", k, ok)
+	}
+}
+
+// 스냅샷에 같은 노출 이름이 나오는 Tool이 둘이면(같은 서버의 동명 Tool 중복 등) 어느 쪽인지 모르므로 ambiguous.
+func TestMapAmbiguousWhenExposedNameRepeats(t *testing.T) {
+	inv := loadInv(t, func(m map[string]any) {
+		m["assets"] = append(m["assets"].([]any),
+			map[string]any{"asset_id": "tool-fs-read-dup", "asset_type": "tool", "name": "read_text_file", "owner_ref": "srv-fs",
+				"evidence_refs": []string{"ev-dup"}, "mcp": map[string]any{"definition": map[string]any{"name": "read_text_file"}}})
+	})
 	m := inv.Map("fs__read_text_file", "mcp")
-	if m.Status != MappingAmbiguous || m.AssetRef != nil || !strings.Contains(m.Reason, "tool-fs-node-read") {
+	if m.Status != MappingAmbiguous || m.AssetRef != nil || !strings.Contains(m.Reason, "tool-fs-read-dup") {
 		t.Fatalf("%+v", m)
 	}
-	// 다른 도구는 여전히 하나뿐이라 matched.
 	if m := inv.Map("fs__list_directory_with_sizes", "mcp"); m.Status != MappingMatched {
 		t.Fatalf("%+v", m)
 	}

@@ -87,13 +87,16 @@ OpenClaw ─OTLP─▶ Collector(otelcol-contrib, file 익스포터) ─▶ agen
 OpenClaw는 MCP 도구를 모델에 `안전한서버이름__안전한도구이름`으로 노출한다
 (`src/agents/agent-bundle-mcp-names.ts`: 허용 밖 문자 → `-`, 서버 30자·전체 64자 제한, 영문자로 시작 안 하면 접두).
 어댑터는 스냅샷의 각 Tool 자산(소속 서버의 설정 키 + 공식 도구 이름)으로 **같은 규칙을 재현**해서 노출 이름과 비교한다.
+노드에서 실행되는 서버(설정 경로 `nodeHost.mcp.servers.<키>`)의 도구는 `서버키_도구이름`(밑줄 1개, 가공 없음)으로 노출되므로
+그 규칙으로 비교한다(테스트베드 P2 `openclaw nodes describe`의 `nodePluginTools` 실측, 예: `kg-memory_add_observations`).
+노드 도구는 `tool_source`가 mcp가 아닐 수 있어, 이름이 노드 서버 후보와 정확히 같으면 출처가 내장(core)이 아닌 한 연결한다.
 
 | 상황 | 결과 |
 |---|---|
 | 재현한 이름이 노출 이름과 같은 Tool이 정확히 1개, 근거(evidence_refs) 있음 | `matched`, `asset_ref` = 그 Tool ID, 근거 = 그 Tool의 evidence_refs |
-| 같은 노출 이름이 나오는 Tool이 2개 이상(예: 같은 서버 키가 Gateway·Node 양쪽에 선언) | `ambiguous` — OpenClaw가 실행 시점에 붙이는 `-2` 접미사 순서는 스냅샷에 없음 |
+| 같은 노출 이름이 나오는 Tool이 2개 이상(예: 설정 키가 정규화 후 같아지는 두 서버) | `ambiguous` — OpenClaw가 실행 시점에 붙이는 `-2` 접미사 순서는 스냅샷에 없음 |
 | `tool_source`가 mcp가 아님(내장 도구 exec, ls 등) | `unmatched` — 가짜 MCP 자산을 만들지 않음 |
-| 후보 없음 / `__` 구분자 없음 / 스냅샷 없음 | `unmatched` + 사유 |
+| 후보 없음 / `__` 구분자 없음(노드 도구 후보도 없음) / 스냅샷 없음 | `unmatched` + 사유 |
 
 서로 다른 서버의 동명 Tool은 서버 부분까지 비교하므로 섞이지 않는다(S3). 이름 규칙은 OpenClaw 소스의
 함수를 그대로 실행한 결과와 무작위 이름 10만 건에서 일치함을 확인했다(공백·BOM·한글·이모지 포함).
@@ -112,7 +115,7 @@ go test ./...
 - 같은 스팬 재전송 → 레코드·리포트 ID 동일(토큰 합계 668 유지)
 - 집계 구간 [start, end), 시작 시각 없는 도구는 제외 + 사유 기록
 - OTLP JSON 줄(BOM 포함)과 픽스처 입력 결과 동일
-- 매핑: 동명 Tool 서버별 분리, Gateway·Node 키 충돌 ambiguous, 내장 도구 unmatched, 근거 없는 후보 거부
+- 매핑: 동명 Tool 서버별 분리, 노드 서버 도구(`서버_도구`) 연결, 같은 노출 이름 후보 ambiguous, 내장 도구 unmatched, 근거 없는 후보 거부
 - CLI: 출력에 로컬 경로·openclaw.json 키 값이 안 남음
 - 배분: 실제 병렬 로그(4건)에 결과별 토큰 수를 주면 4건 모두 `parallel-token-count`, 합계 = 구간 증가분.
   토큰 수가 일부 빠진 구간은 null 유지, 플러그인 JSONL의 다른 줄·깨진 줄은 건너뜀

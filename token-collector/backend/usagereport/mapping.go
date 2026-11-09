@@ -30,6 +30,15 @@ const (
 	toolNameMaxTotal  = 64
 )
 
+// 노드(tb-node 등)에서 실행되는 MCP 서버(nodeHost.mcp.servers)의 도구는 게이트웨이 쪽과 달리
+// "<서버키>_<도구이름>"(밑줄 1개)로 노출된다. 근거: 테스트베드 P2 실측(openclaw nodes describe의
+// nodePluginTools, 예: kg-memory_add_observations, demo-everything_echo), PR #17 profiles/README 5절.
+// 실측한 이름은 모두 가공 없는 원래 이름이라 sanitize·길이 제한은 적용하지 않는다(규칙 확인 전).
+const (
+	nodeToolNameSeparator = "_"
+	nodeHostConfigPrefix  = "nodeHost."
+)
+
 // 서버 부분(fs-2__x) 또는 도구 부분(fs__x-2) 끝의 -N.
 var collisionSuffix = regexp.MustCompile(`-[0-9]+(__|$)`)
 
@@ -91,6 +100,11 @@ func ExposedToolName(serverKey, toolName string) string {
 	return srv + toolNameSeparator + tool
 }
 
+// NodeExposedToolName은 노드에서 실행되는 MCP 서버의 도구 노출 이름을 재현한다.
+func NodeExposedToolName(serverKey, toolName string) string {
+	return serverKey + nodeToolNameSeparator + toolName
+}
+
 // Inventory는 InventorySnapshot(스키마 2·3절)에서 매핑에 필요한 부분만 읽은 것이다.
 type Inventory struct {
 	SchemaVersion string  `json:"schema_version"`
@@ -101,6 +115,7 @@ type Inventory struct {
 
 	byExposed map[string][]candidate
 	owner     map[string]string // Tool asset_id → 소속 MCP 서버 asset_id
+	ownerKey  map[string]string // Tool asset_id → 소속 MCP 서버의 설정 키(화면 표시용)
 }
 
 // Asset은 스냅샷 자산의 매핑용 필드.
@@ -123,6 +138,7 @@ type Asset struct {
 type candidate struct {
 	toolID, serverID, serverKey, toolName string
 	evidence                              []string
+	nodeHosted                            bool // nodeHost.mcp.servers에 선언된 서버(노드에서 실행)
 }
 
 // LoadInventory는 snapshot.json을 읽는다.
@@ -154,6 +170,11 @@ func serverKey(a Asset) string {
 	return a.Name
 }
 
+// nodeHosted는 서버가 노드 쪽 설정(nodeHost.mcp.servers)에 선언됐는지다.
+func nodeHosted(a Asset) bool {
+	return a.Product != nil && strings.Contains(a.Product.ConfigPath, nodeHostConfigPrefix)
+}
+
 func (inv *Inventory) index() error {
 	if inv.SnapshotID == "" {
 		return fmt.Errorf("인벤토리 스냅샷에 snapshot_id가 없음")
@@ -169,6 +190,7 @@ func (inv *Inventory) index() error {
 	}
 	inv.byExposed = map[string][]candidate{}
 	inv.owner = map[string]string{}
+	inv.ownerKey = map[string]string{}
 	for _, a := range inv.Assets {
 		if a.AssetType != "tool" {
 			continue
@@ -182,10 +204,15 @@ func (inv *Inventory) index() error {
 			name = a.MCP.Definition.Name
 		}
 		key := serverKey(srv)
+		node := nodeHosted(srv)
 		exp := ExposedToolName(key, name)
+		if node {
+			exp = NodeExposedToolName(key, name)
+		}
 		inv.owner[a.AssetID] = srv.AssetID
+		inv.ownerKey[a.AssetID] = key
 		inv.byExposed[exp] = append(inv.byExposed[exp], candidate{
-			toolID: a.AssetID, serverID: srv.AssetID, serverKey: key, toolName: name, evidence: a.EvidenceRefs,
+			toolID: a.AssetID, serverID: srv.AssetID, serverKey: key, toolName: name, evidence: a.EvidenceRefs, nodeHosted: node,
 		})
 	}
 	return nil
@@ -209,6 +236,16 @@ func (inv *Inventory) ToolOwner(toolAssetID string) (serverAssetID string, ok bo
 	return serverAssetID, ok
 }
 
+// ToolServerKey는 Tool 자산이 속한 MCP 서버의 설정 키(fs, kg-memory 등)를 돌려준다.
+// 노드 쪽 도구(<서버>_<도구>)는 이름만으로 서버를 가를 수 없어서 화면 표시에 이 값을 쓴다.
+func (inv *Inventory) ToolServerKey(toolAssetID string) (string, bool) {
+	if inv == nil {
+		return "", false
+	}
+	k, ok := inv.ownerKey[toolAssetID]
+	return k, ok
+}
+
 // Mapping은 한 도구 호출의 자산 매핑 결과.
 type Mapping struct {
 	AssetRef     *string
@@ -222,6 +259,13 @@ func (inv *Inventory) Map(exposedName, source string) Mapping {
 	if inv == nil {
 		return Mapping{Status: MappingUnmatched, Reason: "no inventory snapshot provided"}
 	}
+	// 노드 쪽 도구는 tool.source가 mcp가 아닐 수 있어(노드 플러그인 도구로 투영됨) 이름이 노드 서버 후보와
+	// 정확히 같을 때만 먼저 연결한다. 내장 도구(core)는 서버 접두어가 없어 여기에 걸리지 않는다.
+	if source != "core" && source != "builtin" {
+		if cands := inv.byExposed[exposedName]; len(cands) > 0 && allNodeHosted(cands) {
+			return inv.decide(cands, exposedName, nodeToolNameSeparator)
+		}
+	}
 	if source != "mcp" {
 		return Mapping{Status: MappingUnmatched, Reason: fmt.Sprintf(
 			"tool source is %q: built-in/core tools have no MCP Tool asset, so no asset is created or linked", source)}
@@ -229,7 +273,24 @@ func (inv *Inventory) Map(exposedName, source string) Mapping {
 	if !strings.Contains(exposedName, toolNameSeparator) {
 		return Mapping{Status: MappingUnmatched, Reason: "MCP tool name has no <server>__<tool> separator"}
 	}
-	cands := inv.byExposed[exposedName]
+	return inv.decide(inv.byExposed[exposedName], exposedName, toolNameSeparator)
+}
+
+func allNodeHosted(cands []candidate) bool {
+	for _, c := range cands {
+		if !c.nodeHosted {
+			return false
+		}
+	}
+	return true
+}
+
+// decide는 노출 이름이 같은 후보 목록으로 매핑 상태를 정한다. sep은 근거 문장에 적을 이름 규칙이다.
+func (inv *Inventory) decide(cands []candidate, exposedName, sep string) Mapping {
+	rule := "provider-safe name"
+	if sep == nodeToolNameSeparator {
+		rule = "node-hosted name (<server>_<tool>)"
+	}
 	switch len(cands) {
 	case 0:
 		reason := fmt.Sprintf("no Tool asset in snapshot %s reproduces the exposed name", inv.SnapshotID)
@@ -246,8 +307,8 @@ func (inv *Inventory) Map(exposedName, source string) Mapping {
 		return Mapping{
 			AssetRef: &id,
 			Status:   MappingMatched,
-			Reason: fmt.Sprintf("exposed name equals provider-safe name of server key %q + tool %q (Tool %s, server %s) in snapshot %s",
-				c.serverKey, c.toolName, c.toolID, c.serverID, inv.SnapshotID),
+			Reason: fmt.Sprintf("exposed name equals %s of server key %q + tool %q (Tool %s, server %s) in snapshot %s",
+				rule, c.serverKey, c.toolName, c.toolID, c.serverID, inv.SnapshotID),
 			EvidenceRefs: append([]string(nil), c.evidence...),
 		}
 	default:
