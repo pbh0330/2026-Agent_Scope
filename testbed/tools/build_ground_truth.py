@@ -144,8 +144,11 @@ def build(profile):
             attrs.update(command=cfg.get("command"), args=cfg.get("args", []), runs_on=vm)
         if cfg.get("toolFilter"):
             attrs["tool_filter"] = cfg["toolFilter"]
-        if name in CREDENTIAL_ENV:
-            attrs["credential_ref"] = CREDENTIAL_ENV[name]
+        cred = CREDENTIAL_ENV.get(name)
+        # 프로파일 설정이 실제로 해당 자격증명(${ENV_REF})을 참조할 때만 정답에 포함한다.
+        # 예: P1 demo-everything에는 env 참조가 없으므로 credential_ref를 넣지 않는다(P2에서만 추가됨).
+        if cred and "${" + cred["env_ref"] + "}" in json.dumps(cfg, ensure_ascii=False):
+            attrs["credential_ref"] = cred
         if name in plugin_keys:
             attrs["visible_in_openclaw_mcp_list"] = False  # openclaw mcp list/probe는 mcp.servers만 보여 줌
         sk = asset(f"{vm}/mcp_server/{name}", "mcp_server", declared_at, "declared", **attrs)

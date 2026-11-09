@@ -113,7 +113,19 @@ async function listAll(client, method, key, nextId) {
 
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
-  if (opts.ca) process.env.NODE_EXTRA_CA_CERTS = opts.ca;
+  // NODE_EXTRA_CA_CERTS는 Node 프로세스 시작 시점에만 읽힌다. 런타임 대입은 전역 fetch(undici)에
+  // 반영되지 않으므로, --ca가 주어졌고 아직 적용되지 않았다면 해당 env를 준 자식 Node로 재실행한다.
+  if (opts.ca && process.env.NODE_EXTRA_CA_CERTS !== opts.ca) {
+    const child = spawn(process.execPath, process.argv.slice(1), {
+      stdio: "inherit",
+      env: { ...process.env, NODE_EXTRA_CA_CERTS: opts.ca },
+    });
+    child.on("exit", (code, signal) => {
+      if (signal) process.kill(process.pid, signal);
+      else process.exit(code ?? 0);
+    });
+    return;
+  }
   const client = opts.url ? httpClient(opts.url, opts.headers) : stdioClient(opts.command);
   let id = 0;
   const nextId = () => ++id;

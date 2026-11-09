@@ -454,11 +454,6 @@
             "get-env",
             "gzip-file-as-resource"
           ]
-        },
-        "credential_ref": {
-          "env_ref": "EVERYTHING_DEMO_KEY",
-          "store": "tb-node:~/.openclaw/.env",
-          "used_in": "env.EVERYTHING_DEMO_KEY"
         }
       }
     },
