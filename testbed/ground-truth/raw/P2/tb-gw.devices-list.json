@@ -1,0 +1,78 @@
+{
+  "pending": [],
+  "paired": [
+    {
+      "deviceId": "b8cd252a851642463b068cdb75c716c7e472114557924c8e472355e0848da921",
+      "publicKey": "oLLtJA2iSkOdB0BjTUFpTcvSzkk38rMbwEzn6yjNQH4",
+      "displayName": "tb-node",
+      "platform": "linux",
+      "deviceFamily": "Linux",
+      "clientId": "node-host",
+      "clientMode": "node",
+      "role": "node",
+      "roles": [
+        "node"
+      ],
+      "scopes": [],
+      "remoteIp": "<TB_NODE_IP>",
+      "approvedVia": "owner",
+      "nodeSurface": {
+        "displayName": "tb-node",
+        "version": "2026.9.6",
+        "modelIdentifier": "VMware Virtual Platform",
+        "caps": [
+          "browser",
+          "file",
+          "local-inference",
+          "mcp",
+          "system"
+        ],
+        "commands": [
+          "browser.proxy",
+          "browser.proxy.upload.v1",
+          "desktop.stream",
+          "fs.listDir",
+          "mcp.tools.call.v1",
+          "ollama.chat",
+          "ollama.models",
+          "system.execApprovals.get",
+          "system.execApprovals.set",
+          "system.notify",
+          "system.run",
+          "system.run.prepare",
+          "system.which",
+          "terminal.upload"
+        ],
+        "createdAtMs": 1791094967533,
+        "approvedAtMs": 1791094967533,
+        "sessionHost": false,
+        "lastHostStats": {
+          "cpuCount": 2,
+          "loadAverage": [
+            0.43,
+            0.76,
+            0.45
+          ],
+          "memoryTotalBytes": 4051042304,
+          "memoryFreeBytes": 2436706304,
+          "diskTotalBytes": 157393829888,
+          "diskAvailableBytes": 135711977472,
+          "updatedAtMs": 1791096528647
+        },
+        "lastConnectedAtMs": 1791096468591
+      },
+      "createdAtMs": 1791094946270,
+      "approvedAtMs": 1791094946270,
+      "lastSeenAtMs": 1791096468548,
+      "lastSeenReason": "connect",
+      "connected": true,
+      "tokens": [
+        {
+          "role": "node",
+          "scopes": [],
+          "createdAtMs": 1791094946270
+        }
+      ]
+    }
+  ]
+}

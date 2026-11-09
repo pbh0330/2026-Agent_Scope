@@ -1,0 +1,13 @@
+/home/<TB_USER>/.openclaw
+/home/<TB_USER>/.openclaw/config-journal-fingerprint.key
+/home/<TB_USER>/.openclaw/node.systemd.env
+/home/<TB_USER>/.openclaw/openclaw.json
+/home/<TB_USER>/.openclaw/openclaw.json.bak
+/home/<TB_USER>/.openclaw/state
+/home/<TB_USER>/.openclaw/state/openclaw.sqlite
+/home/<TB_USER>/.openclaw/state/openclaw.sqlite-shm
+/home/<TB_USER>/.openclaw/state/openclaw.sqlite-wal
+/home/<TB_USER>/.openclaw/tmp
+/home/<TB_USER>/.openclaw/tmp/openclaw-1000
+## skills dir
+ls: '/home/<TB_USER>/.openclaw/skills'에 접근할 수 없음: 그런 파일이나 디렉터리가 없습니다
