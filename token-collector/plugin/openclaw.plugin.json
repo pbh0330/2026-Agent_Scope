@@ -101,6 +101,15 @@
           },
           "day": {
             "$ref": "#/definitions/levels"
+          },
+          "dayTimeZone": {
+            "type": "string",
+            "default": "Asia/Seoul",
+            "description": "일 단위 누적의 날짜 기준 시간대(IANA 이름). 기본 Asia/Seoul: 한국 자정에 0부터 다시 셈. 잘못된 값이면 기본값"
+          },
+          "dayStatePath": {
+            "type": "string",
+            "description": "일 단위 누적(크기·토큰 수·호출 수 숫자만)을 저장해 게이트웨이를 다시 시작해도 같은 날이면 이어서 세는 파일. 기본: ~/.openclaw/agentscope/agentscope-day-usage.json. 빈 문자열이면 저장하지 않음"
           }
         }
       }

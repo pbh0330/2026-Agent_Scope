@@ -150,6 +150,8 @@ openclaw plugins inspect agentscope-token-guard --runtime --json   # before_tool
 - `apiKeyEnv`에는 환경 변수 **이름**만 적는다. 키는 4절에서 넣은 것을 같이 쓴다.
 - 토큰 세기는 Anthropic 토큰 계산 API(`/v1/messages/count_tokens`)를 쓴다. 무료이고 메시지 요청과 한도가 따로다(기본 등급 분당 5,000회).
 - 브레이크 값은 정상 사용 데이터를 보기 위한 관찰용이다. `warn`이라 기록만 남고 막지 않는다.
+- 일 단위 누적은 한국 시간 자정에 0부터 다시 센다(`brake.dayTimeZone`, 기본 Asia/Seoul). 누적값은
+  `~/.openclaw/agentscope/agentscope-day-usage.json`에 숫자만 저장되어 게이트웨이를 다시 시작해도 같은 날이면 이어진다.
 - 결과 내용은 기록하지 않는다(크기·토큰 수·도구 이름·호출 ID만).
 
 ## 8. 동작 확인
@@ -228,7 +230,8 @@ grep -rl 'sk-ant-' ~/.openclaw ~/.config/systemd ~/.bashrc ~/.profile 2>/dev/nul
 
 - 그다음 VM을 **끈 상태**에서 SNAP-2-P2-T를 만든다.
 - 위협 시나리오 스냅샷(SNAP-3~)과 OVA 내보내기 전에도 같은 확인을 한다. 키를 넣지 않은 상태에서는 에이전트가 모델을 못 불러 실행이 실패하는 것이 정상이다.
-- 기록 파일(`~/agentscope/data`, `~/.openclaw/agentscope`)은 스냅샷에 남는다. 다음 실험과 섞이지 않게 하려면 전달 후 비운다.
+- 기록 파일(`~/agentscope/data`, `~/.openclaw/agentscope`)은 스냅샷에 남는다. 다음 실험과 섞이지 않게 하려면 전달 후 비운다
+  (`agentscope-day-usage.json`도 같이 지우면 일 단위 누적이 0부터 시작한다).
 
 ## 12. 문제가 생기면
 

@@ -47,7 +47,9 @@ openclaw plugins inspect agentscope-token-guard --runtime --json   # 훅 등록 
           brake: {
             mode: "warn",                             // off | warn(기록만) | enforce(승인 요구·차단)
             run: { warn: { countedTokens: 20000 }, approve: { countedTokens: 50000 }, block: { sameToolStreak: 20 } },
-            day: { block: { countedTokens: 2000000 } }
+            day: { block: { countedTokens: 2000000 } },
+            dayTimeZone: "Asia/Seoul",               // 일 단위 날짜 기준(기본값). 한국 자정에 0부터
+            dayStatePath: "~/.openclaw/agentscope/agentscope-day-usage.json"  // 기본값. ""이면 저장 안 함
           }
         }
       }
@@ -80,6 +82,10 @@ otlpTimeoutMs: 5000
 `agentscope.count.skipped_blocks`, `agentscope.count.source`뿐이고 결과 내용은 없다. 전송 실패는 `count_export_error`로 기록만 하고
 에이전트 실행에는 영향이 없다.
 
+**일 단위 누적**: 날짜는 `dayTimeZone` 기준(기본 한국 시간)으로 나눈다. 누적값(결과 바이트·센 토큰 수·호출 수 숫자만)은
+`dayStatePath`에 저장해 두고, 게이트웨이를 다시 시작하면 같은 날짜·같은 시간대일 때 이어서 센다(이전에는 재시작하면 0, 날짜 경계는 UTC 자정 = 한국 오전 9시).
+파일은 임시 파일에 쓴 뒤 바꿔치기해서 쓰는 도중 꺼져도 이전 값이 남는다. 저장 실패는 로그만 남기고 에이전트 실행에는 영향이 없다.
+
 ## 기록 형식 (JSONL, `v:1`)
 
 | kind | 언제 | 주요 필드 |
@@ -103,7 +109,8 @@ node --test test/*.test.ts      # Node 22.18 이상(TypeScript 타입 제거 실
 가짜 토큰 계산 서버로 요청 형식·기준값 재사용·실패 처리, 크기 측정(PNG·JPEG·GIF·WebP 헤더), 결과 내용 미기록,
 브레이크 단계(warn은 개입 안 함, 승인 후 같은 run 재질문 안 함, 차단 유지, 일 단위 누적), 가짜 Collector로
 OTLP 본문 형식(trace id 연결, 결과 내용 없음)과 전송 실패 처리, 이미지 결과의 바이트 한도(run·일),
-요청 내용을 되돌려주는 오류 응답(400·500·JSON 아님)에서도 기록에 결과 내용이 남지 않는지를 확인한다(34건).
+요청 내용을 되돌려주는 오류 응답(400·500·JSON 아님)에서도 기록에 결과 내용이 남지 않는지,
+일 단위 날짜 경계(한국 자정)와 재시작 후 누적 이어 세기(같은 날만), 저장 파일 깨짐 처리를 확인한다(40건).
 
 ## 테스트베드에서 확인할 것
 
