@@ -65,10 +65,6 @@ export class TokenCounter {
     return undefined;
   }
 
-  get source(): string {
-    return this.cfg.api;
-  }
-
   // countResult는 결과 블록의 토큰 수(c_i)를 돌려준다. 실패하면 예외.
   async countResult(blocks: ContentBlock[]): Promise<{ tokens: number; total: number; baseline: number; skippedBlocks: number }> {
     const baseline = await this.baseline();

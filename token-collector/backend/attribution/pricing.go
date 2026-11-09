@@ -48,22 +48,9 @@ type Pricing struct {
 	Reference map[string]Rate
 }
 
-// InputCost는 도구에 귀속된 토큰(=다음 model.call의 입력으로 들어간 토큰)의 비용이다.
-func (p Pricing) InputCost(model string, tokens int64) (usd float64, source string, ok bool) {
-	rate, src, ok := p.rate(model)
-	if !ok {
-		return 0, "", false
-	}
-	return float64(tokens) / 1e6 * rate.Input, src, true
-}
-
 // RateFor는 모델에 실제로 적용되는 단가와 출처(config / reference_list_price)를 돌려준다.
-// InputCost와 같은 규칙(설정 단가가 없거나 전부 0이면 참고 정가)이다.
+// 설정 단가가 없거나 전부 0이면 참고 정가를 쓴다.
 func (p Pricing) RateFor(model string) (Rate, string, bool) {
-	return p.rate(model)
-}
-
-func (p Pricing) rate(model string) (Rate, string, bool) {
 	if r, ok := p.Models[model]; ok && !r.IsZero() {
 		return r, PriceSourceConfig, true
 	}

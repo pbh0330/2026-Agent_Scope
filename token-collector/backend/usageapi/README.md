@@ -41,11 +41,12 @@ agentscope-usage-api --live --env env-testbed --profile profile-snap2-p2t \
 | `--default-range` | 실시간: 인자 없는 요청의 조회 구간(기본 `1h`) |
 | `--addr` | 기본 `127.0.0.1:8088`(그 PC 안에서만). 테스트베드는 `0.0.0.0:8088`(NAT 안이라 호스트 PC에서만 접속) |
 
-UI(Vite 개발 서버)에서는 프록시로 붙인다.
+UI(Vite 개발 서버)에서는 프록시로 붙인다. API는 CORS 헤더를 보내지 않으므로, 브라우저에서 다른 주소의 API를 바로 부르면 막힌다.
 
 ```ts
 // vite.config.ts
 export default defineConfig({
+  // 같은 PC에서 API를 띄운 경우. 테스트베드는 'http://<TB_GW_IP>:8088'(tb-gw 주소)로 바꾼다.
   server: { proxy: { '/api': 'http://127.0.0.1:8088' } },
 })
 ```

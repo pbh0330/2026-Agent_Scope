@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 )
 
@@ -35,13 +36,22 @@ type ToolResultStats struct {
 // 값이라 쓰지 않는다. 이 값으로 배분하면 세지 못한 몫(이미지 토큰 등)이 같은 구간의 다른 도구에 넘어가므로,
 // 그 도구를 "토큰 수 없음"으로 두어 구간 전체를 배분하지 않게 한다(근거 없이 나누지 않음).
 func ReadToolResultCounts(path string, dst map[string]int64) (ToolResultStats, error) {
-	var st ToolResultStats
 	f, err := os.Open(path)
 	if err != nil {
-		return st, err
+		return ToolResultStats{}, err
 	}
 	defer f.Close()
-	sc := bufio.NewScanner(f)
+	st, err := ReadToolResultCountsFrom(f, dst)
+	if err != nil {
+		return st, fmt.Errorf("%s: %w", path, err)
+	}
+	return st, nil
+}
+
+// ReadToolResultCountsFrom은 ReadToolResultCounts의 io.Reader 버전이다(같은 내용을 여러 용도로 읽을 때).
+func ReadToolResultCountsFrom(r io.Reader, dst map[string]int64) (ToolResultStats, error) {
+	var st ToolResultStats
+	sc := bufio.NewScanner(r)
 	sc.Buffer(make([]byte, 64*1024), 4*1024*1024)
 	for sc.Scan() {
 		line := sc.Bytes()
@@ -69,8 +79,5 @@ func ReadToolResultCounts(path string, dst map[string]int64) (ToolResultStats, e
 		dst[l.ToolCallID] = *l.CountedTokens
 		st.Counts++
 	}
-	if err := sc.Err(); err != nil {
-		return st, fmt.Errorf("%s: %w", path, err)
-	}
-	return st, nil
+	return st, sc.Err()
 }

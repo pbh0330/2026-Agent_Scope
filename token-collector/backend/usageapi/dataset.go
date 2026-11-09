@@ -185,14 +185,18 @@ func Load(cfg LoadConfig, warn func(string)) (*Dataset, error) {
 		counts := map[string]int64{}
 		refs := make([]string, 0, len(toolResults))
 		for _, p := range toolResults {
-			st, err := usagereport.ReadToolResultCounts(p, counts)
+			b, err := os.ReadFile(p) // 한 번 읽어 토큰 수와 브레이크 기록에 같이 쓴다
+			if err != nil {
+				return nil, fmt.Errorf("결과 기록 %s: %w", filepath.Base(p), err)
+			}
+			st, err := usagereport.ReadToolResultCountsFrom(bytes.NewReader(b), counts)
 			if err != nil {
 				return nil, fmt.Errorf("결과 기록 %s: %w", filepath.Base(p), err)
 			}
 			if st.Malformed > 0 {
 				warn(fmt.Sprintf("%s 에서 읽지 못한 줄 %d개", filepath.Base(p), st.Malformed))
 			}
-			ev, err := ReadBrakeEvents(p)
+			ev, err := ReadBrakeEvents(bytes.NewReader(b))
 			if err != nil {
 				return nil, fmt.Errorf("결과 기록 %s: %w", filepath.Base(p), err)
 			}

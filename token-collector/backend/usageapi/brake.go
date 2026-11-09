@@ -3,7 +3,7 @@ package usageapi
 import (
 	"bufio"
 	"encoding/json"
-	"os"
+	"io"
 	"sort"
 	"time"
 )
@@ -64,14 +64,9 @@ type brakeLine struct {
 	Decision string `json:"decision"`
 }
 
-// ReadBrakeEvents는 플러그인 JSONL에서 brake / brake_resolution 줄을 읽어 짝지어 돌려준다.
-// 다른 kind와 읽지 못한 줄은 건너뛴다(카운트는 usagereport.ReadToolResultCounts가 따로 셈).
-func ReadBrakeEvents(path string) ([]BrakeEvent, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
+// ReadBrakeEvents는 플러그인 JSONL 내용에서 brake / brake_resolution 줄을 읽어 짝지어 돌려준다.
+// 다른 kind와 읽지 못한 줄은 건너뛴다(카운트는 같은 내용으로 usagereport.ReadToolResultCountsFrom이 셈).
+func ReadBrakeEvents(r io.Reader) ([]BrakeEvent, error) {
 	var events []BrakeEvent
 	type res struct {
 		decision string
@@ -81,7 +76,7 @@ func ReadBrakeEvents(path string) ([]BrakeEvent, error) {
 		toolCallID string
 		r          res
 	}
-	sc := bufio.NewScanner(f)
+	sc := bufio.NewScanner(r)
 	sc.Buffer(make([]byte, 64*1024), 16*1024*1024)
 	for sc.Scan() {
 		line := sc.Bytes()
