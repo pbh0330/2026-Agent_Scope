@@ -79,7 +79,7 @@ OpenClaw ─OTLP─▶ Collector(otelcol-contrib, file 익스포터) ─▶ agen
 - 이미지 등 결과 일부만 센 값(`skippedBlocks`/`agentscope.count.skipped_blocks` > 0)은 배분에 쓰지 않는다.
 - 같은 배분이 사용 현황 API(`../usageapi`) 응답에도 그대로 쓰인다.
 
-단가 버전: 참고 정가는 `anthropic-list-price@2026-11-02`(Haiku 4.5, Haiku 5.5, Sonnet 5.5), openclaw.json 단가는 원천에 버전이 없어서
+단가 버전: 참고 정가는 `anthropic-list-price@2026-11-09`(Haiku 4.5(날짜 있는 이름·없는 이름), Haiku 5.5, Sonnet 5.5), openclaw.json 단가는 원천에 버전이 없어서
 모델별 단가표 내용의 해시(`openclaw-config-sha256:xxxxxxxxxxxx`)를 버전으로 쓴다(단가 값만 해시, 키 등 다른 값은 미포함).
 
 ## 자산 매핑 규칙 (asset_ref / mapping_status)

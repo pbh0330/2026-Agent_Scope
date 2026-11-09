@@ -140,7 +140,7 @@ export default defineConfig({
 ### timeseries
 
 `step`(기본: 구간이 120개 이하가 되는 가장 작은 값, 1m·5m·15m·30m·1h·6h·1d 중), `group`(기본 `tool`), `top`(기본 8, 나머지는 `other`로 합침).
-구간 시작은 step 단위로 맞추고(UTC) 기록이 없는 구간도 0으로 채운다. 구간이 1,000개를 넘으면 400.
+구간 시작은 한국 시간 기준 step 단위로 맞추고(예: `step=1d`는 한국 자정 = 전날 15:00Z, 시각 표기는 UTC) 기록이 없는 구간도 0으로 채운다. 플러그인의 일 단위 누적과 하루 경계가 같다. 구간이 1,000개를 넘으면 400.
 
 ```json
 { "group": "tool", "step": "1m0s",
@@ -210,7 +210,7 @@ go test ./...
 | 오류 | 잘못된 range·from/to·group·limit·cursor는 400, 7일 초과 400, POST 405 |
 | 누락 | 토큰 수 스팬이 없으면 병렬 13건이 null + missing_counts 13 |
 | 경로 | 입력 파일의 디렉터리가 응답에 안 나옴 |
-| timeseries | 1분 구간 6개, 합계 = 15,769, top·other 합치기, step·top 오류 |
+| timeseries | 1분 구간 6개, 합계 = 15,769, top·other 합치기, 1d·6h 구간의 한국 시간 경계, step·top 오류 |
 | assets | Tool asset_id·`tool:` 키, 최근 호출 최신순, 미사용 자산은 used=false |
 | brake-events | 경고·승인 요청·차단, 승인 응답 짝짓기, trace_id 연결, level 필터, 기록 없으면 available=false |
 | 실시간 | 파일 없음 → 0건, 파일이 늘면 다시 계산, 안 바뀌면 그대로, 반쯤 쓴 마지막 줄 무시, 패턴(로테이션), 깨진 줄이면 이전 데이터 유지 + degraded |

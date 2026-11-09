@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/pbh0330/2026-Agent_Scope/token-collector/backend/attribution"
@@ -88,5 +89,20 @@ func TestReadSpansEmptyAndInvalid(t *testing.T) {
 	}
 	if _, err := ReadSpans(bytes.NewReader([]byte(`{"resourceSpans":[}`))); err == nil {
 		t.Fatal("invalid JSON must fail")
+	}
+}
+
+// 계산에 쓰지 않는 스팬(게이트웨이 내부 통신 등)은 읽을 때 버린다.
+func TestReadSpansKeepsOnlyUsedSpans(t *testing.T) {
+	line := `{"resourceSpans":[{"scopeSpans":[{"spans":[` +
+		`{"traceId":"t","spanId":"a","name":"openclaw.gateway.rpc.dispatch","startTimeUnixNano":"1","endTimeUnixNano":"2"},` +
+		`{"traceId":"t","spanId":"b","name":"openclaw.model.call","startTimeUnixNano":"1","endTimeUnixNano":"2"},` +
+		`{"traceId":"t","spanId":"c","name":"agentscope.tool_result.count","startTimeUnixNano":"1","endTimeUnixNano":"2"}]}]}]}`
+	spans, err := ReadSpans(strings.NewReader(line + "\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(spans) != 2 || spans[0].SpanID != "b" || spans[1].SpanID != "c" {
+		t.Fatalf("%+v", spans)
 	}
 }

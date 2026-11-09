@@ -18,6 +18,8 @@ import (
 //   - OTLP JSON 줄 단위(JSON Lines): Collector file 익스포터 출력. 한 줄 = ExportTraceServiceRequest
 //     ({"resourceSpans":[...]}). OTLP/HTTP JSON 요청 본문 하나를 그대로 저장한 파일도 된다.
 //   - 픽스처 배열: attribution/testdata/*.spans.json 형식 [{"trace_id":..,"span_id":..,"attrs":{..}}, ...]
+//
+// 귀속 계산에 쓰는 스팬(attribution.UsedSpan)만 돌려준다.
 func ReadSpansFile(path string) ([]attribution.Span, error) {
 	f, err := os.Open(path)
 	if err != nil {
@@ -127,7 +129,9 @@ func readOTLPLines(r io.Reader) ([]attribution.Span, error) {
 		for _, rs := range req.ResourceSpans {
 			for _, ss := range rs.ScopeSpans {
 				for _, s := range ss.Spans {
-					out = append(out, s.toSpan())
+					if attribution.UsedSpan(s.Name) {
+						out = append(out, s.toSpan())
+					}
 				}
 			}
 		}
@@ -182,6 +186,9 @@ func readFixture(r io.Reader) ([]attribution.Span, error) {
 	}
 	out := make([]attribution.Span, 0, len(raw))
 	for _, f := range raw {
+		if !attribution.UsedSpan(f.Name) {
+			continue
+		}
 		attrs := map[string]any{}
 		for k, v := range f.Attrs {
 			if n, ok := v.(json.Number); ok {

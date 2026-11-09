@@ -78,8 +78,17 @@ type timeseriesResp struct {
 	Series    []series   `json:"series"`
 }
 
+// kstOffset: 구간 시작을 한국 시간(UTC+9, 서머타임 없음) 기준으로 맞추기 위한 차이. 플러그인의 일 단위 누적
+// (brake.dayTimeZone 기본 Asia/Seoul)과 하루 경계를 같게 한다. 1시간 이하 step은 UTC 기준과 결과가 같다.
+const kstOffset = 9 * time.Hour
+
+// alignStart는 t를 한국 시간 기준 step 경계로 내린다(1d면 한국 자정 = 전날 15:00Z).
+func alignStart(t time.Time, step time.Duration) time.Time {
+	return t.Add(kstOffset).Truncate(step).Add(-kstOffset)
+}
+
 // timeseries는 구간(step)별 토큰·호출 수다. 묶음은 토큰 많은 순 top개, 나머지는 key "other" 하나로 합친다.
-// 구간 시작은 step 단위로 맞추고(UTC), 기록이 없는 구간도 0으로 채운다.
+// 구간 시작은 한국 시간 기준 step 단위로 맞추고(시각 표기는 UTC), 기록이 없는 구간도 0으로 채운다.
 func (s *Server) timeseries(w http.ResponseWriter, r *http.Request) {
 	v, ok := s.view(w, r)
 	if !ok {
@@ -106,7 +115,7 @@ func (s *Server) timeseries(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	recs := v.records()
-	first := v.win.start.Truncate(step)
+	first := alignStart(v.win.start, step)
 	n := int(v.win.end.Sub(first)/step) + 1
 	if !first.Add(time.Duration(n-1) * step).Before(v.win.end) {
 		n--

@@ -92,6 +92,13 @@ systemctl --user show-environment | grep -c '^ANTHROPIC_API_KEY='   # 1이면 �
 
 ## 5. Collector 설치
 
+Collector와 사용 현황 API는 systemd **사용자** 서비스라, 이 사용자의 linger가 꺼져 있으면 SSH 접속을 끊을 때 멈추고 VM을 켜도 자동으로 시작되지 않는다. 먼저 확인한다.
+
+```bash
+loginctl show-user "$USER" -p Linger      # Linger=yes 여야 함
+sudo loginctl enable-linger "$USER"       # no일 때만(한 번만 하면 유지됨)
+```
+
 ```bash
 git clone -b feature/token-collector https://github.com/pbh0330/2026-Agent_Scope.git ~/agentscope/repo
 ~/agentscope/repo/token-collector/deploy/testbed/install-collector.sh

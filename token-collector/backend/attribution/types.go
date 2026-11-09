@@ -28,6 +28,12 @@ const (
 	SpanToolResultCount = "agentscope.tool_result.count"
 )
 
+// UsedSpan은 귀속 계산에 쓰는 스팬인지다. OpenClaw 기록의 대부분(11.05 PC 실측 97.9%)은 게이트웨이
+// 내부 통신(openclaw.gateway.rpc.*) 등 계산에 쓰지 않는 스팬이라, 읽을 때 버려 메모리와 시간을 줄인다.
+func UsedSpan(name string) bool {
+	return name == SpanModelCall || name == SpanToolExec || name == SpanToolResultCount
+}
+
 // 결과별 토큰 수 스팬(SpanToolResultCount) 속성 키. tool_call_id는 AttrToolCallID를 같이 쓴다.
 const (
 	AttrCountedTokens      = "agentscope.counted_tokens"

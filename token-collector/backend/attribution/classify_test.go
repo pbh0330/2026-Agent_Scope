@@ -253,6 +253,10 @@ func TestPricing(t *testing.T) {
 	if usd, src, ok := p.InputCost("claude-haiku-4-5-20251001", 1_000_000); !ok || src != PriceSourceReference || usd != 1.0 {
 		t.Fatalf("zero-rate model should use reference: %v %s %v", usd, src, ok)
 	}
+	// Anthropic 직접 연결의 짧은 이름도 같은 참고 정가를 쓴다(11.05: 비용이 null로 나오던 문제).
+	if r, src, ok := p.RateFor("claude-haiku-4-5"); !ok || src != PriceSourceReference || r.Input != 1.0 {
+		t.Fatalf("haiku-4-5 짧은 이름: %v %s %v", r, src, ok)
+	}
 	if usd, src, ok := p.InputCost("paid", 500_000); !ok || src != PriceSourceConfig || usd != 1.5 {
 		t.Fatalf("configured rate: %v %s %v", usd, src, ok)
 	}

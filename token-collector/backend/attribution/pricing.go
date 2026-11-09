@@ -27,17 +27,19 @@ const (
 
 // AnthropicListPricingVersion은 아래 참고 정가표의 불변 버전 식별자다. 표 값을 바꾸면 이 값도 바꾼다
 // (usage.json의 pricing.version으로 나가서, 어느 단가표로 계산했는지 나중에 추적할 수 있게 한다).
-const AnthropicListPricingVersion = "anthropic-list-price@2026-11-02"
+const AnthropicListPricingVersion = "anthropic-list-price@2026-11-09"
 
 // AnthropicListPricingReference는 Anthropic 공식 API 정가(참고용, 실제 청구액 아님).
-// 2026-09-28 확인, 2026-11-02 Haiku 5.5·Sonnet 5.5 추가. https://platform.claude.com/docs/en/about-claude/pricing
+// 2026-09-28 확인, 2026-11-02 Haiku 5.5·Sonnet 5.5 추가, 2026-11-09 Haiku 4.5 짧은 이름 추가. https://platform.claude.com/docs/en/about-claude/pricing
 // cacheWrite는 1시간 TTL 기준(보수적으로 더 비싼 쪽).
 // Haiku 5.5는 프롬프트 길이에 따라 단가가 다르다(100K 토큰 이하 / 초과). 테스트베드 요청은 약 4.5만 토큰이라
 // 100K 이하 단가를 쓴다. 100K를 넘는 요청은 실제 단가(input 0.50, output 2.50)의 1/5로 잡히므로 참고값으로만 볼 것.
 var AnthropicListPricingReference = map[string]Rate{
 	"claude-haiku-4-5-20251001": {Input: 1.00, Output: 5.00, CacheRead: 0.10, CacheWrite: 2.00},
-	"claude-haiku-5-5":          {Input: 0.10, Output: 0.50, CacheRead: 0.01, CacheWrite: 0.20},
-	"claude-sonnet-5-5":         {Input: 2.00, Output: 10.00, CacheRead: 0.10, CacheWrite: 4.00},
+	// Anthropic API 직접 연결(OpenClaw 내장 anthropic)은 날짜 없는 이름으로 기록한다(11.05 PC 실측). 단가는 같다.
+	"claude-haiku-4-5":  {Input: 1.00, Output: 5.00, CacheRead: 0.10, CacheWrite: 2.00},
+	"claude-haiku-5-5":  {Input: 0.10, Output: 0.50, CacheRead: 0.01, CacheWrite: 0.20},
+	"claude-sonnet-5-5": {Input: 2.00, Output: 10.00, CacheRead: 0.10, CacheWrite: 4.00},
 }
 
 // Pricing은 모델별 단가표다. Models(설정 단가)가 없거나 전부 0이면 Reference로 대체한다.

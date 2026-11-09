@@ -46,6 +46,15 @@ func TestTimeseries(t *testing.T) {
 	if len(got.Total.Points) != 1 || len(got.Series) != 2 {
 		t.Fatalf("1h: %+v", got)
 	}
+	// 하루 단위는 한국 자정 기준: 10.29 05:24Z(한국 14:24)는 10.28 15:00Z(한국 10.29 00:00)에 시작하는 구간.
+	get(t, s, "/api/v1/usage/timeseries?step=1d", 200, &got)
+	if len(got.Total.Points) != 1 || got.Total.Points[0].T != "2026-10-28T15:00:00.000Z" || got.Total.Tokens != 15769 {
+		t.Fatalf("1d: %+v", got.Total)
+	}
+	get(t, s, "/api/v1/usage/timeseries?step=6h", 200, &got)
+	if got.Total.Points[0].T != "2026-10-29T03:00:00.000Z" { // 한국 12:00 시작 구간
+		t.Fatalf("6h: %+v", got.Total.Points)
+	}
 	for _, p := range []string{"step=abc", "step=30s", "top=0",
 		"from=2026-10-22T06:00:00Z&to=2026-10-29T06:00:00Z&step=1m", "group=user"} {
 		get(t, s, "/api/v1/usage/timeseries?"+p, 400, nil)

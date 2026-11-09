@@ -182,3 +182,24 @@ func TestNoDataYetReturns503(t *testing.T) {
 		t.Fatalf("health: %+v", h)
 	}
 }
+
+// 마지막 수정이 보관 기간(7일)보다 앞선 회전 파일은 읽지 않는다. 읽으면 깨진 내용 때문에 실패하므로 건너뛴 것을 확인할 수 있다.
+func TestLiveSkipsFilesOlderThanRetain(t *testing.T) {
+	dir := t.TempDir()
+	old := filepath.Join(dir, "agentscope-traces-2026-10-01T00-00-00.000.jsonl")
+	if err := os.WriteFile(old, []byte("{깨진 줄\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	ancient := time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC)
+	if err := os.Chtimes(old, ancient, ancient); err != nil {
+		t.Fatal(err)
+	}
+	writeLines(t, filepath.Join(dir, "agentscope-traces.jsonl"), fixtureLines(t), false)
+	src := newLive(t, filepath.Join(dir, "agentscope-traces*.jsonl"))
+	if _, err := src.Reload(); err != nil {
+		t.Fatalf("옛 파일을 읽음: %v", err)
+	}
+	if n := len(src.Current().Records); n != 16 {
+		t.Fatalf("records %d", n)
+	}
+}

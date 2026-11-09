@@ -9,6 +9,10 @@ VERSION=0.161.0
 SHA256=6c2af0731a53691e3771d82a4b71e2941a46de27af191e40c697b6ed8643e50e
 
 [ "$(uname -m)" = "x86_64" ] || { echo "x86_64만 지원(현재 $(uname -m))" >&2; exit 1; }
+# 사용자 서비스는 linger가 꺼져 있으면 로그아웃 시 멈추고 부팅 때 시작되지 않는다(설치는 계속).
+if [ "$(loginctl show-user "$USER" -p Linger --value 2>/dev/null || true)" != "yes" ]; then
+  echo "경고: $USER 의 linger가 꺼져 있음 → 'sudo loginctl enable-linger $USER' 후 다시 확인(가이드 5절)" >&2
+fi
 
 HERE=$(cd "$(dirname "$0")" && pwd)
 BASE="$HOME/agentscope"

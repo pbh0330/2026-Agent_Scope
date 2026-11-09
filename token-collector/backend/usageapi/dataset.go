@@ -205,6 +205,12 @@ func Load(cfg LoadConfig, warn func(string)) (*Dataset, error) {
 	var spans []attribution.Span
 	names := make([]string, 0, len(inputs))
 	for _, p := range inputs {
+		// 마지막 수정이 조회 시작보다 앞선 파일(로테이션된 옛 파일)에는 그 뒤의 기록이 있을 수 없으니 읽지 않는다.
+		if !cfg.From.IsZero() {
+			if st, err := os.Stat(p); err == nil && st.ModTime().Before(cfg.From) {
+				continue
+			}
+		}
 		s, err := readSpans(p, cfg.AllowMissing)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", filepath.Base(p), err)
