@@ -22,7 +22,7 @@ go run ./cmd/agentscope-usage-api --env env-pc --profile profile-pc \
 # 고정 응답 모드: 기록 16건, 구간 2026-10-29T05:24:02Z ~ 2026-10-29T05:29:03Z, http://127.0.0.1:8088/api/v1/usage/health
 
 # 테스트베드(실시간): deploy/testbed/agentscope-usage-api.service가 이렇게 띄운다
-agentscope-usage-api --live --env env-testbed --profile profile-snap2-p2t \
+agentscope-usage-api --live --env agentscope-testbed --profile tb-openclaw \
   --input '~/agentscope/data/agentscope-traces*.jsonl' \
   --tool-results ~/.openclaw/agentscope/agentscope-tool-results.jsonl --addr 0.0.0.0:8088
 ```

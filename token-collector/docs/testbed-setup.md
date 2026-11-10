@@ -199,7 +199,7 @@ mkdir -p ~/usage-api-dist && unzip -o ~/agentscope-usage-api-linux-amd64.zip -d 
 - 체크섬 확인 → `~/agentscope/bin`에 설치 → systemd 사용자 서비스 `agentscope-usage-api` 등록·시작 → health 출력까지 한다.
 - 실시간 모드로 돈다: Collector 스팬 파일(로테이션 포함)과 플러그인 기록이 바뀌면 15초 안에 다시 계산한다.
 - `0.0.0.0:8088`로 열린다. VMware NAT 안이라 호스트 PC(대시보드 UI)에서 `http://<TB_GW_IP>:8088`로 접속된다.
-- `environment_id`/`profile_id`는 서비스 파일의 `AS_ENV`, `AS_PROFILE`(기본 `env-testbed`, `profile-snap2-p2t`). 스캐너 스냅샷과 같은 값으로 맞춘다.
+- `environment_id`/`profile_id`는 서비스 파일의 `AS_ENV`, `AS_PROFILE`(기본 `agentscope-testbed`, `tb-openclaw`). 팀 스캐너 스냅샷이 쓰는 값이다.
   바꾸려면 `systemctl --user edit agentscope-usage-api`로 `Environment=` 두 줄을 덮어쓴다.
 - 스캐너 스냅샷을 연결할 때는 서비스 파일의 `--inventory` 주석 참고.
 

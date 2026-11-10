@@ -6,9 +6,9 @@ Description=AgentScope usage API (dashboard backend, live mode)
 After=agentscope-collector.service
 
 [Service]
-# environment_id / profile_id: 스캐너 스냅샷과 같은 값으로 맞춘다(스냅샷을 연결할 때 다르면 시작 실패).
-Environment=AS_ENV=env-testbed
-Environment=AS_PROFILE=profile-snap2-p2t
+# environment_id / profile_id: 팀 스캐너 스냅샷 값(agentscope-testbed / tb-openclaw). 스냅샷을 연결할 때 다르면 시작 실패.
+Environment=AS_ENV=agentscope-testbed
+Environment=AS_PROFILE=tb-openclaw
 ExecStart=%h/agentscope/bin/agentscope-usage-api --live \
   --env ${AS_ENV} --profile ${AS_PROFILE} \
   --input %h/agentscope/data/agentscope-traces*.jsonl \
