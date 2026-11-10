@@ -14,7 +14,8 @@ testbed/ground-truth/
 ├── P1.json
 ├── P2.json
 ├── approved-servers.json  # S1 승인 서버 목록
-└── S1.json ...        # 위협 구성은 기준 프로파일 대비 추가·변경 자산만 기록 (+ expected_alerts, expected_no_alert)
+├── S1.json ~ S4.json  # 위협 구성은 기준 프로파일 대비 추가·변경 자산만 기록 (+ expected_alerts, expected_no_alert, expected_unknown)
+└── S5-T1.json ~ S5-T3.json  # S5는 원격 서버 하나라 설정 사본 3개로 정적 검증(스냅샷 없음)
 ```
 
 ## 필드
