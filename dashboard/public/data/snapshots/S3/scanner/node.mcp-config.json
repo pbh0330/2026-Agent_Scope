@@ -6,7 +6,7 @@
     "name": "agent-scope-asset-scanner",
     "version": "0.1.0"
   },
-  "generated_at": "2026-11-08T19:57:07Z",
+  "generated_at": "2026-11-10T09:16:19Z",
   "source": {
     "source_path": "/home/claude/agentscope-dashboard/pipeline/.work/S3/tb-node.openclaw.json",
     "source_path_redacted": false,

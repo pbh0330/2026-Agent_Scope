@@ -486,6 +486,8 @@ p { margin: 0; }
   .srv-top { grid-template-columns: minmax(0, 1fr); }
   .srv-flags { justify-content: flex-start; }
   .drawer { border-radius: 0; }
+  .snap-tabs { min-width: 0; max-width: 100%; flex-wrap: wrap; }
+  .snap-group { flex-wrap: wrap; min-width: 0; }
 }
 /* 토큰 사용 (사용 현황 API) */
 .kpi.static-kpi { cursor: default; }
@@ -510,6 +512,31 @@ p { margin: 0; }
   .usage-row { grid-template-columns: minmax(0, 1fr) 80px; }
   .usage-row .u-bar { grid-column: 1 / -1; grid-row: 2; }
   .usage-row .u-meta { grid-column: 1 / -1; }
+}
+
+/* 기대 결과 비교 */
+.exp-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+.exp-stat { display: grid; gap: 2px; padding: 18px 20px; background: var(--surface); border-radius: 18px; box-shadow: var(--shadow); border-left: 4px solid var(--line); }
+.exp-stat span { font-size: .84rem; color: var(--ink-2); font-weight: 500; }
+.exp-stat b { font-size: 1.9rem; font-weight: 700; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.exp-stat small { font-size: .76rem; color: var(--ink-3); }
+.exp-stat.ok { border-left-color: var(--ok); } .exp-stat.ok b { color: var(--ok); }
+.exp-stat.bad { border-left-color: var(--high); } .exp-stat.bad b { color: var(--high); }
+.exp-stat.warn { border-left-color: var(--med); } .exp-stat.warn b { color: color-mix(in srgb, var(--med) 75%, var(--ink)); }
+.table tr.sel td { background: var(--accent-wash); }
+.exp-group + .exp-group { margin-top: 22px; }
+.exp-group h3 { font-size: .92rem; margin: 0 0 6px; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.exp-row { display: grid; grid-template-columns: 96px minmax(0, 1.1fr) minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1.6fr); gap: 12px; align-items: start; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: .86rem; }
+.exp-row:last-child { border-bottom: 0; }
+.exp-row .status { justify-self: start; }
+.exp-row .exp-cond, .exp-row .exp-target { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.exp-row .exp-id { display: inline-flex; gap: 6px; align-items: center; }
+.exp-row small { color: var(--ink-3); font-size: .76rem; overflow-wrap: anywhere; }
+.exp-row .exp-target button, .exp-row .exp-target > span { text-align: left; overflow-wrap: anywhere; }
+@media (max-width: 1000px) { .exp-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 820px) {
+  .exp-row { grid-template-columns: 88px minmax(0, 1fr); }
+  .exp-row .exp-target, .exp-row .exp-vs, .exp-row .exp-why { grid-column: 2; }
 }
 
 @media print { .rail, .topbar, .drawer, .scrim { display: none !important; } .shell { display: block; } }

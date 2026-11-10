@@ -1,6 +1,6 @@
 {
   "schema_version": "0.6.0-draft",
-  "snapshot_id": "snap-s5-t2-20261108T195707Z",
+  "snapshot_id": "snap-s5-t2-20261110T091620Z",
   "environment_id": "agentscope-testbed",
   "profile_id": "tb-openclaw",
   "context": {
@@ -24,10 +24,10 @@
       }
     ]
   },
-  "generated_at": "2026-11-08T19:57:07Z",
+  "generated_at": "2026-11-10T09:16:20Z",
   "scan": {
-    "started_at": "2026-11-08T19:57:07Z",
-    "finished_at": "2026-11-08T19:57:07Z",
+    "started_at": "2026-11-10T09:16:20Z",
+    "finished_at": "2026-11-10T09:16:20Z",
     "status": "partial"
   },
   "testbed_context": {
@@ -7493,7 +7493,7 @@
       "evidence_id": "ev-gw-config",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-11-08T19:57:07Z",
+      "observed_at": "2026-11-10T09:16:20Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "redacted",
       "field_path": "gateway",
@@ -7513,7 +7513,7 @@
       "evidence_id": "ev-gw-auth",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-11-08T19:57:07Z",
+      "observed_at": "2026-11-10T09:16:20Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "redacted",
       "field_path": "gateway.auth",
@@ -7525,7 +7525,7 @@
       "evidence_id": "ev-gw-tools-profile",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-11-08T19:57:07Z",
+      "observed_at": "2026-11-10T09:16:20Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "not_needed",
       "field_path": "tools.profile"
@@ -7551,7 +7551,7 @@
       "evidence_id": "ev-decl-tb-gw-fs-workspace",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-11-08T19:57:07Z",
+      "observed_at": "2026-11-10T09:16:20Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "not_needed",
       "field_path": "mcp.servers.fs-workspace"
@@ -7560,7 +7560,7 @@
       "evidence_id": "ev-decl-tb-gw-inventory-remote",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-11-08T19:57:07Z",
+      "observed_at": "2026-11-10T09:16:20Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "redacted",
       "field_path": "mcp.servers.inventory-remote",
@@ -7572,7 +7572,7 @@
       "evidence_id": "ev-decl-tb-node-kg-memory",
       "evidence_type": "config",
       "source_ref": "tb-node:~/.openclaw/openclaw.json",
-      "observed_at": "2026-11-08T19:57:07Z",
+      "observed_at": "2026-11-10T09:16:20Z",
       "collection_ref": "col-node-config",
       "redaction_status": "redacted",
       "field_path": "nodeHost.mcp.servers.kg-memory",
@@ -7584,7 +7584,7 @@
       "evidence_id": "ev-decl-tb-node-demo-everything",
       "evidence_type": "config",
       "source_ref": "tb-node:~/.openclaw/openclaw.json",
-      "observed_at": "2026-11-08T19:57:07Z",
+      "observed_at": "2026-11-10T09:16:20Z",
       "collection_ref": "col-node-config",
       "redaction_status": "redacted",
       "field_path": "nodeHost.mcp.servers.demo-everything",
@@ -7604,7 +7604,7 @@
       "evidence_id": "ev-plugin-cfg-agentscope-asset-catalog",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-11-08T19:57:07Z",
+      "observed_at": "2026-11-10T09:16:20Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "not_needed",
       "field_path": "plugins.entries.agentscope-asset-catalog"
@@ -7747,7 +7747,7 @@
       "target_ref": null,
       "mode": "local_file",
       "status": "partial",
-      "collected_at": "2026-11-08T19:57:07Z",
+      "collected_at": "2026-11-10T09:16:20Z",
       "reason": "profile-scoped configuration collection · server_entries_incomplete",
       "details": {
         "outcome": "servers_found",
@@ -7783,7 +7783,7 @@
       "target_ref": null,
       "mode": "local_file",
       "status": "partial",
-      "collected_at": "2026-11-08T19:57:07Z",
+      "collected_at": "2026-11-10T09:16:20Z",
       "reason": "profile-scoped configuration collection · server_entries_incomplete",
       "details": {
         "outcome": "servers_found",
@@ -7819,7 +7819,7 @@
       "target_ref": null,
       "mode": "local_file",
       "status": "success",
-      "collected_at": "2026-11-08T19:57:07Z",
+      "collected_at": "2026-11-10T09:16:20Z",
       "reason": "스캐너 0.1.0은 sslVerify·toolFilter의 키 이름만 수집 — 비밀이 아닌 값을 어댑터가 설정에서 보강",
       "details": {
         "fields": [

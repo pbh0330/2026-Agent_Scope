@@ -5,7 +5,7 @@ AI 에이전트 환경(OpenClaw + MCP)의 자산을 식별·가시화하는 대�
 
 ```text
 feature/scanner-config      자산 스캐너 ──┐
-feature/testbed-threat-s1   테스트베드 원본·정답·S1 구성·승인 목록 ─┤
+develop + PR #19          테스트베드 원본·정답·S1 구성·승인 목록 ─┤
 docs/threat-scenarios       S1~S5 규칙 v2.1 (카탈로그·S2 정책) ─┼─▶ pipeline/build_data.py ─▶ public/data/*.json ─▶ 대시보드
 docs/mcp-attack-surface     공통 스키마 v0.6 ─┤
 feature/token-collector     사용 현황 API(usageapi) ──┘
@@ -19,6 +19,7 @@ feature/token-collector     사용 현황 API(usageapi) ──┘
 | 자산 지도 | 호스트(tb-gw / tb-node)별 서버·플러그인·스킬. 도구 하나가 눈금 하나(채움=노출, 테두리=필터로 미노출, 빗금=확인 못함) | snapshot |
 | 자산 목록 | 유형·확인된 상태·보안 판정·시나리오 필터와 검색 | snapshot, detections |
 | 보안 경고 | 규칙별 평가 행렬, 경고마다 관련 자산·관계·근거·기준 정책, 전체 평가 기록(조건 ID와 이름) | detections |
+| 기대 결과 비교 | 위협 시나리오 기대 결과(나와야 할 경고·동반 경고·판단 불가·나오면 안 되는 경고)와 탐지 결과 대조. 구성별 요약과 항목별 근거 | expected |
 | 변경 비교 | P0→P1→P2, P2→각 위험 구성의 자산·관계·경고 변화 | diffs |
 | 수집과 검증 | 수집 작업별 성공·부분·미수행, 정답 목록 수집률 | snapshot, qa |
 | 토큰 사용 | 호출 수·귀속 토큰·추정 비용, 시간대별 토큰, 계산 방식(순차/배분), 도구·서버·구간별 사용량, 소비 브레이크 기록, 호출 기록 | 사용 현황 API 또는 `usage-api/` 사본 |
@@ -57,7 +58,7 @@ develop에 팀원 작업이 합쳐지면 저장소 구조는 아래와 같습니
 ```text
 2026-Agent_Scope/
 ├── asset-scanner/            feature/scanner-config
-├── testbed/                  feature/testbed-threat-s1 (P0~P2 + S1, approved-servers.json)
+├── testbed/                  develop(P0~P2, PR #12 병합) + PR #19 feature/testbed-threat-s1-develop(S1, approved-servers.json)
 ├── docs/threat-scenarios/    docs/threat-scenarios (v2.1)
 ├── token-collector/          feature/token-collector
 └── dashboard/                이 폴더
@@ -71,8 +72,8 @@ cd dashboard
   --scenarios ..\docs\threat-scenarios
 ```
 
-- `--scenarios`를 생략하면 `pipeline/policies`의 사본(카탈로그·S2 정책)을 씁니다.
-- `--testbed`에 `profiles/S1`이 없으면(예: feature/testbed-profiles) S1 스냅샷을 건너뛰고, `ground-truth/approved-servers.json`이 없으면 `pipeline/policies` 사본을 씁니다.
+- `--scenarios`를 생략하면 `pipeline/policies`의 사본(카탈로그·S2 정책·기대 결과)을 씁니다.
+- `--testbed`에 `profiles/S1`이 없으면(예: develop만 받은 경우) S1 스냅샷을 건너뛰고, `ground-truth/approved-servers.json`이 없으면 `pipeline/policies` 사본을 씁니다.
 - `--usage-api http://127.0.0.1:8088`(선택): 실행 중인 사용 현황 API의 응답(summary, by-asset, records, timeseries, brake-events, health)을 `public/data/usage-api/`에 저장합니다. 지금 사본은 10/29 PC 실측 16건(고정 응답 모드)이고 플러그인 기록이 없어 브레이크는 비어 있습니다.
 - `--usage`(선택, 이전 방식): usage.json 파일을 그대로 복사합니다(`token-collector/backend/usagereport/testdata/example.usage.json`). 화면은 API 형식만 읽습니다.
 
@@ -86,6 +87,7 @@ cd dashboard
 | `snapshots/<P>/snapshot.json` | 2~7 InventorySnapshot | 스캐너 출력 + 테스트베드 원본 → 어댑터 |
 | `snapshots/<P>/detections.json` | 13 DetectionReport | S1~S5 정적 탐지 (규칙 세트 = 시나리오 카탈로그 v2.1) |
 | `scenario-catalog.json` | 13 ScenarioDefinition | docs/threat-scenarios 카탈로그 사본 |
+| `snapshots/<P>/expected.json` | 16.2 QAResult(checks) | expected-results.md(+ 테스트베드 S1.json)와 탐지 결과 대조. P2와 위험 구성만 |
 | `snapshots/<P>/qa.json` | 16.2 QAResult | 정상군만, 정답 목록 비교 |
 | `snapshots/<P>/scanner/*.json` | — | 스캐너 원본 출력(참고용) |
 | `diffs/<A>__<B>.json` | 12.5·12.9 SnapshotDiff | 자산·관계·경고 변화 |
@@ -131,13 +133,14 @@ pipeline/
     adapter.py                   스캐너 출력 + 테스트베드 원본 → InventorySnapshot (+ 수용 검증)
     detector.py                  S1~S5 v2.1 조건 → DetectionReport
     compare.py                   SnapshotDiff, QAResult
+    expected.py                  기대 결과 ↔ 탐지 결과 대조
     ids.py                       자산·관계 ID
   policies/                      카탈로그·S2 정책·승인 서버 목록 사본 (원본: docs/threat-scenarios, testbed)
 src/
   types/contracts.ts             공통 스키마 타입
   data/load.ts, model.ts         로딩, 색인, 보안 판정 요약
   data/usage.ts                  사용 현황 API 연결(실시간 → 저장 사본)
-  pages/                         화면 7개
+  pages/                         화면 8개
   components/                    상세 패널, 공통 표시 요소
   styles.css                     디자인 토큰(밝게/어둡게)
 public/data/                     파이프라인 출력

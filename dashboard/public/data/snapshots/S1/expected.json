@@ -1,0 +1,292 @@
+{
+  "schema_version": "0.6.0-draft",
+  "qa_run_id": "exp-snap-s1-20261110T091619Z",
+  "environment_id": "agentscope-testbed",
+  "profile_id": "tb-openclaw",
+  "snapshot_id": "snap-s1-20261110T091619Z",
+  "expected_profile": "S1",
+  "expected_source": "testbed/ground-truth/S1.json (조건 ID는 expected-results.md 3절 대응표)",
+  "expected_version": "2.1",
+  "generated_at": "2026-11-10T09:16:19Z",
+  "detection_report_id": "det-snap-s1-20261110T091619Z",
+  "verdict": "PASS",
+  "checks": [
+    {
+      "check_id": "exp-01",
+      "kind": "required",
+      "condition_id": "S1-C1",
+      "scenario_id": "S1",
+      "target": "tb-gw/mcp_server/shadow-notes",
+      "asset_id": "srv_0e63a468ce58a5e3",
+      "result": "PASS",
+      "expected": {
+        "alert": true,
+        "severity": "high",
+        "confidence": "high"
+      },
+      "actual": {
+        "alerts": [
+          {
+            "alert_id": "alert-3f8abc0a6678",
+            "severity": "high",
+            "confidence": "high"
+          }
+        ]
+      },
+      "evidence_refs": [
+        "ev-decl-tb-gw-shadow-notes"
+      ],
+      "reason": "승인 목록에 없는 서버가 tb-gw mcp.servers에 선언됨"
+    },
+    {
+      "check_id": "exp-02",
+      "kind": "required",
+      "condition_id": "S1-C1",
+      "scenario_id": "S1",
+      "target": "tb-node/mcp_server/node-helper",
+      "asset_id": "srv_d9420a7c62492bdb",
+      "result": "PASS",
+      "expected": {
+        "alert": true,
+        "severity": "high",
+        "confidence": "high"
+      },
+      "actual": {
+        "alerts": [
+          {
+            "alert_id": "alert-344225048858",
+            "severity": "high",
+            "confidence": "high"
+          }
+        ]
+      },
+      "evidence_refs": [
+        "ev-decl-tb-node-node-helper"
+      ],
+      "reason": "승인 목록에 없는 서버가 tb-node nodeHost.mcp.servers에 선언됨"
+    },
+    {
+      "check_id": "exp-03",
+      "kind": "required",
+      "condition_id": "S1-C2",
+      "scenario_id": "S1",
+      "target": "tb-gw/mcp_server/inventory-remote",
+      "asset_id": "srv_8d8aec91ec656a07",
+      "result": "PASS",
+      "expected": {
+        "alert": true,
+        "severity": "high",
+        "confidence": "high"
+      },
+      "actual": {
+        "alerts": [
+          {
+            "alert_id": "alert-3fb872e538d3",
+            "severity": "high",
+            "confidence": "high"
+          }
+        ]
+      },
+      "evidence_refs": [
+        "ev-decl-tb-gw-inventory-remote"
+      ],
+      "reason": "승인 endpoint https://tb-node:8443/mcp 대신 https://tb-node:9443/mcp로 변경됨"
+    },
+    {
+      "check_id": "exp-04",
+      "kind": "required",
+      "condition_id": "S1-C3",
+      "scenario_id": "S1",
+      "target": "tb-gw/mcp_server/notes-sync",
+      "asset_id": "srv_9407dbfbf579b00d",
+      "result": "PASS",
+      "expected": {
+        "alert": true,
+        "severity": "high",
+        "confidence": "high"
+      },
+      "actual": {
+        "alerts": [
+          {
+            "alert_id": "alert-a41c7bbc1a7a",
+            "severity": "high",
+            "confidence": "high"
+          }
+        ]
+      },
+      "evidence_refs": [
+        "ev-plugin-srv-agentscope-notes-sync-notes-sync"
+      ],
+      "reason": "승인 목록에 없는 플러그인 agentscope-notes-sync가 manifest mcpServers로 서버를 등록함"
+    },
+    {
+      "check_id": "exp-05",
+      "kind": "optional",
+      "condition_id": "S1-C3",
+      "scenario_id": "S1",
+      "target": "tb-gw/plugin/agentscope-notes-sync",
+      "asset_id": "plg_853848be22d0c397",
+      "result": "PASS",
+      "expected": {
+        "alert": true,
+        "severity": "high",
+        "confidence": "high"
+      },
+      "actual": {
+        "alerts": [
+          {
+            "alert_id": "alert-a41c7bbc1a7a",
+            "severity": "high",
+            "confidence": "high"
+          }
+        ]
+      },
+      "evidence_refs": [
+        "ev-plugin-srv-agentscope-notes-sync-notes-sync"
+      ],
+      "reason": "승인 플러그인 목록(approved_plugins)에 없는 플러그인. 서버 단위 경고(notes-sync)에 묶어 내도 정답으로 인정"
+    },
+    {
+      "check_id": "exp-06",
+      "kind": "optional",
+      "condition_id": "S4-C3",
+      "scenario_id": "S4",
+      "target": "tb-gw/mcp_server/inventory-remote",
+      "asset_id": "srv_8d8aec91ec656a07",
+      "result": "PASS",
+      "expected": {
+        "alert": true,
+        "severity": "high",
+        "confidence": "medium"
+      },
+      "actual": {
+        "alerts": [
+          {
+            "alert_id": "alert-4a2b6879426c",
+            "severity": "high",
+            "confidence": "medium"
+          }
+        ]
+      },
+      "evidence_refs": [
+        "ev-decl-tb-gw-inventory-remote"
+      ],
+      "reason": "INVENTORY_MCP_TOKEN이 바뀐 endpoint로 전송됨. S4 규칙 구현 시 동반 경고로 인정(S1 채점에는 미포함)"
+    },
+    {
+      "check_id": "exp-07",
+      "kind": "no_alert",
+      "condition_id": null,
+      "scenario_id": "S1",
+      "target": "tb-gw/mcp_server/fs-workspace",
+      "asset_id": "srv_82d252784c25ade0",
+      "result": "PASS",
+      "expected": {
+        "alert": false,
+        "scenarios": [
+          "S1"
+        ]
+      },
+      "actual": {
+        "alerts": []
+      },
+      "evidence_refs": [],
+      "reason": "승인 목록과 일치하는 서버. 여기에 경고가 나면 오탐"
+    },
+    {
+      "check_id": "exp-08",
+      "kind": "no_alert",
+      "condition_id": null,
+      "scenario_id": "S1",
+      "target": "tb-node/mcp_server/kg-memory",
+      "asset_id": "srv_ec1aa5ba6ea61ff0",
+      "result": "PASS",
+      "expected": {
+        "alert": false,
+        "scenarios": [
+          "S1"
+        ]
+      },
+      "actual": {
+        "alerts": []
+      },
+      "evidence_refs": [],
+      "reason": "승인 목록과 일치하는 서버. 여기에 경고가 나면 오탐"
+    },
+    {
+      "check_id": "exp-09",
+      "kind": "no_alert",
+      "condition_id": null,
+      "scenario_id": "S1",
+      "target": "tb-node/mcp_server/demo-everything",
+      "asset_id": "srv_eee2566222d9bc33",
+      "result": "PASS",
+      "expected": {
+        "alert": false,
+        "scenarios": [
+          "S1"
+        ]
+      },
+      "actual": {
+        "alerts": []
+      },
+      "evidence_refs": [],
+      "reason": "승인 목록과 일치하는 서버. 여기에 경고가 나면 오탐"
+    },
+    {
+      "check_id": "exp-10",
+      "kind": "no_alert",
+      "condition_id": null,
+      "scenario_id": "S1",
+      "target": "tb-gw/mcp_server/asset-catalog",
+      "asset_id": "srv_bbb764ffe6b99467",
+      "result": "PASS",
+      "expected": {
+        "alert": false,
+        "scenarios": [
+          "S1"
+        ]
+      },
+      "actual": {
+        "alerts": []
+      },
+      "evidence_refs": [],
+      "reason": "승인 목록과 일치하는 서버. 여기에 경고가 나면 오탐"
+    }
+  ],
+  "metrics": [
+    {
+      "name": "required_alert_recall",
+      "scope": "required",
+      "numerator": 4,
+      "denominator": 4,
+      "value": 1.0
+    },
+    {
+      "name": "severity_match",
+      "scope": "required",
+      "numerator": 4,
+      "denominator": 4,
+      "value": 1.0
+    },
+    {
+      "name": "no_alert_kept",
+      "scope": "no_alert",
+      "numerator": 4,
+      "denominator": 4,
+      "value": 1.0
+    },
+    {
+      "name": "unknown_kept",
+      "scope": "unknown",
+      "numerator": 0,
+      "denominator": 0,
+      "value": null
+    }
+  ],
+  "limitations": [
+    "선택(required: false) 경고는 탐지율 분모에서 제외",
+    "severity 차이는 PARTIAL",
+    "기대 결과에 없는 경고는 INFO로만 표시(비경고 범위에 걸린 경우는 FAIL)"
+  ]
+}

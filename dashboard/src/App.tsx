@@ -1,5 +1,5 @@
 import {
-  AlertTriangle, ArrowLeftRight, Coins, DatabaseZap, FolderOpen, LayoutDashboard, List, Map as MapIcon, Moon, Sun, SunMoon,
+  AlertTriangle, ArrowLeftRight, ClipboardCheck, Coins, DatabaseZap, FolderOpen, LayoutDashboard, List, Map as MapIcon, Moon, Sun, SunMoon,
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AssetDrawer } from './components/AssetDrawer'
@@ -8,6 +8,7 @@ import { type Bundle, loadBundle, loadManifest, registerImported, sniff } from '
 import { Model, fmtTime } from './data/model'
 import { ChangesPage } from './pages/ChangesPage'
 import { CollectionPage } from './pages/CollectionPage'
+import { ExpectedPage } from './pages/ExpectedPage'
 import { InventoryPage } from './pages/InventoryPage'
 import { MapPage } from './pages/MapPage'
 import { Overview } from './pages/Overview'
@@ -15,13 +16,14 @@ import { SecurityPage } from './pages/SecurityPage'
 import { UsagePage } from './pages/UsagePage'
 import type { DetectionReport, InventorySnapshot, Manifest, ManifestSnapshot } from './types/contracts'
 
-export type PageKey = 'overview' | 'map' | 'inventory' | 'security' | 'changes' | 'collection' | 'usage'
+export type PageKey = 'overview' | 'map' | 'inventory' | 'security' | 'expected' | 'changes' | 'collection' | 'usage'
 
 const PAGES: { key: PageKey; label: string; icon: typeof MapIcon; group: string; title: string; desc: string }[] = [
   { key: 'overview', label: '개요', icon: LayoutDashboard, group: '현황', title: '개요', desc: '선택한 구성에서 무엇이 선언·발견·노출되었고 어떤 위협이 확인되었는지 봅니다.' },
   { key: 'map', label: '자산 지도', icon: MapIcon, group: '현황', title: '자산 지도', desc: '호스트별로 선언된 서버와 서버가 광고한 도구를 펼쳐 봅니다. 눈금 하나가 도구 하나입니다.' },
   { key: 'inventory', label: '자산 목록', icon: List, group: '현황', title: '자산 목록', desc: '8종 자산을 유형·상태·보안 판정·시나리오로 걸러 봅니다.' },
   { key: 'security', label: '보안 경고', icon: AlertTriangle, group: '분석', title: '보안 경고', desc: 'S1~S5 정적 탐지 결과입니다. 경고마다 관련 자산·관계·근거를 함께 보여줍니다.' },
+  { key: 'expected', label: '기대 결과 비교', icon: ClipboardCheck, group: '분석', title: '기대 결과 비교', desc: '위협 시나리오 문서의 기대 결과와 실제 탐지 결과를 맞춰 봅니다. 나와야 할 경고, 나오면 안 되는 경고, 판단 불가로 남아야 할 항목을 확인합니다.' },
   { key: 'changes', label: '변경 비교', icon: ArrowLeftRight, group: '분석', title: '변경 비교', desc: '두 스냅샷 사이에 추가·변경된 자산과 새로 열리거나 해결된 경고를 비교합니다.' },
   { key: 'collection', label: '수집과 검증', icon: DatabaseZap, group: '데이터', title: '수집과 검증', desc: '어떤 원본을 어떤 방식으로 읽었는지, 테스트베드 정답 목록과 얼마나 맞는지 확인합니다.' },
   { key: 'usage', label: '토큰 사용', icon: Coins, group: '데이터', title: '토큰 사용', desc: '토큰 수집기 사용 현황 API가 귀속한 도구 호출별 추정 토큰·비용과 소비 브레이크 기록입니다.' },
@@ -194,6 +196,7 @@ export default function App() {
               {page === 'inventory' && <InventoryPage model={model} selected={selected} onSelect={select} />}
               {page === 'security' && <SecurityPage model={model} scenario={focus.scenario} alertId={focus.alert} onSelect={select}
                 onMap={id => { setSelected(id); setDrawer(false); go('map') }} />}
+              {page === 'expected' && <ExpectedPage manifest={manifest} entry={entry} model={model} onSelect={select} onSnapshot={setCurrent} />}
               {page === 'changes' && <ChangesPage model={model} manifest={manifest} current={entry.key} onSelect={select} />}
               {page === 'collection' && <CollectionPage model={model} manifest={manifest} onSelect={select} />}
               {page === 'usage' && <UsagePage manifest={manifest} model={model} onSelect={select} />}

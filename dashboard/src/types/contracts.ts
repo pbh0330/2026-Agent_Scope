@@ -237,8 +237,43 @@ export interface ManifestSnapshot {
   synthetic: boolean
   test_case_ids?: string[]
   snapshot_id: string
-  files: { snapshot: string; detections: string; audit?: string; qa?: string }
+  files: { snapshot: string; detections: string; audit?: string; qa?: string; expected?: string }
   counts: { assets: number; relations: number; alerts: number }
+  expected?: { verdict: 'PASS' | 'PARTIAL' | 'FAIL'; counts: Record<string, number> }
+}
+
+// ---- 기대 결과 대조 (docs/threat-scenarios expected-results.md ↔ detections, QAResult 16.2 checks 형식) ----
+export type ExpectedKind = 'required' | 'optional' | 'no_alert' | 'unknown' | 'extra'
+export interface ExpectedCheck {
+  check_id: string
+  kind: ExpectedKind
+  condition_id: string | null
+  scenario_id: string
+  target: string | null
+  asset_id: string | null
+  result: 'PASS' | 'PARTIAL' | 'FAIL' | 'SKIP' | 'INFO'
+  expected: Record<string, any>
+  actual: Record<string, any>
+  evidence_refs: string[]
+  reason: string
+}
+export interface ExpectedReport {
+  qa_run_id: string
+  snapshot_id: string
+  expected_profile: string
+  expected_source: string
+  expected_version: string
+  generated_at: string
+  detection_report_id: string
+  verdict: 'PASS' | 'PARTIAL' | 'FAIL'
+  checks: ExpectedCheck[]
+  metrics: { name: string; scope: string; numerator: number; denominator: number; value: number | null }[]
+  limitations: string[]
+}
+export interface ScenarioCatalog {
+  catalog_id: string
+  catalog_version: string
+  scenarios: { scenario_id: string; name: string; priority: number; conditions: { condition_id: string; name: string; severity: string | null; confidence: string | null }[] }[]
 }
 
 export interface Manifest {
@@ -248,6 +283,7 @@ export interface Manifest {
   snapshots: ManifestSnapshot[]
   diffs: { from: string; to: string; file: string; counts: Record<string, number> }[]
   usage: { file: string; source: string; linked_snapshot: string | null; note: string } | null
+  expected?: { source: string; version: string; profiles: string[] }
   usage_api?: { dir: string; api_base: string; captured_at: string; mode: string | null; sources: string[] | null
     records: number | null; inventory_snapshot_id: string | null; source: string }
 }

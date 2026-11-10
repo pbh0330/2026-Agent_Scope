@@ -1,20 +1,20 @@
 {
   "schema_version": "0.6.0-draft",
-  "diff_id": "diff-snap-p2-20261108T195707Z--snap-s4-20261108T195707Z",
+  "diff_id": "diff-snap-p2-20261110T091619Z--snap-s4-20261110T091619Z",
   "environment_id": "agentscope-testbed",
   "profile_id": "tb-openclaw",
-  "previous_snapshot_id": "snap-p2-20261108T195707Z",
-  "current_snapshot_id": "snap-s4-20261108T195707Z",
-  "previous_report_id": "det-snap-p2-20261108T195707Z",
-  "current_report_id": "det-snap-s4-20261108T195707Z",
-  "generated_at": "2026-11-08T19:57:08Z",
+  "previous_snapshot_id": "snap-p2-20261110T091619Z",
+  "current_snapshot_id": "snap-s4-20261110T091619Z",
+  "previous_report_id": "det-snap-p2-20261110T091619Z",
+  "current_report_id": "det-snap-s4-20261110T091619Z",
+  "generated_at": "2026-11-10T09:16:20Z",
   "comparison_status": "complete",
   "changes": [
     {
       "asset_id": "pa_e6737fd6d4009fbc",
       "change_type": "added",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:57:07Z",
+      "detected_at": "2026-11-10T09:16:19Z",
       "evidence_refs": [
         "ev-decl-tb-gw-fs-workspace"
       ],

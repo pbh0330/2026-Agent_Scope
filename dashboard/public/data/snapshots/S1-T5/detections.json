@@ -1,10 +1,10 @@
 {
   "schema_version": "0.6.0-draft",
-  "report_id": "det-snap-s1-t5-20261108T195707Z",
+  "report_id": "det-snap-s1-t5-20261110T091619Z",
   "environment_id": "agentscope-testbed",
   "profile_id": "tb-openclaw",
-  "snapshot_id": "snap-s1-t5-20261108T195707Z",
-  "generated_at": "2026-11-08T19:57:07Z",
+  "snapshot_id": "snap-s1-t5-20261110T091619Z",
+  "generated_at": "2026-11-10T09:16:19Z",
   "producer": {
     "name": "agentscope-dashboard-pipeline",
     "version": "0.1.0",
@@ -39,7 +39,7 @@
       ],
       "result": "not_detected",
       "reason": "이름이 승인 목록에 있음",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S1-C4-d272ffcd00",
@@ -65,7 +65,7 @@
       ],
       "result": "not_detected",
       "reason": "선언 위치·등록 주체가 승인 목록과 같음",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S1-C2-f5869ae6a9",
@@ -91,7 +91,7 @@
       ],
       "result": "not_detected",
       "reason": "Endpoint가 승인 목록과 같음",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S1-C1-301ea146eb",
@@ -117,7 +117,7 @@
       ],
       "result": "not_detected",
       "reason": "이름이 승인 목록에 있음",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S1-C4-0dc7d8112d",
@@ -143,7 +143,7 @@
       ],
       "result": "not_detected",
       "reason": "선언 위치·등록 주체가 승인 목록과 같음",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S1-C2-c932e4837d",
@@ -169,7 +169,7 @@
       ],
       "result": "not_detected",
       "reason": "Endpoint가 승인 목록과 같음",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S1-C1-2f8c563d28",
@@ -195,7 +195,7 @@
       ],
       "result": "not_detected",
       "reason": "이름이 승인 목록에 있음",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S1-C4-b2e384a69d",
@@ -221,7 +221,7 @@
       ],
       "result": "not_detected",
       "reason": "선언 위치·등록 주체가 승인 목록과 같음",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S1-C2-ddfcd1ad2c",
@@ -247,7 +247,7 @@
       ],
       "result": "not_detected",
       "reason": "Endpoint가 승인 목록과 같음",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S1-C1-b044317c0b",
@@ -274,7 +274,7 @@
       ],
       "result": "not_detected",
       "reason": "이름이 승인 목록에 있음",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S1-C4-de358da9f1",
@@ -301,7 +301,7 @@
       ],
       "result": "detected",
       "reason": "승인 위치와 다름: declared_at_vm tb-gw → tb-node, registered_by tb-gw:config → tb-node:config",
-      "evaluated_at": "2026-11-08T19:57:07Z",
+      "evaluated_at": "2026-11-10T09:16:19Z",
       "details": {
         "name": "inventory-remote",
         "declared_at_vm": "tb-node",
@@ -341,7 +341,7 @@
       ],
       "result": "not_detected",
       "reason": "Endpoint가 승인 목록과 같음",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S1-C3-1a3e1f7ffa",
@@ -368,7 +368,7 @@
       ],
       "result": "not_detected",
       "reason": "등록 플러그인 `agentscope-asset-catalog`가 승인 목록에 있음",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S1-C1-1d437ef4c1",
@@ -394,7 +394,7 @@
       ],
       "result": "not_detected",
       "reason": "이름이 승인 목록에 있음",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S1-C4-179e541075",
@@ -420,7 +420,7 @@
       ],
       "result": "not_detected",
       "reason": "선언 위치·등록 주체가 승인 목록과 같음",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S1-C2-00ee87f75b",
@@ -446,7 +446,7 @@
       ],
       "result": "not_detected",
       "reason": "Endpoint가 승인 목록과 같음",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S2-C1-b30bdc16fa",
@@ -471,7 +471,7 @@
       ],
       "result": "not_detected",
       "reason": "노출 도구 2개 모두 정책 허용 범위",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S2-C2-b64ea9728d",
@@ -496,7 +496,7 @@
       ],
       "result": "not_detected",
       "reason": "파일 범위가 기준 /home/<TB_USER>/workspace 안",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S2-C3-db2c4f7e54",
@@ -521,7 +521,7 @@
       ],
       "result": "not_detected",
       "reason": "정책 허용 도구 중 명령·네트워크 고위험 입력 없음",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S2-C4-3ba41e5950",
@@ -546,7 +546,7 @@
       ],
       "result": "not_detected",
       "reason": "정책 허용 도구 중 인증정보 고위험 입력 없음",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S2-C1-fe04022341",
@@ -571,7 +571,7 @@
       ],
       "result": "not_detected",
       "reason": "노출 도구 9개 모두 정책 허용 범위",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S2-C2-f96c4204af",
@@ -596,7 +596,7 @@
       ],
       "result": "not_detected",
       "reason": "설정 인자에 파일 경로 없음 (기준 범위는 서버 내부 지정)",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S2-C3-7d587cd58f",
@@ -621,7 +621,7 @@
       ],
       "result": "not_detected",
       "reason": "정책 허용 도구 중 명령·네트워크 고위험 입력 없음",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S2-C4-3497b773d6",
@@ -646,7 +646,7 @@
       ],
       "result": "not_detected",
       "reason": "정책 허용 도구 중 인증정보 고위험 입력 없음",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S2-C1-1b9578b4a9",
@@ -671,7 +671,7 @@
       ],
       "result": "not_detected",
       "reason": "노출 도구 10개 모두 정책 허용 범위",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S2-C2-51f7dd8d0c",
@@ -690,7 +690,7 @@
       "policy_refs": [],
       "result": "not_applicable",
       "reason": "파일 접근 범위 기준이 없는 서버",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S2-C3-e6a9cd29e7",
@@ -715,7 +715,7 @@
       ],
       "result": "not_detected",
       "reason": "정책 허용 도구 중 명령·네트워크 고위험 입력 없음",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S2-C4-5fd6763327",
@@ -740,7 +740,7 @@
       ],
       "result": "not_detected",
       "reason": "정책 허용 도구 중 인증정보 고위험 입력 없음",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S2-C1-1f92b27cbc",
@@ -765,7 +765,7 @@
       ],
       "result": "not_detected",
       "reason": "노출 도구 2개 모두 정책 허용 범위 (노출 목록 미재수집 — 선언된 toolFilter로 추정)",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S2-C2-d86dd3af37",
@@ -784,7 +784,7 @@
       "policy_refs": [],
       "result": "not_applicable",
       "reason": "파일 접근 범위 기준이 없는 서버",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S2-C3-9a925f0921",
@@ -809,7 +809,7 @@
       ],
       "result": "not_detected",
       "reason": "정책 허용 도구 중 명령·네트워크 고위험 입력 없음",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S2-C4-7c0cee1cdc",
@@ -834,7 +834,7 @@
       ],
       "result": "not_detected",
       "reason": "정책 허용 도구 중 인증정보 고위험 입력 없음",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S2-C1-b30b1f510f",
@@ -859,7 +859,7 @@
       ],
       "result": "not_detected",
       "reason": "노출 도구 2개 모두 정책 허용 범위 (노출 목록 미재수집 — 선언된 toolFilter로 추정)",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S2-C2-9f9cb7a53e",
@@ -878,7 +878,7 @@
       "policy_refs": [],
       "result": "not_applicable",
       "reason": "파일 접근 범위 기준이 없는 서버",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S2-C3-7efcc2cd73",
@@ -903,7 +903,7 @@
       ],
       "result": "not_detected",
       "reason": "정책 허용 도구 중 명령·네트워크 고위험 입력 없음",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S2-C4-c71519938f",
@@ -928,7 +928,7 @@
       ],
       "result": "not_detected",
       "reason": "정책 허용 도구 중 인증정보 고위험 입력 없음",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S4-C3-1886a194e1",
@@ -955,7 +955,7 @@
       ],
       "result": "not_detected",
       "reason": "자격증명 전송 대상이 승인 Endpoint와 같음",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S4-C3-c59a09fff4",
@@ -982,7 +982,7 @@
       ],
       "result": "not_detected",
       "reason": "자격증명 전송 대상이 승인 Endpoint와 같음",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S4-C1-8bb9e00a72",
@@ -1003,7 +1003,7 @@
       "policy_refs": [],
       "result": "not_detected",
       "reason": "`EVERYTHING_DEMO_KEY`(tb-node:~/.openclaw/.env)를 서버 1곳(demo-everything)만 참조",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S4-C1-c13123e34e",
@@ -1024,7 +1024,7 @@
       "policy_refs": [],
       "result": "not_detected",
       "reason": "`INVENTORY_MCP_TOKEN`(tb-node:~/.openclaw/.env)를 서버 1곳(inventory-remote)만 참조",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S4-C4-ebe196d048",
@@ -1040,7 +1040,7 @@
       "policy_refs": [],
       "result": "not_evaluated",
       "reason": "권한 범위(scope)·대상(audience)을 수집하지 않음 — v2.1 범위 밖",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S3-C1-e3f773c150",
@@ -1060,7 +1060,7 @@
       "policy_refs": [],
       "result": "not_detected",
       "reason": "수집한 서버들의 도구 이름 40개가 모두 고유",
-      "evaluated_at": "2026-11-08T19:57:07Z",
+      "evaluated_at": "2026-11-10T09:16:19Z",
       "details": {
         "tool_names_checked": 40
       }
@@ -1081,7 +1081,7 @@
       "policy_refs": [],
       "result": "not_applicable",
       "reason": "stdio 로컬 실행 — 네트워크 전송 검증 대상 아님",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S5-NA-d41881f6dc",
@@ -1099,7 +1099,7 @@
       "policy_refs": [],
       "result": "not_applicable",
       "reason": "stdio 로컬 실행 — 네트워크 전송 검증 대상 아님",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S5-NA-2df2a25c01",
@@ -1117,7 +1117,7 @@
       "policy_refs": [],
       "result": "not_applicable",
       "reason": "stdio 로컬 실행 — 네트워크 전송 검증 대상 아님",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S5-C1-1dc8a88c89",
@@ -1138,7 +1138,7 @@
       "policy_refs": [],
       "result": "not_detected",
       "reason": "TLS 전송(https/wss)",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S5-C2-923889d482",
@@ -1159,7 +1159,7 @@
       "policy_refs": [],
       "result": "not_detected",
       "reason": "sslVerify true",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S5-NA-ef179fa705",
@@ -1177,7 +1177,7 @@
       "policy_refs": [],
       "result": "not_applicable",
       "reason": "stdio 로컬 실행 — 네트워크 전송 검증 대상 아님",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S5-C4-742370008f",
@@ -1193,7 +1193,7 @@
       "policy_refs": [],
       "result": "not_evaluated",
       "reason": "연결 대상 검증 정보(인증서 주체·핀 등) 미수집 — v2.1 범위 밖",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     },
     {
       "evaluation_id": "eval-S5-C5-ce12666969",
@@ -1209,7 +1209,7 @@
       "policy_refs": [],
       "result": "not_evaluated",
       "reason": "보안 설정 적용 범위 분석 — v2.1 범위 밖",
-      "evaluated_at": "2026-11-08T19:57:07Z"
+      "evaluated_at": "2026-11-10T09:16:19Z"
     }
   ],
   "alerts": [
@@ -1234,7 +1234,7 @@
       "evidence_refs": [
         "ev-decl-tb-node-inventory-remote"
       ],
-      "detected_at": "2026-11-08T19:57:07Z",
+      "detected_at": "2026-11-10T09:16:19Z",
       "recommendation": "선언 위치가 바뀐 이유를 확인하고 승인 위치로 되돌리거나 승인 목록을 갱신하세요."
     }
   ]

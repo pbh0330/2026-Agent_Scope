@@ -1,0 +1,138 @@
+{
+  "schema_version": "0.6.0-draft",
+  "qa_run_id": "exp-snap-s4-20261110T091619Z",
+  "environment_id": "agentscope-testbed",
+  "profile_id": "tb-openclaw",
+  "snapshot_id": "snap-s4-20261110T091619Z",
+  "expected_profile": "S4",
+  "expected_source": "docs/threat-scenarios/expected-results.md",
+  "expected_version": "2.1",
+  "generated_at": "2026-11-10T09:16:19Z",
+  "detection_report_id": "det-snap-s4-20261110T091619Z",
+  "verdict": "PASS",
+  "checks": [
+    {
+      "check_id": "exp-01",
+      "kind": "required",
+      "condition_id": "S4-C1",
+      "scenario_id": "S4",
+      "target": "tb-gw/mcp_server/fs-workspace",
+      "asset_id": "srv_82d252784c25ade0",
+      "result": "PASS",
+      "expected": {
+        "alert": true,
+        "severity": "medium",
+        "confidence": "high"
+      },
+      "actual": {
+        "alerts": [
+          {
+            "alert_id": "alert-96e9fa6e4aec",
+            "severity": "medium",
+            "confidence": "high"
+          }
+        ]
+      },
+      "evidence_refs": [
+        "ev-decl-tb-gw-fs-workspace",
+        "ev-decl-tb-gw-inventory-remote"
+      ],
+      "reason": "tb-gw .env의 INVENTORY_MCP_TOKEN을 inventory-remote(헤더)와 fs-workspace(env) 두 서버가 참조"
+    },
+    {
+      "check_id": "exp-02",
+      "kind": "unknown",
+      "condition_id": "S4-C2",
+      "scenario_id": "S4",
+      "target": "tb-node/mcp_server/demo-everything",
+      "asset_id": "srv_eee2566222d9bc33",
+      "result": "PASS",
+      "expected": {
+        "result": "unknown",
+        "alert": false
+      },
+      "actual": {
+        "results": [
+          "unknown"
+        ]
+      },
+      "evidence_refs": [],
+      "reason": "참조 이름은 INVENTORY_MCP_TOKEN으로 같지만 저장소가 tb-node .env로 달라 같은 자격증명인지 확정할 수 없음. 경고를 내면 FAIL"
+    },
+    {
+      "check_id": "exp-03",
+      "kind": "no_alert",
+      "condition_id": null,
+      "scenario_id": "S4",
+      "target": "tb-node/mcp_server/kg-memory",
+      "asset_id": "srv_ec1aa5ba6ea61ff0",
+      "result": "PASS",
+      "expected": {
+        "alert": false,
+        "scenarios": [
+          "S4"
+        ]
+      },
+      "actual": {
+        "alerts": []
+      },
+      "evidence_refs": [],
+      "reason": "자격증명 참조가 없는 서버"
+    },
+    {
+      "check_id": "exp-04",
+      "kind": "no_alert",
+      "condition_id": null,
+      "scenario_id": "S4",
+      "target": "tb-gw/mcp_server/asset-catalog",
+      "asset_id": "srv_bbb764ffe6b99467",
+      "result": "PASS",
+      "expected": {
+        "alert": false,
+        "scenarios": [
+          "S4"
+        ]
+      },
+      "actual": {
+        "alerts": []
+      },
+      "evidence_refs": [],
+      "reason": "자격증명 참조가 없는 서버"
+    }
+  ],
+  "metrics": [
+    {
+      "name": "required_alert_recall",
+      "scope": "required",
+      "numerator": 1,
+      "denominator": 1,
+      "value": 1.0
+    },
+    {
+      "name": "severity_match",
+      "scope": "required",
+      "numerator": 1,
+      "denominator": 1,
+      "value": 1.0
+    },
+    {
+      "name": "no_alert_kept",
+      "scope": "no_alert",
+      "numerator": 2,
+      "denominator": 2,
+      "value": 1.0
+    },
+    {
+      "name": "unknown_kept",
+      "scope": "unknown",
+      "numerator": 1,
+      "denominator": 1,
+      "value": 1.0
+    }
+  ],
+  "limitations": [
+    "선택(required: false) 경고는 탐지율 분모에서 제외",
+    "severity 차이는 PARTIAL",
+    "기대 결과에 없는 경고는 INFO로만 표시(비경고 범위에 걸린 경우는 FAIL)"
+  ]
+}

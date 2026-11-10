@@ -5,7 +5,7 @@
 
   python pipeline/build_data.py \
       --scanner   ../2026-Agent_Scope/asset-scanner          # feature/scanner-config
-      --testbed   ../2026-Agent_Scope/testbed                # feature/testbed-threat-s1 (P0~P2 + S1)
+      --testbed   ../2026-Agent_Scope/testbed                # develop + PR #19 feature/testbed-threat-s1-develop (P0~P2 + S1)
       --scenarios ../2026-Agent_Scope/docs/threat-scenarios  # 생략하면 pipeline/policies 사본
       --out       public/data
 
@@ -40,6 +40,7 @@ sys.path.insert(0, str(HERE))
 from agentscope_pipeline.adapter import ProfileInput, SkillInput, SnapshotBuilder, load  # noqa: E402
 from agentscope_pipeline.compare import qa_result, snapshot_diff  # noqa: E402
 from agentscope_pipeline.detector import Detector  # noqa: E402
+from agentscope_pipeline.expected import compare as expected_compare, load_expected  # noqa: E402
 
 ENV_ID = "agentscope-testbed"
 NORMAL = ["P0", "P1", "P2"]
@@ -193,7 +194,7 @@ def s1_raw(testbed: Path, work: Path) -> tuple[Path, set[str]]:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--scanner", type=Path, required=True, help="asset-scanner 폴더 (feature/scanner-config)")
-    ap.add_argument("--testbed", type=Path, required=True, help="testbed 폴더 (feature/testbed-threat-s1 또는 feature/testbed-profiles)")
+    ap.add_argument("--testbed", type=Path, required=True, help="testbed 폴더 (PR #19 feature/testbed-threat-s1-develop, 또는 S1 없이 develop)")
     ap.add_argument("--usage", type=Path, help="토큰 수집기 usage.json (feature/token-collector)")
     ap.add_argument("--usage-api", help="실행 중인 사용 현황 API 주소(예: http://127.0.0.1:8088). 응답을 public/data/usage-api에 저장")
     ap.add_argument("--scenarios", type=Path, help="docs/threat-scenarios 폴더 (생략 시 pipeline/policies 사본)")
@@ -218,6 +219,9 @@ def main() -> None:
                              else "pipeline/policies/approved-servers.json (testbed에 없어 사본 사용)",
                              "tool_policy": policies["tool_policy"]["policy_id"] + " " + policies["tool_policy"]["version"]}}
     dump(out / "scenario-catalog.json", policies["catalog"])
+    expected = load_expected(docs / "expected-results.md", testbed / "ground-truth" / "S1.json")
+    manifest["expected"] = {"source": "docs/threat-scenarios/expected-results.md + testbed/ground-truth/S1.json",
+                            "version": policies["catalog"]["catalog_version"], "profiles": sorted(expected)}
     snaps, dets = {}, {}
 
     def build(key, label, kind, gw_cfg_path, node_cfg_path, raw_dir, skills, scenario=None, captures=None, stale=None, notes=None,
@@ -244,6 +248,12 @@ def main() -> None:
                  "snapshot_id": snap["snapshot_id"], "files": {"snapshot": f"snapshots/{key}/snapshot.json",
                                                               "detections": f"snapshots/{key}/detections.json"},
                  "counts": {"assets": len(snap["assets"]), "relations": len(snap["relations"]), "alerts": len(det["alerts"])}}
+        if key in expected:
+            ex = expected_compare(snap, det, expected[key], policies["catalog"]["catalog_version"])
+            dump(d / "expected.json", ex)
+            entry["files"]["expected"] = f"snapshots/{key}/expected.json"
+            entry["expected"] = {"verdict": ex["verdict"],
+                                 "counts": {r: sum(c["result"] == r for c in ex["checks"]) for r in ("PASS", "PARTIAL", "FAIL", "SKIP", "INFO")}}
         if audit.exists():
             shutil.copy(audit, d / "openclaw-security-audit.json")
             entry["files"]["audit"] = f"snapshots/{key}/openclaw-security-audit.json"
@@ -253,8 +263,8 @@ def main() -> None:
             entry["files"]["qa"] = f"snapshots/{key}/qa.json"
         manifest["snapshots"].append(entry)
         snaps[key], dets[key] = snap, det
-        print(f"  {key:3} {label:28} 자산 {len(snap['assets']):3} · 관계 {len(snap['relations']):3} · 경고 {len(det['alerts'])}"
-              f" · scan {snap['scan']['status']}")
+        print(f"  {key:5} {label:24} 자산 {len(snap['assets']):3} · 관계 {len(snap['relations']):3} · 경고 {len(det['alerts'])}"
+              f" · scan {snap['scan']['status']}" + (f" · 기대 결과 {entry['expected']['verdict']}" if "expected" in entry else ""))
 
     print("정상군 프로파일")
     for p in NORMAL:
@@ -279,7 +289,7 @@ def main() -> None:
                     + (["노출 목록(mcp probe·nodes describe)은 아직 S1에서 다시 수집하지 않아 P2 기준으로 두고, 바뀐 서버는 미확인"] if stale_s1 else []))
         scen_keys.append("S1")
     else:
-        print("  S1 테스트베드 구성(profiles/S1)이 없어 건너뜀 — feature/testbed-threat-s1의 testbed 폴더를 --testbed로 넘기세요")
+        print("  S1 테스트베드 구성(profiles/S1)이 없어 건너뜀 — feature/testbed-threat-s1-develop(PR #19)의 testbed 폴더를 --testbed로 넘기세요")
     for key, sc in scenario_configs(load(p2 / "tb-gw.openclaw.json"), load(p2 / "tb-node.openclaw.json"), raw_p2, work).items():
         gw_path, node_path = work / key / "tb-gw.openclaw.json", work / key / "tb-node.openclaw.json"
         dump(gw_path, sc["gw"])
@@ -314,7 +324,7 @@ def main() -> None:
                              "note": "토큰 수집기 3주차 검증 로그로 만든 usage.json. 테스트베드 스냅샷과 다른 환경(environment_id)"}
     manifest["sources"] = {
         "scanner": "feature/scanner-config · asset_scanner (openclaw-mcp-config 0.1.0-draft)",
-        "testbed": "feature/testbed-threat-s1 · profiles P0~P2·S1, ground-truth/raw, approved-servers.json",
+        "testbed": "feature/testbed-threat-s1-develop (PR #19, develop 기준) · profiles P0~P2·S1, ground-truth/raw, approved-servers.json",
         "threat_rules": f"docs/threat-scenarios v{policies['catalog']['catalog_version']} · scenario-catalog.json, 부록 A",
         "schema": "docs/mcp-attack-surface-definition · schema-design-draft v0.6",
         "usage": "feature/token-collector · backend/usageapi" if args.usage_api else ("feature/token-collector · usagereport" if args.usage else None),

@@ -1,13 +1,13 @@
 {
   "schema_version": "0.6.0-draft",
-  "diff_id": "diff-snap-p2-20261108T195707Z--snap-s2-20261108T195707Z",
+  "diff_id": "diff-snap-p2-20261110T091619Z--snap-s2-20261110T091619Z",
   "environment_id": "agentscope-testbed",
   "profile_id": "tb-openclaw",
-  "previous_snapshot_id": "snap-p2-20261108T195707Z",
-  "current_snapshot_id": "snap-s2-20261108T195707Z",
-  "previous_report_id": "det-snap-p2-20261108T195707Z",
-  "current_report_id": "det-snap-s2-20261108T195707Z",
-  "generated_at": "2026-11-08T19:57:08Z",
+  "previous_snapshot_id": "snap-p2-20261110T091619Z",
+  "current_snapshot_id": "snap-s2-20261110T091619Z",
+  "previous_report_id": "det-snap-p2-20261110T091619Z",
+  "current_report_id": "det-snap-s2-20261110T091619Z",
+  "generated_at": "2026-11-10T09:16:20Z",
   "comparison_status": "complete",
   "changes": [
     {
@@ -17,7 +17,7 @@
         "/product/config",
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:57:07Z",
+      "detected_at": "2026-11-10T09:16:19Z",
       "evidence_refs": [
         "ev-decl-tb-gw-fs-workspace"
       ],
@@ -30,7 +30,7 @@
         "/product/config",
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:57:07Z",
+      "detected_at": "2026-11-10T09:16:19Z",
       "evidence_refs": [
         "ev-decl-tb-node-demo-everything"
       ],
@@ -42,7 +42,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:57:07Z",
+      "detected_at": "2026-11-10T09:16:19Z",
       "evidence_refs": [
         "ev-cap-fs-workspace"
       ],
@@ -54,7 +54,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:57:07Z",
+      "detected_at": "2026-11-10T09:16:19Z",
       "evidence_refs": [
         "ev-cap-fs-workspace"
       ],
@@ -66,7 +66,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:57:07Z",
+      "detected_at": "2026-11-10T09:16:19Z",
       "evidence_refs": [
         "ev-cap-fs-workspace"
       ],
@@ -78,7 +78,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:57:07Z",
+      "detected_at": "2026-11-10T09:16:19Z",
       "evidence_refs": [
         "ev-cap-fs-workspace"
       ],
@@ -90,7 +90,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:57:07Z",
+      "detected_at": "2026-11-10T09:16:19Z",
       "evidence_refs": [
         "ev-cap-fs-workspace"
       ],
@@ -102,7 +102,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:57:07Z",
+      "detected_at": "2026-11-10T09:16:19Z",
       "evidence_refs": [
         "ev-cap-fs-workspace"
       ],
@@ -114,7 +114,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:57:07Z",
+      "detected_at": "2026-11-10T09:16:19Z",
       "evidence_refs": [
         "ev-cap-fs-workspace"
       ],
@@ -126,7 +126,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:57:07Z",
+      "detected_at": "2026-11-10T09:16:19Z",
       "evidence_refs": [
         "ev-cap-fs-workspace"
       ],
@@ -138,7 +138,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:57:07Z",
+      "detected_at": "2026-11-10T09:16:19Z",
       "evidence_refs": [
         "ev-cap-fs-workspace"
       ],
@@ -150,7 +150,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:57:07Z",
+      "detected_at": "2026-11-10T09:16:19Z",
       "evidence_refs": [
         "ev-cap-fs-workspace"
       ],
@@ -162,7 +162,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:57:07Z",
+      "detected_at": "2026-11-10T09:16:19Z",
       "evidence_refs": [
         "ev-cap-fs-workspace"
       ],
@@ -174,7 +174,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:57:07Z",
+      "detected_at": "2026-11-10T09:16:19Z",
       "evidence_refs": [
         "ev-cap-fs-workspace"
       ],
@@ -186,7 +186,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:57:07Z",
+      "detected_at": "2026-11-10T09:16:19Z",
       "evidence_refs": [
         "ev-cap-fs-workspace"
       ],
@@ -198,7 +198,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:57:07Z",
+      "detected_at": "2026-11-10T09:16:19Z",
       "evidence_refs": [
         "ev-cap-fs-workspace"
       ],
@@ -210,7 +210,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:57:07Z",
+      "detected_at": "2026-11-10T09:16:19Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -222,7 +222,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:57:07Z",
+      "detected_at": "2026-11-10T09:16:19Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -234,7 +234,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:57:07Z",
+      "detected_at": "2026-11-10T09:16:19Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -246,7 +246,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:57:07Z",
+      "detected_at": "2026-11-10T09:16:19Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -258,7 +258,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:57:07Z",
+      "detected_at": "2026-11-10T09:16:19Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -270,7 +270,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:57:07Z",
+      "detected_at": "2026-11-10T09:16:19Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -282,7 +282,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:57:07Z",
+      "detected_at": "2026-11-10T09:16:19Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -294,7 +294,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:57:07Z",
+      "detected_at": "2026-11-10T09:16:19Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -306,7 +306,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:57:07Z",
+      "detected_at": "2026-11-10T09:16:19Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -318,7 +318,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:57:07Z",
+      "detected_at": "2026-11-10T09:16:19Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -330,7 +330,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:57:07Z",
+      "detected_at": "2026-11-10T09:16:19Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -342,7 +342,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:57:07Z",
+      "detected_at": "2026-11-10T09:16:19Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -354,7 +354,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-08T19:57:07Z",
+      "detected_at": "2026-11-10T09:16:19Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -364,7 +364,7 @@
       "asset_id": "pa_087042e2e785a2d2",
       "change_type": "removed_from_scope",
       "changed_fields": [],
-      "detected_at": "2026-11-08T19:57:07Z",
+      "detected_at": "2026-11-10T09:16:19Z",
       "evidence_refs": [],
       "reason": "같은 범위를 끝까지 조회했지만 이번 결과에 없음(설치 삭제를 뜻하지 않음)",
       "previous": {

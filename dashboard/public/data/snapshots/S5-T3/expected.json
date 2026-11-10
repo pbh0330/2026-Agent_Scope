@@ -1,0 +1,91 @@
+{
+  "schema_version": "0.6.0-draft",
+  "qa_run_id": "exp-snap-s5-t3-20261110T091620Z",
+  "environment_id": "agentscope-testbed",
+  "profile_id": "tb-openclaw",
+  "snapshot_id": "snap-s5-t3-20261110T091620Z",
+  "expected_profile": "S5-T3",
+  "expected_source": "docs/threat-scenarios/expected-results.md",
+  "expected_version": "2.1",
+  "generated_at": "2026-11-10T09:16:20Z",
+  "detection_report_id": "det-snap-s5-t3-20261110T091620Z",
+  "verdict": "PASS",
+  "checks": [
+    {
+      "check_id": "exp-01",
+      "kind": "unknown",
+      "condition_id": "S5-C3",
+      "scenario_id": "S5",
+      "target": "tb-gw/mcp_server/inventory-remote",
+      "asset_id": "srv_8d8aec91ec656a07",
+      "result": "PASS",
+      "expected": {
+        "result": "unknown",
+        "alert": false
+      },
+      "actual": {
+        "results": [
+          "unknown"
+        ]
+      },
+      "evidence_refs": [],
+      "reason": "https지만 sslVerify 항목이 없어 OpenClaw 기본값에 따라 검증 여부가 갈림. 기본값을 확인하기 전까지 판단 불가"
+    },
+    {
+      "check_id": "exp-02",
+      "kind": "no_alert",
+      "condition_id": null,
+      "scenario_id": "S1/S5",
+      "target": "tb-gw/mcp_server/inventory-remote",
+      "asset_id": "srv_8d8aec91ec656a07",
+      "result": "PASS",
+      "expected": {
+        "alert": false,
+        "scenarios": [
+          "S1",
+          "S5"
+        ]
+      },
+      "actual": {
+        "alerts": []
+      },
+      "evidence_refs": [],
+      "reason": "S5-C2로 경고를 내면 FAIL(생략은 false가 아님)"
+    }
+  ],
+  "metrics": [
+    {
+      "name": "required_alert_recall",
+      "scope": "required",
+      "numerator": 0,
+      "denominator": 0,
+      "value": null
+    },
+    {
+      "name": "severity_match",
+      "scope": "required",
+      "numerator": 0,
+      "denominator": 0,
+      "value": null
+    },
+    {
+      "name": "no_alert_kept",
+      "scope": "no_alert",
+      "numerator": 1,
+      "denominator": 1,
+      "value": 1.0
+    },
+    {
+      "name": "unknown_kept",
+      "scope": "unknown",
+      "numerator": 1,
+      "denominator": 1,
+      "value": 1.0
+    }
+  ],
+  "limitations": [
+    "선택(required: false) 경고는 탐지율 분모에서 제외",
+    "severity 차이는 PARTIAL",
+    "기대 결과에 없는 경고는 INFO로만 표시(비경고 범위에 걸린 경우는 FAIL)"
+  ]
+}

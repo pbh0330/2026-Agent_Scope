@@ -1,0 +1,170 @@
+{
+  "schema_version": "0.6.0-draft",
+  "qa_run_id": "exp-snap-p2-20261110T091619Z",
+  "environment_id": "agentscope-testbed",
+  "profile_id": "tb-openclaw",
+  "snapshot_id": "snap-p2-20261110T091619Z",
+  "expected_profile": "P2",
+  "expected_source": "docs/threat-scenarios/expected-results.md",
+  "expected_version": "2.1",
+  "generated_at": "2026-11-10T09:16:19Z",
+  "detection_report_id": "det-snap-p2-20261110T091619Z",
+  "verdict": "PASS",
+  "checks": [
+    {
+      "check_id": "exp-01",
+      "kind": "no_alert",
+      "condition_id": null,
+      "scenario_id": "S1/S2/S3/S4/S5",
+      "target": "tb-gw/mcp_server/fs-workspace",
+      "asset_id": "srv_82d252784c25ade0",
+      "result": "PASS",
+      "expected": {
+        "alert": false,
+        "scenarios": [
+          "S1",
+          "S2",
+          "S3",
+          "S4",
+          "S5"
+        ]
+      },
+      "actual": {
+        "alerts": []
+      },
+      "evidence_refs": [],
+      "reason": "정상군. 어떤 S1~S5 경고도 오탐"
+    },
+    {
+      "check_id": "exp-02",
+      "kind": "no_alert",
+      "condition_id": null,
+      "scenario_id": "S1/S2/S3/S4/S5",
+      "target": "tb-node/mcp_server/kg-memory",
+      "asset_id": "srv_ec1aa5ba6ea61ff0",
+      "result": "PASS",
+      "expected": {
+        "alert": false,
+        "scenarios": [
+          "S1",
+          "S2",
+          "S3",
+          "S4",
+          "S5"
+        ]
+      },
+      "actual": {
+        "alerts": []
+      },
+      "evidence_refs": [],
+      "reason": "정상군. 어떤 S1~S5 경고도 오탐"
+    },
+    {
+      "check_id": "exp-03",
+      "kind": "no_alert",
+      "condition_id": null,
+      "scenario_id": "S1/S2/S3/S4/S5",
+      "target": "tb-node/mcp_server/demo-everything",
+      "asset_id": "srv_eee2566222d9bc33",
+      "result": "PASS",
+      "expected": {
+        "alert": false,
+        "scenarios": [
+          "S1",
+          "S2",
+          "S3",
+          "S4",
+          "S5"
+        ]
+      },
+      "actual": {
+        "alerts": []
+      },
+      "evidence_refs": [],
+      "reason": "정상군. 어떤 S1~S5 경고도 오탐"
+    },
+    {
+      "check_id": "exp-04",
+      "kind": "no_alert",
+      "condition_id": null,
+      "scenario_id": "S1/S2/S3/S4/S5",
+      "target": "tb-gw/mcp_server/inventory-remote",
+      "asset_id": "srv_8d8aec91ec656a07",
+      "result": "PASS",
+      "expected": {
+        "alert": false,
+        "scenarios": [
+          "S1",
+          "S2",
+          "S3",
+          "S4",
+          "S5"
+        ]
+      },
+      "actual": {
+        "alerts": []
+      },
+      "evidence_refs": [],
+      "reason": "정상군. 어떤 S1~S5 경고도 오탐"
+    },
+    {
+      "check_id": "exp-05",
+      "kind": "no_alert",
+      "condition_id": null,
+      "scenario_id": "S1/S2/S3/S4/S5",
+      "target": "tb-gw/mcp_server/asset-catalog",
+      "asset_id": "srv_bbb764ffe6b99467",
+      "result": "PASS",
+      "expected": {
+        "alert": false,
+        "scenarios": [
+          "S1",
+          "S2",
+          "S3",
+          "S4",
+          "S5"
+        ]
+      },
+      "actual": {
+        "alerts": []
+      },
+      "evidence_refs": [],
+      "reason": "정상군. 어떤 S1~S5 경고도 오탐"
+    }
+  ],
+  "metrics": [
+    {
+      "name": "required_alert_recall",
+      "scope": "required",
+      "numerator": 0,
+      "denominator": 0,
+      "value": null
+    },
+    {
+      "name": "severity_match",
+      "scope": "required",
+      "numerator": 0,
+      "denominator": 0,
+      "value": null
+    },
+    {
+      "name": "no_alert_kept",
+      "scope": "no_alert",
+      "numerator": 5,
+      "denominator": 5,
+      "value": 1.0
+    },
+    {
+      "name": "unknown_kept",
+      "scope": "unknown",
+      "numerator": 0,
+      "denominator": 0,
+      "value": null
+    }
+  ],
+  "limitations": [
+    "선택(required: false) 경고는 탐지율 분모에서 제외",
+    "severity 차이는 PARTIAL",
+    "기대 결과에 없는 경고는 INFO로만 표시(비경고 범위에 걸린 경우는 FAIL)"
+  ]
+}
