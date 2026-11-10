@@ -113,6 +113,8 @@
 - 기대 결과: Gateway, Node, MCP Server, Tool, Resource/Template/Prompt, Skill, Plugin, Permission/Auth가 유형을 보존해 수집된다.
 - 확인 사항: resource_prompt의 resource/resource_template/prompt, permission_auth의 permission/authentication을 asset_subtype으로 구분한다. Credential·Host·Client·Agent를 별도 아홉 번째 수집 유형으로 만들지 않는다. 미지원 유형은 정상 0건으로 처리하지 않으며 미구현 때문에 검증할 수 없는 조건은 Blocked로 기록한다.
 
+- SNAP-1 기준선 확인: 내장 Plugin·Skill의 포함·제외 범위와 설치·활성·ready 상태별 집계 기준을 먼저 합의한다. 사용자 추가 자산 0건을 전체 자산 0건으로 처리하지 않고, 포함 대상만 정답·출력에서 같은 범위로 비교한다. 합의된 제외와 미지원·조회 실패를 구분한다. 집계 기준이 미합의이면 해당 조건은 Blocked로 남기며 PR #9 보고 수치를 직접 검증한 기대 수로 대입하지 않는다.
+
 ### QA-COL-02 Gateway·Node 분산 설정 수집
 
 - 입력: Gateway와 Node 양쪽에 서로 다른 MCP Server 선언
