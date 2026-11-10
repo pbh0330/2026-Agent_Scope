@@ -1,0 +1,136 @@
+{
+  "profile": "S3",
+  "snapshot": "SNAP-3-S3",
+  "base_profile": "P2",
+  "base_snapshot": "SNAP-2-P2",
+  "environment": {
+    "openclaw_version": "2026.9.6",
+    "mcp_spec_version": "2026-07-28"
+  },
+  "scope": "P2 대비 추가·변경·삭제된 자산과 관계만 기록. 나머지는 ground-truth/P2.json과 같다",
+  "approved_servers": "ground-truth/approved-servers.json",
+  "summary": {
+    "asset_counts": {
+      "gateway": 1,
+      "node": 1,
+      "plugin": 1,
+      "mcp_server": 5,
+      "tool": 42,
+      "resource": 11,
+      "prompt": 5,
+      "skill": 3
+    },
+    "relation_count": 69
+  },
+  "added_assets": [
+    {
+      "asset_key": "inventory-remote/tool/read_text_file",
+      "asset_type": "tool",
+      "declared_at": "inventory-remote:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": null,
+        "exposure_check": "unverified: raw/S3 probe not collected yet",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": true
+        }
+      }
+    },
+    {
+      "asset_key": "inventory-remote/tool/catalog_search",
+      "asset_type": "tool",
+      "declared_at": "inventory-remote:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": null,
+        "exposure_check": "unverified: raw/S3 probe not collected yet",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        }
+      }
+    }
+  ],
+  "changed_assets": [],
+  "removed_assets": [],
+  "added_relations": [
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/inventory-remote",
+      "target": "inventory-remote/tool/read_text_file",
+      "evidence_refs": [
+        "inventory-remote:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/inventory-remote",
+      "target": "inventory-remote/tool/catalog_search",
+      "evidence_refs": [
+        "inventory-remote:tools/list"
+      ],
+      "confidence": "high"
+    }
+  ],
+  "removed_relations": [],
+  "expected_alerts": [
+    {
+      "required": true,
+      "case": "1",
+      "scenario": "S3",
+      "condition_id": "S3-C1",
+      "target": "inventory-remote/tool/read_text_file",
+      "related_targets": [
+        "fs-workspace/tool/read_text_file"
+      ],
+      "risk_condition": "같은 Tool 이름, 정의 차이",
+      "reason": "fs-workspace와 inventory-remote가 read_text_file을 광고. 제공 서버·Endpoint(stdio/https)·inputSchema(sync_url 추가)·openWorldHint가 다름",
+      "severity": "medium",
+      "confidence": "high"
+    },
+    {
+      "required": true,
+      "case": "2",
+      "scenario": "S3",
+      "condition_id": "S3-C2",
+      "target": "inventory-remote/tool/catalog_search",
+      "related_targets": [
+        "asset-catalog/tool/catalog_search"
+      ],
+      "risk_condition": "같은 Tool 이름, 정의 동일",
+      "reason": "asset-catalog와 inventory-remote가 같은 정의의 catalog_search를 광고. 정의가 같아 어느 서버가 호출될지 구분 근거가 이름 외에 없음",
+      "severity": "low",
+      "confidence": "medium"
+    },
+    {
+      "required": false,
+      "case": "1,2",
+      "scenario": "S2",
+      "condition_id": "S2-C1",
+      "target": "tb-gw/mcp_server/inventory-remote",
+      "related_targets": [
+        "inventory-remote/tool/read_text_file",
+        "inventory-remote/tool/catalog_search"
+      ],
+      "risk_condition": "정책 밖 Tool 노출",
+      "reason": "기대 도구 정책의 inventory-remote 허용 목록에 없는 도구가 노출됨. 동반 경고(S3 채점 미포함)",
+      "severity": "high",
+      "confidence": "high"
+    }
+  ],
+  "expected_no_alert": {
+    "scenario": [
+      "S1",
+      "S3"
+    ],
+    "targets": [
+      "tb-gw/mcp_server/inventory-remote",
+      "kg-memory/tool/read_graph",
+      "demo-everything/tool/echo"
+    ],
+    "note": "S1: 설정 변경 없음. S3: 이름이 겹치지 않는 도구"
+  },
+  "expected_unknown": []
+}

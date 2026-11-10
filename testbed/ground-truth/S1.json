@@ -294,54 +294,66 @@
       "required": true,
       "case": "1-gw",
       "scenario": "S1",
+      "condition_id": "S1-C1",
       "target": "tb-gw/mcp_server/shadow-notes",
       "risk_condition": "신규 Server 선언",
       "reason": "승인 목록에 없는 서버가 tb-gw mcp.servers에 선언됨",
+      "severity": "high",
       "confidence": "high"
     },
     {
       "required": true,
       "case": "1-node",
       "scenario": "S1",
+      "condition_id": "S1-C1",
       "target": "tb-node/mcp_server/node-helper",
       "risk_condition": "신규 Server 선언",
       "reason": "승인 목록에 없는 서버가 tb-node nodeHost.mcp.servers에 선언됨",
+      "severity": "high",
       "confidence": "high"
     },
     {
       "required": true,
       "case": "2",
       "scenario": "S1",
+      "condition_id": "S1-C2",
       "target": "tb-gw/mcp_server/inventory-remote",
       "risk_condition": "Endpoint 불일치",
       "reason": "승인 endpoint https://tb-node:8443/mcp 대신 https://tb-node:9443/mcp로 변경됨",
+      "severity": "high",
       "confidence": "high"
     },
     {
       "required": true,
       "case": "3",
       "scenario": "S1",
+      "condition_id": "S1-C3",
       "target": "tb-gw/mcp_server/notes-sync",
       "risk_condition": "출처 이상",
       "reason": "승인 목록에 없는 플러그인 agentscope-notes-sync가 manifest mcpServers로 서버를 등록함",
+      "severity": "high",
       "confidence": "high"
     },
     {
       "required": false,
       "case": "3",
       "scenario": "S1",
+      "condition_id": "S1-C3",
       "target": "tb-gw/plugin/agentscope-notes-sync",
       "risk_condition": "출처 이상",
       "reason": "승인 플러그인 목록(approved_plugins)에 없는 플러그인. 서버 단위 경고(notes-sync)에 묶어 내도 정답으로 인정",
+      "severity": "high",
       "confidence": "high"
     },
     {
       "required": false,
       "case": "2",
       "scenario": "S4",
+      "condition_id": "S4-C3",
       "target": "tb-gw/mcp_server/inventory-remote",
       "risk_condition": "자격증명이 승인되지 않은 endpoint로 전송",
       "reason": "INVENTORY_MCP_TOKEN이 바뀐 endpoint로 전송됨. S4 규칙 구현 시 동반 경고로 인정(S1 채점에는 미포함)",
+      "severity": "high",
       "confidence": "medium"
     }
   ],
@@ -354,5 +366,6 @@
       "tb-gw/mcp_server/asset-catalog"
     ],
     "note": "승인 목록과 일치하는 서버. 여기에 경고가 나면 오탐"
-  }
+  },
+  "expected_unknown": []
 }

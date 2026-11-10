@@ -1,0 +1,111 @@
+{
+  "profile": "S2",
+  "snapshot": "SNAP-3-S2",
+  "base_profile": "P2",
+  "base_snapshot": "SNAP-2-P2",
+  "environment": {
+    "openclaw_version": "2026.9.6",
+    "mcp_spec_version": "2026-07-28"
+  },
+  "scope": "P2 대비 추가·변경·삭제된 자산과 관계만 기록. 나머지는 ground-truth/P2.json과 같다",
+  "approved_servers": "ground-truth/approved-servers.json",
+  "summary": {
+    "asset_counts": {
+      "gateway": 1,
+      "node": 1,
+      "plugin": 1,
+      "mcp_server": 5,
+      "tool": 40,
+      "resource": 11,
+      "prompt": 5,
+      "skill": 3
+    },
+    "relation_count": 67
+  },
+  "added_assets": [],
+  "changed_assets": [
+    {
+      "asset_key": "tb-gw/mcp_server/fs-workspace",
+      "changes": {
+        "args": {
+          "before": [
+            "/home/<TB_USER>/workspace"
+          ],
+          "after": [
+            "/home/<TB_USER>"
+          ]
+        }
+      }
+    },
+    {
+      "asset_key": "tb-node/mcp_server/demo-everything",
+      "changes": {
+        "tool_filter": {
+          "before": {
+            "exclude": [
+              "get-env",
+              "gzip-file-as-resource"
+            ]
+          },
+          "after": null
+        }
+      }
+    }
+  ],
+  "removed_assets": [],
+  "added_relations": [],
+  "removed_relations": [],
+  "expected_alerts": [
+    {
+      "required": true,
+      "case": "1",
+      "scenario": "S2",
+      "condition_id": "S2-C2",
+      "target": "tb-gw/mcp_server/fs-workspace",
+      "related_targets": [
+        "fs-workspace/tool/read_text_file",
+        "fs-workspace/tool/list_directory"
+      ],
+      "risk_condition": "파일 접근 범위 과다",
+      "reason": "허용 범위 /home/<TB_USER>/workspace 밖인 /home/<TB_USER> 전체로 확대. 노출 도구는 읽기 전용 2개라 medium",
+      "severity": "medium",
+      "confidence": "high"
+    },
+    {
+      "required": true,
+      "case": "2",
+      "scenario": "S2",
+      "condition_id": "S2-C1",
+      "target": "tb-node/mcp_server/demo-everything",
+      "related_targets": [
+        "demo-everything/tool/get-env",
+        "demo-everything/tool/gzip-file-as-resource"
+      ],
+      "risk_condition": "Tool Filter 제거로 정책 밖 Tool 노출",
+      "reason": "정책이 막은 get-env(서버 환경변수 반환), gzip-file-as-resource(readOnlyHint=false)가 에이전트에 노출됨",
+      "severity": "high",
+      "confidence": "high"
+    },
+    {
+      "required": false,
+      "case": "1",
+      "scenario": "S1",
+      "condition_id": "S1-C2",
+      "target": "tb-gw/mcp_server/fs-workspace",
+      "risk_condition": "Endpoint 불일치",
+      "reason": "approved-servers.json의 match_keys에 endpoint.args가 포함돼 stdio 인자 변경도 불일치로 볼 수 있음. 동반 경고로 인정(S2 채점 미포함)",
+      "severity": "high",
+      "confidence": "high"
+    }
+  ],
+  "expected_no_alert": {
+    "scenario": "S2",
+    "targets": [
+      "tb-node/mcp_server/kg-memory",
+      "tb-gw/mcp_server/inventory-remote",
+      "tb-gw/mcp_server/asset-catalog"
+    ],
+    "note": "kg-memory의 쓰기·삭제 도구는 정책상 허용(지정 파일 하나). 여기서 경고가 나면 오탐"
+  },
+  "expected_unknown": []
+}

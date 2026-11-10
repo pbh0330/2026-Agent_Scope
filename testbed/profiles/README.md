@@ -41,7 +41,19 @@ MCP 공식 참조 서버 3종은 `npm install -g`로 버전을 고정 설치하�
 
 ### 승인 서버 목록 (S1 allowlist)
 
-기계 판독용 사본: [../ground-truth/approved-servers.json](../ground-truth/approved-servers.json). 위협 구성 S1은 [S1/README.md](S1/README.md).
+기계 판독용 사본: [../ground-truth/approved-servers.json](../ground-truth/approved-servers.json).
+
+### 위협 구성 (SNAP-2-P2 분기, PR #7 명세)
+
+위 §3은 각 시나리오의 **정상 기준**이다. 실제 위험 구성(P2 대비 변경)은 아래 프로파일에 있고, 기대 경고는 PR #7 `expected-results.md`(v2.1)를 따른다. 구현 우선순위는 S1 → S2 → S4 → S3 → S5.
+
+| 구성 | 스냅샷 | 내용 | README |
+|---|---|---|---|
+| S1 | `SNAP-3-S1` | 비인가 MCP Server 등록·노출 (C1~C3) | [S1/README.md](S1/README.md) |
+| S2 | `SNAP-3-S2` | 과도한 권한의 도구 광고 (범위 확대·필터 제거) | [S2/README.md](S2/README.md) |
+| S3 | `SNAP-3-S3` | Tool 이름 충돌 (`inventory-remote --scenario s3`) | [S3/README.md](S3/README.md) |
+| S4 | `SNAP-3-S4` | 과도한 자격증명 공유 (C1 detected / C2 unknown) | [S4/README.md](S4/README.md) |
+| S5 | 설정 사본 3개 | 보안이 약한 연결 (T1 http / T2 sslVerify:false / T3 생략=unknown) | [S5-T1/README.md](S5-T1/README.md) |
 
 | 서버 | 등록 주체 | 실행 위치 | 승인 근거 |
 |---|---|---|---|

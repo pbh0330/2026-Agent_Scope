@@ -21,6 +21,7 @@
 """
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -59,30 +60,144 @@ PLUGINS["S1"] = PLUGINS["P2"] + [
         "mcp_servers": {"notes-sync": {"transport": "stdio", "command": "node", "args": ["./mcp-server.mjs", "--name", "notes-sync"]}},
     }
 ]
-BASE = {"S1": "P2"}  # 위협 구성의 기준 프로파일(이 스냅샷에서 분기)
-SNAPSHOT = {"P0": "SNAP-2-P0", "P1": "SNAP-2-P1", "P2": "SNAP-2-P2", "S1": "SNAP-3-S1"}
+# S2~S5는 P2의 승인 서버 5종을 그대로 두고(정상군 오탐 확인용) 위험 구성만 얹는다.
+# 플러그인·스킬 구성은 P2와 같다(자산 목록이 P2를 기준으로 분기하므로 동일하게 상속).
+for _p in ("S2", "S3", "S4", "S5-T1", "S5-T2", "S5-T3"):
+    SKILLS[_p] = SKILLS["P2"]
+    PLUGINS[_p] = PLUGINS["P2"]
+BASE = {"S1": "P2", "S2": "P2", "S3": "P2", "S4": "P2", "S5-T1": "P2", "S5-T2": "P2", "S5-T3": "P2"}
+# 위협 구성의 기준 프로파일(이 스냅샷에서 분기). SNAPSHOT이 없는 항목은 설정 사본만으로 정적 검증(VM 스냅샷 없음).
+SNAPSHOT = {"P0": "SNAP-2-P0", "P1": "SNAP-2-P1", "P2": "SNAP-2-P2",
+            "S1": "SNAP-3-S1", "S2": "SNAP-3-S2", "S3": "SNAP-3-S3", "S4": "SNAP-3-S4"}
+# S3의 의도된 Tool 이름 충돌(S3 판정 대상). 생성기 정상-기준 중복 검사에서 제외한다.
+COLLISIONS = {"S3": {"read_text_file", "catalog_search"}}
 # 위협 구성에서 스캐너가 내야 할 경고(수작업 기술). target은 asset_key, 생성 시 존재 여부를 검사한다.
 # required: False는 내도 정답, 안 내도 미탐으로 세지 않는 경고.
 THREATS = {
     "S1": [
-        {"case": "1-gw", "scenario": "S1", "target": "tb-gw/mcp_server/shadow-notes",
-         "risk_condition": "신규 Server 선언", "reason": "승인 목록에 없는 서버가 tb-gw mcp.servers에 선언됨", "confidence": "high"},
-        {"case": "1-node", "scenario": "S1", "target": "tb-node/mcp_server/node-helper",
-         "risk_condition": "신규 Server 선언", "reason": "승인 목록에 없는 서버가 tb-node nodeHost.mcp.servers에 선언됨", "confidence": "high"},
-        {"case": "2", "scenario": "S1", "target": "tb-gw/mcp_server/inventory-remote",
-         "risk_condition": "Endpoint 불일치", "reason": "승인 endpoint https://tb-node:8443/mcp 대신 https://tb-node:9443/mcp로 변경됨", "confidence": "high"},
-        {"case": "3", "scenario": "S1", "target": "tb-gw/mcp_server/notes-sync",
-         "risk_condition": "출처 이상", "reason": "승인 목록에 없는 플러그인 agentscope-notes-sync가 manifest mcpServers로 서버를 등록함", "confidence": "high"},
-        {"case": "3", "scenario": "S1", "target": "tb-gw/plugin/agentscope-notes-sync", "required": False,
-         "risk_condition": "출처 이상", "reason": "승인 플러그인 목록(approved_plugins)에 없는 플러그인. 서버 단위 경고(notes-sync)에 묶어 내도 정답으로 인정", "confidence": "high"},
-        {"case": "2", "scenario": "S4", "target": "tb-gw/mcp_server/inventory-remote", "required": False,
-         "risk_condition": "자격증명이 승인되지 않은 endpoint로 전송", "reason": "INVENTORY_MCP_TOKEN이 바뀐 endpoint로 전송됨. S4 규칙 구현 시 동반 경고로 인정(S1 채점에는 미포함)", "confidence": "medium"},
+        {"case": "1-gw", "scenario": "S1", "condition_id": "S1-C1", "target": "tb-gw/mcp_server/shadow-notes",
+         "risk_condition": "신규 Server 선언", "reason": "승인 목록에 없는 서버가 tb-gw mcp.servers에 선언됨", "severity": "high", "confidence": "high"},
+        {"case": "1-node", "scenario": "S1", "condition_id": "S1-C1", "target": "tb-node/mcp_server/node-helper",
+         "risk_condition": "신규 Server 선언", "reason": "승인 목록에 없는 서버가 tb-node nodeHost.mcp.servers에 선언됨", "severity": "high", "confidence": "high"},
+        {"case": "2", "scenario": "S1", "condition_id": "S1-C2", "target": "tb-gw/mcp_server/inventory-remote",
+         "risk_condition": "Endpoint 불일치", "reason": "승인 endpoint https://tb-node:8443/mcp 대신 https://tb-node:9443/mcp로 변경됨", "severity": "high", "confidence": "high"},
+        {"case": "3", "scenario": "S1", "condition_id": "S1-C3", "target": "tb-gw/mcp_server/notes-sync",
+         "risk_condition": "출처 이상", "reason": "승인 목록에 없는 플러그인 agentscope-notes-sync가 manifest mcpServers로 서버를 등록함", "severity": "high", "confidence": "high"},
+        {"required": False, "case": "3", "scenario": "S1", "condition_id": "S1-C3", "target": "tb-gw/plugin/agentscope-notes-sync",
+         "risk_condition": "출처 이상", "reason": "승인 플러그인 목록(approved_plugins)에 없는 플러그인. 서버 단위 경고(notes-sync)에 묶어 내도 정답으로 인정", "severity": "high", "confidence": "high"},
+        {"required": False, "case": "2", "scenario": "S4", "condition_id": "S4-C3", "target": "tb-gw/mcp_server/inventory-remote",
+         "risk_condition": "자격증명이 승인되지 않은 endpoint로 전송", "reason": "INVENTORY_MCP_TOKEN이 바뀐 endpoint로 전송됨. S4 규칙 구현 시 동반 경고로 인정(S1 채점에는 미포함)", "severity": "high", "confidence": "medium"},
+    ],
+    # S2: 악성 또는 과도한 권한의 도구 광고 (#7 §4)
+    "S2": [
+        {"case": "1", "scenario": "S2", "condition_id": "S2-C2", "target": "tb-gw/mcp_server/fs-workspace",
+         "related_targets": ["fs-workspace/tool/read_text_file", "fs-workspace/tool/list_directory"],
+         "risk_condition": "파일 접근 범위 과다",
+         "reason": "허용 범위 /home/<TB_USER>/workspace 밖인 /home/<TB_USER> 전체로 확대. 노출 도구는 읽기 전용 2개라 medium",
+         "severity": "medium", "confidence": "high"},
+        {"case": "2", "scenario": "S2", "condition_id": "S2-C1", "target": "tb-node/mcp_server/demo-everything",
+         "related_targets": ["demo-everything/tool/get-env", "demo-everything/tool/gzip-file-as-resource"],
+         "risk_condition": "Tool Filter 제거로 정책 밖 Tool 노출",
+         "reason": "정책이 막은 get-env(서버 환경변수 반환), gzip-file-as-resource(readOnlyHint=false)가 에이전트에 노출됨",
+         "severity": "high", "confidence": "high"},
+        {"required": False, "case": "1", "scenario": "S1", "condition_id": "S1-C2", "target": "tb-gw/mcp_server/fs-workspace",
+         "risk_condition": "Endpoint 불일치",
+         "reason": "approved-servers.json의 match_keys에 endpoint.args가 포함돼 stdio 인자 변경도 불일치로 볼 수 있음. 동반 경고로 인정(S2 채점 미포함)",
+         "severity": "high", "confidence": "high"},
+    ],
+    # S3: Tool 이름 충돌 (#7 §6). 설정은 P2와 같고 inventory-remote가 도구 2개를 더 광고한다.
+    "S3": [
+        {"case": "1", "scenario": "S3", "condition_id": "S3-C1", "target": "inventory-remote/tool/read_text_file",
+         "related_targets": ["fs-workspace/tool/read_text_file"],
+         "risk_condition": "같은 Tool 이름, 정의 차이",
+         "reason": "fs-workspace와 inventory-remote가 read_text_file을 광고. 제공 서버·Endpoint(stdio/https)·inputSchema(sync_url 추가)·openWorldHint가 다름",
+         "severity": "medium", "confidence": "high"},
+        {"case": "2", "scenario": "S3", "condition_id": "S3-C2", "target": "inventory-remote/tool/catalog_search",
+         "related_targets": ["asset-catalog/tool/catalog_search"],
+         "risk_condition": "같은 Tool 이름, 정의 동일",
+         "reason": "asset-catalog와 inventory-remote가 같은 정의의 catalog_search를 광고. 정의가 같아 어느 서버가 호출될지 구분 근거가 이름 외에 없음",
+         "severity": "low", "confidence": "medium"},
+        {"required": False, "case": "1,2", "scenario": "S2", "condition_id": "S2-C1", "target": "tb-gw/mcp_server/inventory-remote",
+         "related_targets": ["inventory-remote/tool/read_text_file", "inventory-remote/tool/catalog_search"],
+         "risk_condition": "정책 밖 Tool 노출",
+         "reason": "기대 도구 정책의 inventory-remote 허용 목록에 없는 도구가 노출됨. 동반 경고(S3 채점 미포함)",
+         "severity": "high", "confidence": "high"},
+    ],
+    # S4: 과도한 자격증명 공유 (#7 §5). S4-C2는 expected_alerts가 아니라 expected_unknown(UNKNOWN).
+    "S4": [
+        {"case": "1", "scenario": "S4", "condition_id": "S4-C1", "target": "tb-gw/mcp_server/fs-workspace",
+         "related_targets": ["tb-gw/mcp_server/inventory-remote"],
+         "credential_ref": {"env_ref": "INVENTORY_MCP_TOKEN", "store": "tb-gw:~/.openclaw/.env"},
+         "risk_condition": "같은 저장소의 자격증명 참조를 여러 Server가 공유",
+         "reason": "tb-gw .env의 INVENTORY_MCP_TOKEN을 inventory-remote(헤더)와 fs-workspace(env) 두 서버가 참조",
+         "severity": "medium", "confidence": "high"},
+    ],
+    # S5: 보안이 약한 연결 (#7 §7). 원격 서버가 inventory-remote 하나라 설정 사본 3개로 정적 검증.
+    "S5-T1": [
+        {"case": "1", "scenario": "S5", "condition_id": "S5-C1", "target": "tb-gw/mcp_server/inventory-remote",
+         "risk_condition": "암호화되지 않은 전송",
+         "reason": "streamable-http를 http://로 연결. Bearer 헤더가 평문으로 전송될 수 있는 설정",
+         "severity": "high", "confidence": "high"},
+        {"required": False, "case": "1", "scenario": "S1", "condition_id": "S1-C2", "target": "tb-gw/mcp_server/inventory-remote",
+         "risk_condition": "Endpoint 불일치", "reason": "승인 endpoint와 다름. 동반 경고(S5 채점 미포함)",
+         "severity": "high", "confidence": "high"},
+        {"required": False, "case": "1", "scenario": "S4", "condition_id": "S4-C3", "target": "tb-gw/mcp_server/inventory-remote",
+         "risk_condition": "자격증명이 승인되지 않은 Endpoint로 전송",
+         "reason": "INVENTORY_MCP_TOKEN이 바뀐 endpoint로 전송. 동반 경고", "severity": "high", "confidence": "medium"},
+    ],
+    "S5-T2": [
+        {"case": "2", "scenario": "S5", "condition_id": "S5-C2", "target": "tb-gw/mcp_server/inventory-remote",
+         "risk_condition": "인증서 검증 명시적 비활성화", "reason": "https 연결이지만 sslVerify가 false로 명시됨",
+         "severity": "high", "confidence": "high"},
+    ],
+    "S5-T3": [],  # 경고 없음. S5-C3은 expected_unknown(UNKNOWN)에만 있다.
+}
+# expected_no_alert 재정의(#7 각 절). 없는 프로파일은 승인 목록에서 자동 생성한다.
+NO_ALERT = {
+    "S2": {"scenario": "S2",
+           "targets": ["tb-node/mcp_server/kg-memory", "tb-gw/mcp_server/inventory-remote", "tb-gw/mcp_server/asset-catalog"],
+           "note": "kg-memory의 쓰기·삭제 도구는 정책상 허용(지정 파일 하나). 여기서 경고가 나면 오탐"},
+    "S3": {"scenario": ["S1", "S3"],
+           "targets": ["tb-gw/mcp_server/inventory-remote", "kg-memory/tool/read_graph", "demo-everything/tool/echo"],
+           "note": "S1: 설정 변경 없음. S3: 이름이 겹치지 않는 도구"},
+    "S4": {"scenario": "S4",
+           "targets": ["tb-node/mcp_server/kg-memory", "tb-gw/mcp_server/asset-catalog"],
+           "note": "자격증명 참조가 없는 서버"},
+    "S5-T1": {"scenario": "S5",
+              "targets": ["tb-gw/mcp_server/fs-workspace", "tb-node/mcp_server/kg-memory", "tb-node/mcp_server/demo-everything", "tb-gw/mcp_server/asset-catalog"],
+              "note": "stdio 서버는 not_applicable"},
+    "S5-T2": {"scenario": ["S1", "S5"], "targets": ["tb-gw/mcp_server/inventory-remote"],
+              "note": "S1: endpoint 같음. S5-C1: https라 해당 없음"},
+    "S5-T3": {"scenario": ["S1", "S5"], "targets": ["tb-gw/mcp_server/inventory-remote"],
+              "note": "S5-C2로 경고를 내면 FAIL(생략은 false가 아님)"},
+}
+# expected_unknown(#7 0절 판정 원칙). unknown으로 평가돼야 하며 detected/not_detected면 FAIL.
+UNKNOWN = {
+    "S4": [
+        {"case": "2", "scenario": "S4", "condition_id": "S4-C2", "target": "tb-node/mcp_server/demo-everything",
+         "related_targets": ["tb-gw/mcp_server/inventory-remote", "tb-gw/mcp_server/fs-workspace"],
+         "reason": "참조 이름은 INVENTORY_MCP_TOKEN으로 같지만 저장소가 tb-node .env로 달라 같은 자격증명인지 확정할 수 없음. 경고를 내면 FAIL"},
+    ],
+    "S5-T3": [
+        {"case": "3", "scenario": "S5", "condition_id": "S5-C3", "target": "tb-gw/mcp_server/inventory-remote",
+         "reason": "https지만 sslVerify 항목이 없어 OpenClaw 기본값에 따라 검증 여부가 갈림. 기본값을 확인하기 전까지 판단 불가"},
     ],
 }
-CREDENTIAL_ENV = {  # 서버별 자격증명 참조(값은 기록하지 않는다)
-    "inventory-remote": {"env_ref": "INVENTORY_MCP_TOKEN", "store": "tb-gw:~/.openclaw/.env", "used_in": "headers.Authorization"},
-    "demo-everything": {"env_ref": "EVERYTHING_DEMO_KEY", "store": "tb-node:~/.openclaw/.env", "used_in": "env.EVERYTHING_DEMO_KEY"},
-}
+
+
+def credential_ref(cfg, vm):
+    """서버 설정의 ${ENV} 참조에서 자격증명 참조를 도출(값은 기록하지 않는다).
+
+    같은 참조 이름이라도 저장소는 선언 VM의 ~/.openclaw/.env다(S4-C1 같은 저장소 / S4-C2 다른 저장소 판정 근거).
+    headers를 env보다 먼저 본다(원격 서버는 Authorization 헤더가 1차 참조처).
+    """
+    store = f"{vm}:~/.openclaw/.env"
+    for field in ("headers", "env"):
+        for key, val in (cfg.get(field) or {}).items():
+            m = re.search(r"\$\{([A-Za-z_][A-Za-z0-9_]*)\}", str(val))
+            if m:
+                return {"env_ref": m.group(1), "store": store, "used_in": f"{field}.{key}"}
+    return None
 
 
 def load(path):
@@ -188,10 +303,9 @@ def build(profile):
             attrs.update(command=cfg.get("command"), args=cfg.get("args", []), runs_on=vm)
         if cfg.get("toolFilter"):
             attrs["tool_filter"] = cfg["toolFilter"]
-        cred = CREDENTIAL_ENV.get(name)
-        # 프로파일 설정이 실제로 해당 자격증명(${ENV_REF})을 참조할 때만 정답에 포함한다.
-        # 예: P1 demo-everything에는 env 참조가 없으므로 credential_ref를 넣지 않는다(P2에서만 추가됨).
-        if cred and "${" + cred["env_ref"] + "}" in json.dumps(cfg, ensure_ascii=False):
+        # 설정의 ${ENV} 참조에서 자격증명을 도출한다. env 참조가 없는 서버(P1 demo-everything 등)는 넣지 않는다.
+        cred = credential_ref(cfg, vm)
+        if cred:
             attrs["credential_ref"] = cred
         if name in plugin_keys:
             attrs["visible_in_openclaw_mcp_list"] = False  # openclaw mcp list/probe는 mcp.servers만 보여 줌
@@ -238,13 +352,13 @@ def build(profile):
         counts[a["asset_type"]] = counts.get(a["asset_type"], 0) + 1
     # S3 정상 기준 검증: 서로 다른 서버 간 원래 도구 이름 중복이 없어야 한다
     names = [a["asset_key"].split("/tool/")[1] for a in assets if a["asset_type"] == "tool"]
-    dup = sorted({n for n in names if names.count(n) > 1})
+    dup = sorted({n for n in names if names.count(n) > 1} - COLLISIONS.get(profile, set()))
     if dup:
         sys.exit(f"{profile}: duplicate raw tool names across servers: {dup}")
 
     return {
         "profile": profile,
-        "snapshot": SNAPSHOT[profile],
+        "snapshot": SNAPSHOT.get(profile),
         "environment": {"openclaw_version": OPENCLAW_VERSION, "mcp_spec_version": SPEC_VERSION},
         "scope": "테스트베드가 추가한 자산만 포함. 내장(stock) 플러그인 63종·스킬 57종은 제외(testbed/baseline/SNAP-1 참조)",
         "summary": {"asset_counts": counts, "relation_count": len(relations)},
@@ -270,37 +384,40 @@ def threat_delta(profile, gt):
                 if before.get(f) != after.get(f) and f not in exposure_fields}
         return {"asset_key": k, "changes": diff} if diff else None
 
-    for alert in THREATS[profile]:
+    for alert in THREATS[profile] + UNKNOWN.get(profile, []):
         if alert["target"] not in t_assets:
-            sys.exit(f"{profile}: expected alert target not in assets: {alert['target']}")
+            sys.exit(f"{profile}: expected target not in assets: {alert['target']}")
     approved = load(ROOT / "ground-truth" / "approved-servers.json")
     alerted = {a["target"] for a in THREATS[profile] if a["scenario"] == profile}
     approved_keys = [f"{s['declared_at_vm']}/mcp_server/{s['name']}" for s in approved["servers"]]
-    return {
-        "profile": profile,
-        "snapshot": gt["snapshot"],
-        "base_profile": BASE[profile],
-        "base_snapshot": base["snapshot"],
-        "environment": gt["environment"],
-        "scope": f"{BASE[profile]} 대비 추가·변경·삭제된 자산과 관계만 기록. 나머지는 ground-truth/{BASE[profile]}.json과 같다",
-        "approved_servers": "ground-truth/approved-servers.json",
-        "summary": gt["summary"],
-        "added_assets": [a for k, a in t_assets.items() if k not in b_assets],
-        "changed_assets": [c for k in t_assets if k in b_assets for c in [changed(k)] if c],
-        "removed_assets": [k for k in b_assets if k not in t_assets],
-        "added_relations": [r for r in gt["relations"] if rkey(r) not in b_rels],
-        "removed_relations": [r for r in base["relations"] if rkey(r) not in t_rels],
-        "expected_alerts": [{"required": True, **a} for a in THREATS[profile]],
-        "expected_no_alert": {
-            "scenario": profile,
-            "targets": [k for k in approved_keys if k not in alerted],
-            "note": "승인 목록과 일치하는 서버. 여기에 경고가 나면 오탐",
-        },
+    no_alert = NO_ALERT.get(profile) or {
+        "scenario": profile,
+        "targets": [k for k in approved_keys if k not in alerted],
+        "note": "승인 목록과 일치하는 서버. 여기에 경고가 나면 오탐",
     }
+    out = {"profile": profile}
+    if gt["snapshot"]:
+        out["snapshot"] = gt["snapshot"]
+    out["base_profile"] = BASE[profile]
+    if base["snapshot"]:
+        out["base_snapshot"] = base["snapshot"]
+    out["environment"] = gt["environment"]
+    out["scope"] = f"{BASE[profile]} 대비 추가·변경·삭제된 자산과 관계만 기록. 나머지는 ground-truth/{BASE[profile]}.json과 같다"
+    out["approved_servers"] = "ground-truth/approved-servers.json"
+    out["summary"] = gt["summary"]
+    out["added_assets"] = [a for k, a in t_assets.items() if k not in b_assets]
+    out["changed_assets"] = [c for k in t_assets if k in b_assets for c in [changed(k)] if c]
+    out["removed_assets"] = [k for k in b_assets if k not in t_assets]
+    out["added_relations"] = [r for r in gt["relations"] if rkey(r) not in b_rels]
+    out["removed_relations"] = [r for r in base["relations"] if rkey(r) not in t_rels]
+    out["expected_alerts"] = [{"required": True, **a} for a in THREATS[profile]]
+    out["expected_no_alert"] = no_alert
+    out["expected_unknown"] = UNKNOWN.get(profile, [])
+    return out
 
 
 if __name__ == "__main__":
-    for p in sys.argv[1:] or ["P0", "P1", "P2", "S1"]:
+    for p in sys.argv[1:] or ["P0", "P1", "P2", "S1", "S2", "S3", "S4", "S5-T1", "S5-T2", "S5-T3"]:
         gt = build(p)
         if p in BASE:
             gt = threat_delta(p, gt)
