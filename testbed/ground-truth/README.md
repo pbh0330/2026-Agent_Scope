@@ -13,7 +13,8 @@ testbed/ground-truth/
 ├── P0.json
 ├── P1.json
 ├── P2.json
-└── S1.json ...        # 위협 구성은 기준 프로파일 대비 추가·변경 자산만 기록
+├── approved-servers.json  # S1 승인 서버 목록
+└── S1.json ...        # 위협 구성은 기준 프로파일 대비 추가·변경 자산만 기록 (+ expected_alerts, expected_no_alert)
 ```
 
 ## 필드
