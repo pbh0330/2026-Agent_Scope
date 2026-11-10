@@ -66,7 +66,7 @@
 |---|---|---|
 | `entry_not_object` | 등록 항목이 객체가 아님 | `invalid` |
 | `field_type_invalid` | `enabled`·`command`·`args`·`env` 등의 자료형이 틀림. 값은 저장하지 않고 자료형만 기록 | `partial` |
-| `duplicate_key` | 항목 안에서 같은 키가 반복됨 (마지막 값만 읽음) | `partial` |
+| `duplicate_key` | 항목 안에서, 또는 `env`·`headers`·`auth` 등 항목의 모든 하위 객체 안에서 같은 키가 반복됨 (마지막 값만 읽음). `field_path`는 중복된 키의 위치이며 토큰 모양 키는 자리표시자로 적음. 플러그인 manifest의 `mcpServers`도 같은 경로로 처리 | 그 서버 `partial` → 전체 `partial` (`server_entries_incomplete`). 정상 서버·같은 서버의 나머지 필드는 보존 |
 | `invalid_secret_ref` | 인증정보 위치(`env`·`headers` 값, `auth`·`oauth`·`clientCert`·`clientKey`)에 SecretRef 모양 객체가 있으나 형식이 틀림. `problems`에 필드·문제 종류·자료형만 기록 (원래 값 없음) | `partial` |
 | `no_connection_target_declared` | `command`와 `url`이 모두 없음 (선언 사실에 대한 경고) | 영향 없음 |
 | `collector_internal_error` | 이 항목 처리 중 스캐너 내부 오류. 예외 종류만 기록하고 항목은 버리지 않음 | `invalid` |
@@ -150,9 +150,11 @@ SecretRef 판정: 키가 `source`·`provider`·`id`로만 이루어지고 `sourc
 - 헤더 형태는 `Name: value` 한 줄만 인식합니다.
 - `other_declared_keys`의 값(`toolFilter`, `codex` 등)은 저장하지 않으므로 가림 대상이 아닙니다.
 
-## 6. Tool 카탈로그: 저장된 `tools/list` 응답 → 결과 필드 (MCP 2026-07-28)
+## 6. Tool 카탈로그: 저장된 `tools/list` 응답 → 결과 필드
 
 > 상태: 스캐너 내부 개발용 초안 `0.1.0-draft`. 구현은 `asset_scanner/tools_catalog.py`. 팀 공통 스키마와 공통 ID(Issue #10, PR #11 협의안)는 반영하지 않았다.
+
+이 장의 필수 완료·캐시 필드 설명은 2026-07-28 기준이다. 2025-11-25 지원과 버전별 차이는 [8장](#8-독립적인-버전-호환성과-manifest-수집-보완)에 정리했다.
 
 ### 6-1. 근거 자료와 확인 방법 (2026-10-06 조회)
 
@@ -173,7 +175,7 @@ SecretRef 판정: 키가 `source`·`provider`·`id`로만 이루어지고 `sourc
 
 위 SHA는 각 파일을 마지막으로 바꾼 커밋이다(GitHub `commits?path=` 조회). 조회 시점의 `main` HEAD는 `8e12bf3c8f01f374146acfa19b8ece0018bfc86c`(2026-10-05)이며, 이 파일들은 그 이후에도 위 커밋 내용 그대로다. 고정 URL 형태: `https://raw.githubusercontent.com/modelcontextprotocol/modelcontextprotocol/<SHA>/<경로>`. 규격이 바뀌면 이 SHA를 기준으로 차이를 확인한다. 위의 modelcontextprotocol.io 페이지는 같은 저장소의 문서가 게시된 것이며, 이 SHA의 원문과 위 인용 구절을 대조했다.
 
-**주의:** 규격 사이트의 Schema Reference 페이지를 요약 도구로 읽은 결과는 `title`, `outputSchema`, `ttlMs`, `cacheScope`가 없다고 나와 위 Tools 페이지와 어긋났다. `schema.ts` 원본을 직접 읽어 확인한 결과 이 필드들이 모두 정의돼 있다. 요약 결과는 근거로 쓰지 않았고, 구현은 `schema.ts`와 Tools·Pagination 페이지 원문에 맞췄다. 다른 버전(예: 2025년 규격)의 응답은 이 구조와 같다고 가정하지 않으며, 입력이 `protocol_version`으로 `2026-07-28`을 선언하지 않으면 읽지 않는다.
+**주의:** 규격 사이트의 Schema Reference 페이지를 요약 도구로 읽은 결과는 `title`, `outputSchema`, `ttlMs`, `cacheScope`가 없다고 나와 위 Tools 페이지와 어긋났다. `schema.ts` 원본을 직접 읽어 확인한 결과 이 필드들이 모두 정의돼 있다. 요약 결과는 근거로 쓰지 않았고, 구현은 `schema.ts`와 Tools·Pagination 페이지 원문에 맞췄다. 다른 버전의 응답을 같은 구조로 가정하지 않는다. 2026-10-31 변경부터 입력이 선언한 `2025-11-25`·`2026-07-28` 각각의 규칙으로 읽고, 그 밖의 버전은 읽지 않는다.
 
 ### 6-2. 응답(`ListToolsResult`) 필드
 
@@ -182,7 +184,7 @@ SecretRef 판정: 키가 `source`·`provider`·`id`로만 이루어지고 `sourc
 | JSON-RPC `result` / `error` | 둘 중 하나 | `result`면 해석, `error`면 `error_response` 실패. 둘 다 있거나 둘 다 없으면 `invalid_response_structure`. `jsonrpc` 없이 `result` 객체만 있는 형태는 `bare_result`로 받는다. | `servers[].pages[].wrapper` |
 | `resultType` | 예 (`complete` \| `input_required` \| 기타 문자열). 스키마 주석: 이 버전의 서버는 **MUST** 포함 | `complete`만 완료된 Tool 목록으로 읽는다. **없거나 문자열이 아니면** 규격 위반(`result_type_missing`/`result_type_invalid`)으로 기록하고 **완료를 추정하지 않는다**: Tool은 보존하되 서버는 `partial`/`completion_unverified`. `input_required`·알 수 없는 문자열은 구조를 추정하지 않고 읽지 않는다(`failed`). | `pages[].result_type`, `pages[].result_type_state`, `issues` |
 | `tools` | 예 | 배열이 아니거나 없으면 실패. 빈 배열은 성공한 빈 목록. | `servers[].tools` |
-| `nextCursor` | 아니오 | 문자열이면(빈 문자열 포함) 목록이 남은 것으로 본다. 값은 저장하지 않고 존재 여부만 기록한다. | `pages[].has_next_cursor` |
+| `nextCursor` | 아니오 | 문자열이면(빈 문자열 포함) 목록이 남은 것으로 본다. `null` 등 문자열 아닌 값은 `next_cursor_invalid`로 기록하고 마지막 페이지로 추정하지 않는다. 값은 저장하지 않고 존재 여부만 기록한다. | `pages[].has_next_cursor` |
 | `ttlMs`, `cacheScope` | 규격상 예 (`CacheableResult`: `ttlMs: number`(0 이상), `cacheScope: "public" \| "private"`) | 없거나 형식이 틀리면 규격 위반(`cache_hint_missing`/`cache_hint_invalid`)으로 **기록만** 한다. Tool은 버리지 않고 수집 상태도 바꾸지 않는다. 틀린 값은 힌트로 기록하지 않는다. | `pages[].ttl_ms`, `cache_scope`, `issues` |
 | `_meta` | 아니오 | 가림 후 보존 (`io.modelcontextprotocol/serverInfo`는 서버가 스스로 밝힌 값일 뿐이며 검증하지 않는다). | `pages[].result_meta` |
 | 그 밖의 키 | - | 이름만 기록 | `pages[].other_result_fields` |
@@ -241,7 +243,8 @@ MCP 서버 접속·실행, `tools/call`, 실제 서버가 지금 같은 목록�
 | 알려진 토큰 모양, URL의 사용자정보·쿼리·fragment | 모든 문자열에 적용(구조 키 `$id`·`$ref`·`$schema`·`pattern` 아래 포함). 해당 부분만 `<redacted>` | `token_pattern:*`, `url_userinfo`, `url_query_values`, `url_fragment` |
 | 토큰 모양·고립된 surrogate가 든 **객체 키·`properties` 이름** | 같은 객체 안의 일반 키와 겹치지 않는 `<redacted-key-N>`(번호는 객체 안 등장 순서, 원래 키·해시 미사용, 이미 있는 같은 이름은 건너뜀). `required`의 같은 이름도 같은 자리표시자로 맞춘다. | `key_looks_like_secret`, `lone_surrogate_in_key`, `reference_to_masked_key` |
 | 인증 이름 필드의 문자열 값 | 이름을 단어로 나눠 `token`·`secret`·`password`·`passwd`·`pwd`·`apikey`·`authorization`·`credential(s)`·`cookie`·`bearer`, 또는 `api key`·`access key`·`private key`·`client secret`·`secret key`·`auth token`·`session token` 조합이 들어 있으면 값을 `<redacted>`. 객체·배열이면 하위 문자열 값을 모두 가린다. `author`·`token_budget`(숫자) 같은 일반 이름, 값 없이 이름만 참조하는 `${VAR}`는 보존. | `secret_named_field_value` |
-| 비밀 이름 속성의 `default`·`const`·`examples`·`enum` | `properties.<이름>` 아래에서만 `<redacted>`(기존 규칙 유지). 같은 속성의 `type`·`description` 등은 보존 | `secret_named_property_value` |
+| 비밀 이름 속성의 `default`·`const`·`examples`·`enum` | `properties.<이름>` 아래에서만 `<redacted>`. 값이 객체·배열이면 구조는 유지하고 중첩된 비어 있지 않은 문자열을 모두 가린다(`anyOf` 가지 안의 값 영역, 값 영역 안의 `properties` 키 포함). 숫자·불리언은 건드리지 않는다. 같은 속성의 `type`·`description` 등은 보존 | `secret_named_property_value` |
+| 서버가 보낸 긴 문자열(오류 메시지, `resultType`, `protocol_version`, `origin`) | 전체 원문을 먼저 가린 뒤 200자로 제한한다(`_safe_short`). 자른 뒤 가리면 경계에 걸친 토큰(JWT 세 조각, URL 자격증명)이 패턴에서 벗어나 앞부분이 남기 때문이다 | 가림 사유별 |
 | 구조 키(`$ref`·`$anchor`·`type`·`format`·`pattern` 등) 아래 문자열 | 토큰·URL 자격증명만 가리고, 긴 식별자처럼 보인다는 이유만으로는 지우지 않는다. | - |
 | 고립된 surrogate(값) | 문제 글자만 U+FFFD로 대체, 나머지 문자열 보존 | `lone_surrogate_replaced` |
 | 비유한 숫자 | 입력 파싱 시 `NaN`·`Infinity`·`-Infinity`와 float가 무한대가 되는 값(`1e400`)을 숫자가 아닌 표식으로 받는다. 정의 안에서는 `"<non-finite-number>"`로 대체. 캐시 힌트(`ttlMs`)는 정상 값으로 인정하지 않고 `cache_hint_invalid`로만 기록(`ttl_ms` 미기록). `ttlMs` 검사에서는 float로 표현할 수 없을 만큼 큰 정수(예: 400자리)도 유한한 숫자로 인정하지 않는다(정의 안의 큰 정수는 유효한 JSON이므로 그대로 보존). | `non_finite_number_replaced` |
@@ -295,7 +298,7 @@ JSON 파서는 같은 키가 두 번 나오면 마지막 값만 남긴다. 앞�
 
 - 스캐너는 버전별 초기 통신을 직접 구현하지 않고 모든 버전에 `initialize`를 강제하지도 않는다. `Client(stdio_client(...), mode="auto")`(SDK 기본)가 `server/discover`를 먼저 시도하고 구형 서버면 `initialize` 핸드셰이크로 되돌아간다.
 - 실제로 개발용 서버의 요청 기록에서 확인한 순서: 2026-07-28로 협상되면 `server/discover` → `tools/list`(`initialize` 없음). 구형 흐름(`mode="legacy"`)은 `initialize` → `notifications/initialized`로 2025-11-25가 협상된다.
-- 협상된 버전이 2026-07-28이 아니면 `tools/list`를 **요청하지 않고** `failed` / `protocol_version_unsupported`로 기록한다. 버전 이름이나 필수 필드를 바꿔 2026-07-28 파서에 맞추지 않는다.
+- 협상된 버전이 2025-11-25·2026-07-28이면 해당 규격으로 `tools/list`를 읽는다. 그 밖의 버전은 요청하지 않고 `failed` / `protocol_version_unsupported`로 기록한다. 버전 이름이나 필수 필드를 바꿔 다른 버전 파서에 맞추지 않는다.
 - `tools/call`은 보내지 않는다. 서버 stderr는 버리며 내용·크기를 저장하지 않는다.
 
 ### 7-3. 원본 응답과 SDK 변환 결과의 구분
@@ -324,7 +327,7 @@ JSON 파서는 같은 키가 두 번 나오면 마지막 값만 남긴다. 앞�
 | 서버가 먼저 종료 | `connection_closed` | 앞 페이지 Tool |
 | 서버를 시작하지 못함 / 협상 중 종료·시간 초과 | `connect_failed` / `server_exited_before_ready` / `connect_timeout` (`failed`) | - |
 | SDK 응답 검증 거부 | `sdk_validation_rejected` | 앞 페이지 Tool |
-| 협상 버전이 2026-07-28이 아님 | `failed` / `protocol_version_unsupported` | - (응답을 읽지 않음) |
+| 협상 버전이 2025-11-25·2026-07-28 어느 쪽도 아님 | `failed` / `protocol_version_unsupported` | - (응답을 읽지 않음) |
 | 반복 커서 / 최대 페이지 | `cursor_repeated` / `max_pages_reached` → `partial` (`next_cursor_remaining` 동반) | 읽은 Tool |
 | 최대 Tool 수(`--max-tools`) 초과: 받은 페이지가 남은 한도를 넘음 (최종 페이지 포함) | `partial` / `tool_limit_reached`(`excluded_tools`, `page_index`) | 남은 한도까지의 Tool. 초과분은 저장하지 않고 `live.limit_exclusions`에 건수만 기록 |
 | 최대 Tool 수에 정확히 도달 + `nextCursor` 남음 | `partial` / `tool_limit_reached` + `next_cursor_remaining`, 다음 페이지 미요청 | 읽은 Tool 전부 |
@@ -359,13 +362,13 @@ JSON 파서는 같은 키가 두 번 나오면 마지막 값만 남긴다. 앞�
 | --- | --- | --- |
 | 가상 응답 단위 테스트 | 저장된 `tools/list` 응답 JSON을 읽는 테스트(`test_tools_catalog.py`, `test_v5_review_fixes.py` 등). 서버 통신 없음 | 수행 |
 | 실제 stdio 통합 테스트 (**개발용 서버**) | 별도 프로세스로 실행한 개발용 서버와 SDK 클라이언트의 실제 stdio 통신(`test_live_tools.py`) | 수행 |
-| 팀 테스트베드 검증 | 팀 테스트베드의 실제 등록 서버·정답 목록과의 대조 | **미수행** (자료 대기) |
+| 팀 테스트베드 검증 | 팀 테스트베드의 실제 등록 서버·정답 목록과의 대조 | **보류** (담당자 사양 수정본 대기). 기존 자료의 수집률·누락을 이번 검증 성과로 쓰지 않음 |
 
 ### 7-8. 한계
 
 - 실행 대상은 내장 개발용 서버 하나뿐이다. OpenClaw 설정에 적힌 서버 명령의 자동 실행, 원격(HTTP) 서버, 인증이 필요한 서버는 다음 단계다.
 - JSON 파싱을 SDK가 하므로 전송 계층의 중복 키·`NaN` 토큰은 검출하지 못한다. SDK 응답 검증이 거부하는 응답은 Tool 정의를 보존하지 못하고 실패로만 기록한다(정적 응답 읽기처럼 필드 누락을 위반으로 기록하며 읽는 경로는 없음).
-- 2026-07-28로 협상된 연결만 읽는다. 다른 버전 지원은 별도 구현이 필요하다.
+- 2025-11-25·2026-07-28을 읽는다. 개발용 서버 외 환경의 실제 호환성은 별도 검증이 필요하다.
 - SDK 서버 미들웨어(`Server.middleware`)는 SDK가 "provisional"로 표시한 API이며 개발용 서버의 요청 기록에만 쓴다.
 - 서버 시작 시간(약 3~5초, 환경에 따라 다름)이 첫 요청 시간 제한에 포함될 수 있어 기본 요청 제한을 15초로 두었다.
 
@@ -382,3 +385,50 @@ JSON 파서는 같은 키가 두 번 나오면 마지막 값만 남긴다. 앞�
 - 전체 시간(`--timeout`)과 요청 시간(`--request-timeout`)은 **유한한 수이며 0 초과 86400초(24시간) 이하**여야 한다. `nan`·`inf`·`-inf`·0·음수·86400 초과·불리언·숫자가 아닌 값은 거부한다. 상한은 이벤트 루프의 대기 시간 변환 오류(`timeout too big`)를 막기 위한 것이다. `--max-pages`는 1 이상 정수, `--max-tools`는 1~5000 정수다.
 - **검증은 서버를 실행하기 전에 한다.** CLI의 잘못된 값은 argparse 인자 오류(종료 코드 2)이며 서버 프로세스·결과 파일·요청 로그·임시 파일이 생기지 않고 기존 결과 파일(내용·수정 시각)은 그대로다. 이전에는 `inf`·`nan` 제한이 결과 JSON의 `live.limits`로 들어가 저장 단계에서 거부돼 입력 오류가 저장 실패(종료 코드 4)로 잘못 분류됐고, Windows에서 `--timeout=nan`은 이벤트 루프의 `ValueError`로 traceback과 종료 코드 1이 났다.
 - **공개 함수 `collect_live_demo`도 같은 검사(`validate_limits`)를 실행 전에 한다.** 잘못된 `LiveLimits`는 `ValueError`(필드 이름 포함)로 거부하며 서버를 실행하지 않는다. CLI와 함수가 같은 검사를 쓰므로 숨은 동작 차이가 없다. 이는 이전 동작(검증 없이 실행)에서 의도적으로 바꾼 것이며, 이유는 잘못된 시간 값이 결과 JSON을 깨뜨리거나 이벤트 루프 오류로 이어지는 것을 서버 실행 전에 막기 위해서다.
+
+## 8. 독립적인 버전 호환성과 manifest 수집 보완
+
+확인일: 2026-10-31. 팀 테스트베드의 사양 수정본과 무관하게 공식 문서·직접 작성한 설정·프로젝트 개발용 서버로 검증한다. 기존 테스트베드 자료의 결과 대조, 수집률, 누락 계산은 보류하며 이 변경의 성과로 사용하지 않는다.
+
+### 8-1. 버전별 근거와 응답 처리
+
+| 공식 원문 | 고정 커밋 | 확인한 내용 |
+| --- | --- | --- |
+| [MCP 2025-11-25 schema.ts](https://github.com/modelcontextprotocol/modelcontextprotocol/blob/c4c367f9f58296a7053f5c78a52fd02bfbb56a49/schema/2025-11-25/schema.ts) | `c4c367f9f58296a7053f5c78a52fd02bfbb56a49`, blob `850a083fa228bf40af6feca42e23fd26342d3c59` | `ListToolsResult extends PaginatedResult`에 `tools: Tool[]`, `nextCursor?: Cursor`와 `Cursor = string`이 정의됨. `Result`에 필수 `resultType`·캐시 필드 없음. Tool의 `execution` 정의 확인 |
+| [MCP 2025-11-25 Tools 문서](https://github.com/modelcontextprotocol/modelcontextprotocol/blob/c4c367f9f58296a7053f5c78a52fd02bfbb56a49/docs/specification/2025-11-25/server/tools.mdx) | 위와 동일 | 이름의 1~128자·문자 범위·서버 안 유일성은 권장 사항임을 확인 |
+| [MCP 2026-07-28 schema.ts](https://github.com/modelcontextprotocol/modelcontextprotocol/blob/271ecc9accafdd9b83a3c869fa67c22953b2af80/schema/2026-07-28/schema.ts) | `271ecc9accafdd9b83a3c869fa67c22953b2af80` | 6장의 기존 완료·캐시 필드 처리 유지. 이 버전도 `nextCursor?: Cursor`이므로 명시된 `null`은 문자열 커서가 아님 |
+
+| 처리 | 2025-11-25 | 2026-07-28 |
+| --- | --- | --- |
+| 필수 `tools` 배열 | 검사 | 검사 |
+| `resultType`·`ttlMs`·`cacheScope` | 필수로 요구하지 않음. 같은 이름의 확장 필드는 이름만 기타 필드로 기록하며 최신 규격 의미를 적용하지 않음 | 기존 규칙 유지. 완료 미확인과 캐시 위반 구분 |
+| `nextCursor` | 없으면 끝, 문자열이면 다음 페이지 존재. 빈 문자열도 유효 | 동일 |
+| `nextCursor: null` 등 비문자열 | `partial` / `next_cursor_invalid`. 읽은 Tool은 보존 | 동일 |
+| Tool `execution` | 정의 안에 보존, 공식 필드로 인식. 내부 자료형·실행 의미는 검사하지 않음 | 기존 기타 필드 취급 유지 |
+
+저장 응답은 입력의 `protocol_version`, stdio 조회는 SDK가 실제 협상한 버전으로 분기한다. 응답 모양으로 버전을 추측하거나 빠진 필수 필드를 만들어 넣지 않는다. 미지원 버전은 계속 실패다. `protocol.supported_versions` 배열을 추가하며, 기존 `protocol.supported_version` 단일 값은 이전 소비자 호환을 위해 `2026-07-28`로 유지한다.
+
+개발용 서버를 `collect_live_demo(..., client_mode="legacy")`로 실행한 테스트는 SDK의 `initialize` 흐름에서 협상된 2025-11-25로 `tools/list`를 실제 요청한다. 강제로 버전 문자열을 바꿔 파싱한 것이 아니다. `live.negotiation.requested_mode`에는 호출자가 선택한 모드를 기록한다. 2026 전용 `x-mcp-header` 제외 여부는 2025 응답에 적용하지 않는다.
+
+### 8-2. 플러그인 manifest의 서버 선언
+
+근거는 [OpenClaw 2026.9.6 공식 문서의 MCP server reference](https://github.com/openclaw/openclaw/blob/eb377ac59e6c9fd6c7705028034812becf00271b/docs/plugins/manifest/surfaces.md#mcp-server-reference)이다. 태그 `v2026.9.6`의 커밋은 `eb377ac59e6c9fd6c7705028034812becf00271b`, 문서 blob은 `17bf429b7d2ff418018830cf3a6fa8fc19a5f202`으로 확인했다. 같은 버전 `src/plugins/manifest-types.ts`에 `mcpServers?: Record<string, PluginManifestMcpServer>`가 있고 `src/plugins/manifest.ts`가 해당 필드를 정규화해 읽는 것도 확인했다.
+
+| 원천·출력 | 의미 |
+| --- | --- |
+| `--plugin-manifest <파일>` | 지정한 파일의 `mcpServers`만 정적으로 수집. 설정 모드와 상호 배타적 |
+| `source.source_kind` / `evidence_type` | `openclaw_plugin_manifest` / `manifest` |
+| `source.registry_path` | `mcpServers` |
+| 서버별 선언 위치 | `mcpServers.<등록키>`, JSON Pointer `/mcpServers/<등록키>` |
+| `command`·`args`·`cwd` 등 상대 경로 | 원문을 보존. 플러그인 루트 기준 해석이나 실행은 하지 않음 |
+| 가림·중복·참조·오류 격리 | 기존 설정 수집 공통 경로로 처리 |
+
+공식 문서는 플러그인이 활성화돼야 해당 서버가 포함되며 사용자 `mcp.servers` 설정이 기본 선언을 대체하거나 비활성화할 수 있다고 설명한다. 이 단계에서는 manifest에 적힌 사실만 기록한다. 활성화 상태, 사용자 설정과의 병합, 실제 등록·실행 성공을 확정하지 않는다. manifest 전체의 OpenClaw 유효성 검사, Plugin 자산 자체 수집, 공통 ID 생성도 범위 밖이다.
+
+### 8-3. 재현과 검증 범위
+
+- `examples/plugin-servers.json5`, `examples/tools-list-2025.json`: 직접 작성한 예제. 실제 팀 환경의 사본이 아니다.
+- `tests/test_plugin_manifest.py`: 출처·상대 경로 보존, 키 충돌과 인증값 가림, 영역 없음/빈 영역/잘못된 구조, 서버별 오류 격리, 원본 덮어쓰기 방지와 CLI 종료 코드.
+- `tests/test_protocol_2025.py`: 버전별 필수 필드 차이, 빈 목록·페이지·뒤 페이지 오류, 미지원 버전, 가림, 명시적 비문자열 커서.
+- `tests/test_live_tools.py`: 개발용 서버의 2025-11-25 협상과 `tools/list`, 페이지·오류·한도·가림을 실제 stdio로 확인. `tools/call` 없음과 프로세스 종료를 함께 확인.
+- 테스트베드 결과·수집률·누락은 제시하지 않는다. 실제 VM, 원격 HTTP, 인증 서버, Resource·Prompt 수집은 별도 단계다.

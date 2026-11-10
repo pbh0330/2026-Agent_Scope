@@ -38,12 +38,13 @@ def build_report(collected: dict) -> dict:
         "source": {
             "source_path": collected["source_path"],
             "source_path_redacted": collected["source_path_redacted"],
-            "source_kind": "openclaw_config_file",
-            "evidence_type": "config",
+            "source_kind": collected.get("source_kind", "openclaw_config_file"),
+            "evidence_type": collected.get("evidence_type", "config"),
             "registry_path": collected["registry_path"],  # 실제로 선택해 수집한 등록 영역
         },
         "scope": {
-            "method": "설정 파일 정적 읽기",
+            "method": ("플러그인 manifest 정적 읽기" if collected.get("source_kind") == "openclaw_plugin_manifest"
+                       else "설정 파일 정적 읽기"),
             "values_resolved": False,
             "not_verified": NOT_VERIFIED,
             "note": "servers[]는 설정에 선언된 사실만 담습니다. 연결·도구·노출·호출 가능 상태는 확인하지 않았습니다.",

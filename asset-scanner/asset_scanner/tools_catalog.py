@@ -5,10 +5,10 @@
 이 모듈이 하는 일은 **이미 저장된 응답 JSON을 읽는 것뿐**이다. MCP 서버에 접속·실행하지 않고 `tools/call`도
 하지 않으며, 그 결과를 "실제 서버 조회 성공", "Agent에 노출됨", "호출 가능"으로 해석하지 않는다.
 
-근거 규격: MCP 2026-07-28 — `server/tools`, `server/utilities/pagination`, 스키마 `schema/2026-07-28/schema.ts`
-(`ListToolsResult`, `Tool`, `ToolAnnotations`, `Icon`, `PaginatedResult`, `CacheableResult`, `Result.resultType`).
-다른 버전의 응답은 같은 구조로 가정하지 않는다. 입력이 `protocol_version`으로 2026-07-28을 선언하지 않으면
-Tool을 읽지 않고 실패로 기록한다. 자세한 근거는 docs/field-mapping.md를 본다.
+근거 규격: MCP 2025-11-25 및 2026-07-28의 `schema/<버전>/schema.ts`.
+공통으로 `ListToolsResult`, `Tool`, `PaginatedResult`를 읽고, `CacheableResult`와 `Result.resultType`은 2026-07-28에서만 적용한다.
+입력의 `protocol_version`에 따라 응답을 해석한다. 2025-11-25에는 최신 규격의 resultType·캐시 필드를 요구하지 않는다.
+지원하지 않는 버전은 읽지 않고 실패로 기록한다. 자세한 근거는 docs/field-mapping.md를 본다.
 
 종료 코드는 설정 수집 CLI와 같다: 0 완전, 1 부분, 2 인자 오류, 3 실패(Tool을 하나도 읽지 못함), 4 저장 실패.
 """
@@ -33,6 +33,8 @@ FORMAT_NAME = "agent-scope.scanner.mcp-tools-catalog"
 FORMAT_VERSION = "0.1.0-draft"
 CAPTURE_FORMAT = "tools-list-capture"
 SUPPORTED_PROTOCOL_VERSION = "2026-07-28"
+LEGACY_PROTOCOL_VERSION = "2025-11-25"
+SUPPORTED_PROTOCOL_VERSIONS = (LEGACY_PROTOCOL_VERSION, SUPPORTED_PROTOCOL_VERSION)
 MAX_CAPTURE_BYTES = 16 * 1024 * 1024
 MAX_TOOLS_PER_SERVER = 5000
 MAX_MESSAGE_CHARS = 200
@@ -150,6 +152,14 @@ def _text(red: Redactor, value: str, path: str) -> str:
     return red.sanitize_text(value, path)
 
 
+def _safe_short(red: Redactor, value: str, path: str) -> str:
+    """서버가 보낸 긴 문자열을 결과에 쓴다: 전체 원문에서 먼저 가린 뒤 길이를 제한한다.
+
+    자르고 나서 가리면 경계에 걸친 토큰이 패턴(JWT 세 조각, URL 자격증명 등)에서 벗어나 앞부분이 남는다.
+    """
+    return _short(_text(red, value, path))
+
+
 def _find_duplicates(node: Any, path: str, out: list[tuple[str, list[str]]]) -> None:
     if isinstance(node, dict):
         if getattr(node, "duplicate_keys", None):
@@ -162,6 +172,7 @@ def _find_duplicates(node: Any, path: str, out: list[tuple[str, list[str]]]) -> 
 
 
 def _short(text: object) -> str:
+    """길이만 제한한다. 서버가 보낸 원문에는 쓰지 말고, 이미 가림 처리한 문자열에만 쓴다 (`_safe_short` 참고)."""
     s = str(text)
     return s if len(s) <= MAX_MESSAGE_CHARS else s[:MAX_MESSAGE_CHARS] + "…"
 
@@ -244,7 +255,8 @@ def _key_mapping(keys: list[str]) -> dict[str, str]:
     return mapping
 
 
-# mode: "normal" 일반 / "prop_secret" 비밀 이름 속성의 하위 스키마(default·const·examples·enum 값을 가림) /
+# mode: "normal" 일반 / "prop_secret" 비밀 이름 속성의 하위 스키마 /
+#       "prop_value" 비밀 이름 속성의 default·const·examples·enum 아래(중첩 객체·배열 포함 문자열 값을 모두 가림) /
 #       "all" 인증 이름 필드 아래(문자열 값을 모두 가림)
 def _sanitize(node: Any, path: str, red: Redactor, mode: str = "normal", under_key: str = "",
               is_properties_map: bool = False) -> Any:
@@ -272,7 +284,9 @@ def _sanitize(node: Any, path: str, red: Redactor, mode: str = "normal", under_k
             if new_key != k:
                 red._note(child_path, "lone_surrogate_in_key" if _LONE_SURROGATE_RE.search(k) else "key_looks_like_secret")
             if is_properties_map:
-                out[new_key] = _sanitize(v, child_path, red, "prop_secret" if is_secret_name(k) else "normal", "")
+                # 이미 값 영역(prop_value)·인증 이름 필드(all) 아래라면 그 모드를 유지한다.
+                inner = mode if mode in ("all", "prop_value") else ("prop_secret" if is_secret_name(k) else "normal")
+                out[new_key] = _sanitize(v, child_path, red, inner, "")
             elif k == "properties" and isinstance(v, dict):
                 out[new_key] = _sanitize(v, child_path, red, mode, "properties", is_properties_map=True)
             elif k == "required" and isinstance(v, list) and prop_map:
@@ -285,7 +299,12 @@ def _sanitize(node: Any, path: str, red: Redactor, mode: str = "normal", under_k
                         items.append(_sanitize(s, f"{child_path}[{i}]", red, mode, "required"))
                 out[new_key] = items
             else:
-                child_mode = "all" if (mode == "all" or _strong_secret_name(k)) else mode
+                if mode == "all" or _strong_secret_name(k):
+                    child_mode = "all"
+                elif mode == "prop_secret" and k in _VALUE_KEYS:
+                    child_mode = "prop_value"   # 값 영역 전체(중첩 객체·배열 안쪽)를 가린다
+                else:
+                    child_mode = mode
                 out[new_key] = _sanitize(v, child_path, red, child_mode, str(k))
         return out
     if isinstance(node, list):
@@ -300,7 +319,7 @@ def _sanitize(node: Any, path: str, red: Redactor, mode: str = "normal", under_k
                 red._note(path, "secret_named_field_value")
                 return REDACTED
             return text
-        if mode == "prop_secret" and under_key in _VALUE_KEYS and text != "":
+        if mode == "prop_value" and text != "":
             red._note(path, "secret_named_property_value")
             return REDACTED
         # 구조 키 아래 문자열은 긴 식별자처럼 보인다는 이유로 지우지 않되, 알려진 토큰과 URL 자격증명은 가린다.
@@ -382,7 +401,7 @@ def _name_is_conventional(name: str) -> bool:
 
 # ---- 페이지 해석 ------------------------------------------------------------------
 
-def _parse_page(raw: Any, page_index: int) -> dict:
+def _parse_page(raw: Any, page_index: int, protocol_version: str = SUPPORTED_PROTOCOL_VERSION) -> dict:
     """응답 한 건을 해석한다. 반환: ok, issues, tools(원본 객체), has_next, record."""
     res: dict = {"ok": False, "issues": [], "tools": [], "has_next": False, "stop": False, "record": {"page_index": page_index}}
     issues: list[dict] = res["issues"]
@@ -410,7 +429,7 @@ def _parse_page(raw: Any, page_index: int) -> dict:
         code = err.get("code")
         msg = err.get("message")
         red = Redactor()
-        safe_msg = _text(red, _short(msg), "error.message") if isinstance(msg, str) else None
+        safe_msg = _safe_short(red, msg, "error.message") if isinstance(msg, str) else None
         extra: dict[str, Any] = {"error_code": code if isinstance(code, int) and not isinstance(code, bool) else None}
         if safe_msg is not None:
             extra["error_message"] = safe_msg
@@ -432,27 +451,29 @@ def _parse_page(raw: Any, page_index: int) -> dict:
     if not isinstance(result, dict):
         return fail("invalid_response_structure", "result가 객체가 아닙니다.")
 
-    rtype = result.get("resultType", _MISSING)
-    if rtype is _MISSING or not isinstance(rtype, str):
-        # 규격 위반이다. 응답이 완료됐는지 알 수 없으므로 완료를 추정하지 않는다(서버는 partial).
-        # 다만 tools 배열을 읽을 수 있으면 Tool 정의는 버리지 않고 보존한다.
-        missing = rtype is _MISSING
-        res["record"]["result_type_state"] = "missing" if missing else "invalid_type"
-        issues.append(_issue("error", "result_type_missing" if missing else "result_type_invalid",
-                             "2026-07-28 규격에서 서버가 반드시 넣어야 하는 resultType이 없습니다." if missing
-                             else "resultType이 문자열이 아닙니다.", page_index=page_index))
-        issues.append(_issue("error", "result_completion_unverified",
-                             "resultType을 해석할 수 없어 이 응답이 완료된 응답이라고 판단하지 않았습니다. 읽을 수 있는 Tool 정의는 보존합니다.",
-                             page_index=page_index))
-    elif rtype == "input_required":
-        res["record"]["result_type"] = rtype
-        return fail("input_required_result", "tools/list 응답이 추가 입력을 요구하는 결과(input_required)입니다. Tool 목록으로 읽지 않습니다.")
-    elif rtype != "complete":
-        res["record"]["result_type"] = _text(Redactor(), _short(rtype), "resultType")
-        return fail("unsupported_result_type", "해석할 수 없는 resultType입니다. 응답 구조를 추정하지 않고 읽지 않습니다.")
-    else:
-        res["record"]["result_type"] = rtype
-        res["record"]["result_type_state"] = "complete"
+    # 2025-11-25 has no mandatory resultType/cache fields; do not invent them.
+    if protocol_version == SUPPORTED_PROTOCOL_VERSION:
+        rtype = result.get("resultType", _MISSING)
+        if rtype is _MISSING or not isinstance(rtype, str):
+            # 규격 위반이다. 응답이 완료됐는지 알 수 없으므로 완료를 추정하지 않는다(서버는 partial).
+            # 다만 tools 배열을 읽을 수 있으면 Tool 정의는 버리지 않고 보존한다.
+            missing = rtype is _MISSING
+            res["record"]["result_type_state"] = "missing" if missing else "invalid_type"
+            issues.append(_issue("error", "result_type_missing" if missing else "result_type_invalid",
+                                 "2026-07-28 규격에서 서버가 반드시 넣어야 하는 resultType이 없습니다." if missing
+                                 else "resultType이 문자열이 아닙니다.", page_index=page_index))
+            issues.append(_issue("error", "result_completion_unverified",
+                                 "resultType을 해석할 수 없어 이 응답이 완료된 응답이라고 판단하지 않았습니다. 읽을 수 있는 Tool 정의는 보존합니다.",
+                                 page_index=page_index))
+        elif rtype == "input_required":
+            res["record"]["result_type"] = rtype
+            return fail("input_required_result", "tools/list 응답이 추가 입력을 요구하는 결과(input_required)입니다. Tool 목록으로 읽지 않습니다.")
+        elif rtype != "complete":
+            res["record"]["result_type"] = _safe_short(Redactor(), rtype, "resultType")
+            return fail("unsupported_result_type", "해석할 수 없는 resultType입니다. 응답 구조를 추정하지 않고 읽지 않습니다.")
+        else:
+            res["record"]["result_type"] = rtype
+            res["record"]["result_type_state"] = "complete"
 
     tools = result.get("tools", _MISSING)
     if tools is _MISSING:
@@ -460,27 +481,29 @@ def _parse_page(raw: Any, page_index: int) -> dict:
     if not isinstance(tools, list):
         return fail("invalid_response_structure", "tools가 배열이 아닙니다.", field_path="tools")
 
-    cursor = result.get("nextCursor")
-    if cursor is not None and not isinstance(cursor, str):
+    cursor = result.get("nextCursor", _MISSING)
+    if cursor is not _MISSING and not isinstance(cursor, str):
         issues.append(_issue("error", "next_cursor_invalid", "nextCursor가 문자열이 아닙니다. 이후 페이지 상태를 알 수 없습니다.", page_index=page_index))
         res["stop"] = True
     elif isinstance(cursor, str):
         res["has_next"] = True  # 빈 문자열도 유효한 커서다 (종료로 해석하지 않는다). 커서 값은 저장하지 않는다.
 
-    ttl, scope = result.get("ttlMs", _MISSING), result.get("cacheScope", _MISSING)
-    missing = [n for n, v in (("ttlMs", ttl), ("cacheScope", scope)) if v is _MISSING]
-    if missing:
-        issues.append(_issue("warning", "cache_hint_missing", f"규격상 필요한 {', '.join(missing)}가 응답에 없습니다.", page_index=page_index))
-    if ttl is not _MISSING:
-        if _is_number(ttl) and ttl >= 0:
-            res["record"]["ttl_ms"] = ttl
-        else:
-            issues.append(_issue("warning", "cache_hint_invalid", "ttlMs가 0 이상의 숫자가 아닙니다.", page_index=page_index))
-    if scope is not _MISSING:
-        if scope in ("public", "private"):
-            res["record"]["cache_scope"] = scope
-        else:
-            issues.append(_issue("warning", "cache_hint_invalid", 'cacheScope가 "public"/"private"가 아닙니다.', page_index=page_index))
+    # 2025-11-25 has no mandatory resultType/cache fields; do not invent them.
+    if protocol_version == SUPPORTED_PROTOCOL_VERSION:
+        ttl, scope = result.get("ttlMs", _MISSING), result.get("cacheScope", _MISSING)
+        missing = [n for n, v in (("ttlMs", ttl), ("cacheScope", scope)) if v is _MISSING]
+        if missing:
+            issues.append(_issue("warning", "cache_hint_missing", f"규격상 필요한 {', '.join(missing)}가 응답에 없습니다.", page_index=page_index))
+        if ttl is not _MISSING:
+            if _is_number(ttl) and ttl >= 0:
+                res["record"]["ttl_ms"] = ttl
+            else:
+                issues.append(_issue("warning", "cache_hint_invalid", "ttlMs가 0 이상의 숫자가 아닙니다.", page_index=page_index))
+        if scope is not _MISSING:
+            if scope in ("public", "private"):
+                res["record"]["cache_scope"] = scope
+            else:
+                issues.append(_issue("warning", "cache_hint_invalid", 'cacheScope가 "public"/"private"가 아닙니다.', page_index=page_index))
 
     meta = result.get("_meta", _MISSING)
     if meta is not _MISSING:
@@ -491,7 +514,9 @@ def _parse_page(raw: Any, page_index: int) -> dict:
                 res["record"]["result_meta_redactions"] = red.redactions
         else:
             issues.append(_issue("warning", "field_type_invalid", "result._meta가 객체가 아닙니다.", page_index=page_index))
-    known = {"resultType", "tools", "nextCursor", "ttlMs", "cacheScope", "_meta"}
+    known = {"tools", "nextCursor", "_meta"}
+    if protocol_version == SUPPORTED_PROTOCOL_VERSION:
+        known.update({"resultType", "ttlMs", "cacheScope"})
     extra_keys = sorted(_seg(k) for k in result if k not in known)
     if extra_keys:
         res["record"]["other_result_fields"] = extra_keys
@@ -563,7 +588,7 @@ def _collect_server(index: int, entry: Any, seen_refs: set[str]) -> dict:
         server["config_link"] = link
 
     version = entry.get("protocol_version")
-    server["declared_protocol_version"] = _text(srv_red, _short(version), "protocol_version") if isinstance(version, str) else None
+    server["declared_protocol_version"] = _safe_short(srv_red, version, "protocol_version") if isinstance(version, str) else None
     pages = entry.get("pages", _MISSING)
 
     def done_failed(code: str, message: str, **extra: Any) -> dict:
@@ -575,10 +600,10 @@ def _collect_server(index: int, entry: Any, seen_refs: set[str]) -> dict:
     if not isinstance(version, str) or not version:
         return done_failed("protocol_version_not_declared",
                            "입력이 protocol_version을 선언하지 않았습니다. 응답 구조는 규격 버전에 따라 다르므로 읽지 않습니다.")
-    if version != SUPPORTED_PROTOCOL_VERSION:
+    if version not in SUPPORTED_PROTOCOL_VERSIONS:
         return done_failed("protocol_version_unsupported",
-                           f"이 모듈은 MCP {SUPPORTED_PROTOCOL_VERSION} 응답만 읽습니다. 다른 버전의 응답을 같은 구조로 가정하지 않습니다.",
-                           declared=_text(srv_red, _short(version), "protocol_version"))
+                           f"지원하는 MCP 버전은 {', '.join(SUPPORTED_PROTOCOL_VERSIONS)}입니다. 다른 버전은 추정하지 않습니다.",
+                           declared=_safe_short(srv_red, version, "protocol_version"))
     if not isinstance(pages, list) or not pages:
         return done_failed("no_response", "저장된 응답이 없습니다. 응답이 없는 것은 Tool 0개가 아닙니다.")
 
@@ -601,7 +626,7 @@ def _collect_server(index: int, entry: Any, seen_refs: set[str]) -> dict:
         if stopped:
             break
         processed += 1
-        page = _parse_page(raw, page_index)
+        page = _parse_page(raw, page_index, version)
         issues.extend(page["issues"])
         page_records.append(page["record"])
         if not page["ok"]:
@@ -644,7 +669,8 @@ def _collect_server(index: int, entry: Any, seen_refs: set[str]) -> dict:
                            for p, names in dups]
             red = Redactor()
             definition = _sanitize(tool, "", red)
-            other = sorted(_seg(k) for k in tool if k not in _TOOL_OFFICIAL_KEYS)
+            official_keys = _TOOL_OFFICIAL_KEYS | ({"execution"} if version == LEGACY_PROTOCOL_VERSION else set())
+            other = sorted(_seg(k) for k in tool if k not in official_keys)
             entry_out = {
                 # 아래 두 값은 이 파일 안에서만 쓰는 내부 참조다. 공통 자산 ID가 아니며 실행마다 같다는 보장도 없다.
                 "internal_ref": f"capture-server[{index}]/tools[{tool_index}]",
@@ -771,7 +797,7 @@ def collect_tools_catalog(capture_path: Path) -> dict:
             failure = {"code": "no_servers_in_capture", "message": "servers가 비어 있습니다. 서버가 없다는 뜻이 아니라 입력할 응답이 없다는 뜻입니다."}
     if failure is None:
         o = data.get("origin")
-        origin = _text(Redactor(), _short(o), "origin") if isinstance(o, str) else None
+        origin = _safe_short(Redactor(), o, "origin") if isinstance(o, str) else None
         root_duplicates = _safe_names(getattr(data, "duplicate_keys", []))
         seen: set[str] = set()
         try:
@@ -804,7 +830,8 @@ def build_catalog_report(collected: dict) -> dict:
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
         "protocol": {
             "supported_version": SUPPORTED_PROTOCOL_VERSION,
-            "basis": "MCP 2026-07-28 server/tools, utilities/pagination, schema.ts (ListToolsResult, Tool, ToolAnnotations)",
+            "supported_versions": list(SUPPORTED_PROTOCOL_VERSIONS),
+            "basis": "MCP 2025-11-25 / 2026-07-28 ListToolsResult, PaginatedResult: 버전별 해석 (docs/field-mapping.md)",
         },
         "source": collected.get("source") or {
             "capture_path": collected["capture_path"],
@@ -818,7 +845,7 @@ def build_catalog_report(collected: dict) -> dict:
             "not_verified": NOT_VERIFIED,
             "status_meaning": {
                 "collection_status": "수집 완전성: 응답 전체를 끝까지 읽었는가 (complete/partial/failed)",
-                "spec_conformance": "규격 적합성: 읽은 응답이 2026-07-28 규격의 필수·권장 사항을 지키는가. 수집 완전성과 별개이며 상태를 바꾸지 않음",
+                "spec_conformance": "규격 적합성: 입력에 선언된 지원 규격 버전의 필수·권장 사항 검사. 수집 완전성과 별개이며 상태를 바꾸지 않음",
             },
             "definition_validation": DEFINITION_VALIDATION,
             "note": ("tools[]는 입력 파일의 응답에 적힌 Tool 정의를 옮긴 것입니다. 서버에 접속하지 않았으므로 실제 서버가 지금 "

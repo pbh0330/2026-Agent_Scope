@@ -17,7 +17,7 @@ import json
 import sys
 from pathlib import Path
 
-from .collector import SUPPORTED_REGISTRY_PATHS, collect
+from .collector import SUPPORTED_REGISTRY_PATHS, collect, collect_plugin_manifest
 from .output import OutputError, normalize_for_output, write_json_atomic
 from .report import build_report
 
@@ -36,7 +36,10 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--registry-path", choices=sorted(SUPPORTED_REGISTRY_PATHS), default=DEFAULT_REGISTRY,
                    help="수집할 등록 영역 (기본: mcp.servers). nodeHost.mcp.servers는 Node 설정 파일용입니다. "
                         "파일 전체를 파싱하되 고른 영역만 수집·보고합니다.")
-    p.add_argument("--config", required=True, type=Path, help="읽을 OpenClaw 설정 파일 (JSON/JSON5)")
+    source = p.add_mutually_exclusive_group(required=True)
+    source.add_argument("--config", type=Path, help="읽을 OpenClaw 설정 파일 (JSON/JSON5)")
+    source.add_argument("--plugin-manifest", type=Path,
+                        help="플러그인 manifest의 mcpServers 선언을 읽습니다 (실행·설치·활성화 확인 없음)")
     p.add_argument("--output", required=True, type=Path, help="결과 JSON을 저장할 경로")
     return p
 
@@ -62,13 +65,19 @@ def _make_console_output_safe() -> None:
 
 def main(argv: list[str] | None = None) -> int:
     _make_console_output_safe()
-    args = _parser().parse_args(argv)
+    parser = _parser()
+    args = parser.parse_args(argv)
+    if args.plugin_manifest is not None and args.registry_path != DEFAULT_REGISTRY:
+        parser.error("--plugin-manifest는 manifest의 mcpServers만 읽습니다. --registry-path는 설정 파일용입니다.")
+    input_path = args.plugin_manifest if args.plugin_manifest is not None else args.config
 
-    if _same_file(args.config, args.output):
-        print("오류: --output이 --config와 같은 파일입니다. 원본 설정을 덮어쓰지 않습니다.", file=sys.stderr)
+    if _same_file(input_path, args.output):
+        print("오류: --output이 입력 파일과 같습니다. 원본 설정·manifest를 덮어쓰지 않습니다.", file=sys.stderr)
         return EXIT_OUTPUT_ERROR
 
-    report = build_report(collect(args.config, SUPPORTED_REGISTRY_PATHS[args.registry_path]))
+    collected = (collect_plugin_manifest(input_path) if args.plugin_manifest is not None
+                 else collect(input_path, SUPPORTED_REGISTRY_PATHS[args.registry_path]))
+    report = build_report(collected)
 
     # 저장 전에 직렬화할 수 없는 문자(고립된 surrogate)를 정리하고, 임시 파일에 완전히 쓴 뒤 교체한다.
     report, normalized = normalize_for_output(report)

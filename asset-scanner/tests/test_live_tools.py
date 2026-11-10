@@ -298,7 +298,7 @@ def test_sdk_validation_rejection_is_a_failure_with_evidence_not_an_empty_list(l
     assert run.server["tools"] == [] and run.methods.count("tools/list") == 1
 
 
-def test_a_version_other_than_2026_07_28_is_unsupported_and_not_parsed(tmp_path):
+def test_legacy_negotiation_lists_tools_using_2025_rules(tmp_path):
     from asset_scanner.live_tools import LiveLimits, collect_live_demo
     from asset_scanner.tools_catalog import build_catalog_report
     log = tmp_path / "req.log"
@@ -306,15 +306,50 @@ def test_a_version_other_than_2026_07_28_is_unsupported_and_not_parsed(tmp_path)
     report = build_catalog_report(collected)
     srv = report["servers"][0]
     events = [json.loads(line) for line in log.read_text(encoding="utf-8").splitlines()]
-    assert (srv["collection_status"], srv["outcome"], srv["tool_count"], srv["tools"]) == ("failed", "protocol_version_unsupported", None, [])
+    assert (srv["collection_status"], srv["outcome"], srv["tool_count"]) == ("complete", "tools_listed", 2)
+    assert {t["definition"]["name"] for t in srv["tools"]} == {"echo_text", "add_numbers"}
     assert srv["live"]["negotiation"]["negotiated_protocol_version"] == "2025-11-25"
-    assert srv["live"]["negotiation"]["supported_by_catalog"] is False
+    assert srv["live"]["negotiation"]["supported_by_catalog"] is True
+    assert srv["live"]["negotiation"]["requested_mode"] == "legacy"
     assert srv["live"]["server_info_from_wire"]["name"] == "asset-scanner-dev-server"       # 협상으로 확인한 값은 기록
-    assert srv["live"]["requests"]["tools_list_sent"] == 0
+    assert srv["live"]["requests"]["tools_list_sent"] == 1
     methods = [e["method"] for e in events if e["event"] == "request"]
-    assert "initialize" in methods and "tools/list" not in methods and "tools/call" not in methods
+    assert "initialize" in methods and "tools/list" in methods and "tools/call" not in methods
     assert not pid_alive(next(e["pid"] for e in events if e["event"] == "start")) or wait_dead(
         next(e["pid"] for e in events if e["event"] == "start"))
+
+
+@pytest.mark.parametrize("scenario,limit,status,count,requests", [
+    ("paginated", 5000, "complete", 2, 2),
+    ("empty-cursor", 5000, "complete", 2, 2),
+    ("fail-second", 5000, "partial", 1, 2),
+    ("empty", 5000, "complete", 0, 1),
+    ("error", 5000, "failed", None, 1),
+    ("uneven-pages", 2, "partial", 2, 2),
+    ("secrets", 5000, "complete", 2, 1),
+])
+def test_legacy_wire_pagination_errors_limits_and_redaction(tmp_path, scenario, limit, status, count, requests):
+    from asset_scanner.live_tools import LiveLimits, collect_live_demo
+    from asset_scanner.tools_catalog import build_catalog_report
+    log = tmp_path / "requests.log"
+    report = build_catalog_report(collect_live_demo(scenario, LiveLimits(max_tools=limit), log, client_mode="legacy"))
+    server = report["servers"][0]
+    events = [json.loads(line) for line in log.read_text(encoding="utf-8").splitlines()]
+    methods = [e["method"] for e in events if e["event"] == "request"]
+    assert server["negotiated_protocol_version"] == "2025-11-25"
+    assert server["collection_status"] == status
+    assert server["tool_count"] == count
+    assert methods.count("tools/list") == requests
+    assert "initialize" in methods and "tools/call" not in methods
+    assert set(methods) <= ALLOWED_METHODS
+    assert "FAKE" not in json.dumps(report)
+    if scenario == "empty-cursor":
+        assert [e["cursor"] for e in events if e.get("method") == "tools/list"] == ["absent", "empty"]
+    if status == "complete":
+        assert not any(i["code"].startswith(("cache_hint", "result_type")) for i in server["issues"])
+    for event in events:
+        if event["event"] == "start":
+            assert wait_dead(event["pid"])
 
 
 def test_optional_fields_absent_on_the_wire_are_not_invented_by_the_sdk_models(live):

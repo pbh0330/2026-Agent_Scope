@@ -8,7 +8,7 @@ OpenClaw 설정에 적힌 서버 명령을 자동으로 실행하는 기능은 �
 
 통신은 공식 MCP Python SDK(`mcp`)의 클라이언트를 사용한다. 버전 협상(`server/discover` 우선, 구형 서버는 `initialize`)은
 SDK의 기본 흐름(`mode="auto"`)에 맡기며 이 모듈이 초기 통신을 구현하지 않는다. 협상 결과가 현재 카탈로그가 지원하는
-2026-07-28이 아니면 응답을 읽지 않고 미지원 상태로 기록한다.
+2025-11-25 또는 2026-07-28이면 해당 버전으로 응답을 읽고, 그 밖의 버전은 미지원 상태로 기록한다.
 
 수집 방식
 - 응답은 `session.send_request(..., TypeAdapter(dict))`로 받는다. SDK가 협상한 버전의 스키마로 검증한 **result dict 그대로**이며,
@@ -44,6 +44,7 @@ from .dev_mcp_server import SCENARIOS
 from .output import OutputError, normalize_for_output, write_json_atomic
 from .redaction import Redactor
 from .tools_catalog import (EXIT_BY_STATUS, EXIT_OUTPUT_ERROR, MAX_TOOLS_PER_SERVER, SUPPORTED_PROTOCOL_VERSION,
+                            SUPPORTED_PROTOCOL_VERSIONS,
                             _collect_server, _failed_server, _issue, _NonFinite, _sanitize, _seg, _short,
                             build_catalog_report, summarize_collection)
 
@@ -239,7 +240,7 @@ async def _run_demo(scenario: str, limits: LiveLimits, request_log: Path | None,
                     state.negotiated = client.protocol_version
                     state.server_info = client.server_info
                     state.capabilities = client.server_capabilities
-                    if state.negotiated == SUPPORTED_PROTOCOL_VERSION:
+                    if state.negotiated in SUPPORTED_PROTOCOL_VERSIONS:
                         await _list_pages(client, limits, state)
                     state.finished_listing = True
         except TimeoutError:
@@ -268,8 +269,10 @@ def _wire_dump(model: Any, path: str, red: Redactor) -> Any:
     return _sanitize(model.model_dump(by_alias=True, mode="json", exclude_unset=True), path, red)
 
 
-def _would_sdk_drop(tool: Any) -> bool | None:
+def _would_sdk_drop(tool: Any, protocol_version: str = SUPPORTED_PROTOCOL_VERSION) -> bool | None:
     """SDK 클라이언트의 `list_tools`가 2026-07-28에서 이 Tool을 조용히 제외했을지 (x-mcp-header 검사). 확인 불가면 None."""
+    if protocol_version != SUPPORTED_PROTOCOL_VERSION:
+        return False  # SDK의 이 필터는 2026-07-28 전용이다.
     try:
         from mcp.shared.inbound import find_invalid_x_mcp_header
     except ImportError:
@@ -281,10 +284,10 @@ def _would_sdk_drop(tool: Any) -> bool | None:
         return None
 
 
-def _build_server(state: _State, scenario: str, limits: LiveLimits, elapsed_ms: int) -> dict:
+def _build_server(state: _State, scenario: str, limits: LiveLimits, elapsed_ms: int, client_mode: str = "auto") -> dict:
     ref = DEMO_SERVER_REF
     failure = state.failure
-    if state.negotiated is None or (not state.pages and state.negotiated == SUPPORTED_PROTOCOL_VERSION):
+    if state.negotiated is None or (not state.pages and state.negotiated in SUPPORTED_PROTOCOL_VERSIONS):
         code = failure["code"] if failure else "no_response"
         extra = {k: v for k, v in (failure or {}).items() if k not in ("code", "message")}
         server = _failed_server(0, ref, code, (failure or {}).get("message", "응답을 받지 못했습니다."), **extra)
@@ -308,7 +311,7 @@ def _build_server(state: _State, scenario: str, limits: LiveLimits, elapsed_ms: 
             for ti, tool in enumerate(page.get("tools") or []):
                 raw_tools[(pi, ti)] = tool
         for t in server.get("tools", []):
-            would_drop = _would_sdk_drop(raw_tools.get((t["page_index"], t["index_in_page"])))
+            would_drop = _would_sdk_drop(raw_tools.get((t["page_index"], t["index_in_page"])), state.negotiated)
             t["sdk_list_tools_would_drop"] = would_drop
             t["internal_ref"] = t["internal_ref"].replace("capture-server", "live-session", 1)  # 이 조회 안의 위치 (공통 ID 아님)
     for ex in state.exclusions:          # 잘라 낸 페이지의 기록에는 서버가 실제로 보낸 Tool 수를 함께 남긴다
@@ -322,9 +325,10 @@ def _build_server(state: _State, scenario: str, limits: LiveLimits, elapsed_ms: 
         "demo_scenario": scenario,
         "sdk": {"package": "mcp", "version": sdk_version()},
         "negotiation": {
-            "requested_mode": "auto (SDK 기본 흐름: server/discover 우선, 구형 서버는 initialize)",
+            "requested_mode": ("auto (SDK 기본 흐름: server/discover 우선, 구형 서버는 initialize)"
+                               if client_mode == "auto" else client_mode),
             "negotiated_protocol_version": state.negotiated,
-            "supported_by_catalog": state.negotiated == SUPPORTED_PROTOCOL_VERSION,
+            "supported_by_catalog": state.negotiated in SUPPORTED_PROTOCOL_VERSIONS,
         },
         # SDK가 서버 응답에서 파싱한 값 중 서버가 실제로 보낸 필드만. 서버가 보내지 않은 값은 만들지 않는다.
         "server_info_from_wire": _wire_dump(state.server_info, "live.server_info", red),
@@ -360,7 +364,7 @@ def collect_live_demo(scenario: str = "two-tools", limits: LiveLimits | None = N
         raise ValueError("잘못된 제한값: " + "; ".join(problems))
     started = time.monotonic()
     state = anyio.run(_run_demo, scenario, limits, request_log, client_mode)
-    server = _build_server(state, scenario, limits, int((time.monotonic() - started) * 1000))
+    server = _build_server(state, scenario, limits, int((time.monotonic() - started) * 1000), client_mode)
     return {
         "capture_path": None,
         "origin": "live_stdio_query",

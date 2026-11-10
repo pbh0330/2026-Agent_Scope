@@ -227,6 +227,21 @@ def _find_masked_keys(node: Any, parts: tuple = ()) -> list[str]:
     return found
 
 
+def _find_duplicate_keys(node: Any, parts: tuple) -> list[str]:
+    """객체 안(하위 객체 포함)에서 중복 선언된 키의 위치를 찾는다. 가린 키는 자리표시자 이름으로 나온다."""
+    found: list[str] = []
+    if isinstance(node, dict):
+        for k in getattr(node, "duplicate_keys", []):
+            found.append(dotted_path(parts + (k,)))
+        for k, v in node.items():
+            if k != "$include":
+                found.extend(_find_duplicate_keys(v, parts + (k,)))
+    elif isinstance(node, list):
+        for i, v in enumerate(node):
+            found.extend(_find_duplicate_keys(v, parts + (i,)))
+    return found
+
+
 def _safe_source_path(config_path: Path) -> tuple[str, bool]:
     """경로 조각 중 비밀값처럼 보이는 부분을 가린다 (일반 경로는 그대로 둔다)."""
     parts = config_path.resolve().parts
@@ -347,9 +362,10 @@ def collect_server(key: str, entry: Any, source_path: str, key_masked: bool = Fa
     credentials: dict[str, Any] = {}
     other_keys: list[str] = []
 
-    for dup in getattr(entry, "duplicate_keys", []):
+    # 항목 자신과 그 하위 객체(env, headers, auth 등)의 중복 키. 마지막 값만 남으므로 앞의 값을 읽지 못했다.
+    for dup_path in _find_duplicate_keys(entry, parts):
         issues.append({
-            "code": "duplicate_key", "field_path": dotted_path(parts + (dup,)),
+            "code": "duplicate_key", "field_path": dup_path,
             "message": "같은 키가 여러 번 선언되어 마지막 값만 읽었습니다.",
         })
 
@@ -426,6 +442,22 @@ def collect(config_path: Path, registry_path: tuple = DEFAULT_REGISTRY_PATH) -> 
     """설정 파일 하나에서 선택한 등록 영역을 수집해 `collection`과 `servers`를 돌려준다."""
     if tuple(registry_path) not in SUPPORTED_REGISTRY_PATHS.values():
         raise ValueError("지원하지 않는 등록 영역입니다.")
+    return _collect_registry_file(config_path, tuple(registry_path))
+
+
+def collect_plugin_manifest(manifest_path: Path) -> dict:
+    """명시적으로 지정한 플러그인 manifest의 mcpServers만 정적으로 읽는다.
+
+    설치·활성화 여부나 런타임 등록 성공을 추정하지 않는다. 파일 자동 탐색·플러그인 실행도 하지 않는다.
+    """
+    result = _collect_registry_file(manifest_path, ("mcpServers",))
+    result["source_kind"] = "openclaw_plugin_manifest"
+    result["evidence_type"] = "manifest"
+    return result
+
+
+def _collect_registry_file(config_path: Path, registry_path: tuple) -> dict:
+    """설정/manifest 공통 읽기. 중복 키·가림·참조·항목 격리는 같은 경로를 사용한다."""
     registry_path = tuple(registry_path)
     source_path, source_path_redacted = _safe_source_path(config_path)
     try:
