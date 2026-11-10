@@ -50,6 +50,7 @@ MCP 공식 참조 서버 3종은 `npm install -g`로 버전을 고정 설치하�
 | 구성 | 스냅샷 | 내용 | README |
 |---|---|---|---|
 | S1 | `SNAP-3-S1` | 비인가 MCP Server 등록·노출 (C1~C3) | [S1/README.md](S1/README.md) |
+| S1-T5 | 설정 사본 | 선언 위치 이상 (C4, 선택) | [S1-T5/README.md](S1-T5/README.md) |
 | S2 | `SNAP-3-S2` | 과도한 권한의 도구 광고 (범위 확대·필터 제거) | [S2/README.md](S2/README.md) |
 | S3 | `SNAP-3-S3` | Tool 이름 충돌 (`inventory-remote --scenario s3`) | [S3/README.md](S3/README.md) |
 | S4 | `SNAP-3-S4` | 과도한 자격증명 공유 (C1 detected / C2 unknown) | [S4/README.md](S4/README.md) |

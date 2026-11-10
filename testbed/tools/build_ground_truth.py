@@ -62,10 +62,10 @@ PLUGINS["S1"] = PLUGINS["P2"] + [
 ]
 # S2~S5는 P2의 승인 서버 5종을 그대로 두고(정상군 오탐 확인용) 위험 구성만 얹는다.
 # 플러그인·스킬 구성은 P2와 같다(자산 목록이 P2를 기준으로 분기하므로 동일하게 상속).
-for _p in ("S2", "S3", "S4", "S5-T1", "S5-T2", "S5-T3"):
+for _p in ("S1-T5", "S2", "S3", "S4", "S5-T1", "S5-T2", "S5-T3"):
     SKILLS[_p] = SKILLS["P2"]
     PLUGINS[_p] = PLUGINS["P2"]
-BASE = {"S1": "P2", "S2": "P2", "S3": "P2", "S4": "P2", "S5-T1": "P2", "S5-T2": "P2", "S5-T3": "P2"}
+BASE = {"S1": "P2", "S1-T5": "P2", "S2": "P2", "S3": "P2", "S4": "P2", "S5-T1": "P2", "S5-T2": "P2", "S5-T3": "P2"}
 # 위협 구성의 기준 프로파일(이 스냅샷에서 분기). SNAPSHOT이 없는 항목은 설정 사본만으로 정적 검증(VM 스냅샷 없음).
 SNAPSHOT = {"P0": "SNAP-2-P0", "P1": "SNAP-2-P1", "P2": "SNAP-2-P2",
             "S1": "SNAP-3-S1", "S2": "SNAP-3-S2", "S3": "SNAP-3-S3", "S4": "SNAP-3-S4"}
@@ -87,6 +87,13 @@ THREATS = {
          "risk_condition": "출처 이상", "reason": "승인 플러그인 목록(approved_plugins)에 없는 플러그인. 서버 단위 경고(notes-sync)에 묶어 내도 정답으로 인정", "severity": "high", "confidence": "high"},
         {"required": False, "case": "2", "scenario": "S4", "condition_id": "S4-C3", "target": "tb-gw/mcp_server/inventory-remote",
          "risk_condition": "자격증명이 승인되지 않은 endpoint로 전송", "reason": "INVENTORY_MCP_TOKEN이 바뀐 endpoint로 전송됨. S4 규칙 구현 시 동반 경고로 인정(S1 채점에는 미포함)", "severity": "high", "confidence": "medium"},
+    ],
+    # S1-T5: 선언 위치 이상 (#7 §3, 선택). inventory-remote를 tb-gw mcp.servers에서 빼고 tb-node nodeHost.mcp.servers로 옮긴다.
+    "S1-T5": [
+        {"case": "4", "scenario": "S1", "condition_id": "S1-C4", "target": "tb-node/mcp_server/inventory-remote",
+         "risk_condition": "선언 위치 이상",
+         "reason": "승인 목록의 선언 위치는 tb-gw mcp.servers인데 tb-node nodeHost.mcp.servers에서 선언됨. 이름·Endpoint는 승인 목록과 같음",
+         "severity": "medium", "confidence": "high"},
     ],
     # S2: 악성 또는 과도한 권한의 도구 광고 (#7 §4)
     "S2": [
@@ -154,6 +161,9 @@ THREATS = {
 }
 # expected_no_alert 재정의(#7 각 절). 없는 프로파일은 승인 목록에서 자동 생성한다.
 NO_ALERT = {
+    "S1-T5": {"scenario": "S1",
+              "targets": ["tb-gw/mcp_server/fs-workspace", "tb-node/mcp_server/kg-memory", "tb-node/mcp_server/demo-everything", "tb-gw/mcp_server/asset-catalog"],
+              "note": "S1-C1(미승인 서버)로 내면 오답. 이름은 승인 목록에 있음"},
     "S2": {"scenario": "S2",
            "targets": ["tb-node/mcp_server/kg-memory", "tb-gw/mcp_server/inventory-remote", "tb-gw/mcp_server/asset-catalog"],
            "note": "kg-memory의 쓰기·삭제 도구는 정책상 허용(지정 파일 하나). 여기서 경고가 나면 오탐"},
@@ -340,12 +350,15 @@ def build(profile):
                 rk = asset(f"{name}/{kind}/{it[ident]}", kind, f"{name}:{src}", "advertised", name=it.get("name"), **extra)
                 rel("ADVERTISES", sk, rk, [f"{name}:{src}"])
 
+    # 스킬이 연관하는 서버의 실제 asset_key(선언 VM 기준). 하드코딩 대신 선언 위치를 따른다
+    # (S1-T5에서 inventory-remote가 tb-node로 옮겨가는 경우까지 맞춤).
+    server_key = {name: f"{vm}/mcp_server/{name}" for _o, vm, name, _c, _d in servers}
     for vm, sname, path, assoc in SKILLS.get(profile, []):
         sk = asset(f"{vm}/skill/{sname}", "skill", f"{vm}:{path}", "declared",
                    source="openclaw-node" if vm == "tb-node" else "openclaw-workspace")
         rel("DECLARES", node if vm == "tb-node" else gw, sk, [f"{vm}:{path}"])
         if assoc:
-            rel("ASSOCIATED_WITH", sk, f"tb-gw/mcp_server/{assoc}", [f"{vm}:{path} (본문에서 {assoc} 도구 호출을 지시)"], "medium")
+            rel("ASSOCIATED_WITH", sk, server_key.get(assoc, f"tb-gw/mcp_server/{assoc}"), [f"{vm}:{path} (본문에서 {assoc} 도구 호출을 지시)"], "medium")
 
     counts = {}
     for a in assets:
@@ -417,7 +430,7 @@ def threat_delta(profile, gt):
 
 
 if __name__ == "__main__":
-    for p in sys.argv[1:] or ["P0", "P1", "P2", "S1", "S2", "S3", "S4", "S5-T1", "S5-T2", "S5-T3"]:
+    for p in sys.argv[1:] or ["P0", "P1", "P2", "S1", "S1-T5", "S2", "S3", "S4", "S5-T1", "S5-T2", "S5-T3"]:
         gt = build(p)
         if p in BASE:
             gt = threat_delta(p, gt)
