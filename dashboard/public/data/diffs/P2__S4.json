@@ -1,0 +1,42 @@
+{
+  "schema_version": "0.6.0-draft",
+  "diff_id": "diff-snap-p2-20261110T091619Z--snap-s4-20261110T091619Z",
+  "environment_id": "agentscope-testbed",
+  "profile_id": "tb-openclaw",
+  "previous_snapshot_id": "snap-p2-20261110T091619Z",
+  "current_snapshot_id": "snap-s4-20261110T091619Z",
+  "previous_report_id": "det-snap-p2-20261110T091619Z",
+  "current_report_id": "det-snap-s4-20261110T091619Z",
+  "generated_at": "2026-11-10T09:16:20Z",
+  "comparison_status": "complete",
+  "changes": [
+    {
+      "asset_id": "pa_e6737fd6d4009fbc",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-decl-tb-gw-fs-workspace"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    }
+  ],
+  "relation_changes": [
+    {
+      "relation_id": "rel_b6ef56a0e28fab1e",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    }
+  ],
+  "alert_changes": [
+    {
+      "finding_key": "96e9fa6e4aec363e6f68cb35",
+      "change_type": "opened",
+      "previous_alert_id": null,
+      "current_alert_id": "alert-96e9fa6e4aec",
+      "reason": "이번 평가에서 새로 탐지"
+    }
+  ],
+  "limitations": []
+}

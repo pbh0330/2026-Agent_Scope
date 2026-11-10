@@ -1,0 +1,641 @@
+{
+  "schema_version": "0.6.0-draft",
+  "report_id": "det-snap-p1-20261110T091619Z",
+  "environment_id": "agentscope-testbed",
+  "profile_id": "tb-openclaw",
+  "snapshot_id": "snap-p1-20261110T091619Z",
+  "generated_at": "2026-11-10T09:16:19Z",
+  "producer": {
+    "name": "agentscope-dashboard-pipeline",
+    "version": "0.1.0",
+    "component": "static-detector"
+  },
+  "ruleset": {
+    "id": "agent-scope-threat-scenarios",
+    "version": "2.1"
+  },
+  "evaluations": [
+    {
+      "evaluation_id": "eval-S1-C1-cc162bb8d0",
+      "scenario_id": "S1",
+      "rule_id": "S1-C1",
+      "rule_version": "2.1",
+      "rule_name": "승인 목록에 없는 Server 선언",
+      "asset_ids": [
+        "srv_82d252784c25ade0"
+      ],
+      "relation_ids": [
+        "rel_4f5c464bf781a31b"
+      ],
+      "evidence_refs": [
+        "ev-decl-tb-gw-fs-workspace"
+      ],
+      "policy_refs": [
+        {
+          "id": "approved-servers",
+          "version": "2026-10-31",
+          "source_ref": "testbed/ground-truth/approved-servers.json"
+        }
+      ],
+      "result": "not_detected",
+      "reason": "이름이 승인 목록에 있음",
+      "evaluated_at": "2026-11-10T09:16:19Z"
+    },
+    {
+      "evaluation_id": "eval-S1-C4-d272ffcd00",
+      "scenario_id": "S1",
+      "rule_id": "S1-C4",
+      "rule_version": "2.1",
+      "rule_name": "선언 위치 이상: 승인 Server가 다른 위치·등록 주체에서 선언",
+      "asset_ids": [
+        "srv_82d252784c25ade0"
+      ],
+      "relation_ids": [
+        "rel_4f5c464bf781a31b"
+      ],
+      "evidence_refs": [
+        "ev-decl-tb-gw-fs-workspace"
+      ],
+      "policy_refs": [
+        {
+          "id": "approved-servers",
+          "version": "2026-10-31",
+          "source_ref": "testbed/ground-truth/approved-servers.json"
+        }
+      ],
+      "result": "not_detected",
+      "reason": "선언 위치·등록 주체가 승인 목록과 같음",
+      "evaluated_at": "2026-11-10T09:16:19Z"
+    },
+    {
+      "evaluation_id": "eval-S1-C2-f5869ae6a9",
+      "scenario_id": "S1",
+      "rule_id": "S1-C2",
+      "rule_version": "2.1",
+      "rule_name": "승인 Server의 Endpoint 불일치",
+      "asset_ids": [
+        "srv_82d252784c25ade0"
+      ],
+      "relation_ids": [
+        "rel_4f5c464bf781a31b"
+      ],
+      "evidence_refs": [
+        "ev-decl-tb-gw-fs-workspace"
+      ],
+      "policy_refs": [
+        {
+          "id": "approved-servers",
+          "version": "2026-10-31",
+          "source_ref": "testbed/ground-truth/approved-servers.json"
+        }
+      ],
+      "result": "not_detected",
+      "reason": "Endpoint가 승인 목록과 같음",
+      "evaluated_at": "2026-11-10T09:16:19Z"
+    },
+    {
+      "evaluation_id": "eval-S1-C1-301ea146eb",
+      "scenario_id": "S1",
+      "rule_id": "S1-C1",
+      "rule_version": "2.1",
+      "rule_name": "승인 목록에 없는 Server 선언",
+      "asset_ids": [
+        "srv_ec1aa5ba6ea61ff0"
+      ],
+      "relation_ids": [
+        "rel_dc821a5d3c34c5e4"
+      ],
+      "evidence_refs": [
+        "ev-decl-tb-node-kg-memory"
+      ],
+      "policy_refs": [
+        {
+          "id": "approved-servers",
+          "version": "2026-10-31",
+          "source_ref": "testbed/ground-truth/approved-servers.json"
+        }
+      ],
+      "result": "not_detected",
+      "reason": "이름이 승인 목록에 있음",
+      "evaluated_at": "2026-11-10T09:16:19Z"
+    },
+    {
+      "evaluation_id": "eval-S1-C4-0dc7d8112d",
+      "scenario_id": "S1",
+      "rule_id": "S1-C4",
+      "rule_version": "2.1",
+      "rule_name": "선언 위치 이상: 승인 Server가 다른 위치·등록 주체에서 선언",
+      "asset_ids": [
+        "srv_ec1aa5ba6ea61ff0"
+      ],
+      "relation_ids": [
+        "rel_dc821a5d3c34c5e4"
+      ],
+      "evidence_refs": [
+        "ev-decl-tb-node-kg-memory"
+      ],
+      "policy_refs": [
+        {
+          "id": "approved-servers",
+          "version": "2026-10-31",
+          "source_ref": "testbed/ground-truth/approved-servers.json"
+        }
+      ],
+      "result": "not_detected",
+      "reason": "선언 위치·등록 주체가 승인 목록과 같음",
+      "evaluated_at": "2026-11-10T09:16:19Z"
+    },
+    {
+      "evaluation_id": "eval-S1-C2-c932e4837d",
+      "scenario_id": "S1",
+      "rule_id": "S1-C2",
+      "rule_version": "2.1",
+      "rule_name": "승인 Server의 Endpoint 불일치",
+      "asset_ids": [
+        "srv_ec1aa5ba6ea61ff0"
+      ],
+      "relation_ids": [
+        "rel_dc821a5d3c34c5e4"
+      ],
+      "evidence_refs": [
+        "ev-decl-tb-node-kg-memory"
+      ],
+      "policy_refs": [
+        {
+          "id": "approved-servers",
+          "version": "2026-10-31",
+          "source_ref": "testbed/ground-truth/approved-servers.json"
+        }
+      ],
+      "result": "not_detected",
+      "reason": "Endpoint가 승인 목록과 같음",
+      "evaluated_at": "2026-11-10T09:16:19Z"
+    },
+    {
+      "evaluation_id": "eval-S1-C1-2f8c563d28",
+      "scenario_id": "S1",
+      "rule_id": "S1-C1",
+      "rule_version": "2.1",
+      "rule_name": "승인 목록에 없는 Server 선언",
+      "asset_ids": [
+        "srv_eee2566222d9bc33"
+      ],
+      "relation_ids": [
+        "rel_dcf5e77d71f2150e"
+      ],
+      "evidence_refs": [
+        "ev-decl-tb-node-demo-everything"
+      ],
+      "policy_refs": [
+        {
+          "id": "approved-servers",
+          "version": "2026-10-31",
+          "source_ref": "testbed/ground-truth/approved-servers.json"
+        }
+      ],
+      "result": "not_detected",
+      "reason": "이름이 승인 목록에 있음",
+      "evaluated_at": "2026-11-10T09:16:19Z"
+    },
+    {
+      "evaluation_id": "eval-S1-C4-b2e384a69d",
+      "scenario_id": "S1",
+      "rule_id": "S1-C4",
+      "rule_version": "2.1",
+      "rule_name": "선언 위치 이상: 승인 Server가 다른 위치·등록 주체에서 선언",
+      "asset_ids": [
+        "srv_eee2566222d9bc33"
+      ],
+      "relation_ids": [
+        "rel_dcf5e77d71f2150e"
+      ],
+      "evidence_refs": [
+        "ev-decl-tb-node-demo-everything"
+      ],
+      "policy_refs": [
+        {
+          "id": "approved-servers",
+          "version": "2026-10-31",
+          "source_ref": "testbed/ground-truth/approved-servers.json"
+        }
+      ],
+      "result": "not_detected",
+      "reason": "선언 위치·등록 주체가 승인 목록과 같음",
+      "evaluated_at": "2026-11-10T09:16:19Z"
+    },
+    {
+      "evaluation_id": "eval-S1-C2-ddfcd1ad2c",
+      "scenario_id": "S1",
+      "rule_id": "S1-C2",
+      "rule_version": "2.1",
+      "rule_name": "승인 Server의 Endpoint 불일치",
+      "asset_ids": [
+        "srv_eee2566222d9bc33"
+      ],
+      "relation_ids": [
+        "rel_dcf5e77d71f2150e"
+      ],
+      "evidence_refs": [
+        "ev-decl-tb-node-demo-everything"
+      ],
+      "policy_refs": [
+        {
+          "id": "approved-servers",
+          "version": "2026-10-31",
+          "source_ref": "testbed/ground-truth/approved-servers.json"
+        }
+      ],
+      "result": "not_detected",
+      "reason": "Endpoint가 승인 목록과 같음",
+      "evaluated_at": "2026-11-10T09:16:19Z"
+    },
+    {
+      "evaluation_id": "eval-S2-C1-b30bdc16fa",
+      "scenario_id": "S2",
+      "rule_id": "S2-C1",
+      "rule_version": "2.1",
+      "rule_name": "Tool Filter 제거·약화로 정책 밖 Tool 노출",
+      "asset_ids": [
+        "srv_82d252784c25ade0"
+      ],
+      "relation_ids": [],
+      "evidence_refs": [
+        "ev-decl-tb-gw-fs-workspace",
+        "ev-cap-fs-workspace"
+      ],
+      "policy_refs": [
+        {
+          "id": "pol-s2-expected-tool-policy",
+          "version": "2.1",
+          "source_ref": "docs/threat-scenarios/policies/expected-tool-policy.json"
+        }
+      ],
+      "result": "not_detected",
+      "reason": "노출 도구 2개 모두 정책 허용 범위",
+      "evaluated_at": "2026-11-10T09:16:19Z"
+    },
+    {
+      "evaluation_id": "eval-S2-C2-b64ea9728d",
+      "scenario_id": "S2",
+      "rule_id": "S2-C2",
+      "rule_version": "2.1",
+      "rule_name": "파일 접근 범위 과다",
+      "asset_ids": [
+        "srv_82d252784c25ade0"
+      ],
+      "relation_ids": [],
+      "evidence_refs": [
+        "ev-decl-tb-gw-fs-workspace",
+        "ev-cap-fs-workspace"
+      ],
+      "policy_refs": [
+        {
+          "id": "pol-s2-expected-tool-policy",
+          "version": "2.1",
+          "source_ref": "docs/threat-scenarios/policies/expected-tool-policy.json"
+        }
+      ],
+      "result": "not_detected",
+      "reason": "파일 범위가 기준 /home/<TB_USER>/workspace 안",
+      "evaluated_at": "2026-11-10T09:16:19Z"
+    },
+    {
+      "evaluation_id": "eval-S2-C3-db2c4f7e54",
+      "scenario_id": "S2",
+      "rule_id": "S2-C3",
+      "rule_version": "2.1",
+      "rule_name": "명령·네트워크 고위험 입력 Tool 노출",
+      "asset_ids": [
+        "srv_82d252784c25ade0"
+      ],
+      "relation_ids": [],
+      "evidence_refs": [
+        "ev-decl-tb-gw-fs-workspace",
+        "ev-cap-fs-workspace"
+      ],
+      "policy_refs": [
+        {
+          "id": "pol-s2-expected-tool-policy",
+          "version": "2.1",
+          "source_ref": "docs/threat-scenarios/policies/expected-tool-policy.json"
+        }
+      ],
+      "result": "not_detected",
+      "reason": "정책 허용 도구 중 명령·네트워크 고위험 입력 없음",
+      "evaluated_at": "2026-11-10T09:16:19Z"
+    },
+    {
+      "evaluation_id": "eval-S2-C4-3ba41e5950",
+      "scenario_id": "S2",
+      "rule_id": "S2-C4",
+      "rule_version": "2.1",
+      "rule_name": "인증정보 입력 필드 Tool 노출",
+      "asset_ids": [
+        "srv_82d252784c25ade0"
+      ],
+      "relation_ids": [],
+      "evidence_refs": [
+        "ev-decl-tb-gw-fs-workspace",
+        "ev-cap-fs-workspace"
+      ],
+      "policy_refs": [
+        {
+          "id": "pol-s2-expected-tool-policy",
+          "version": "2.1",
+          "source_ref": "docs/threat-scenarios/policies/expected-tool-policy.json"
+        }
+      ],
+      "result": "not_detected",
+      "reason": "정책 허용 도구 중 인증정보 고위험 입력 없음",
+      "evaluated_at": "2026-11-10T09:16:19Z"
+    },
+    {
+      "evaluation_id": "eval-S2-C1-fe04022341",
+      "scenario_id": "S2",
+      "rule_id": "S2-C1",
+      "rule_version": "2.1",
+      "rule_name": "Tool Filter 제거·약화로 정책 밖 Tool 노출",
+      "asset_ids": [
+        "srv_ec1aa5ba6ea61ff0"
+      ],
+      "relation_ids": [],
+      "evidence_refs": [
+        "ev-decl-tb-node-kg-memory",
+        "ev-cap-kg-memory"
+      ],
+      "policy_refs": [
+        {
+          "id": "pol-s2-expected-tool-policy",
+          "version": "2.1",
+          "source_ref": "docs/threat-scenarios/policies/expected-tool-policy.json"
+        }
+      ],
+      "result": "not_detected",
+      "reason": "노출 도구 9개 모두 정책 허용 범위",
+      "evaluated_at": "2026-11-10T09:16:19Z"
+    },
+    {
+      "evaluation_id": "eval-S2-C2-f96c4204af",
+      "scenario_id": "S2",
+      "rule_id": "S2-C2",
+      "rule_version": "2.1",
+      "rule_name": "파일 접근 범위 과다",
+      "asset_ids": [
+        "srv_ec1aa5ba6ea61ff0"
+      ],
+      "relation_ids": [],
+      "evidence_refs": [
+        "ev-decl-tb-node-kg-memory",
+        "ev-cap-kg-memory"
+      ],
+      "policy_refs": [
+        {
+          "id": "pol-s2-expected-tool-policy",
+          "version": "2.1",
+          "source_ref": "docs/threat-scenarios/policies/expected-tool-policy.json"
+        }
+      ],
+      "result": "not_detected",
+      "reason": "설정 인자에 파일 경로 없음 (기준 범위는 서버 내부 지정)",
+      "evaluated_at": "2026-11-10T09:16:19Z"
+    },
+    {
+      "evaluation_id": "eval-S2-C3-7d587cd58f",
+      "scenario_id": "S2",
+      "rule_id": "S2-C3",
+      "rule_version": "2.1",
+      "rule_name": "명령·네트워크 고위험 입력 Tool 노출",
+      "asset_ids": [
+        "srv_ec1aa5ba6ea61ff0"
+      ],
+      "relation_ids": [],
+      "evidence_refs": [
+        "ev-decl-tb-node-kg-memory",
+        "ev-cap-kg-memory"
+      ],
+      "policy_refs": [
+        {
+          "id": "pol-s2-expected-tool-policy",
+          "version": "2.1",
+          "source_ref": "docs/threat-scenarios/policies/expected-tool-policy.json"
+        }
+      ],
+      "result": "not_detected",
+      "reason": "정책 허용 도구 중 명령·네트워크 고위험 입력 없음",
+      "evaluated_at": "2026-11-10T09:16:19Z"
+    },
+    {
+      "evaluation_id": "eval-S2-C4-3497b773d6",
+      "scenario_id": "S2",
+      "rule_id": "S2-C4",
+      "rule_version": "2.1",
+      "rule_name": "인증정보 입력 필드 Tool 노출",
+      "asset_ids": [
+        "srv_ec1aa5ba6ea61ff0"
+      ],
+      "relation_ids": [],
+      "evidence_refs": [
+        "ev-decl-tb-node-kg-memory",
+        "ev-cap-kg-memory"
+      ],
+      "policy_refs": [
+        {
+          "id": "pol-s2-expected-tool-policy",
+          "version": "2.1",
+          "source_ref": "docs/threat-scenarios/policies/expected-tool-policy.json"
+        }
+      ],
+      "result": "not_detected",
+      "reason": "정책 허용 도구 중 인증정보 고위험 입력 없음",
+      "evaluated_at": "2026-11-10T09:16:19Z"
+    },
+    {
+      "evaluation_id": "eval-S2-C1-1b9578b4a9",
+      "scenario_id": "S2",
+      "rule_id": "S2-C1",
+      "rule_version": "2.1",
+      "rule_name": "Tool Filter 제거·약화로 정책 밖 Tool 노출",
+      "asset_ids": [
+        "srv_eee2566222d9bc33"
+      ],
+      "relation_ids": [],
+      "evidence_refs": [
+        "ev-decl-tb-node-demo-everything",
+        "ev-cap-demo-everything"
+      ],
+      "policy_refs": [
+        {
+          "id": "pol-s2-expected-tool-policy",
+          "version": "2.1",
+          "source_ref": "docs/threat-scenarios/policies/expected-tool-policy.json"
+        }
+      ],
+      "result": "not_detected",
+      "reason": "노출 도구 10개 모두 정책 허용 범위",
+      "evaluated_at": "2026-11-10T09:16:19Z"
+    },
+    {
+      "evaluation_id": "eval-S2-C2-51f7dd8d0c",
+      "scenario_id": "S2",
+      "rule_id": "S2-C2",
+      "rule_version": "2.1",
+      "rule_name": "파일 접근 범위 과다",
+      "asset_ids": [
+        "srv_eee2566222d9bc33"
+      ],
+      "relation_ids": [],
+      "evidence_refs": [
+        "ev-decl-tb-node-demo-everything",
+        "ev-cap-demo-everything"
+      ],
+      "policy_refs": [],
+      "result": "not_applicable",
+      "reason": "파일 접근 범위 기준이 없는 서버",
+      "evaluated_at": "2026-11-10T09:16:19Z"
+    },
+    {
+      "evaluation_id": "eval-S2-C3-e6a9cd29e7",
+      "scenario_id": "S2",
+      "rule_id": "S2-C3",
+      "rule_version": "2.1",
+      "rule_name": "명령·네트워크 고위험 입력 Tool 노출",
+      "asset_ids": [
+        "srv_eee2566222d9bc33"
+      ],
+      "relation_ids": [],
+      "evidence_refs": [
+        "ev-decl-tb-node-demo-everything",
+        "ev-cap-demo-everything"
+      ],
+      "policy_refs": [
+        {
+          "id": "pol-s2-expected-tool-policy",
+          "version": "2.1",
+          "source_ref": "docs/threat-scenarios/policies/expected-tool-policy.json"
+        }
+      ],
+      "result": "not_detected",
+      "reason": "정책 허용 도구 중 명령·네트워크 고위험 입력 없음",
+      "evaluated_at": "2026-11-10T09:16:19Z"
+    },
+    {
+      "evaluation_id": "eval-S2-C4-5fd6763327",
+      "scenario_id": "S2",
+      "rule_id": "S2-C4",
+      "rule_version": "2.1",
+      "rule_name": "인증정보 입력 필드 Tool 노출",
+      "asset_ids": [
+        "srv_eee2566222d9bc33"
+      ],
+      "relation_ids": [],
+      "evidence_refs": [
+        "ev-decl-tb-node-demo-everything",
+        "ev-cap-demo-everything"
+      ],
+      "policy_refs": [
+        {
+          "id": "pol-s2-expected-tool-policy",
+          "version": "2.1",
+          "source_ref": "docs/threat-scenarios/policies/expected-tool-policy.json"
+        }
+      ],
+      "result": "not_detected",
+      "reason": "정책 허용 도구 중 인증정보 고위험 입력 없음",
+      "evaluated_at": "2026-11-10T09:16:19Z"
+    },
+    {
+      "evaluation_id": "eval-S4-C1-d6f6ab7e42",
+      "scenario_id": "S4",
+      "rule_id": "S4-C1",
+      "rule_version": "2.1",
+      "rule_name": "같은 저장소의 자격증명 참조를 여러 Server가 공유",
+      "asset_ids": [
+        "gw_4261ac71d127a248"
+      ],
+      "relation_ids": [],
+      "evidence_refs": [],
+      "policy_refs": [],
+      "result": "unknown",
+      "reason": "식별 가능한 자격증명 참조가 없음",
+      "evaluated_at": "2026-11-10T09:16:19Z"
+    },
+    {
+      "evaluation_id": "eval-S3-C1-e3f773c150",
+      "scenario_id": "S3",
+      "rule_id": "S3-C1",
+      "rule_version": "2.1",
+      "rule_name": "같은 이름, 정의(title·description·inputSchema·annotations) 차이",
+      "asset_ids": [
+        "srv_82d252784c25ade0"
+      ],
+      "relation_ids": [],
+      "evidence_refs": [
+        "ev-cap-demo-everything",
+        "ev-cap-fs-workspace",
+        "ev-cap-kg-memory"
+      ],
+      "policy_refs": [],
+      "result": "not_detected",
+      "reason": "수집한 서버들의 도구 이름 36개가 모두 고유",
+      "evaluated_at": "2026-11-10T09:16:19Z",
+      "details": {
+        "tool_names_checked": 36
+      }
+    },
+    {
+      "evaluation_id": "eval-S5-NA-b1b2f0f3af",
+      "scenario_id": "S5",
+      "rule_id": "S5-NA",
+      "rule_version": "2.1",
+      "rule_name": "stdio 로컬 실행",
+      "asset_ids": [
+        "srv_82d252784c25ade0"
+      ],
+      "relation_ids": [],
+      "evidence_refs": [
+        "ev-decl-tb-gw-fs-workspace"
+      ],
+      "policy_refs": [],
+      "result": "not_applicable",
+      "reason": "stdio 로컬 실행 — 네트워크 전송 검증 대상 아님",
+      "evaluated_at": "2026-11-10T09:16:19Z"
+    },
+    {
+      "evaluation_id": "eval-S5-NA-d41881f6dc",
+      "scenario_id": "S5",
+      "rule_id": "S5-NA",
+      "rule_version": "2.1",
+      "rule_name": "stdio 로컬 실행",
+      "asset_ids": [
+        "srv_ec1aa5ba6ea61ff0"
+      ],
+      "relation_ids": [],
+      "evidence_refs": [
+        "ev-decl-tb-node-kg-memory"
+      ],
+      "policy_refs": [],
+      "result": "not_applicable",
+      "reason": "stdio 로컬 실행 — 네트워크 전송 검증 대상 아님",
+      "evaluated_at": "2026-11-10T09:16:19Z"
+    },
+    {
+      "evaluation_id": "eval-S5-NA-2df2a25c01",
+      "scenario_id": "S5",
+      "rule_id": "S5-NA",
+      "rule_version": "2.1",
+      "rule_name": "stdio 로컬 실행",
+      "asset_ids": [
+        "srv_eee2566222d9bc33"
+      ],
+      "relation_ids": [],
+      "evidence_refs": [
+        "ev-decl-tb-node-demo-everything"
+      ],
+      "policy_refs": [],
+      "result": "not_applicable",
+      "reason": "stdio 로컬 실행 — 네트워크 전송 검증 대상 아님",
+      "evaluated_at": "2026-11-10T09:16:19Z"
+    }
+  ],
+  "alerts": []
+}

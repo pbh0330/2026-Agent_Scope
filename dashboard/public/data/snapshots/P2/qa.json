@@ -1,0 +1,1233 @@
+{
+  "schema_version": "0.6.0-draft",
+  "qa_run_id": "qa-snap-p2-20261110T091619Z",
+  "environment_id": "agentscope-testbed",
+  "profile_id": "tb-openclaw",
+  "snapshot_id": "snap-p2-20261110T091619Z",
+  "ground_truth_id": "testbed-gt-P2",
+  "ground_truth_version": "SNAP-2-P2",
+  "generated_at": "2026-11-10T09:16:19Z",
+  "detection_report_id": "det-snap-p2-20261110T091619Z",
+  "id_mappings": [
+    {
+      "gt_asset_id": "tb-gw/gateway",
+      "asset_id": "gw_4261ac71d127a248",
+      "asset_type": "gateway",
+      "layer": "declared",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "tb-node/node",
+      "asset_id": "node_1ca37e363256f7fb",
+      "asset_type": "node",
+      "layer": "declared",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "tb-gw/plugin/agentscope-asset-catalog",
+      "asset_id": "plg_3ca6b0bd236ecae6",
+      "asset_type": "plugin",
+      "layer": "declared",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "tb-gw/mcp_server/fs-workspace",
+      "asset_id": "srv_82d252784c25ade0",
+      "asset_type": "mcp_server",
+      "layer": "declared",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "fs-workspace/tool/read_file",
+      "asset_id": "tool_195991a776278649",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "fs-workspace/tool/read_text_file",
+      "asset_id": "tool_808858ad67b2571e",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "fs-workspace/tool/read_media_file",
+      "asset_id": "tool_024b0ecd7f1ef493",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "fs-workspace/tool/read_multiple_files",
+      "asset_id": "tool_dd5b0d8c51c2703a",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "fs-workspace/tool/write_file",
+      "asset_id": "tool_ae3a16e72cd51e20",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "fs-workspace/tool/edit_file",
+      "asset_id": "tool_48ebc84cc788d189",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "fs-workspace/tool/create_directory",
+      "asset_id": "tool_6d81dcbe721e8c45",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "fs-workspace/tool/list_directory",
+      "asset_id": "tool_194d79b6acffacf6",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "fs-workspace/tool/list_directory_with_sizes",
+      "asset_id": "tool_a3b41a1ef6d32f7b",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "fs-workspace/tool/directory_tree",
+      "asset_id": "tool_db2ee601e1be0f61",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "fs-workspace/tool/move_file",
+      "asset_id": "tool_885804152d454da3",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "fs-workspace/tool/search_files",
+      "asset_id": "tool_6674705e458e8b17",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "fs-workspace/tool/get_file_info",
+      "asset_id": "tool_e18ee8a4b7d18ab1",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "fs-workspace/tool/list_allowed_directories",
+      "asset_id": "tool_1168c52833bf45ae",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "tb-gw/mcp_server/inventory-remote",
+      "asset_id": "srv_8d8aec91ec656a07",
+      "asset_type": "mcp_server",
+      "layer": "declared",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "inventory-remote/tool/inventory_list_hosts",
+      "asset_id": "tool_eb4353d48a76c254",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "inventory-remote/tool/inventory_get_host",
+      "asset_id": "tool_53b93b83f270bcc8",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "inventory-remote/resource/inventory://hosts",
+      "asset_id": "rp_acf254f9205b49ea",
+      "asset_type": "resource",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "inventory-remote/prompt/inventory_owner_report",
+      "asset_id": "rp_478bd7cc89873d71",
+      "asset_type": "prompt",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "tb-node/mcp_server/kg-memory",
+      "asset_id": "srv_ec1aa5ba6ea61ff0",
+      "asset_type": "mcp_server",
+      "layer": "declared",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "kg-memory/tool/create_entities",
+      "asset_id": "tool_ded3c41f9a823fb4",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "kg-memory/tool/create_relations",
+      "asset_id": "tool_d85dcf8b7b833e9b",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "kg-memory/tool/add_observations",
+      "asset_id": "tool_763c5440832c799e",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "kg-memory/tool/delete_entities",
+      "asset_id": "tool_51cd31965b8f4f26",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "kg-memory/tool/delete_observations",
+      "asset_id": "tool_98df43243ff1156e",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "kg-memory/tool/delete_relations",
+      "asset_id": "tool_26a81ed81be3943b",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "kg-memory/tool/read_graph",
+      "asset_id": "tool_7a3adaad7a6c35e4",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "kg-memory/tool/search_nodes",
+      "asset_id": "tool_d80f6ea24fe9c75b",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "kg-memory/tool/open_nodes",
+      "asset_id": "tool_8fcf3d9415d68c1a",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "kg-memory/resource/memory://knowledge-graph",
+      "asset_id": "rp_29e54f6426a13653",
+      "asset_type": "resource",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "tb-node/mcp_server/demo-everything",
+      "asset_id": "srv_eee2566222d9bc33",
+      "asset_type": "mcp_server",
+      "layer": "declared",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "demo-everything/tool/echo",
+      "asset_id": "tool_67a64e6145413178",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "demo-everything/tool/get-annotated-message",
+      "asset_id": "tool_e20c9eb5420403d1",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "demo-everything/tool/get-env",
+      "asset_id": "tool_762c09336caad7d0",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "demo-everything/tool/get-resource-links",
+      "asset_id": "tool_93f12ac4f2ea5fff",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "demo-everything/tool/get-resource-reference",
+      "asset_id": "tool_64612d3c4e5415b6",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "demo-everything/tool/get-structured-content",
+      "asset_id": "tool_d83c2aa31dee5dc4",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "demo-everything/tool/get-sum",
+      "asset_id": "tool_0ee651414b0e8849",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "demo-everything/tool/get-tiny-image",
+      "asset_id": "tool_bd297168f8839140",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "demo-everything/tool/gzip-file-as-resource",
+      "asset_id": "tool_d364d522832496d7",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "demo-everything/tool/toggle-simulated-logging",
+      "asset_id": "tool_c96e12e3082b2372",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "demo-everything/tool/toggle-subscriber-updates",
+      "asset_id": "tool_8593712d5cdd263c",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "demo-everything/tool/trigger-long-running-operation",
+      "asset_id": "tool_75995a93ada69d48",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "demo-everything/tool/simulate-research-query",
+      "asset_id": "tool_c0285092845c94d5",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "demo-everything/resource/demo://resource/static/document/architecture.md",
+      "asset_id": "rp_a768125d19b14a0e",
+      "asset_type": "resource",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "demo-everything/resource/demo://resource/static/document/extension.md",
+      "asset_id": "rp_bb6bcc335c627639",
+      "asset_type": "resource",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "demo-everything/resource/demo://resource/static/document/features.md",
+      "asset_id": "rp_0c44f11d568ffe23",
+      "asset_type": "resource",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "demo-everything/resource/demo://resource/static/document/how-it-works.md",
+      "asset_id": "rp_5b5f742bb857f02c",
+      "asset_type": "resource",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "demo-everything/resource/demo://resource/static/document/instructions.md",
+      "asset_id": "rp_fd660ea2629ba4eb",
+      "asset_type": "resource",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "demo-everything/resource/demo://resource/static/document/startup.md",
+      "asset_id": "rp_d7b03965165de3c7",
+      "asset_type": "resource",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "demo-everything/resource/demo://resource/static/document/structure.md",
+      "asset_id": "rp_b117b808b5d2930a",
+      "asset_type": "resource",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "demo-everything/resource/demo://resource/dynamic/text/{resourceId}",
+      "asset_id": "rp_e0f4ab24265f111f",
+      "asset_type": "resource",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "demo-everything/resource/demo://resource/dynamic/blob/{resourceId}",
+      "asset_id": "rp_26e9867da8b3f4ae",
+      "asset_type": "resource",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "demo-everything/prompt/simple-prompt",
+      "asset_id": "rp_272815b746abd40c",
+      "asset_type": "prompt",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "demo-everything/prompt/args-prompt",
+      "asset_id": "rp_ba0cd1f86ea81c59",
+      "asset_type": "prompt",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "demo-everything/prompt/completable-prompt",
+      "asset_id": "rp_7191c74da4522626",
+      "asset_type": "prompt",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "demo-everything/prompt/resource-prompt",
+      "asset_id": "rp_eba916112fc2cd01",
+      "asset_type": "prompt",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "tb-gw/mcp_server/asset-catalog",
+      "asset_id": "srv_bbb764ffe6b99467",
+      "asset_type": "mcp_server",
+      "layer": "declared",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "asset-catalog/tool/catalog_search",
+      "asset_id": "tool_caf48a52b85bb3bf",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "asset-catalog/tool/catalog_get_entry",
+      "asset_id": "tool_42196862e9e14229",
+      "asset_type": "tool",
+      "layer": "advertised",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "tb-node/skill/node-disk-report",
+      "asset_id": "skill_d15583d662a535f2",
+      "asset_type": "skill",
+      "layer": "declared",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "tb-node/skill/node-notes-summary",
+      "asset_id": "skill_3486e732139325f5",
+      "asset_type": "skill",
+      "layer": "declared",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    },
+    {
+      "gt_asset_id": "tb-gw/skill/inventory-owner-report",
+      "asset_id": "skill_588bddbd8a291ebf",
+      "asset_type": "skill",
+      "layer": "declared",
+      "status": "matched",
+      "reason": "canonical_key 일치"
+    }
+  ],
+  "checks": [
+    {
+      "check_id": "chk-expo-fs-workspace/tool/read_file",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": false
+      },
+      "actual": {
+        "EXPOSED": false
+      },
+      "evidence_refs": [
+        "ev-expo-fs-workspace"
+      ],
+      "reason": "toolFilter.include에 없음"
+    },
+    {
+      "check_id": "chk-expo-fs-workspace/tool/read_text_file",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": true
+      },
+      "actual": {
+        "EXPOSED": true
+      },
+      "evidence_refs": [
+        "ev-expo-fs-workspace"
+      ],
+      "reason": ""
+    },
+    {
+      "check_id": "chk-expo-fs-workspace/tool/read_media_file",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": false
+      },
+      "actual": {
+        "EXPOSED": false
+      },
+      "evidence_refs": [
+        "ev-expo-fs-workspace"
+      ],
+      "reason": "toolFilter.include에 없음"
+    },
+    {
+      "check_id": "chk-expo-fs-workspace/tool/read_multiple_files",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": false
+      },
+      "actual": {
+        "EXPOSED": false
+      },
+      "evidence_refs": [
+        "ev-expo-fs-workspace"
+      ],
+      "reason": "toolFilter.include에 없음"
+    },
+    {
+      "check_id": "chk-expo-fs-workspace/tool/write_file",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": false
+      },
+      "actual": {
+        "EXPOSED": false
+      },
+      "evidence_refs": [
+        "ev-expo-fs-workspace"
+      ],
+      "reason": "toolFilter.include에 없음"
+    },
+    {
+      "check_id": "chk-expo-fs-workspace/tool/edit_file",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": false
+      },
+      "actual": {
+        "EXPOSED": false
+      },
+      "evidence_refs": [
+        "ev-expo-fs-workspace"
+      ],
+      "reason": "toolFilter.include에 없음"
+    },
+    {
+      "check_id": "chk-expo-fs-workspace/tool/create_directory",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": false
+      },
+      "actual": {
+        "EXPOSED": false
+      },
+      "evidence_refs": [
+        "ev-expo-fs-workspace"
+      ],
+      "reason": "toolFilter.include에 없음"
+    },
+    {
+      "check_id": "chk-expo-fs-workspace/tool/list_directory",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": true
+      },
+      "actual": {
+        "EXPOSED": true
+      },
+      "evidence_refs": [
+        "ev-expo-fs-workspace"
+      ],
+      "reason": ""
+    },
+    {
+      "check_id": "chk-expo-fs-workspace/tool/list_directory_with_sizes",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": false
+      },
+      "actual": {
+        "EXPOSED": false
+      },
+      "evidence_refs": [
+        "ev-expo-fs-workspace"
+      ],
+      "reason": "toolFilter.include에 없음"
+    },
+    {
+      "check_id": "chk-expo-fs-workspace/tool/directory_tree",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": false
+      },
+      "actual": {
+        "EXPOSED": false
+      },
+      "evidence_refs": [
+        "ev-expo-fs-workspace"
+      ],
+      "reason": "toolFilter.include에 없음"
+    },
+    {
+      "check_id": "chk-expo-fs-workspace/tool/move_file",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": false
+      },
+      "actual": {
+        "EXPOSED": false
+      },
+      "evidence_refs": [
+        "ev-expo-fs-workspace"
+      ],
+      "reason": "toolFilter.include에 없음"
+    },
+    {
+      "check_id": "chk-expo-fs-workspace/tool/search_files",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": false
+      },
+      "actual": {
+        "EXPOSED": false
+      },
+      "evidence_refs": [
+        "ev-expo-fs-workspace"
+      ],
+      "reason": "toolFilter.include에 없음"
+    },
+    {
+      "check_id": "chk-expo-fs-workspace/tool/get_file_info",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": false
+      },
+      "actual": {
+        "EXPOSED": false
+      },
+      "evidence_refs": [
+        "ev-expo-fs-workspace"
+      ],
+      "reason": "toolFilter.include에 없음"
+    },
+    {
+      "check_id": "chk-expo-fs-workspace/tool/list_allowed_directories",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": false
+      },
+      "actual": {
+        "EXPOSED": false
+      },
+      "evidence_refs": [
+        "ev-expo-fs-workspace"
+      ],
+      "reason": "toolFilter.include에 없음"
+    },
+    {
+      "check_id": "chk-expo-inventory-remote/tool/inventory_list_hosts",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": true
+      },
+      "actual": {
+        "EXPOSED": true
+      },
+      "evidence_refs": [
+        "ev-expo-inventory-remote"
+      ],
+      "reason": ""
+    },
+    {
+      "check_id": "chk-expo-inventory-remote/tool/inventory_get_host",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": true
+      },
+      "actual": {
+        "EXPOSED": true
+      },
+      "evidence_refs": [
+        "ev-expo-inventory-remote"
+      ],
+      "reason": ""
+    },
+    {
+      "check_id": "chk-expo-kg-memory/tool/create_entities",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": true
+      },
+      "actual": {
+        "EXPOSED": true
+      },
+      "evidence_refs": [
+        "ev-expo-kg-memory"
+      ],
+      "reason": ""
+    },
+    {
+      "check_id": "chk-expo-kg-memory/tool/create_relations",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": true
+      },
+      "actual": {
+        "EXPOSED": true
+      },
+      "evidence_refs": [
+        "ev-expo-kg-memory"
+      ],
+      "reason": ""
+    },
+    {
+      "check_id": "chk-expo-kg-memory/tool/add_observations",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": true
+      },
+      "actual": {
+        "EXPOSED": true
+      },
+      "evidence_refs": [
+        "ev-expo-kg-memory"
+      ],
+      "reason": ""
+    },
+    {
+      "check_id": "chk-expo-kg-memory/tool/delete_entities",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": true
+      },
+      "actual": {
+        "EXPOSED": true
+      },
+      "evidence_refs": [
+        "ev-expo-kg-memory"
+      ],
+      "reason": ""
+    },
+    {
+      "check_id": "chk-expo-kg-memory/tool/delete_observations",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": true
+      },
+      "actual": {
+        "EXPOSED": true
+      },
+      "evidence_refs": [
+        "ev-expo-kg-memory"
+      ],
+      "reason": ""
+    },
+    {
+      "check_id": "chk-expo-kg-memory/tool/delete_relations",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": true
+      },
+      "actual": {
+        "EXPOSED": true
+      },
+      "evidence_refs": [
+        "ev-expo-kg-memory"
+      ],
+      "reason": ""
+    },
+    {
+      "check_id": "chk-expo-kg-memory/tool/read_graph",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": true
+      },
+      "actual": {
+        "EXPOSED": true
+      },
+      "evidence_refs": [
+        "ev-expo-kg-memory"
+      ],
+      "reason": ""
+    },
+    {
+      "check_id": "chk-expo-kg-memory/tool/search_nodes",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": true
+      },
+      "actual": {
+        "EXPOSED": true
+      },
+      "evidence_refs": [
+        "ev-expo-kg-memory"
+      ],
+      "reason": ""
+    },
+    {
+      "check_id": "chk-expo-kg-memory/tool/open_nodes",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": true
+      },
+      "actual": {
+        "EXPOSED": true
+      },
+      "evidence_refs": [
+        "ev-expo-kg-memory"
+      ],
+      "reason": ""
+    },
+    {
+      "check_id": "chk-expo-demo-everything/tool/echo",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": true
+      },
+      "actual": {
+        "EXPOSED": true
+      },
+      "evidence_refs": [
+        "ev-expo-demo-everything"
+      ],
+      "reason": ""
+    },
+    {
+      "check_id": "chk-expo-demo-everything/tool/get-annotated-message",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": true
+      },
+      "actual": {
+        "EXPOSED": true
+      },
+      "evidence_refs": [
+        "ev-expo-demo-everything"
+      ],
+      "reason": ""
+    },
+    {
+      "check_id": "chk-expo-demo-everything/tool/get-env",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": false
+      },
+      "actual": {
+        "EXPOSED": false
+      },
+      "evidence_refs": [
+        "ev-expo-demo-everything"
+      ],
+      "reason": "toolFilter.exclude"
+    },
+    {
+      "check_id": "chk-expo-demo-everything/tool/get-resource-links",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": true
+      },
+      "actual": {
+        "EXPOSED": true
+      },
+      "evidence_refs": [
+        "ev-expo-demo-everything"
+      ],
+      "reason": ""
+    },
+    {
+      "check_id": "chk-expo-demo-everything/tool/get-resource-reference",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": true
+      },
+      "actual": {
+        "EXPOSED": true
+      },
+      "evidence_refs": [
+        "ev-expo-demo-everything"
+      ],
+      "reason": ""
+    },
+    {
+      "check_id": "chk-expo-demo-everything/tool/get-structured-content",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": true
+      },
+      "actual": {
+        "EXPOSED": true
+      },
+      "evidence_refs": [
+        "ev-expo-demo-everything"
+      ],
+      "reason": ""
+    },
+    {
+      "check_id": "chk-expo-demo-everything/tool/get-sum",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": true
+      },
+      "actual": {
+        "EXPOSED": true
+      },
+      "evidence_refs": [
+        "ev-expo-demo-everything"
+      ],
+      "reason": ""
+    },
+    {
+      "check_id": "chk-expo-demo-everything/tool/get-tiny-image",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": true
+      },
+      "actual": {
+        "EXPOSED": true
+      },
+      "evidence_refs": [
+        "ev-expo-demo-everything"
+      ],
+      "reason": ""
+    },
+    {
+      "check_id": "chk-expo-demo-everything/tool/gzip-file-as-resource",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": false
+      },
+      "actual": {
+        "EXPOSED": false
+      },
+      "evidence_refs": [
+        "ev-expo-demo-everything"
+      ],
+      "reason": "toolFilter.exclude"
+    },
+    {
+      "check_id": "chk-expo-demo-everything/tool/toggle-simulated-logging",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": true
+      },
+      "actual": {
+        "EXPOSED": true
+      },
+      "evidence_refs": [
+        "ev-expo-demo-everything"
+      ],
+      "reason": ""
+    },
+    {
+      "check_id": "chk-expo-demo-everything/tool/toggle-subscriber-updates",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": true
+      },
+      "actual": {
+        "EXPOSED": true
+      },
+      "evidence_refs": [
+        "ev-expo-demo-everything"
+      ],
+      "reason": ""
+    },
+    {
+      "check_id": "chk-expo-demo-everything/tool/trigger-long-running-operation",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": true
+      },
+      "actual": {
+        "EXPOSED": true
+      },
+      "evidence_refs": [
+        "ev-expo-demo-everything"
+      ],
+      "reason": ""
+    },
+    {
+      "check_id": "chk-expo-demo-everything/tool/simulate-research-query",
+      "condition_id": "EXPOSED",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "exposed_to_agent": false
+      },
+      "actual": {
+        "EXPOSED": false
+      },
+      "evidence_refs": [
+        "ev-expo-demo-everything"
+      ],
+      "reason": "taskSupport: required — OpenClaw가 게시하지 않음"
+    },
+    {
+      "check_id": "chk-normal-no-alerts",
+      "condition_id": "NORMAL-STATE",
+      "scenario_id": null,
+      "result": "PASS",
+      "expected": {
+        "alerts": 0
+      },
+      "actual": {
+        "alerts": 0
+      },
+      "evidence_refs": [],
+      "reason": "정상군 프로파일에서는 S1~S5 경고가 없어야 함"
+    }
+  ],
+  "metrics": [
+    {
+      "name": "declared_asset_recall",
+      "scope": "declared",
+      "numerator": 11,
+      "denominator": 11,
+      "value": 1.0
+    },
+    {
+      "name": "advertised_asset_recall",
+      "scope": "advertised",
+      "numerator": 56,
+      "denominator": 56,
+      "value": 1.0
+    },
+    {
+      "name": "relation_recall",
+      "scope": "relations",
+      "numerator": 67,
+      "denominator": 67,
+      "value": 1.0
+    }
+  ],
+  "extra_assets": [
+    {
+      "asset_id": "pa_10415b79168a91f6",
+      "canonical_key": "tb-gw/authentication/gateway.auth",
+      "asset_type": "permission_auth"
+    },
+    {
+      "asset_id": "pa_0547cf3234bd24fd",
+      "canonical_key": "tb-gw/permission/tools.profile",
+      "asset_type": "permission_auth"
+    },
+    {
+      "asset_id": "pa_3a3c5f7d09203be0",
+      "canonical_key": "tb-gw/permission/mcp.servers.fs-workspace.toolFilter",
+      "asset_type": "permission_auth"
+    },
+    {
+      "asset_id": "pa_235029938a7bca8e",
+      "canonical_key": "tb-gw/authentication/mcp.servers.inventory-remote",
+      "asset_type": "permission_auth"
+    },
+    {
+      "asset_id": "pa_087042e2e785a2d2",
+      "canonical_key": "tb-node/permission/nodeHost.mcp.servers.demo-everything.toolFilter",
+      "asset_type": "permission_auth"
+    },
+    {
+      "asset_id": "pa_deb5ffb01d66a469",
+      "canonical_key": "tb-node/authentication/nodeHost.mcp.servers.demo-everything",
+      "asset_type": "permission_auth"
+    }
+  ],
+  "missing_relations": [],
+  "limitations": [
+    "정답 목록에는 permission_auth 자산이 없어 해당 유형은 추가 자산으로만 표시",
+    "관계 비교는 (유형, 출발 키, 대상 키) 완전 일치 기준"
+  ]
+}

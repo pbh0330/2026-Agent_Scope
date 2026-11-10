@@ -1,0 +1,98 @@
+{
+  "schema_version": "0.6.0-draft",
+  "qa_run_id": "exp-snap-s5-t2-20261110T091620Z",
+  "environment_id": "agentscope-testbed",
+  "profile_id": "tb-openclaw",
+  "snapshot_id": "snap-s5-t2-20261110T091620Z",
+  "expected_profile": "S5-T2",
+  "expected_source": "docs/threat-scenarios/expected-results.md",
+  "expected_version": "2.1",
+  "generated_at": "2026-11-10T09:16:20Z",
+  "detection_report_id": "det-snap-s5-t2-20261110T091620Z",
+  "verdict": "PASS",
+  "checks": [
+    {
+      "check_id": "exp-01",
+      "kind": "required",
+      "condition_id": "S5-C2",
+      "scenario_id": "S5",
+      "target": "tb-gw/mcp_server/inventory-remote",
+      "asset_id": "srv_8d8aec91ec656a07",
+      "result": "PASS",
+      "expected": {
+        "alert": true,
+        "severity": "high",
+        "confidence": "high"
+      },
+      "actual": {
+        "alerts": [
+          {
+            "alert_id": "alert-c13abe88bf62",
+            "severity": "high",
+            "confidence": "high"
+          }
+        ]
+      },
+      "evidence_refs": [
+        "ev-decl-tb-gw-inventory-remote"
+      ],
+      "reason": "https 연결이지만 sslVerify가 false로 명시됨"
+    },
+    {
+      "check_id": "exp-02",
+      "kind": "no_alert",
+      "condition_id": null,
+      "scenario_id": "S1/S5",
+      "target": "tb-gw/mcp_server/inventory-remote",
+      "asset_id": "srv_8d8aec91ec656a07",
+      "result": "PASS",
+      "expected": {
+        "alert": false,
+        "scenarios": [
+          "S1",
+          "S5"
+        ]
+      },
+      "actual": {
+        "alerts": []
+      },
+      "evidence_refs": [],
+      "reason": "S1: endpoint 같음. S5-C1: https라 해당 없음"
+    }
+  ],
+  "metrics": [
+    {
+      "name": "required_alert_recall",
+      "scope": "required",
+      "numerator": 1,
+      "denominator": 1,
+      "value": 1.0
+    },
+    {
+      "name": "severity_match",
+      "scope": "required",
+      "numerator": 1,
+      "denominator": 1,
+      "value": 1.0
+    },
+    {
+      "name": "no_alert_kept",
+      "scope": "no_alert",
+      "numerator": 1,
+      "denominator": 1,
+      "value": 1.0
+    },
+    {
+      "name": "unknown_kept",
+      "scope": "unknown",
+      "numerator": 0,
+      "denominator": 0,
+      "value": null
+    }
+  ],
+  "limitations": [
+    "선택(required: false) 경고는 탐지율 분모에서 제외",
+    "severity 차이는 PARTIAL",
+    "기대 결과에 없는 경고는 INFO로만 표시(비경고 범위에 걸린 경우는 FAIL)"
+  ]
+}

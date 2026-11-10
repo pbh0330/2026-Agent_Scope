@@ -1,0 +1,211 @@
+{
+  "schema_version": "0.6.0-draft",
+  "qa_run_id": "exp-snap-s5-t1-20261110T091620Z",
+  "environment_id": "agentscope-testbed",
+  "profile_id": "tb-openclaw",
+  "snapshot_id": "snap-s5-t1-20261110T091620Z",
+  "expected_profile": "S5-T1",
+  "expected_source": "docs/threat-scenarios/expected-results.md",
+  "expected_version": "2.1",
+  "generated_at": "2026-11-10T09:16:20Z",
+  "detection_report_id": "det-snap-s5-t1-20261110T091620Z",
+  "verdict": "PASS",
+  "checks": [
+    {
+      "check_id": "exp-01",
+      "kind": "required",
+      "condition_id": "S5-C1",
+      "scenario_id": "S5",
+      "target": "tb-gw/mcp_server/inventory-remote",
+      "asset_id": "srv_8d8aec91ec656a07",
+      "result": "PASS",
+      "expected": {
+        "alert": true,
+        "severity": "high",
+        "confidence": "high"
+      },
+      "actual": {
+        "alerts": [
+          {
+            "alert_id": "alert-e156c22369ab",
+            "severity": "high",
+            "confidence": "high"
+          }
+        ]
+      },
+      "evidence_refs": [
+        "ev-decl-tb-gw-inventory-remote"
+      ],
+      "reason": "streamable-http를 http://로 연결. Bearer 헤더가 평문으로 전송될 수 있는 설정"
+    },
+    {
+      "check_id": "exp-02",
+      "kind": "optional",
+      "condition_id": "S1-C2",
+      "scenario_id": "S1",
+      "target": "tb-gw/mcp_server/inventory-remote",
+      "asset_id": "srv_8d8aec91ec656a07",
+      "result": "PASS",
+      "expected": {
+        "alert": true,
+        "severity": "high",
+        "confidence": "high"
+      },
+      "actual": {
+        "alerts": [
+          {
+            "alert_id": "alert-3fb872e538d3",
+            "severity": "high",
+            "confidence": "high"
+          }
+        ]
+      },
+      "evidence_refs": [
+        "ev-decl-tb-gw-inventory-remote"
+      ],
+      "reason": "승인 endpoint와 다름. 동반 경고(S5 채점 미포함)"
+    },
+    {
+      "check_id": "exp-03",
+      "kind": "optional",
+      "condition_id": "S4-C3",
+      "scenario_id": "S4",
+      "target": "tb-gw/mcp_server/inventory-remote",
+      "asset_id": "srv_8d8aec91ec656a07",
+      "result": "PASS",
+      "expected": {
+        "alert": true,
+        "severity": "high",
+        "confidence": "medium"
+      },
+      "actual": {
+        "alerts": [
+          {
+            "alert_id": "alert-4a2b6879426c",
+            "severity": "high",
+            "confidence": "medium"
+          }
+        ]
+      },
+      "evidence_refs": [
+        "ev-decl-tb-gw-inventory-remote"
+      ],
+      "reason": "INVENTORY_MCP_TOKEN이 바뀐 endpoint로 전송. 동반 경고"
+    },
+    {
+      "check_id": "exp-04",
+      "kind": "no_alert",
+      "condition_id": null,
+      "scenario_id": "S5",
+      "target": "tb-gw/mcp_server/fs-workspace",
+      "asset_id": "srv_82d252784c25ade0",
+      "result": "PASS",
+      "expected": {
+        "alert": false,
+        "scenarios": [
+          "S5"
+        ]
+      },
+      "actual": {
+        "alerts": []
+      },
+      "evidence_refs": [],
+      "reason": "stdio 서버는 not_applicable"
+    },
+    {
+      "check_id": "exp-05",
+      "kind": "no_alert",
+      "condition_id": null,
+      "scenario_id": "S5",
+      "target": "tb-node/mcp_server/kg-memory",
+      "asset_id": "srv_ec1aa5ba6ea61ff0",
+      "result": "PASS",
+      "expected": {
+        "alert": false,
+        "scenarios": [
+          "S5"
+        ]
+      },
+      "actual": {
+        "alerts": []
+      },
+      "evidence_refs": [],
+      "reason": "stdio 서버는 not_applicable"
+    },
+    {
+      "check_id": "exp-06",
+      "kind": "no_alert",
+      "condition_id": null,
+      "scenario_id": "S5",
+      "target": "tb-node/mcp_server/demo-everything",
+      "asset_id": "srv_eee2566222d9bc33",
+      "result": "PASS",
+      "expected": {
+        "alert": false,
+        "scenarios": [
+          "S5"
+        ]
+      },
+      "actual": {
+        "alerts": []
+      },
+      "evidence_refs": [],
+      "reason": "stdio 서버는 not_applicable"
+    },
+    {
+      "check_id": "exp-07",
+      "kind": "no_alert",
+      "condition_id": null,
+      "scenario_id": "S5",
+      "target": "tb-gw/mcp_server/asset-catalog",
+      "asset_id": "srv_bbb764ffe6b99467",
+      "result": "PASS",
+      "expected": {
+        "alert": false,
+        "scenarios": [
+          "S5"
+        ]
+      },
+      "actual": {
+        "alerts": []
+      },
+      "evidence_refs": [],
+      "reason": "stdio 서버는 not_applicable"
+    }
+  ],
+  "metrics": [
+    {
+      "name": "required_alert_recall",
+      "scope": "required",
+      "numerator": 1,
+      "denominator": 1,
+      "value": 1.0
+    },
+    {
+      "name": "severity_match",
+      "scope": "required",
+      "numerator": 1,
+      "denominator": 1,
+      "value": 1.0
+    },
+    {
+      "name": "no_alert_kept",
+      "scope": "no_alert",
+      "numerator": 4,
+      "denominator": 4,
+      "value": 1.0
+    },
+    {
+      "name": "unknown_kept",
+      "scope": "unknown",
+      "numerator": 0,
+      "denominator": 0,
+      "value": null
+    }
+  ],
+  "limitations": [
+    "선택(required: false) 경고는 탐지율 분모에서 제외",
+    "severity 차이는 PARTIAL",
+    "기대 결과에 없는 경고는 INFO로만 표시(비경고 범위에 걸린 경우는 FAIL)"
+  ]
+}

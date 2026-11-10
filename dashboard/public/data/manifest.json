@@ -1,0 +1,492 @@
+{
+  "generated_at": "2026-11-10T09:16:18Z",
+  "environment_id": "agentscope-testbed",
+  "sources": {
+    "scanner": "feature/scanner-config · asset_scanner (openclaw-mcp-config 0.1.0-draft)",
+    "testbed": "feature/testbed-threat-s1-develop (PR #19, develop 기준) · profiles P0~P2·S1, ground-truth/raw, approved-servers.json",
+    "threat_rules": "docs/threat-scenarios v2.1 · scenario-catalog.json, 부록 A",
+    "schema": "docs/mcp-attack-surface-definition · schema-design-draft v0.6",
+    "usage": "feature/token-collector · backend/usageapi"
+  },
+  "snapshots": [
+    {
+      "key": "P0",
+      "label": "P0 · 기본 구성",
+      "kind": "normal",
+      "scenario_id": null,
+      "synthetic": false,
+      "test_case_ids": [],
+      "snapshot_id": "snap-p0-20261110T091618Z",
+      "files": {
+        "snapshot": "snapshots/P0/snapshot.json",
+        "detections": "snapshots/P0/detections.json",
+        "qa": "snapshots/P0/qa.json"
+      },
+      "counts": {
+        "assets": 20,
+        "relations": 18,
+        "alerts": 0
+      }
+    },
+    {
+      "key": "P1",
+      "label": "P1 · 노드 서버·스킬",
+      "kind": "normal",
+      "scenario_id": null,
+      "synthetic": false,
+      "test_case_ids": [],
+      "snapshot_id": "snap-p1-20261110T091619Z",
+      "files": {
+        "snapshot": "snapshots/P1/snapshot.json",
+        "detections": "snapshots/P1/detections.json",
+        "qa": "snapshots/P1/qa.json"
+      },
+      "counts": {
+        "assets": 61,
+        "relations": 60,
+        "alerts": 0
+      }
+    },
+    {
+      "key": "P2",
+      "label": "P2 · 원격 서버·플러그인",
+      "kind": "normal",
+      "scenario_id": null,
+      "synthetic": false,
+      "test_case_ids": [],
+      "snapshot_id": "snap-p2-20261110T091619Z",
+      "files": {
+        "snapshot": "snapshots/P2/snapshot.json",
+        "detections": "snapshots/P2/detections.json",
+        "expected": "snapshots/P2/expected.json",
+        "audit": "snapshots/P2/openclaw-security-audit.json",
+        "qa": "snapshots/P2/qa.json"
+      },
+      "counts": {
+        "assets": 73,
+        "relations": 73,
+        "alerts": 0
+      },
+      "expected": {
+        "verdict": "PASS",
+        "counts": {
+          "PASS": 5,
+          "PARTIAL": 0,
+          "FAIL": 0,
+          "SKIP": 0,
+          "INFO": 0
+        }
+      }
+    },
+    {
+      "key": "S1",
+      "label": "S1 · 비인가 서버 등록",
+      "kind": "scenario",
+      "scenario_id": "S1",
+      "synthetic": false,
+      "test_case_ids": [
+        "S1-T1",
+        "S1-T2",
+        "S1-T3",
+        "S1-T4"
+      ],
+      "snapshot_id": "snap-s1-20261110T091619Z",
+      "files": {
+        "snapshot": "snapshots/S1/snapshot.json",
+        "detections": "snapshots/S1/detections.json",
+        "expected": "snapshots/S1/expected.json",
+        "audit": "snapshots/S1/openclaw-security-audit.json"
+      },
+      "counts": {
+        "assets": 83,
+        "relations": 83,
+        "alerts": 5
+      },
+      "expected": {
+        "verdict": "PASS",
+        "counts": {
+          "PASS": 10,
+          "PARTIAL": 0,
+          "FAIL": 0,
+          "SKIP": 0,
+          "INFO": 0
+        }
+      }
+    },
+    {
+      "key": "S1-T5",
+      "label": "S1-T5 · 선언 위치 이상",
+      "kind": "scenario",
+      "scenario_id": "S1",
+      "synthetic": true,
+      "test_case_ids": [
+        "S1-T5"
+      ],
+      "snapshot_id": "snap-s1-t5-20261110T091619Z",
+      "files": {
+        "snapshot": "snapshots/S1-T5/snapshot.json",
+        "detections": "snapshots/S1-T5/detections.json",
+        "expected": "snapshots/S1-T5/expected.json",
+        "audit": "snapshots/S1-T5/openclaw-security-audit.json"
+      },
+      "counts": {
+        "assets": 73,
+        "relations": 73,
+        "alerts": 1
+      },
+      "expected": {
+        "verdict": "PASS",
+        "counts": {
+          "PASS": 5,
+          "PARTIAL": 0,
+          "FAIL": 0,
+          "SKIP": 0,
+          "INFO": 0
+        }
+      }
+    },
+    {
+      "key": "S2",
+      "label": "S2 · 과도한 도구 권한",
+      "kind": "scenario",
+      "scenario_id": "S2",
+      "synthetic": true,
+      "test_case_ids": [
+        "S2-T1",
+        "S2-T2"
+      ],
+      "snapshot_id": "snap-s2-20261110T091619Z",
+      "files": {
+        "snapshot": "snapshots/S2/snapshot.json",
+        "detections": "snapshots/S2/detections.json",
+        "expected": "snapshots/S2/expected.json",
+        "audit": "snapshots/S2/openclaw-security-audit.json"
+      },
+      "counts": {
+        "assets": 72,
+        "relations": 72,
+        "alerts": 3
+      },
+      "expected": {
+        "verdict": "PASS",
+        "counts": {
+          "PASS": 6,
+          "PARTIAL": 0,
+          "FAIL": 0,
+          "SKIP": 0,
+          "INFO": 0
+        }
+      }
+    },
+    {
+      "key": "S4",
+      "label": "S4 · 자격증명 공유",
+      "kind": "scenario",
+      "scenario_id": "S4",
+      "synthetic": true,
+      "test_case_ids": [
+        "S4-T1",
+        "S4-T2"
+      ],
+      "snapshot_id": "snap-s4-20261110T091619Z",
+      "files": {
+        "snapshot": "snapshots/S4/snapshot.json",
+        "detections": "snapshots/S4/detections.json",
+        "expected": "snapshots/S4/expected.json",
+        "audit": "snapshots/S4/openclaw-security-audit.json"
+      },
+      "counts": {
+        "assets": 74,
+        "relations": 74,
+        "alerts": 1
+      },
+      "expected": {
+        "verdict": "PASS",
+        "counts": {
+          "PASS": 4,
+          "PARTIAL": 0,
+          "FAIL": 0,
+          "SKIP": 0,
+          "INFO": 0
+        }
+      }
+    },
+    {
+      "key": "S3",
+      "label": "S3 · 도구 이름 충돌",
+      "kind": "scenario",
+      "scenario_id": "S3",
+      "synthetic": true,
+      "test_case_ids": [
+        "S3-T1",
+        "S3-T2"
+      ],
+      "snapshot_id": "snap-s3-20261110T091619Z",
+      "files": {
+        "snapshot": "snapshots/S3/snapshot.json",
+        "detections": "snapshots/S3/detections.json",
+        "expected": "snapshots/S3/expected.json",
+        "audit": "snapshots/S3/openclaw-security-audit.json"
+      },
+      "counts": {
+        "assets": 75,
+        "relations": 75,
+        "alerts": 3
+      },
+      "expected": {
+        "verdict": "PASS",
+        "counts": {
+          "PASS": 6,
+          "PARTIAL": 0,
+          "FAIL": 0,
+          "SKIP": 0,
+          "INFO": 0
+        }
+      }
+    },
+    {
+      "key": "S5-T1",
+      "label": "S5-T1 · 약한 연결 보안",
+      "kind": "scenario",
+      "scenario_id": "S5",
+      "synthetic": true,
+      "test_case_ids": [
+        "S5-T1"
+      ],
+      "snapshot_id": "snap-s5-t1-20261110T091620Z",
+      "files": {
+        "snapshot": "snapshots/S5-T1/snapshot.json",
+        "detections": "snapshots/S5-T1/detections.json",
+        "expected": "snapshots/S5-T1/expected.json",
+        "audit": "snapshots/S5-T1/openclaw-security-audit.json"
+      },
+      "counts": {
+        "assets": 73,
+        "relations": 73,
+        "alerts": 3
+      },
+      "expected": {
+        "verdict": "PASS",
+        "counts": {
+          "PASS": 7,
+          "PARTIAL": 0,
+          "FAIL": 0,
+          "SKIP": 0,
+          "INFO": 0
+        }
+      }
+    },
+    {
+      "key": "S5-T2",
+      "label": "S5-T2 · 약한 연결 보안",
+      "kind": "scenario",
+      "scenario_id": "S5",
+      "synthetic": true,
+      "test_case_ids": [
+        "S5-T2"
+      ],
+      "snapshot_id": "snap-s5-t2-20261110T091620Z",
+      "files": {
+        "snapshot": "snapshots/S5-T2/snapshot.json",
+        "detections": "snapshots/S5-T2/detections.json",
+        "expected": "snapshots/S5-T2/expected.json",
+        "audit": "snapshots/S5-T2/openclaw-security-audit.json"
+      },
+      "counts": {
+        "assets": 73,
+        "relations": 73,
+        "alerts": 1
+      },
+      "expected": {
+        "verdict": "PASS",
+        "counts": {
+          "PASS": 2,
+          "PARTIAL": 0,
+          "FAIL": 0,
+          "SKIP": 0,
+          "INFO": 0
+        }
+      }
+    },
+    {
+      "key": "S5-T3",
+      "label": "S5-T3 · 약한 연결 보안",
+      "kind": "scenario",
+      "scenario_id": "S5",
+      "synthetic": true,
+      "test_case_ids": [
+        "S5-T3"
+      ],
+      "snapshot_id": "snap-s5-t3-20261110T091620Z",
+      "files": {
+        "snapshot": "snapshots/S5-T3/snapshot.json",
+        "detections": "snapshots/S5-T3/detections.json",
+        "expected": "snapshots/S5-T3/expected.json",
+        "audit": "snapshots/S5-T3/openclaw-security-audit.json"
+      },
+      "counts": {
+        "assets": 73,
+        "relations": 73,
+        "alerts": 0
+      },
+      "expected": {
+        "verdict": "PASS",
+        "counts": {
+          "PASS": 2,
+          "PARTIAL": 0,
+          "FAIL": 0,
+          "SKIP": 0,
+          "INFO": 0
+        }
+      }
+    }
+  ],
+  "diffs": [
+    {
+      "from": "P0",
+      "to": "P1",
+      "file": "diffs/P0__P1.json",
+      "counts": {
+        "added": 41,
+        "modified": 1,
+        "removed_from_scope": 0,
+        "not_observed": 0
+      }
+    },
+    {
+      "from": "P1",
+      "to": "P2",
+      "file": "diffs/P1__P2.json",
+      "counts": {
+        "added": 12,
+        "modified": 0,
+        "removed_from_scope": 0,
+        "not_observed": 0
+      }
+    },
+    {
+      "from": "P2",
+      "to": "S1",
+      "file": "diffs/P2__S1.json",
+      "counts": {
+        "added": 10,
+        "modified": 3,
+        "removed_from_scope": 0,
+        "not_observed": 0
+      }
+    },
+    {
+      "from": "P2",
+      "to": "S1-T5",
+      "file": "diffs/P2__S1-T5.json",
+      "counts": {
+        "added": 2,
+        "modified": 2,
+        "removed_from_scope": 2,
+        "not_observed": 0
+      }
+    },
+    {
+      "from": "P2",
+      "to": "S2",
+      "file": "diffs/P2__S2.json",
+      "counts": {
+        "added": 0,
+        "modified": 29,
+        "removed_from_scope": 1,
+        "not_observed": 0
+      }
+    },
+    {
+      "from": "P2",
+      "to": "S4",
+      "file": "diffs/P2__S4.json",
+      "counts": {
+        "added": 1,
+        "modified": 0,
+        "removed_from_scope": 0,
+        "not_observed": 0
+      }
+    },
+    {
+      "from": "P2",
+      "to": "S3",
+      "file": "diffs/P2__S3.json",
+      "counts": {
+        "added": 2,
+        "modified": 3,
+        "removed_from_scope": 0,
+        "not_observed": 0
+      }
+    },
+    {
+      "from": "P2",
+      "to": "S5-T1",
+      "file": "diffs/P2__S5-T1.json",
+      "counts": {
+        "added": 0,
+        "modified": 3,
+        "removed_from_scope": 0,
+        "not_observed": 0
+      }
+    },
+    {
+      "from": "P2",
+      "to": "S5-T2",
+      "file": "diffs/P2__S5-T2.json",
+      "counts": {
+        "added": 0,
+        "modified": 3,
+        "removed_from_scope": 0,
+        "not_observed": 0
+      }
+    },
+    {
+      "from": "P2",
+      "to": "S5-T3",
+      "file": "diffs/P2__S5-T3.json",
+      "counts": {
+        "added": 0,
+        "modified": 3,
+        "removed_from_scope": 0,
+        "not_observed": 0
+      }
+    }
+  ],
+  "usage": null,
+  "ruleset": {
+    "id": "agent-scope-threat-scenarios",
+    "version": "2.1"
+  },
+  "policies": {
+    "approved_servers": "testbed/ground-truth/approved-servers.json",
+    "tool_policy": "pol-s2-expected-tool-policy 2.1"
+  },
+  "expected": {
+    "source": "docs/threat-scenarios/expected-results.md + testbed/ground-truth/S1.json",
+    "version": "2.1",
+    "profiles": [
+      "P2",
+      "S1",
+      "S1-T5",
+      "S2",
+      "S3",
+      "S4",
+      "S5-T1",
+      "S5-T2",
+      "S5-T3"
+    ]
+  },
+  "usage_api": {
+    "dir": "usage-api",
+    "api_base": "/api/v1/usage",
+    "captured_at": "2026-11-10T09:16:18Z",
+    "mode": "fixed",
+    "sources": [
+      "pc-1029.traces.jsonl"
+    ],
+    "records": 16,
+    "inventory_snapshot_id": null,
+    "source": "feature/token-collector · backend/usageapi (agentscope-usage-api)"
+  }
+}

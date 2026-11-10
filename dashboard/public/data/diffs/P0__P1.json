@@ -1,0 +1,692 @@
+{
+  "schema_version": "0.6.0-draft",
+  "diff_id": "diff-snap-p0-20261110T091618Z--snap-p1-20261110T091619Z",
+  "environment_id": "agentscope-testbed",
+  "profile_id": "tb-openclaw",
+  "previous_snapshot_id": "snap-p0-20261110T091618Z",
+  "current_snapshot_id": "snap-p1-20261110T091619Z",
+  "previous_report_id": "det-snap-p0-20261110T091618Z",
+  "current_report_id": "det-snap-p1-20261110T091619Z",
+  "generated_at": "2026-11-10T09:16:20Z",
+  "comparison_status": "complete",
+  "changes": [
+    {
+      "asset_id": "node_1ca37e363256f7fb",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-node-identity"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "srv_ec1aa5ba6ea61ff0",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-decl-tb-node-kg-memory"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "srv_eee2566222d9bc33",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-decl-tb-node-demo-everything"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "pa_087042e2e785a2d2",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-decl-tb-node-demo-everything"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "tool_ded3c41f9a823fb4",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-kg-memory"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "tool_d85dcf8b7b833e9b",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-kg-memory"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "tool_763c5440832c799e",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-kg-memory"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "tool_51cd31965b8f4f26",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-kg-memory"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "tool_98df43243ff1156e",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-kg-memory"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "tool_26a81ed81be3943b",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-kg-memory"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "tool_7a3adaad7a6c35e4",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-kg-memory"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "tool_d80f6ea24fe9c75b",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-kg-memory"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "tool_8fcf3d9415d68c1a",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-kg-memory"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "rp_29e54f6426a13653",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-kg-memory"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "tool_67a64e6145413178",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "tool_e20c9eb5420403d1",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "tool_762c09336caad7d0",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "tool_93f12ac4f2ea5fff",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "tool_64612d3c4e5415b6",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "tool_d83c2aa31dee5dc4",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "tool_0ee651414b0e8849",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "tool_bd297168f8839140",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "tool_d364d522832496d7",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "tool_c96e12e3082b2372",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "tool_8593712d5cdd263c",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "tool_75995a93ada69d48",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "tool_c0285092845c94d5",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "rp_a768125d19b14a0e",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "rp_bb6bcc335c627639",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "rp_0c44f11d568ffe23",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "rp_5b5f742bb857f02c",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "rp_fd660ea2629ba4eb",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "rp_d7b03965165de3c7",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "rp_b117b808b5d2930a",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "rp_e0f4ab24265f111f",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "rp_26e9867da8b3f4ae",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "rp_272815b746abd40c",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "rp_ba0cd1f86ea81c59",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "rp_7191c74da4522626",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "rp_eba916112fc2cd01",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "skill_d15583d662a535f2",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-skill-tb-node-node-disk-report"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "skill_3486e732139325f5",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-skill-tb-node-node-notes-summary"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    }
+  ],
+  "relation_changes": [
+    {
+      "relation_id": "rel_bde93742570744a8",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_dc821a5d3c34c5e4",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_dcf5e77d71f2150e",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_aec40614c2934d60",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_7be8ac500eee7641",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_e4c9b93e8bb26475",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_7765d62b550fed80",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_39b9156c412d6026",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_8cb31e3a8fd93ecb",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_85088ec02c287dbc",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_d3e302d2f39fbc52",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_1c9bb0e096bbba56",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_005cdff41d1cf089",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_21086f7caf445039",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_ae0706d3ebb36c07",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_745d22855a205260",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_e967fef18623bf1e",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_2b648d981a07666c",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_cba1f74b81b8de6f",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_76c0945d35cabf60",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_147ff96afb0864ca",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_9de30def3b5378e9",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_dcb6864739a3f18a",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_02885ca903357f66",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_1f4ae3437af1f774",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_8165daabd8c1f01c",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_2c7b2adc3ed052cc",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_10ea90cbaa9727bf",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_d728c00faf43ebf8",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_ef459213002c6e6e",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_91180818432e94df",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_4fab915f4ec7fe95",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_c84dce051a322582",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_f8cd0dfad06d5e71",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_f60c10d76e983db1",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_57fc2d69ede5c073",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_22427f7df605900a",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_85b91fb372afac14",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_01c19b6070ba7fcb",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_73907c3afe425ca0",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_07fb178de94e421a",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_1a58f32241c4466b",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    }
+  ],
+  "alert_changes": [],
+  "limitations": []
+}

@@ -1,0 +1,197 @@
+{
+  "schema_version": "0.6.0-draft",
+  "qa_run_id": "exp-snap-s3-20261110T091619Z",
+  "environment_id": "agentscope-testbed",
+  "profile_id": "tb-openclaw",
+  "snapshot_id": "snap-s3-20261110T091619Z",
+  "expected_profile": "S3",
+  "expected_source": "docs/threat-scenarios/expected-results.md",
+  "expected_version": "2.1",
+  "generated_at": "2026-11-10T09:16:19Z",
+  "detection_report_id": "det-snap-s3-20261110T091619Z",
+  "verdict": "PASS",
+  "checks": [
+    {
+      "check_id": "exp-01",
+      "kind": "required",
+      "condition_id": "S3-C1",
+      "scenario_id": "S3",
+      "target": "inventory-remote/tool/read_text_file",
+      "asset_id": "tool_18db4b32752e5e66",
+      "result": "PASS",
+      "expected": {
+        "alert": true,
+        "severity": "medium",
+        "confidence": "high"
+      },
+      "actual": {
+        "alerts": [
+          {
+            "alert_id": "alert-6b38b71e97e1",
+            "severity": "medium",
+            "confidence": "high"
+          }
+        ]
+      },
+      "evidence_refs": [
+        "ev-cap-fs-workspace",
+        "ev-cap-inventory-remote"
+      ],
+      "reason": "fs-workspace와 inventory-remote가 read_text_file을 광고. 제공 서버·Endpoint(stdio/https)·inputSchema(sync_url 추가)·openWorldHint가 다름"
+    },
+    {
+      "check_id": "exp-02",
+      "kind": "required",
+      "condition_id": "S3-C2",
+      "scenario_id": "S3",
+      "target": "inventory-remote/tool/catalog_search",
+      "asset_id": "tool_a0e675998b4fba28",
+      "result": "PASS",
+      "expected": {
+        "alert": true,
+        "severity": "low",
+        "confidence": "medium"
+      },
+      "actual": {
+        "alerts": [
+          {
+            "alert_id": "alert-4ddae61e8a9e",
+            "severity": "low",
+            "confidence": "medium"
+          }
+        ]
+      },
+      "evidence_refs": [
+        "ev-cap-asset-catalog",
+        "ev-cap-inventory-remote"
+      ],
+      "reason": "asset-catalog와 inventory-remote가 같은 정의의 catalog_search를 광고. 정의가 같아 어느 서버가 호출될지 구분 근거가 이름 외에 없음"
+    },
+    {
+      "check_id": "exp-03",
+      "kind": "optional",
+      "condition_id": "S2-C1",
+      "scenario_id": "S2",
+      "target": "tb-gw/mcp_server/inventory-remote",
+      "asset_id": "srv_8d8aec91ec656a07",
+      "result": "PASS",
+      "expected": {
+        "alert": true,
+        "severity": "high",
+        "confidence": "high"
+      },
+      "actual": {
+        "alerts": [
+          {
+            "alert_id": "alert-c27117be553d",
+            "severity": "high",
+            "confidence": "high"
+          }
+        ]
+      },
+      "evidence_refs": [
+        "ev-decl-tb-gw-inventory-remote",
+        "ev-cap-inventory-remote"
+      ],
+      "reason": "기대 도구 정책의 inventory-remote 허용 목록에 없는 도구가 노출됨. 동반 경고(S3 채점 미포함)"
+    },
+    {
+      "check_id": "exp-04",
+      "kind": "no_alert",
+      "condition_id": null,
+      "scenario_id": "S1/S3",
+      "target": "tb-gw/mcp_server/inventory-remote",
+      "asset_id": "srv_8d8aec91ec656a07",
+      "result": "PASS",
+      "expected": {
+        "alert": false,
+        "scenarios": [
+          "S1",
+          "S3"
+        ]
+      },
+      "actual": {
+        "alerts": []
+      },
+      "evidence_refs": [],
+      "reason": "S1: 설정 변경 없음. S3: 이름이 겹치지 않는 도구"
+    },
+    {
+      "check_id": "exp-05",
+      "kind": "no_alert",
+      "condition_id": null,
+      "scenario_id": "S1/S3",
+      "target": "kg-memory/tool/read_graph",
+      "asset_id": "tool_7a3adaad7a6c35e4",
+      "result": "PASS",
+      "expected": {
+        "alert": false,
+        "scenarios": [
+          "S1",
+          "S3"
+        ]
+      },
+      "actual": {
+        "alerts": []
+      },
+      "evidence_refs": [],
+      "reason": "S1: 설정 변경 없음. S3: 이름이 겹치지 않는 도구"
+    },
+    {
+      "check_id": "exp-06",
+      "kind": "no_alert",
+      "condition_id": null,
+      "scenario_id": "S1/S3",
+      "target": "demo-everything/tool/echo",
+      "asset_id": "tool_67a64e6145413178",
+      "result": "PASS",
+      "expected": {
+        "alert": false,
+        "scenarios": [
+          "S1",
+          "S3"
+        ]
+      },
+      "actual": {
+        "alerts": []
+      },
+      "evidence_refs": [],
+      "reason": "S1: 설정 변경 없음. S3: 이름이 겹치지 않는 도구"
+    }
+  ],
+  "metrics": [
+    {
+      "name": "required_alert_recall",
+      "scope": "required",
+      "numerator": 2,
+      "denominator": 2,
+      "value": 1.0
+    },
+    {
+      "name": "severity_match",
+      "scope": "required",
+      "numerator": 2,
+      "denominator": 2,
+      "value": 1.0
+    },
+    {
+      "name": "no_alert_kept",
+      "scope": "no_alert",
+      "numerator": 3,
+      "denominator": 3,
+      "value": 1.0
+    },
+    {
+      "name": "unknown_kept",
+      "scope": "unknown",
+      "numerator": 0,
+      "denominator": 0,
+      "value": null
+    }
+  ],
+  "limitations": [
+    "선택(required: false) 경고는 탐지율 분모에서 제외",
+    "severity 차이는 PARTIAL",
+    "기대 결과에 없는 경고는 INFO로만 표시(비경고 범위에 걸린 경우는 FAIL)"
+  ]
+}

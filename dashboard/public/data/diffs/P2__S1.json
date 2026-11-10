@@ -1,0 +1,252 @@
+{
+  "schema_version": "0.6.0-draft",
+  "diff_id": "diff-snap-p2-20261110T091619Z--snap-s1-20261110T091619Z",
+  "environment_id": "agentscope-testbed",
+  "profile_id": "tb-openclaw",
+  "previous_snapshot_id": "snap-p2-20261110T091619Z",
+  "current_snapshot_id": "snap-s1-20261110T091619Z",
+  "previous_report_id": "det-snap-p2-20261110T091619Z",
+  "current_report_id": "det-snap-s1-20261110T091619Z",
+  "generated_at": "2026-11-10T09:16:20Z",
+  "comparison_status": "complete",
+  "changes": [
+    {
+      "asset_id": "srv_8d8aec91ec656a07",
+      "change_type": "modified",
+      "changed_fields": [
+        "/product/config",
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-decl-tb-gw-inventory-remote"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "srv_0e63a468ce58a5e3",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-decl-tb-gw-shadow-notes"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "srv_d9420a7c62492bdb",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-decl-tb-node-node-helper"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "plg_853848be22d0c397",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-plugin-agentscope-notes-sync",
+        "ev-plugin-cfg-agentscope-notes-sync"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "srv_9407dbfbf579b00d",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-plugin-srv-agentscope-notes-sync-notes-sync"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "tool_eb4353d48a76c254",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-inventory-remote"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_53b93b83f270bcc8",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-inventory-remote"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_d311b54f4f37952c",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-shadow-notes"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "tool_1be37ac74f040141",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-shadow-notes"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "tool_52e786d6dffeccc6",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-node-helper"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "tool_747f342ae27aa806",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-node-helper"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "tool_7d50d15944838b94",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-notes-sync"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    },
+    {
+      "asset_id": "tool_ad357f43b2437c0a",
+      "change_type": "added",
+      "changed_fields": [],
+      "detected_at": "2026-11-10T09:16:19Z",
+      "evidence_refs": [
+        "ev-cap-notes-sync"
+      ],
+      "reason": "이전 스냅샷의 같은 범위에 없던 자산"
+    }
+  ],
+  "relation_changes": [
+    {
+      "relation_id": "rel_52e74202bb9d8316",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_febdb311daae2c02",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_733a33db86f92274",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_09d5bee82e292891",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_ee86b9b4f4dbb0c0",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_2fe0edefa490290d",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_a1c9eb6c6ea7c84e",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_ea1f9f31c9a5a2bf",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_b6437cedf9b4e3ae",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    },
+    {
+      "relation_id": "rel_be14836fb72bbfff",
+      "change_type": "added",
+      "changed_fields": [],
+      "reason": "새 관계"
+    }
+  ],
+  "alert_changes": [
+    {
+      "finding_key": "3fb872e538d341e3808d0581",
+      "change_type": "opened",
+      "previous_alert_id": null,
+      "current_alert_id": "alert-3fb872e538d3",
+      "reason": "이번 평가에서 새로 탐지"
+    },
+    {
+      "finding_key": "3f8abc0a667846731b88c128",
+      "change_type": "opened",
+      "previous_alert_id": null,
+      "current_alert_id": "alert-3f8abc0a6678",
+      "reason": "이번 평가에서 새로 탐지"
+    },
+    {
+      "finding_key": "34422504885855f7a43aad0c",
+      "change_type": "opened",
+      "previous_alert_id": null,
+      "current_alert_id": "alert-344225048858",
+      "reason": "이번 평가에서 새로 탐지"
+    },
+    {
+      "finding_key": "a41c7bbc1a7a4e1caf9925f1",
+      "change_type": "opened",
+      "previous_alert_id": null,
+      "current_alert_id": "alert-a41c7bbc1a7a",
+      "reason": "이번 평가에서 새로 탐지"
+    },
+    {
+      "finding_key": "4a2b6879426c9334196ba941",
+      "change_type": "opened",
+      "previous_alert_id": null,
+      "current_alert_id": "alert-4a2b6879426c",
+      "reason": "이번 평가에서 새로 탐지"
+    }
+  ],
+  "limitations": []
+}
