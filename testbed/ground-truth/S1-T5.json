@@ -1,0 +1,188 @@
+{
+  "profile": "S1-T5",
+  "base_profile": "P2",
+  "base_snapshot": "SNAP-2-P2",
+  "environment": {
+    "openclaw_version": "2026.9.6",
+    "mcp_spec_version": "2026-07-28"
+  },
+  "scope": "P2 대비 추가·변경·삭제된 자산과 관계만 기록. 나머지는 ground-truth/P2.json과 같다",
+  "approved_servers": "ground-truth/approved-servers.json",
+  "summary": {
+    "asset_counts": {
+      "gateway": 1,
+      "node": 1,
+      "plugin": 1,
+      "mcp_server": 5,
+      "tool": 40,
+      "resource": 11,
+      "prompt": 5,
+      "skill": 3
+    },
+    "relation_count": 67
+  },
+  "added_assets": [
+    {
+      "asset_key": "tb-node/mcp_server/inventory-remote",
+      "asset_type": "mcp_server",
+      "declared_at": "tb-node:~/.openclaw/openclaw.json#nodeHost.mcp.servers.inventory-remote",
+      "layer": "declared",
+      "attributes": {
+        "transport": "streamable-http",
+        "negotiated_protocol_version": "2025-11-25",
+        "server_info": {
+          "name": "agentscope-inventory-remote",
+          "version": "0.1.0"
+        },
+        "url": "https://tb-node:8443/mcp",
+        "ssl_verify": true,
+        "runs_on": "tb-node",
+        "credential_ref": {
+          "env_ref": "INVENTORY_MCP_TOKEN",
+          "store": "tb-node:~/.openclaw/.env",
+          "used_in": "headers.Authorization"
+        }
+      }
+    }
+  ],
+  "changed_assets": [],
+  "removed_assets": [
+    "tb-gw/mcp_server/inventory-remote"
+  ],
+  "added_relations": [
+    {
+      "type": "DECLARES",
+      "source": "tb-node/node",
+      "target": "tb-node/mcp_server/inventory-remote",
+      "evidence_refs": [
+        "tb-node:~/.openclaw/openclaw.json#nodeHost.mcp.servers.inventory-remote"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/inventory-remote",
+      "target": "inventory-remote/tool/inventory_list_hosts",
+      "evidence_refs": [
+        "inventory-remote:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/inventory-remote",
+      "target": "inventory-remote/tool/inventory_get_host",
+      "evidence_refs": [
+        "inventory-remote:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/inventory-remote",
+      "target": "inventory-remote/resource/inventory://hosts",
+      "evidence_refs": [
+        "inventory-remote:resources/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/inventory-remote",
+      "target": "inventory-remote/prompt/inventory_owner_report",
+      "evidence_refs": [
+        "inventory-remote:prompts/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ASSOCIATED_WITH",
+      "source": "tb-gw/skill/inventory-owner-report",
+      "target": "tb-node/mcp_server/inventory-remote",
+      "evidence_refs": [
+        "tb-gw:~/workspace/skills/inventory-owner-report/SKILL.md (본문에서 inventory-remote 도구 호출을 지시)"
+      ],
+      "confidence": "medium"
+    }
+  ],
+  "removed_relations": [
+    {
+      "type": "DECLARES",
+      "source": "tb-gw/gateway",
+      "target": "tb-gw/mcp_server/inventory-remote",
+      "evidence_refs": [
+        "tb-gw:~/.openclaw/openclaw.json#mcp.servers.inventory-remote"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/inventory-remote",
+      "target": "inventory-remote/tool/inventory_list_hosts",
+      "evidence_refs": [
+        "inventory-remote:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/inventory-remote",
+      "target": "inventory-remote/tool/inventory_get_host",
+      "evidence_refs": [
+        "inventory-remote:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/inventory-remote",
+      "target": "inventory-remote/resource/inventory://hosts",
+      "evidence_refs": [
+        "inventory-remote:resources/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/inventory-remote",
+      "target": "inventory-remote/prompt/inventory_owner_report",
+      "evidence_refs": [
+        "inventory-remote:prompts/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ASSOCIATED_WITH",
+      "source": "tb-gw/skill/inventory-owner-report",
+      "target": "tb-gw/mcp_server/inventory-remote",
+      "evidence_refs": [
+        "tb-gw:~/workspace/skills/inventory-owner-report/SKILL.md (본문에서 inventory-remote 도구 호출을 지시)"
+      ],
+      "confidence": "medium"
+    }
+  ],
+  "expected_alerts": [
+    {
+      "required": true,
+      "case": "4",
+      "scenario": "S1",
+      "condition_id": "S1-C4",
+      "target": "tb-node/mcp_server/inventory-remote",
+      "risk_condition": "선언 위치 이상",
+      "reason": "승인 목록의 선언 위치는 tb-gw mcp.servers인데 tb-node nodeHost.mcp.servers에서 선언됨. 이름·Endpoint는 승인 목록과 같음",
+      "severity": "medium",
+      "confidence": "high"
+    }
+  ],
+  "expected_no_alert": {
+    "scenario": "S1",
+    "targets": [
+      "tb-gw/mcp_server/fs-workspace",
+      "tb-node/mcp_server/kg-memory",
+      "tb-node/mcp_server/demo-everything",
+      "tb-gw/mcp_server/asset-catalog"
+    ],
+    "note": "S1-C1(미승인 서버)로 내면 오답. 이름은 승인 목록에 있음"
+  },
+  "expected_unknown": []
+}

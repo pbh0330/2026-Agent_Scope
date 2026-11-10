@@ -1,0 +1,69 @@
+{
+  "nodeHost": {
+    "autoUpdate": {
+      "enabled": false
+    },
+    "mcp": {
+      "servers": {
+        "kg-memory": {
+          "command": "mcp-server-memory",
+          "env": {
+            "MEMORY_FILE_PATH": "/home/<TB_USER>/node-data/memory.jsonl"
+          }
+        },
+        "demo-everything": {
+          "command": "mcp-server-everything",
+          "args": [
+            "stdio"
+          ],
+          "env": {
+            "EVERYTHING_DEMO_KEY": "${EVERYTHING_DEMO_KEY}"
+          },
+          "toolFilter": {
+            "exclude": [
+              "get-env",
+              "gzip-file-as-resource"
+            ]
+          }
+        },
+        "inventory-remote": {
+          "url": "https://tb-node:8443/mcp",
+          "transport": "streamable-http",
+          "headers": {
+            "Authorization": "Bearer ${INVENTORY_MCP_TOKEN}"
+          },
+          "sslVerify": true,
+          "enabled": true
+        }
+      }
+    }
+  },
+  "plugins": {
+    "entries": {
+      "anthropic": {
+        "config": {
+          "sessionCatalog": {
+            "enabled": false
+          }
+        }
+      },
+      "codex": {
+        "config": {
+          "sessionCatalog": {
+            "enabled": false
+          }
+        }
+      }
+    }
+  },
+  "meta": {
+    "migrations": {
+      "modelPolicyAllowlist": true,
+      "utilityModelSeparation": true
+    },
+    "lastTouchedVersion": "2026.9.6"
+  },
+  "update": {
+    "checkOnStart": false
+  }
+}
