@@ -8,7 +8,7 @@
 
 | 원칙 | 내용 |
 |---|---|
-| 읽기 전용 | 세 모듈 모두 명령을 실행하지 않고 서버에 접속하지 않으며 플러그인 코드를 import·실행하지 않습니다. 입력은 호출자가 명시한 파일·디렉터리뿐이고 홈 디렉터리 등을 자동 탐색하지 않습니다. |
+| 읽기 전용 | 세 모듈은 기본적으로 명령을 실행하지 않고 서버에 접속하지 않으며 플러그인 코드를 import·실행하지 않습니다(① `plugin_skill_assets`·② `node_gateway_identity`는 사용자가 `--openclaw-bin`과 직접 조회 옵션을 명시한 경우에만 허용 목록의 읽기 조회를 [`openclaw_direct`](openclaw-direct.md)로 실행). 입력은 호출자가 명시한 파일·디렉터리뿐이고 홈 디렉터리 등을 자동 탐색하지 않습니다. |
 | 값의 출처 구분 | **정적 파일에서 관측**한 값, **설정에 선언**된 값, **저장된 명령 출력**의 값, **사용자가 제공**한 값을 서로 다른 필드에 둡니다. 어느 것도 스캐너가 런타임에서 확인한 값이 아닙니다(`verified_by_scanner: false`). |
 | 없는 값을 만들지 않음 | 원천에 없는 필드는 생략합니다. 기본값·활성 여부·"유효한 정책"을 계산해 채우지 않습니다. |
 | 가려진 식별값 | 비밀값처럼 보여 가려졌거나 바뀐 식별값(`id`, `name`, `deviceId`)은 `original_value: null`, `status: withheld_by_redaction`으로 표시하고 같은 값 비교·연결에 쓰지 않습니다. |
@@ -75,7 +75,7 @@
 .\.venv\Scripts\python.exe -m asset_scanner.node_gateway_identity --gateway-identity gw=examples\gateway-identity.sample.json --observed-at gw=2026-11-12T09:00:00+09:00 --output output\identity.result.json
 ```
 
-**이 모듈은 명령을 실행하지 않습니다.** 사용자가 미리 저장한 `openclaw gateway call gateway.identity.get --json`(Gateway) 또는 `openclaw node identity --json`(Node) 출력 파일을 읽습니다. 두 명령은 1장에서 확인한 읽기 전용 원천입니다.
+**이 모듈은 기본적으로 명령을 실행하지 않습니다**(직접 조회 옵션을 명시한 경우만 [openclaw-direct.md](openclaw-direct.md)의 규칙으로 두 명령을 실행). 사용자가 미리 저장한 `openclaw gateway call gateway.identity.get --json`(Gateway) 또는 `openclaw node identity --json`(Node) 출력 파일을 읽습니다. 두 명령은 1장에서 확인한 읽기 전용 원천입니다.
 
 | 필드 | 설명 |
 |---|---|

@@ -25,7 +25,8 @@ asset-scanner/
 │   ├── linking.py        # 저장된 설정 수집 결과와 Tool 카탈로그 결과의 서버 단위 연결 (별도 CLI, 서버 접속 없음)
 │   ├── resources_prompts.py # 저장된 resources/list·resources/templates/list·prompts/list 응답 → 정의 목록 (별도 CLI, 서버 접속 없음)
 │   ├── plugin_skill_assets.py # 지정한 플러그인·스킬 디렉터리/설정/저장된 명령 출력 → Plugin·Skill 자체 정보 (읽기 전용)
-│   ├── node_gateway_identity.py # 저장된 `node identity`·`gateway.identity.get` 출력 → Gateway·Node identity (명령 실행 없음)
+│   ├── node_gateway_identity.py # 저장된 또는 직접 조회한 `node identity`·`gateway.identity.get` 출력 → Gateway·Node identity
+│   ├── openclaw_direct.py # 지정한 OpenClaw 실행 파일에 허용 목록의 읽기 조회만 실행 (인자 배열, 시간·크기 제한, 프로세스 정리)
 │   ├── permission_auth.py # 설정의 정책·인증 선언 → 원천 항목 (읽기 전용, 집계 없음)
 │   ├── live_discovery.py  # 명시적으로 고른 MCP 서버 하나의 Tool·Resource·ResourceTemplate·Prompt 목록 실제 조회 (실행·접속)
 │   ├── dev_lists_server.py # 검증용 로컬 시험 서버 2 (stdio·로컬 HTTP·가짜 인증, 목록 4종)
@@ -38,7 +39,7 @@ asset-scanner/
 
 ## 설치 (Windows PowerShell)
 
-현재 검증 상태(Windows 10, Python 3.14.4, 프로젝트 `.venv`): 수집된 테스트는 635개입니다. **한 번의 전체 실행이 종료 코드 0으로 끝난 기록은 없습니다.** 이 PC(RAM 8GB)에서 전체 실행이 메모리 부족으로 중단된 적이 있어 파일 단위로 나눠 순차 실행하고 각 실행의 pytest 종료 코드를 따로 기록했습니다. 기존 494개는 중단된 전체 실행에서 통과로 기록된 458개와 나머지 36개의 분할 실행(종료 코드 모두 0)을 합쳐 각각 한 번 이상 통과했음을 확인했고(중복·누락·실패 없음, [필드 매핑 10-8](docs/field-mapping.md)), 이번에 더한 141개(Plugin·Skill 30, Gateway·Node identity 33, Permission/Auth 18, 실제 목록 조회 60)는 파일 단위 실행에서 종료 코드 0으로 통과했습니다([자산 수집 6장](docs/asset-collection.md), [실제 목록 조회 9장](docs/live-discovery.md)). 기존 모듈 중 이번에 바뀐 것은 `linking`뿐이며 그 테스트(83개)는 다시 실행해 통과했습니다. 로그는 `output/`(Git 제외)에 있습니다. 2026-10-31 별도 Linux Python 3.12 환경에서의 검증 기록(301개)은 과거 기록이며 현재 검증 결과가 아닙니다.
+현재 검증 상태(Windows 10, Python 3.14.4, 프로젝트 `.venv`): 수집된 테스트는 680개입니다. **한 번의 전체 실행이 종료 코드 0으로 끝난 기록은 없습니다.** 이 PC(RAM 8GB)에서 전체 실행이 메모리 부족으로 중단된 적이 있어 파일 단위로 나눠 순차 실행하고 각 실행의 pytest 종료 코드를 따로 기록했습니다. 기존 494개는 중단된 전체 실행에서 통과로 기록된 458개와 나머지 36개의 분할 실행(종료 코드 모두 0)을 합쳐 각각 한 번 이상 통과했음을 확인했고(중복·누락·실패 없음, [필드 매핑 10-8](docs/field-mapping.md)), 그 뒤에 더한 141개(Plugin·Skill 30, Gateway·Node identity 33, Permission/Auth 18, 실제 목록 조회 60)는 파일 단위 실행에서 종료 코드 0으로 통과했습니다([자산 수집 6장](docs/asset-collection.md), [실제 목록 조회 9장](docs/live-discovery.md)). OpenClaw 직접 조회 45개(가짜 CLI)는 파일 단위로 통과했고([직접 조회 6장](docs/openclaw-direct.md)), 이때 수정한 기존 모듈(`linking`·`plugin_skill_assets`·`node_gateway_identity`)의 기존 테스트 146개도 다시 실행해 통과했습니다. 실제 OpenClaw 실행 검증은 없습니다. 로그는 `output/`(Git 제외)에 있습니다. 2026-10-31 별도 Linux Python 3.12 환경에서의 검증 기록(301개)은 과거 기록이며 현재 검증 결과가 아닙니다.
 
 ```powershell
 cd asset-scanner
@@ -529,12 +530,12 @@ SDK `mcp`는 2026-07-28 규격을 지원하는 정식 2.x 중 **2.3.0**으로 �
 
 ## Plugin·Skill, Gateway·Node identity, Permission/Auth 수집 (자산 수집 확대)
 
-세 모듈 모두 **읽기 전용**입니다. 명령을 실행하지 않고 서버에 접속하지 않으며 플러그인 코드를 import·실행하지 않습니다. 근거(OpenClaw 2026.9.6 패키지 문서·코드의 정적 읽기), 필드, 한계는 [docs/asset-collection.md](docs/asset-collection.md)에 있습니다. 출력은 내부 초안이며 공통 ID·공통 스키마는 확정하지 않았습니다.
+세 모듈 모두 **읽기 전용**입니다. 기본적으로 명령을 실행하지 않고 서버에 접속하지 않으며 플러그인 코드를 import·실행하지 않습니다(①·②는 사용자가 `--openclaw-bin`과 직접 조회 옵션을 명시한 경우에만 [아래 절](#openclaw-직접-조회-openclaw_direct--지정한-실행-파일에-읽기-조회만-실행합니다)의 규칙으로 허용 목록 명령을 실행). 근거(OpenClaw 2026.9.6 패키지 문서·코드의 정적 읽기), 필드, 한계는 [docs/asset-collection.md](docs/asset-collection.md)에 있습니다. 출력은 내부 초안이며 공통 ID·공통 스키마는 확정하지 않았습니다.
 
 ```powershell
 # ① Plugin·Skill 자체 정보: 지정한 폴더/설정/저장된 `plugins list --json`·`skills list --json` 출력
 .\.venv\Scripts\python.exe -m asset_scanner.plugin_skill_assets --plugin-dir examples\plugin-sample --config examples\permission-auth.json5 --output output\plugin-skill.result.json
-# ② Gateway·Node identity: 저장해 둔 `gateway call gateway.identity.get --json`·`node identity --json` 출력 (명령 실행 없음)
+# ② Gateway·Node identity: 저장해 둔 `gateway call gateway.identity.get --json`·`node identity --json` 출력 (이 형태는 명령 실행 없음)
 .\.venv\Scripts\python.exe -m asset_scanner.node_gateway_identity --gateway-identity gw=examples\gateway-identity.sample.json --observed-at gw=2026-11-12T09:00:00+09:00 --output output\identity.result.json
 # ③ Permission/Auth: 설정의 정책·인증 선언을 원천 항목 그대로 (집계·유효 정책 계산 없음)
 .\.venv\Scripts\python.exe -m asset_scanner.permission_auth --config examples\permission-auth.json5 --output output\permission-auth.result.json
@@ -545,6 +546,26 @@ SDK `mcp`는 2026-07-28 규격을 지원하는 정식 2.x 중 **2.3.0**으로 �
 - **Gateway·Node identity**: `linking --observed-identity 라벨=파일`로 붙이면 `--subject`(사용자 입력)와 **별도 필드**(`declaring_subject.observed_identity`)에 기록되고, 둘이 다르면 충돌로 표시하되 어느 쪽도 고르지 않습니다. 옵션을 주지 않으면 기존 출력은 그대로입니다.
 - **Permission/Auth**: 항목마다 설정 위치와 적용 대상(전역·Provider·Agent·발신자 그룹·Gateway·Node·MCP 서버 선언 위치)을 가집니다. MCP 서버 항목은 설정 수집기와 같은 `declaration_path`를 씁니다. 인증정보는 종류(`secret_ref`/`env_ref`/`literal_withheld`)와 참조 이름만 남기고 **원문·길이·해시를 저장하지 않으며**, 발신자 키·허용 사용자 값은 개인 식별정보일 수 있어 종류·개수만 남깁니다.
 - 검증은 **가상 입력**(임시 폴더·설정·출력 파일)으로만 했습니다. 실제 OpenClaw 설치·실제 CLI 출력·팀 테스트베드와는 대조하지 않았습니다.
+
+## OpenClaw 직접 조회 (`openclaw_direct`) — 지정한 실행 파일에 읽기 조회만 실행합니다
+
+저장된 CLI 출력 파일을 미리 준비하지 않아도 `--openclaw-bin`으로 지정한 OpenClaw 실행 파일에 **허용 목록의 읽기 조회만** 실행해 기존 파서에 넘깁니다. 명령별 확인 결과와 근거(OpenClaw 2026.9.6 패키지 문서·번들 코드의 정적 읽기), 한계는 [docs/openclaw-direct.md](docs/openclaw-direct.md)에 있습니다.
+
+```powershell
+.\.venv\Scripts\python.exe -m asset_scanner.plugin_skill_assets --plugin-dir C:\path\plugin --openclaw-query plugins --openclaw-bin C:\path\openclaw.cmd --output output\plugin-skill.result.json
+.\.venv\Scripts\python.exe -m asset_scanner.node_gateway_identity --query-node-identity --query-gateway-identity gw --expect-gateway-url ws://127.0.0.1:18789 --openclaw-bin C:\path\openclaw.cmd --output output\identity.result.json
+```
+
+| 조회 | 처리 |
+|---|---|
+| `plugins list --json`, `node identity --json`, `--version` | 허용 (로컬 명령, 신원이 없으면 만들지 않음) |
+| `gateway call gateway.identity.get --json` | **이 메서드 하나로 고정**해 허용. `gateway call` 전체를 읽기 전용으로 취급하지 않음. 접속 대상은 OpenClaw 설정이 정하므로 `--expect-gateway-url`로 고정하거나 `--accept-configured-gateway`로 확인해야 함 |
+| `skills list --json` | **기본 거부.** 이 명령은 Gateway RPC를 보내고 장치 신원을 새로 만들 수 있어(이후 페어링 요청으로 이어질 수 있음) `--accept-skills-list-gateway-rpc`로 명시적으로 동의해야만 실행 |
+
+- 셸 문자열이 아니라 **인자 배열**로 실행하고, 허용 목록 밖의 명령·`--url/--token/--password`·초기화·설치·업데이트·페어링·설정 변경은 실행하지 않습니다. PATH에서 찾지 않고 지정한 파일만 실행하며, `--state-dir` 등 범위 경로는 **이미 존재해야** 합니다(새로 만들지 않음).
+- 조회당 시간·stdout 크기 제한을 두고 넘으면 프로세스 **트리**(손자 포함)를 종료합니다. 자식에게는 최소 환경 + 명시한 범위 + **이름을 지정한** 환경변수만 전달하고 값은 기록하지 않습니다. 출력 원문은 파일·로그에 쓰지 않습니다.
+- 결과에는 명령, 설치 버전(`--version`), 조회 범위, 관측 시각(`scanner_clock_at_query`)이 기록되며 **사용자 제공 / 저장된 출력 / 직접 조회**가 서로 다른 필드로 구분됩니다.
+- **가짜 CLI로만 검증했습니다.** 이 PC에는 OpenClaw가 없고 설치하지 않았으며, **실제 OpenClaw 실행 검증은 없습니다(미확인).**
 
 ## 실제 MCP 서버 목록 조회 (`live_discovery`) — 서버 프로세스를 실행하거나 접속합니다
 
