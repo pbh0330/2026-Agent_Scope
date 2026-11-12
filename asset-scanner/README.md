@@ -39,7 +39,7 @@ asset-scanner/
 
 ## 설치 (Windows PowerShell)
 
-현재 검증 상태(Windows 10, Python 3.14.4, 프로젝트 `.venv`): 수집된 테스트는 680개입니다. **한 번의 전체 실행이 종료 코드 0으로 끝난 기록은 없습니다.** 이 PC(RAM 8GB)에서 전체 실행이 메모리 부족으로 중단된 적이 있어 파일 단위로 나눠 순차 실행하고 각 실행의 pytest 종료 코드를 따로 기록했습니다. 기존 494개는 중단된 전체 실행에서 통과로 기록된 458개와 나머지 36개의 분할 실행(종료 코드 모두 0)을 합쳐 각각 한 번 이상 통과했음을 확인했고(중복·누락·실패 없음, [필드 매핑 10-8](docs/field-mapping.md)), 그 뒤에 더한 141개(Plugin·Skill 30, Gateway·Node identity 33, Permission/Auth 18, 실제 목록 조회 60)는 파일 단위 실행에서 종료 코드 0으로 통과했습니다([자산 수집 6장](docs/asset-collection.md), [실제 목록 조회 9장](docs/live-discovery.md)). OpenClaw 직접 조회 45개(가짜 CLI)는 파일 단위로 통과했고([직접 조회 6장](docs/openclaw-direct.md)), 이때 수정한 기존 모듈(`linking`·`plugin_skill_assets`·`node_gateway_identity`)의 기존 테스트 146개도 다시 실행해 통과했습니다. 실제 OpenClaw 실행 검증은 없습니다. 로그는 `output/`(Git 제외)에 있습니다. 2026-10-31 별도 Linux Python 3.12 환경에서의 검증 기록(301개)은 과거 기록이며 현재 검증 결과가 아닙니다.
+현재 검증 상태(Windows 10, Python 3.14.4, 프로젝트 `.venv`): 수집된 테스트는 712개입니다. **한 번의 전체 실행이 종료 코드 0으로 끝난 기록은 없습니다.** 이 PC(RAM 8GB)에서 전체 실행이 메모리 부족으로 중단된 적이 있어 파일 단위로 나눠 순차 실행하고 각 실행의 pytest 종료 코드를 따로 기록했습니다. 기존 494개는 중단된 전체 실행에서 통과로 기록된 458개와 나머지 36개의 분할 실행(종료 코드 모두 0)을 합쳐 각각 한 번 이상 통과했음을 확인했고(중복·누락·실패 없음, [필드 매핑 10-8](docs/field-mapping.md)), 그 뒤에 더한 141개(Plugin·Skill 30, Gateway·Node identity 33, Permission/Auth 18, 실제 목록 조회 60)는 파일 단위 실행에서 종료 코드 0으로 통과했습니다([자산 수집 6장](docs/asset-collection.md), [실제 목록 조회 9장](docs/live-discovery.md)). OpenClaw 직접 조회 45개(가짜 CLI)와 원격 HTTPS 32개(로컬 HTTPS 시험 서버·테스트용 CA)는 파일 단위로 통과했습니다([직접 조회 6장](docs/openclaw-direct.md), [실제 목록 조회 11장](docs/live-discovery.md)). 직접 조회 때 수정한 기존 모듈의 기존 테스트 146개는 다시 실행해 통과했고, HTTPS 작업으로 `live_discovery`를 바꾼 뒤 기존 `test_live_discovery.py`는 59개 통과·1개 실패(변경 전 HEAD에서도 같은 조건에서 실패하는 타이밍 의존 테스트)였으며 그 테스트를 안정화해 단독 통과를 확인했으나 파일 전체를 다시 돌린 기록은 없습니다. 실제 OpenClaw 실행과 실제 원격 서버 검증은 없습니다. 로그는 `output/`(Git 제외)에 있습니다. 2026-10-31 별도 Linux Python 3.12 환경에서의 검증 기록(301개)은 과거 기록이며 현재 검증 결과가 아닙니다.
 
 ```powershell
 cd asset-scanner
@@ -579,7 +579,8 @@ SDK `mcp`는 2026-07-28 규격을 지원하는 정식 2.x 중 **2.3.0**으로 �
 .\.venv\Scripts\python.exe -m asset_scanner.live_discovery --config C:\path\openclaw.json5 --server my-server --allow-launch --output output\live-config.result.json
 ```
 
-- 설정의 서버를 자동으로 고르거나 모두 실행하지 않습니다. `--server`(키 하나)와 `--allow-launch`/`--allow-connect`가 모두 있어야 움직이며, 해석할 수 없는 참조(`${VAR}`·SecretRef·`$include`)가 있거나 OAuth·SSE·비루프백 호스트(`--allow-host` 없이)면 **실행·접속하지 않고** 사유와 함께 거부합니다. 토큰은 `--bearer-env 환경변수이름`으로 실행 때 읽고 결과에는 이름만 남깁니다.
+- 설정의 서버를 자동으로 고르거나 모두 실행하지 않습니다. `--server`(키 하나)와 `--allow-launch`/`--allow-connect`가 모두 있어야 움직이며, 해석할 수 없는 참조(`${VAR}`·SecretRef·`$include`)가 있거나 OAuth·SSE·비루프백 호스트(`--allow-host` 없이)·비루프백 평문 http면 **실행·접속하지 않고** 사유와 함께 거부합니다. 토큰은 `--bearer-env 환경변수이름`, 인증 헤더는 `--auth-header-env 헤더이름=환경변수이름`으로 실행 때 읽고 결과에는 이름만 남깁니다.
+- **원격 HTTPS**(Streamable HTTP + Bearer·인증 헤더): 인증서 체인·호스트 이름 검증은 **항상 켜져 있고 끌 수 없습니다.** 사설 CA는 `--ca-bundle`로 신뢰 저장소에 **추가**만 합니다. 리다이렉트는 따라가지 않고 다른 출처 요청은 헤더를 보내기 전에 막아 인증 헤더가 다른 호스트로 가지 않으며, 프록시·인증서 환경변수는 읽지 않습니다. 실패는 `tls_certificate_untrusted`·`tls_hostname_mismatch`·`tls_certificate_expired`·`connect_refused`·`connect_rejected`(401·403)·`redirect_not_followed` 등으로 구분합니다. **OAuth 로그인과 SSE는 지원하지 않으며 후속 작업입니다**([live-discovery 10장](docs/live-discovery.md#10-원격-https-streamable-http-연결-2026-11-13-추가)). 로컬 HTTPS 시험 서버와 테스트용 CA로만 검증했고 실제 원격 서버는 확인하지 못했습니다.
 - 협상된 `protocol_version`을 기록하고, **SDK가 통신할 수 있는 버전**(`2024-11-05`~`2026-07-28`)과 **스캐너가 응답을 읽을 수 있는 버전**(`2025-11-25`·`2026-07-28`)을 구분합니다. 파서가 읽지 못하는 버전이면 목록을 요청하지 않습니다.
 - 목록마다 `complete`(빈 목록 포함)·`partial`·`failed`·`unsupported`(첫 응답 -32601)·`not_performed`(능력 미선언·세션 종료·연결 실패 등)를 구분합니다. 요청하지 않은 목록을 0개나 실패로 채우지 않습니다.
 - 페이지·항목 수·시간 제한을 적용하고 프로세스와 포트를 정리합니다. 이름이 같은 서로 다른 서버·유형의 항목은 자동으로 합치지 않으며, 설정 선언과의 연결은 지정한 키(`declaration_link`)와 `--config-scan-ref`를 쓴 기존 `linking` 규칙으로만 합니다.
@@ -592,7 +593,7 @@ SDK `mcp`는 2026-07-28 규격을 지원하는 정식 2.x 중 **2.3.0**으로 �
 - `$include` 파일 읽기와 병합, 환경변수·SecretRef 해석(값은 계속 저장하지 않음)
 - 실제 OpenClaw 설치 환경에서 얻은 `plugins list --json`·`skills list --json`·`node identity`·`gateway call` 출력과 번들 플러그인 전체로의 검증 (가상 입력으로만 검증함)
 - 설정 대조·수집률·누락 계산, `DECLARES` 관계, 공통 자산 ID, 공통 스키마(`InventorySnapshot`) 변환 (팀 협의 대기)
-- 팀 테스트베드 서버·원격 HTTPS·OAuth·SSE 서버의 실제 조회 (개발용 시험 서버의 stdio·로컬 HTTP만 검증함), `tools/call`·`resources/read`·`prompts/get`
+- 팀 테스트베드 서버·**실제 원격 서버의 HTTPS 조회**(로컬 시험 서버의 TLS 통신만 검증함), OAuth·SSE 서버(지원하지 않음, 후속 작업), `tools/call`·`resources/read`·`prompts/get`
 
 ### 테스트베드 OpenClaw 버전 표기 (확인된 것과 대기 중인 것)
 
