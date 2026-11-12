@@ -45,6 +45,7 @@ from .report import FORMAT_NAME as CONFIG_FORMAT_NAME
 from .tools_catalog import FORMAT_NAME as CATALOG_FORMAT_NAME
 from .tools_catalog import _find_duplicates, _read_capture, _safe_short, _seg, _text
 
+IDENTITY_FORMAT_NAME = "agent-scope.scanner.gateway-node-identity"   # node_gateway_identity 모듈의 결과 형식
 FORMAT_NAME = "agent-scope.scanner.server-tool-links"
 FORMAT_VERSION = "0.1.0-draft"
 
@@ -203,7 +204,66 @@ def _process_subject_inputs(subjects: list[dict], scan_labels: list[str | None],
     return records, applicable
 
 
-def _subject_for(source: dict, provided: dict | None) -> dict:
+def _process_observed_identities(items: list[dict], scan_labels: list[str | None]) -> tuple[list[dict], dict[str, dict]]:
+    """`node_gateway_identity`가 저장한 관측 identity를 설정 수집 결과(라벨)에 붙일 수 있는지 검사한다.
+
+    사용자 입력(--subject)과 다른 출처의 값이다. 한 파일에 identity가 정확히 하나이고 deviceId를 원본으로 읽은 경우만 쓴다.
+    같은 라벨에 둘 이상이면 어느 쪽도 쓰지 않는다. 값은 만들거나 바꾸지 않는다.
+    """
+    counts = _label_counts(scan_labels)
+    per_label: dict[str, int] = {}
+    for it in items:
+        lb = it.get("scan_label")
+        if isinstance(lb, str):
+            per_label[lb] = per_label.get(lb, 0) + 1
+    records: list[dict] = []
+    applicable: dict[str, dict] = {}
+    for i, it in enumerate(items):
+        lb = it.get("scan_label")
+        problems: list[str] = []
+        if not _label_ok(lb):
+            problems.append("scan_label_invalid")
+        elif counts.get(lb, 0) == 0:
+            problems.append("unknown_scan_label")
+        elif counts[lb] > 1:
+            problems.append("scan_label_duplicate")
+        if isinstance(lb, str) and per_label.get(lb, 0) > 1:
+            problems.append("duplicate_observed_identity_input")
+        data, failure = _read_capture(it["path"])
+        chosen: dict | None = None
+        if failure is not None:
+            problems.append(f"identity_{failure['code']}")
+        elif not isinstance(data, dict) or data.get("format") != IDENTITY_FORMAT_NAME:
+            problems.append("identity_format_mismatch")
+        else:
+            ids = data.get("identities")
+            if not isinstance(ids, list) or len(ids) != 1 or not isinstance(ids[0], dict):
+                problems.append("identity_report_not_single")
+            else:
+                chosen = ids[0]
+                did = chosen.get("device_id") if isinstance(chosen.get("device_id"), dict) else {}
+                if chosen.get("kind") not in ("gateway", "node") or did.get("status") != "as_reported" or not isinstance(did.get("original_value"), str):
+                    problems.append("device_id_not_read")
+        records.append({"input_index": i, "scan_label": lb if _label_ok(lb) else None,
+                        "status": "applied" if not problems else "ignored", "problems": problems})
+        if not problems and chosen is not None:
+            obs = chosen.get("observation") if isinstance(chosen.get("observation"), dict) else {}
+            pk = chosen.get("public_key") if isinstance(chosen.get("public_key"), dict) else {}
+            applicable[lb] = {
+                "origin": "observed_from_stored_command_output",
+                "kind": chosen["kind"],
+                "device_id": {"original_value": chosen["device_id"]["original_value"], "status": "as_reported"},
+                "public_key_status": pk.get("status") if isinstance(pk.get("status"), str) else None,
+                "command": obs.get("command") if isinstance(obs.get("command"), str) else None,
+                "observed_at": obs.get("observed_at") if isinstance(obs.get("observed_at"), str) else None,
+                "observed_at_origin": obs.get("observed_at_origin") if isinstance(obs.get("observed_at_origin"), str) else None,
+                "file_modified_at": obs.get("file_modified_at") if isinstance(obs.get("file_modified_at"), str) else None,
+                "verified_by_scanner": False,
+            }
+    return records, applicable
+
+
+def _subject_for(source: dict, provided: dict | None, observed: dict | None = None) -> dict:
     kind_hint, basis = (_PLUGIN_HINT if source.get("source_kind") == "openclaw_plugin_manifest"
                         else _SUBJECT_HINTS.get(source.get("registry_path"), (None, "등록 영역으로 주체를 추정할 수 없음")))
     provided = provided or {}
@@ -215,7 +275,7 @@ def _subject_for(source: dict, provided: dict | None) -> dict:
         kind, origin, conflict, k_basis = kind_hint, "inferred_unverified", False, basis
     else:
         kind, origin, conflict, k_basis = None, "unknown", False, basis
-    return {
+    subject = {
         "kind": kind,
         "kind_origin": origin,
         "kind_basis": k_basis,
@@ -225,6 +285,14 @@ def _subject_for(source: dict, provided: dict | None) -> dict:
         "id_origin": "user_provided" if p_id else "not_collected",
         "verified_by_scanner": False,
     }
+    if observed is not None:
+        # 저장된 명령 출력에서 관측한 identity. 사용자 입력(id, id_origin)을 덮어쓰지 않고 별도 필드에 둔다.
+        subject["observed_identity"] = {
+            **observed,
+            "id_conflicts_with_user_provided": (p_id != observed["device_id"]["original_value"]) if p_id else None,
+            "kind_conflicts_with_subject_kind": (kind != observed["kind"]) if kind else None,
+        }
+    return subject
 
 
 # ---- 선언 목록 ---------------------------------------------------------------------
@@ -236,7 +304,8 @@ def _pointer_segments(pointer: Any) -> list[str] | None:
 
 
 def _build_declarations(scans: list[dict], labels: list[str | None], label_counts: dict[str, int],
-                        subjects: dict[str, dict], red: Redactor) -> tuple[list[dict], list[dict]]:
+                        subjects: dict[str, dict], red: Redactor,
+                        observed: dict[str, dict] | None = None) -> tuple[list[dict], list[dict]]:
     """(선언 목록, 입력별 요약). 같은 이름의 선언도 합치지 않고 입력·위치별로 따로 둔다."""
     declarations: list[dict] = []
     summaries: list[dict] = []
@@ -249,7 +318,7 @@ def _build_declarations(scans: list[dict], labels: list[str | None], label_count
         dup_registration_keys = {r.get("field_path") for r in col.get("reasons", [])
                                  if isinstance(r, dict) and r.get("code") == "duplicate_registration_key"}
         provided = subjects.get(label) if lstatus == "ok" else None
-        subject = _subject_for(source, provided)
+        subject = _subject_for(source, provided, (observed or {}).get(label) if lstatus == "ok" else None)
         summary = {
             "input_index": i,
             "label": _out_label(label, lstatus),
@@ -447,11 +516,14 @@ def _apply_trace(link: dict, declarations_by_ref: dict[str, dict], scans: list[d
     }
 
 
-def link_scans(config_scans: Any, catalogs: Any, subjects: list[dict] | None = None) -> dict:
+def link_scans(config_scans: Any, catalogs: Any, subjects: list[dict] | None = None,
+               observed_identities: list[dict] | None = None) -> dict:
     """저장된 결과를 연결한다.
 
     config_scans / catalogs: 경로, `(라벨, 경로)`, 또는 그 목록. 라벨은 카탈로그의 `config_link.config_scan_ref`가 가리키는 이름이다.
     subjects: `{"scan_label", "kind", "id"}` 목록. 사용자가 입력한 선언 주체 정보이며 스캐너가 확인한 것이 아니다.
+    observed_identities: `{"scan_label", "path"}` 목록. `node_gateway_identity` 결과 파일(정확히 하나의 identity)을 설정 수집 결과(라벨)에
+    붙인다. `--subject`와 별도 필드(`declaring_subject.observed_identity`)에 두며 입력이 없으면 출력에 아무 필드도 더하지 않는다.
     """
     red = Redactor()
     cfg_inputs = _norm_inputs(config_scans)
@@ -478,7 +550,8 @@ def link_scans(config_scans: Any, catalogs: Any, subjects: list[dict] | None = N
     scan_counts = _label_counts(scan_labels)
     cat_counts = _label_counts(cat_labels)
     subject_records, applicable = _process_subject_inputs(subjects, scan_labels, red)
-    declarations, summaries = _build_declarations(scans, scan_labels, scan_counts, applicable, red)
+    observed_records, observed_applicable = _process_observed_identities(list(observed_identities or []), scan_labels)
+    declarations, summaries = _build_declarations(scans, scan_labels, scan_counts, applicable, red, observed_applicable)
     # 매칭용 값(match_label)과 출력용 값(label)을 분리한다. 매칭용은 검사를 통과한 라벨만 갖고 결과에는 나가지 않는다.
     scan_view = [{**s, "match_label": scan_labels[s["input_index"]] if s["label_status"] in ("ok", "duplicate") else None}
                  for s in summaries]
@@ -528,6 +601,8 @@ def link_scans(config_scans: Any, catalogs: Any, subjects: list[dict] | None = N
         _apply_trace(ln, by_ref, scan_view)
 
     result["inputs"] = {"config_scans": summaries, "catalogs": cat_summaries, "subject_inputs": subject_records}
+    if observed_identities:   # 입력을 준 경우에만 키를 더한다 (기존 출력 형태 유지)
+        result["inputs"]["observed_identity_inputs"] = observed_records
     result["declarations"] = declarations
     result["links"] = links
 
@@ -567,6 +642,15 @@ def link_scans(config_scans: Any, catalogs: Any, subjects: list[dict] | None = N
         if c["server_count"] == 0:
             reasons.append({"code": "no_catalog_servers", "input_index": c["input_index"],
                             "message": "이 카탈로그에 서버 항목이 없어 연결할 것이 없습니다."})
+    for r in observed_records:
+        if r["status"] == "ignored":
+            reasons.append({"code": "observed_identity_ignored", "input_index": r["input_index"], "problems": r["problems"],
+                            "message": "관측 identity 입력을 적용하지 않았습니다. 해당 선언의 관측 identity는 미수집으로 남습니다."})
+    for s in summaries:
+        oi = s["declaring_subject"].get("observed_identity")
+        if oi and (oi["id_conflicts_with_user_provided"] or oi["kind_conflicts_with_subject_kind"]):
+            reasons.append({"code": "observed_identity_conflict", "input_index": s["input_index"],
+                            "message": "저장된 명령 출력에서 관측한 identity가 사용자가 입력한 주체 정보(--subject)와 다릅니다. 두 값을 모두 보존했고 어느 쪽도 확인하지 않았습니다."})
     for r in subject_records:
         if r["status"] == "ignored":
             reasons.append({"code": "subject_input_ignored", "input_index": r["input_index"], "problems": r["problems"],
@@ -646,6 +730,9 @@ def _parser() -> argparse.ArgumentParser:
                    help="Tool 카탈로그 결과 JSON (관측 하나). 여러 번 지정하면 같은 선언에 대한 관측을 따로 보존합니다")
     p.add_argument("--subject", action="append", default=[], metavar="라벨=종류[,id=값]",
                    help="설정 수집 결과(라벨)의 선언 주체 종류(gateway|node|plugin)와 식별값. 사용자 입력이며 스캐너가 확인하지 않습니다")
+    p.add_argument("--observed-identity", action="append", default=[], metavar="라벨=파일",
+                   help="설정 수집 결과(라벨)에 붙일 Gateway·Node identity 결과 JSON (node_gateway_identity 출력, identity 하나). "
+                        "저장된 명령 출력에서 관측한 값이며 --subject와 별도 필드에 기록합니다")
     p.add_argument("--output", required=True, type=Path, help="연결 결과 JSON을 저장할 경로")
     return p
 
@@ -659,12 +746,20 @@ def main(argv: list[str] | None = None) -> int:
     cfg = [_split_label(t) for t in args.config_scan]
     cat = [_split_label(t) for t in args.catalog]
     subjects = [_parse_subject(t, parser) for t in args.subject]
-    for _, src in [*cfg, *cat]:
+    observed = []
+    for t in args.observed_identity:
+        lb, p_ = _split_label(t)
+        if lb is None:
+            parser.error("--observed-identity는 '라벨=파일' 형식입니다 (예: gw=output/gateway-identity.json).")
+        observed.append({"scan_label": lb, "path": p_})
+    if len(observed) > MAX_INPUTS:
+        parser.error(f"각 입력은 {MAX_INPUTS}개까지 지정할 수 있습니다.")
+    for _, src in [*cfg, *cat, *[(None, o["path"]) for o in observed]]:
         if _same_file(src, args.output):
             print("오류: --output이 입력 파일과 같습니다. 입력을 덮어쓰지 않습니다.", file=sys.stderr)
             return EXIT_OUTPUT_ERROR
 
-    report = build_link_report(link_scans(cfg, cat, subjects))
+    report = build_link_report(link_scans(cfg, cat, subjects, observed))
     report, normalized = normalize_for_output(report)
     if normalized:
         report["collection"]["output_text_normalizations"] = normalized
