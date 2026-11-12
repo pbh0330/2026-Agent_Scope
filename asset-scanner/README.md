@@ -22,6 +22,8 @@ asset-scanner/
 │   ├── report.py      # 결과 JSON(협의용 초안) 조립
 │   ├── output.py         # 결과 JSON 저장 (엄격한 JSON, 임시 파일 후 교체)
 │   ├── tools_catalog.py  # 저장된 tools/list 응답 → Tool 정의 목록 (별도 CLI, 서버 접속 없음)
+│   ├── linking.py        # 저장된 설정 수집 결과와 Tool 카탈로그 결과의 서버 단위 연결 (별도 CLI, 서버 접속 없음)
+│   ├── resources_prompts.py # 저장된 resources/list·resources/templates/list·prompts/list 응답 → 정의 목록 (별도 CLI, 서버 접속 없음)
 │   ├── live_tools.py     # 개발용 MCP 서버를 stdio로 실행해 tools/list 실제 조회 (SDK 사용, 서버 프로세스 실행)
 │   └── dev_mcp_server.py # 검증용 개발 MCP 서버 (공식 SDK, Tool 2개)
 ├── examples/          # 테스트용 가상 설정 (실제 팀 설정 아님)
@@ -31,7 +33,7 @@ asset-scanner/
 
 ## 설치 (Windows PowerShell)
 
-현재 검증 상태(Windows 10, Python 3.14.4, 프로젝트 `.venv`): 버전 호환성·manifest 보완과 PR #5 피드백 수정을 통합한 상태에서 회귀 테스트 66개, 전체 테스트 332개가 모두 통과했고 pytest 종료 코드는 0입니다. 실행 기록은 `output/review-pr5/integrated-*.log`(Git 제외)에 있습니다. 2026-10-31에 별도 Linux Python 3.12 환경에서 보완본(301개 통과)을 검증한 기록은 과거 기록이며 현재 검증 결과가 아닙니다.
+현재 검증 상태(Windows 10, Python 3.14.4, 프로젝트 `.venv`): 이 시점까지의 기능(설정 수집, Tool 카탈로그, 실제 stdio 조회, `linking`, `sslVerify`·`toolFilter`, 저장된 Resource·Prompt 목록 읽기)의 수집된 테스트는 494개입니다. **한 번의 전체 실행이 종료 코드 0으로 끝난 기록은 없습니다.** 이 PC(RAM 8GB)에서 전체 실행이 메모리 부족으로 중단된 적이 있어, 중단된 실행에서 통과로 기록된 458개와 나머지 36개를 파일 단위로 나눠 실행한 결과(종료 코드 모두 0)를 합쳐 494개가 각각 한 번 이상 통과했음을 확인했습니다(중복·누락·실패 없음, [필드 매핑 10-8](docs/field-mapping.md)). 로그는 `output/`(Git 제외)에 있습니다. 2026-10-31 별도 Linux Python 3.12 환경에서의 검증 기록(301개)은 과거 기록이며 현재 검증 결과가 아닙니다.
 
 ```powershell
 cd asset-scanner
@@ -100,6 +102,8 @@ python -m venv .venv
 
 전체 테스트에는 개발용 MCP 서버를 실제로 실행하는 stdio 통합 테스트(`tests\test_live_tools.py`, 약 3분)가 포함됩니다. 서버를 실행하지 않는 테스트만 돌리려면 `--ignore=tests\test_live_tools.py`를 붙이세요 ([실제 stdio 조회](#실제-stdio-조회-개발용-mcp-서버-1개--서버-프로세스를-실행합니다) 절 참조).
 
+시스템 메모리가 부족하면 전체 실행이 도중에 종료될 수 있습니다(실제로 한 번 발생). 이때는 `pytest <파일>`처럼 파일 단위로 나눠 실행하고, **각 실행의 pytest 종료 코드를 따로 기록**하세요. 종료 코드가 없는 실행은 통과로 보지 않습니다. 나눠 실행한 결과와 한 번에 끝난 전체 실행 결과는 구분해 기록합니다(예: [필드 매핑 10-8](docs/field-mapping.md#10-8-검증-실행-기록-2026-11-12)).
+
 ## 콘솔 출력 인코딩
 
 Windows 콘솔 코드페이지(예: cp949)로 표현할 수 없는 문자(이모지, 일부 서버 이름·경로 등)는 표준출력·오류출력에서 `\uXXXX` 또는 `\UXXXXXXXX` 형태로 표시합니다. 표현할 수 있는 문자는 그대로 출력합니다. `PYTHONUTF8=1` 같은 설정은 필요하지 않습니다. 결과 JSON 파일은 항상 UTF-8이며 원문 이름을 그대로 보존하므로, 정확한 값은 결과 파일에서 확인하세요. 출력 때문에 종료 코드가 바뀌지 않습니다(위 종료 코드 표 그대로).
@@ -146,6 +150,27 @@ Windows 콘솔 코드페이지(예: cp949)로 표현할 수 없는 문자(이모
 
 `sample-files`에 `enabled`와 `transport`가 없는 것은 설정에 적혀 있지 않기 때문입니다. 기본값을 추측해 채우지 않습니다.
 
+### 서버 설정의 `sslVerify`와 `toolFilter` (설정에 적힌 값만 수집)
+
+| 결과 필드 | 원천 | 수집 내용 |
+|---|---|---|
+| `declared.sslVerify` | `sslVerify` (boolean) | 적힌 `true`/`false`만 그대로 기록. 없으면 **필드 자체를 만들지 않음** (기본값을 채우지 않음) |
+| `declared.toolFilter` | `toolFilter` (object) | `include`·`exclude` 문자열 배열을 순서·중복·`*` 패턴 그대로 기록 (선언된 목록만) |
+
+```json
+"declared": { "url": "https://mcp.example.test/mcp", "sslVerify": false,
+              "toolFilter": { "include": ["search_*"], "exclude": ["admin_*"] } }
+```
+
+- 자료형이 틀리면(`sslVerify: "false"`, `include: "x"`, 배열에 숫자 등) 값을 변환하거나 저장하지 않고 `servers[].issues[]`에 `field_type_invalid`(기대·실제 자료형만, 원문 값 없음)를 남깁니다. 그 서버는 `partial`이 되지만 같은 서버의 다른 필드, 다른 서버는 계속 수집합니다. `toolFilter` 안의 `include`/`exclude` 외 키는 값을 읽지 않고 `field_key_unexpected`만 남깁니다.
+- 필터 항목은 다른 문자열과 같은 가림 규칙을 거칩니다(토큰 모양, URL 자격증명, `${VAR:-fallback}`의 fallback 등). 가린 위치는 `redactions[]`에, `${VAR}` 참조는 `unresolved[]`에 기록됩니다.
+- 같은 키가 중복되면 기존처럼 마지막 값만 읽고 `duplicate_key`로 `partial` 처리합니다. `mcp.servers`, `nodeHost.mcp.servers`, 플러그인 manifest가 같은 방식입니다.
+- **이 값은 "설정에 적힌 선언"입니다.** 실제 정책 적용 여부는 확인하지 않았습니다.
+  - `sslVerify`만으로 실제 연결이 안전한지(또는 안전하지 않은지) 판단하지 않습니다. 인증서 검증 동작, 연결 성공 여부, 중간 프록시 등은 확인하지 못합니다.
+  - 필터 값만으로 Tool이 실제로 노출·호출되는지 판단하지 않습니다. 필터가 어떤 Tool 이름에 맞는지, 서버가 실제로 어떤 Tool을 제공하는지는 이 수집 범위 밖입니다.
+  - 보안 경고 판정, 정책 평가·실행은 하지 않습니다. 결과에는 `sslVerify: false`나 빈 필터에 대한 경고 필드가 없습니다.
+- 근거와 근거의 한계는 [필드 매핑 문서](docs/field-mapping.md#2-1-sslverify와-toolfilter)에 있습니다.
+
 ## 예제 파일
 
 | 파일 | 확인 내용 | 기대 상태 |
@@ -154,6 +179,7 @@ Windows 콘솔 코드페이지(예: cp949)로 표현할 수 없는 문자(이모
 | `examples/fake-secrets.json5` | 가짜 비밀값(`FAKE` 표식)이 결과·출력에 남지 않음 | `partial`(참조 포함), 종료 코드 1 |
 | `examples/include-and-refs.json5` | 미해석 `$include`·`${VAR}` 기록 | `partial`, 종료 코드 1 |
 | `examples/review-r1-secrets.json5` | 1차 검토 R1: `--옵션=URL`, `-H`/`--header`, 셸 명령 문자열, `$include` fallback, 토큰 모양 등록키의 가림 | `partial`(미해석 include), 종료 코드 1 |
+| `examples/resources-prompts-capture.json` | 저장된 resources/templates/prompts 목록 응답(가상): 2026-07-28 정상 3종, 2025-11-25의 미지원(-32601)·미수행, 가림 | `partial`(미수행 목록), 종료 코드 1 (`resources_prompts` CLI) |
 
 ## 비밀값 가림 요약
 
@@ -176,7 +202,7 @@ Windows 콘솔 코드페이지(예: cp949)로 표현할 수 없는 문자(이모
 | 등록 영역 없음 | `complete` / `registry_absent` (`server_count: null`) |
 | 등록 영역 없음 + 상위 키 중복 또는 미해석 include | `partial` / `registry_absent` |
 | 빈 등록 목록 `{}` | `complete` / `empty_registry` (`server_count: 0`) |
-| 일부 서버에 타입 오류·잘못된 SecretRef·미해석 참조 | `partial` / `servers_found` — 정상 서버는 그대로 수집, 문제는 `servers[].issues`에 기록 |
+| 일부 서버에 타입 오류(`sslVerify`·`toolFilter` 포함)·잘못된 SecretRef·미해석 참조 | `partial` / `servers_found` — 정상 서버는 그대로 수집, 문제는 `servers[].issues`에 기록 |
 
 ## Tool 카탈로그 1단계: 저장된 `tools/list` 응답 읽기
 
@@ -184,7 +210,7 @@ Windows 콘솔 코드페이지(예: cp949)로 표현할 수 없는 문자(이모
 
 - MCP 서버에 접속·실행하지 않고 `tools/call`도 하지 않습니다. 따라서 결과는 "실제 서버 조회 성공", "Agent에 노출됨", "호출 가능"을 뜻하지 않습니다.
 - 지원하는 규격은 **MCP 2025-11-25와 2026-07-28**입니다. 입력의 `protocol_version`에 따라 해당 규격으로 읽습니다. 버전 미선언·그 밖의 버전은 실패로 기록하며 응답 형태로 버전을 추측하지 않습니다.
-- Resource·Prompt 수집, 공통 server_id·asset_id 생성, 백엔드·대시보드 연동은 하지 않았습니다.
+- 이 모듈은 Tool만 다룹니다. Resource·ResourceTemplate·Prompt 정의는 별도 모듈([아래 절](#저장된-목록-응답에서-resourceresourcetemplateprompt-읽기))이 저장된 응답에서 읽습니다. 공통 server_id·asset_id 생성, 백엔드·대시보드 연동은 하지 않았습니다.
 
 ```powershell
 .\.venv\Scripts\python.exe -m asset_scanner.tools_catalog --capture examples\tools-list-capture.json --output output\tools-catalog.result.json
@@ -396,10 +422,118 @@ SDK `mcp`는 2026-07-28 규격을 지원하는 정식 2.x 중 **2.3.0**으로 �
 - JSON 파싱을 SDK가 하므로 전송 계층의 중복 키·`NaN` 토큰 원문은 확인하지 못합니다. SDK가 검증에서 거부한 응답은 Tool 정의를 보존하지 못합니다. 음수 `ttlMs`는 SDK가 0으로 올린 값이 기록될 수 있습니다.
 - 2025-11-25·2026-07-28로 협상된 연결을 읽습니다. 검증 대상은 프로젝트의 개발용 서버 하나이며 다른 실제 서버 환경 전체의 호환성을 보증하지 않습니다.
 
+## 서버 선언과 Tool 수집 결과 연결 (`linking`) — 저장된 결과만 읽습니다
+
+설정 수집 결과와 Tool 카탈로그 결과를 서버 단위로 잇습니다. **저장된 JSON만 읽으며** 서버 접속, 설정 속 명령 실행, `tools/list`·`tools/call`을 하지 않습니다. 출력은 내부 개발용 초안(`agent-scope.scanner.server-tool-links` 0.1.0-draft)이며 공통 ID·해시 규칙과 공통 스키마는 정하지 않았습니다. 자세한 규칙은 [필드 매핑 9장](docs/field-mapping.md#9-서버-선언과-tool-수집-결과의-연결-linking--내부-개발용-초안)에 있습니다.
+
+### 입력 준비
+
+설정 수집 결과(위 "실행")와 Tool 카탈로그 결과를 먼저 만듭니다. 카탈로그 입력(capture)의 서버 항목에는 어느 설정 수집 결과의 어느 선언인지 가리키는 값을 적습니다.
+
+```json
+{ "server_ref": "files", "registration_key": "files", "registry_path": "mcp.servers",
+  "config_scan_ref": "gw", "protocol_version": "2026-07-28", "pages": [ ... ] }
+```
+
+`config_scan_ref`는 실행 때 설정 수집 결과에 붙이는 라벨(`gw`)입니다. 물리 경로가 아닙니다.
+
+### 실행
+
+```powershell
+.\.venv\Scripts\python.exe -m asset_scanner.linking `
+  --config-scan gw=output\openclaw.result.json `
+  --config-scan nd=output\node.result.json `
+  --catalog obs1=output\tools.result.json `
+  --subject gw=gateway,id=<사용자가 확인한 식별값> `
+  --subject nd=node `
+  --output output\links.result.json
+```
+
+- `--config-scan [라벨=]경로`, `--catalog [라벨=]경로`는 여러 번 지정할 수 있습니다. 라벨 형식은 영문·숫자로 시작하는 64자 이하(`.` `_` `-` 허용)이며, 첫 `=` 앞이 이 형식일 때만 라벨로 봅니다. 카탈로그에서 가리킬 수 있는 것은 라벨이 붙은 설정 수집 결과뿐입니다. 형식을 통과해도 토큰·자격증명처럼 보이는 라벨은 거부하며(`label_status: invalid`) 원문을 결과·표준출력에 내보내지 않고 연결에도 쓰지 않습니다. 라벨에는 비밀값을 쓰지 마세요.
+- `--catalog`를 여러 번 주면 각각이 별개의 관측입니다. 같은 선언을 가리켜도 Tool 목록을 합치지 않고 관측별로 보존합니다.
+- `--subject 라벨=종류[,id=값]`은 선언 주체의 종류(`gateway`·`node`·`plugin`)와 식별값을 사용자가 입력하는 옵션입니다. 결과에는 `user_provided`로 남고 스캐너가 확인한 값이 아닙니다(`verified_by_scanner: false`). 입력하지 않으면 식별값은 `not_collected`이며 만들지 않습니다. 종류는 입력이 없을 때만 등록 영역(`mcp.servers`→gateway, `nodeHost.mcp.servers`→node)과 manifest 여부에서 추정해 `inferred_unverified`로 표시합니다.
+- 종료 코드: 0 전부 연결, 1 부분, 2 인자 오류, 3 입력 실패, 4 저장 실패.
+
+### 연결 근거와 상태
+
+`config_scan_ref`, `registry_path`, `registration_key`가 **모두** 참조한 설정 수집 결과 안의 선언 하나와 맞을 때만 `linked`입니다. 등록키와 영역이 우연히 같은 다른 설정 수집 결과는 `key_region_matches`로만 보여 주고 연결하지 않습니다. 참조 누락·잘못된 형식·알 수 없는 라벨·중복 라벨·영역 불일치는 `unlinked` 또는 `ambiguous`와 사유(`reason`)로 남고, 후보를 추측해 고르지 않습니다.
+
+| 상태 | 의미 |
+| --- | --- |
+| `linked` | 입력 자료 사이의 연결입니다. **서버가 실제로 기동했거나 Agent에 노출되거나 호출할 수 있다는 뜻이 아닙니다.** |
+| `ambiguous` | 후보가 둘 이상이거나 같은 카탈로그 입력 안에서 둘 이상의 서버가 같은 선언을 가리켜 하나로 정하지 않았습니다. `candidates`에 후보가 남습니다. |
+| `unlinked` | 연결 근거가 없거나 일치하는 선언이 없습니다. Tool 정보는 버리지 않고 남깁니다. |
+
+### 한계
+
+- 물리 파일 경로는 연결 근거도 자산 식별값도 아닙니다(`physical_source_path` 속성).
+- 연결 결과의 `declaration_ref`·`internal_ref`·라벨은 이 파일 안에서만 쓰는 이름이며 공통 자산 ID가 아닙니다.
+- 선언에 Tool 근거가 없는 것(`tool_evidence: not_supplied`)은 Tool 0개가 아닙니다. 설정 대조·수집률·누락 계산은 하지 않습니다.
+- 입력은 가상 예제와 직접 만든 자료로만 검증했습니다. 팀 테스트베드 자료와는 대조하지 않았습니다.
+
+## 저장된 목록 응답에서 Resource·ResourceTemplate·Prompt 읽기
+
+위 모듈들과 **별도 모듈**입니다. 이미 저장해 둔 `resources/list`, `resources/templates/list`, `prompts/list` 응답 JSON을 읽어 정의를 정리할 뿐입니다. 서버를 실행하거나 접속하지 않고 `resources/read`·`prompts/get`·`tools/call`도 하지 않습니다. 기존 Tool 카탈로그와 `linking`의 동작·출력은 바꾸지 않았습니다. 결과는 **내부 개발용 초안**이며 팀 공통 스키마·공통 ID가 아닙니다.
+
+```powershell
+.\.venv\Scripts\python.exe -m asset_scanner.resources_prompts --capture examples\resources-prompts-capture.json --output output\resources-prompts.result.json
+```
+
+`examples\resources-prompts-capture.json`은 직접 만든 가상 응답입니다(실제 서버 응답 사본이 아님). 종료 코드는 다른 수집 CLI와 같습니다: 0 완전, 1 부분, 2 인자 오류, 3 실패, 4 저장 실패. 이 예제는 두 번째 서버에 `not_performed` 목록이 있어 종료 코드 1입니다.
+
+### 입력
+
+`mcp-lists-capture` 형식입니다. 서버마다 `server_ref`, `protocol_version`(`2025-11-25` 또는 `2026-07-28`), `lists`를 둡니다. `lists`의 `resources`·`resource_templates`·`prompts` 각각이 저장된 응답 배열(`pages`)을 가집니다. 서버의 능력 선언을 저장해 두었다면 `server_capabilities`로 함께 넣을 수 있고, 이 모듈은 `resources`·`prompts` 키의 존재만 옮깁니다. 자세한 형식은 [필드 매핑 10-3](docs/field-mapping.md#10-3-입력-목록-응답-묶음-mcp-lists-capture)입니다.
+
+### 수집하는 것
+
+| 목록 | 항목 | 식별 필드 | 수집하는 제공 정의 |
+|---|---|---|---|
+| `resources/list` | `resource` | `uri`, `name` | `title`, `description`, `mimeType`, `size`, `annotations`, `icons`, `_meta` |
+| `resources/templates/list` | `resource_template` | `uriTemplate`, `name` | `title`, `description`, `mimeType`, `annotations`, `icons`, `_meta` |
+| `prompts/list` | `prompt` | `name` | `title`, `description`, `arguments[]`(`name`·`title`·`description`·`required`), `icons`, `_meta` |
+
+- 응답에 **있는 것만** 옮깁니다. 없는 `mimeType`·`description`·`arguments` 등을 만들어 넣지 않습니다.
+- 항목은 하위 유형(`kind`)과 소속 서버(`server_index`·`server_ref`)를 갖습니다. 다른 서버의 같은 이름 항목, 같은 이름의 resource·template·prompt는 합치지 않습니다(`internal_ref`로만 구분).
+- `identity`에 원래 `uri`·`uriTemplate`·`name`을 따로 남깁니다. **가려진 값은 원본 식별값이 아니므로** `original_value`를 비우고 `withheld_by_redaction`으로 표시하며, 중복 판정·동일성 비교에 쓰지 않습니다.
+
+### 목록 상태 구분
+
+목록마다 따로 기록합니다(`servers[].lists.<이름>.collection_status`).
+
+| 상태 | 의미 |
+|---|---|
+| `complete` (`items_listed`/`empty_list`) | 끝까지 읽음. `empty_list`는 서버가 0개를 보고한 정상 빈 목록 |
+| `partial` | 일부만 읽음(남은 `nextCursor`, 한도 5000개 초과, 제외된 항목, 뒤 페이지 오류 등) 또는 2026-07-28 `resultType`을 해석하지 못해 완료를 확인하지 못함 |
+| `failed` | 읽지 못함(오류 응답, 잘못된 구조, 응답 없음). 0개가 아님 |
+| `unsupported` | 저장된 첫 응답이 JSON-RPC `-32601`(Method not found). 서버가 지원하지 않는다고 응답한 근거 |
+| `not_performed` | 입력에 그 목록의 응답이 없음. 0개도, 미지원도 아님 |
+
+서버가 `not_performed` 목록을 하나라도 가지면 서버 상태는 `partial`입니다. 능력 선언이 없다는 정보만으로 `unsupported`로 단정하지 않습니다.
+
+### 규격과 한계
+
+- 근거: MCP 2025-11-25와 2026-07-28의 `schema.ts`·`resources.mdx`·`prompts.mdx`, 고정 커밋은 [필드 매핑 10-1](docs/field-mapping.md#10-1-규격-근거와-고정-버전)에 있고 결과의 `protocol.spec_basis`에도 기록합니다. 세 목록은 배열 이름과 필수 필드가 서로 다르며(`resources`/`uri`+`name`, `resourceTemplates`/`uriTemplate`+`name`, `prompts`/`name`), Tool 규칙을 그대로 쓰지 않습니다. 2026-07-28만 `resultType`·`ttlMs`·`cacheScope`를 요구합니다.
+- URI·템플릿·인자·설명·중첩 `_meta`에도 기존 가림 규칙을 적용합니다. `uriTemplate`의 `{id}`·`{?q}` 같은 표현식은 보존하고 토큰 모양 변수 이름만 가립니다. 서버가 제공한 설명·인자는 콘솔에 출력하지 않습니다.
+- **목록에 있다는 것은 읽을 수 있다, 가져올 수 있다, Agent에 노출된다, 호출할 수 있다는 뜻이 아닙니다.** `uri`를 열거나 `uriTemplate`을 확장하지 않았고 `prompts/get`도 하지 않았습니다. 능력 선언은 입력에 저장된 값을 옮긴 것이며 확인하지 않았습니다.
+- 검사는 제한된 구조 검사입니다(`uri` RFC 3986 문법, 템플릿 RFC 6570 문법, `mimeType` 형식 등은 검사하지 않음).
+- 입력은 가상 예제와 직접 만든 응답뿐입니다. 팀 테스트베드와 대조하지 않았고 수집률·누락도 계산하지 않았습니다.
+
 ## 이번 단계에서 하지 않은 것 / 후속 확인
 
-- 실제 팀 OpenClaw 2026.9.5 설정 원본으로 수집 확인 (`openclaw config schema`와 필드 대조 포함)
-- 테스트베드 2026.9.5의 환경변수 기본값 문법이 현행 공개 문서(`${A:-${B}}` → 안쪽 `B`만 참조)와 같은지 확인
+- 실제 팀 테스트베드 OpenClaw 설정 원본으로 수집 확인 (`openclaw config schema`와 필드 대조 포함). 사양 정정본 수령 후 진행
+- 테스트베드의 환경변수 기본값 문법이 현행 공개 문서(`${A:-${B}}` → 안쪽 `B`만 참조)와 같은지 확인
+
+### 테스트베드 OpenClaw 버전 표기 (확인된 것과 대기 중인 것)
+
+| 구분 | 내용 | 상태 |
+|---|---|---|
+| 팀 자료의 기록 | `develop`의 `testbed/docs/testbed-spec-20260929.md`와 `build-log-snap0-snap1.md`가 OpenClaw **2026.9.6 (eb377ac)** 고정·설치로 적음 | 팀 문서의 **기록을 읽은 것**. 스캐너는 테스트베드 VM에 접속하거나 설치 버전을 확인하지 않았음 |
+| 스캐너가 근거로 쓴 자료 | 2026.9.6 npm 패키지 문서·번들 코드(정적 읽기), 태그 `v2026.9.6` | 확인함 (패키지 문서 기준). 실제 환경 동작은 미확인 |
+| 이전 README·매핑의 "테스트베드 2026.9.5" | 팀 자료 어디에도 없는 표기. 팀 스키마 검토 문서도 "#5 README/매핑은 2026.9.5 언급"을 불일치로 기록 | **근거 없는 표기라 정정**했음. 9.5가 실제 설치 버전이었다는 뜻이 아님 |
+| 테스트베드 사양 정정본 | 담당자의 수정본 대기 | **대기 중**. 수정본의 버전·구성은 확인하지 못했고, 받기 전까지 테스트베드 대조·수집률 계산은 보류 |
+
+실제 설치 버전은 테스트베드 담당이 확인할 항목이며, 이 저장소의 계획값·문서 기록을 "관측된 환경 버전"으로 쓰지 않습니다.
 - `$include` 파일 읽기와 병합, 환경변수·SecretRef 해석(값은 계속 저장하지 않음)
-- Node-hosted MCP 서버, Gateway/Node 자산, `DECLARES` 관계, 공통 스키마(`InventorySnapshot`) 변환
-- 팀 테스트베드·OpenClaw 설정에서 읽은 서버 명령의 실제 조회 (개발용 서버 1개의 stdio 조회만 지원), 원격(HTTP)·인증 서버, `tools/call`, Resource·Prompt 수집, 공통 ID 생성
+- Node-hosted MCP 서버, Gateway/Node 자산(식별값을 설정에서 읽는 것 포함), `DECLARES` 관계, 공통 스키마(`InventorySnapshot`) 변환. 선언과 Tool 수집 결과는 저장된 자료끼리만 잇습니다(위 `linking` 절).
+- 팀 테스트베드·OpenClaw 설정에서 읽은 서버 명령의 실제 조회 (개발용 서버 1개의 stdio 조회만 지원), 원격(HTTP)·인증 서버, `tools/call`, `resources/read`·`prompts/get`, Resource·ResourceTemplate·Prompt의 실제 서버 조회(저장된 응답 읽기만 지원), 공통 ID 생성

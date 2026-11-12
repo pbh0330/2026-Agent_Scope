@@ -12,6 +12,7 @@
 | OpenClaw 문서 [Transports and OAuth](https://docs.openclaw.ai/cli/mcp/transports) | stdio: `command`·`args`·`env`·`cwd`/`workingDirectory`, 원격: `url`·`headers`·`transport`·`auth`·`oauth`·`sslVerify`·`clientCert`/`clientKey` | 2026-09-29 웹 문서 확인 |
 | OpenClaw 문서 [environment, secrets, and includes](https://docs.openclaw.ai/gateway/config-secrets-env) | `${VAR}`(대문자 이름만), `${VAR:-기본값}`, `$${VAR}` 이스케이프, SecretRef `{source, provider, id}`, `$include` | 2026-09-29 웹 문서 확인 |
 | OpenClaw **2026.9.6** npm 패키지의 `docs/nodes/mcp-and-skills.md` (제목 "Node-hosted MCP servers and skills") | Node 쪽 MCP 서버는 Node 머신의 `openclaw.json`에 `nodeHost.mcp.servers.<이름>`으로 선언. 문서 예제의 필드: `command`·`args`·`toolFilter`(stdio), `url`·`transport`·`headers`(원격). 이 문서에 `enabled`는 나오지 않음. 노드 호스트는 설정 변경을 감시하지 않으며 재시작 후 반영. OAuth MCP 서버는 이 경로에서 미지원 | 2026-10-06 `npm pack openclaw@2026.9.6`(tarball 내려받기만, 설치·실행 없음)로 받은 패키지의 문서 파일을 직접 읽음. 같은 내용을 현행 공개 문서 [docs.openclaw.ai/nodes/mcp-and-skills](https://docs.openclaw.ai/nodes/mcp-and-skills)에서도 확인 (공개 문서는 페이지에 버전 표기가 없음) |
+| OpenClaw **2026.9.6** npm 패키지의 `docs/gateway/config-extensions.md` ("MCP, skills, and plugins") 와 같은 패키지의 번들 코드(설정 스키마·필터 매칭 함수) | `sslVerify`·`toolFilter`의 의미와 자료형 (아래 2-1장) | 2026-10-06에 받아 둔 `output/openclaw-9.6/openclaw-2026.9.6.tgz`의 문서와 번들 JS 텍스트를 **정적으로 읽음**(2026-11-11). 설치·실행·접속 없음. 공개 문서·테스트베드는 이번에 확인하지 않음 |
 | 공격 표면 정의 v2.0 §7.3, §12.1 | 비밀값 미수집, MCP Server 최소 필드(서버 이름·선언 위치·source path·command/args 또는 endpoint·transport) | `git show origin/docs/mcp-attack-surface-definition:docs/mcp-attack-surface.md` |
 
 **미검증:** 위 필드는 문서 기준입니다. 확인한 것은 문서 내용이며, 다음은 확인하지 않았습니다.
@@ -51,10 +52,12 @@
 | `declared.args` | `args` (string 배열) | 명령 인자 (가림 처리 후) | 생략 |
 | `declared.cwd` / `declared.workingDirectory` | 같은 이름 | 작업 폴더. 원천 키 이름을 그대로 유지 | 생략 |
 | `declared.url` | `url` | 원격 endpoint (가림 처리 후) | 생략 |
+| `declared.sslVerify` | `sslVerify` (boolean) | 설정에 **명시된** `true`/`false`만 기록 (2-1장) | 필드 생략. `true`/`false`를 채우지 않음 |
+| `declared.toolFilter` | `toolFilter` (object) | `include`·`exclude` 문자열 배열을 원형 그대로(순서·중복·`*` 패턴 유지, 가림 규칙만 적용) 기록. 선언된 목록만 포함 (2-1장) | 필드 생략 |
 | `declared_keys` | 항목의 모든 키 | 선언된 키 이름 목록(값 없음) | — |
 | `credentials.env` / `credentials.headers` | `env`, `headers` | 이름 목록과 값의 **종류**(`literal`/`env_ref`/`literal_with_env_ref`/`secret_ref`/`invalid_secret_ref`/`non_string`)만. 값은 저장하지 않음 | 필드 생략 |
 | `credentials.auth` / `oauth` / `clientCert` / `clientKey` | 같은 이름 | 존재 여부(`present`), 하위 키 이름, SecretRef이면 `value_kind`만 | 필드 생략 |
-| `other_declared_keys` | 위 목록에 없는 키 | 이름만 기록(예: `requestTimeoutMs`, `sslVerify`, `toolFilter`, `codex`). 값은 이번 단계에서 해석하지 않음 | `[]` |
+| `other_declared_keys` | 위 목록에 없는 키 | 이름만 기록(예: `requestTimeoutMs`, `connectionTimeoutMs`, `codex`). 값은 이번 단계에서 해석하지 않음. `sslVerify`·`toolFilter`는 `declared`로 수집하므로 더 이상 여기에 나오지 않음(선언 사실은 `declared_keys`에 있음) | `[]` |
 | `unresolved[]` | 항목 하위 | 해석하지 않은 `$include`·`${VAR}`·SecretRef. 이름·위치만 | `[]` |
 | `redactions[]` | 가림 처리 | 가린 `field_path`와 `reason` | `[]` |
 | `issues[]` | 검증 | 서버별 문제 (아래 표) | `[]` |
@@ -65,7 +68,8 @@
 | code | 의미 | 항목 상태 |
 |---|---|---|
 | `entry_not_object` | 등록 항목이 객체가 아님 | `invalid` |
-| `field_type_invalid` | `enabled`·`command`·`args`·`env` 등의 자료형이 틀림. 값은 저장하지 않고 자료형만 기록 | `partial` |
+| `field_type_invalid` | `enabled`·`command`·`args`·`env`·`sslVerify`·`toolFilter`(및 `toolFilter.include`/`exclude`) 등의 자료형이 틀림. 값은 저장하지 않고 기대·실제 자료형만 기록. 배열 안에 다른 자료형이 섞이면 `element_types`(자료형 이름만) 추가 | `partial` |
+| `field_key_unexpected` | `toolFilter` 안에 `include`/`exclude` 외의 키가 있음. 키 이름(토큰 모양이면 자리표시자)만 기록하고 값은 읽지 않음 | 영향 없음(읽은 값이 손실되지 않음) |
 | `duplicate_key` | 항목 안에서, 또는 `env`·`headers`·`auth` 등 항목의 모든 하위 객체 안에서 같은 키가 반복됨 (마지막 값만 읽음). `field_path`는 중복된 키의 위치이며 토큰 모양 키는 자리표시자로 적음. 플러그인 manifest의 `mcpServers`도 같은 경로로 처리 | 그 서버 `partial` → 전체 `partial` (`server_entries_incomplete`). 정상 서버·같은 서버의 나머지 필드는 보존 |
 | `invalid_secret_ref` | 인증정보 위치(`env`·`headers` 값, `auth`·`oauth`·`clientCert`·`clientKey`)에 SecretRef 모양 객체가 있으나 형식이 틀림. `problems`에 필드·문제 종류·자료형만 기록 (원래 값 없음) | `partial` |
 | `no_connection_target_declared` | `command`와 `url`이 모두 없음 (선언 사실에 대한 경고) | 영향 없음 |
@@ -74,6 +78,55 @@
 SecretRef 판정: 키가 `source`·`provider`·`id`로만 이루어지고 `source`가 있는 객체만 SecretRef 후보로 봅니다. `source`가 문자열(env/file/exec/store)이고 `provider`·`id`가 문자열이면 유효한 참조입니다. `{"source": "git", "url": ...}`처럼 다른 키가 섞인 일반 설정 객체는 참조로 보지 않고, 인증정보 위치가 아닌 곳(`codex` 등)의 잘못된 모양 객체도 문제로 보고하지 않습니다.
 
 `declared`는 OpenClaw 원천 키 이름을 바꾸지 않고 보존합니다. 공통 형식의 `endpoint`는 `declared.url`에서 변환하는 것을 전제로 합니다.
+
+## 버전 표기 정리 (테스트베드 OpenClaw)
+
+| 구분 | 내용 | 확인 수준 |
+|---|---|---|
+| 팀 자료 기록 | `develop` 브랜치 `testbed/docs/testbed-spec-20260929.md`(2026.9.6 고정, 기준 문서 태그 `v2026.9.6`), `testbed/docs/build-log-snap0-snap1.md`(`openclaw --version` 출력 `OpenClaw 2026.9.6 (eb377ac)` 기록) | 팀 문서를 읽음. 실제 VM은 확인하지 않음 |
+| 스캐너 근거 | 2026.9.6 npm 패키지(`output/openclaw-9.6/`)와 태그 `v2026.9.6` = 커밋 `eb377ac59e6c9fd6c7705028034812becf00271b`(8장) | 패키지 문서·코드를 정적으로 읽음 |
+| 정정한 표기 | 이전 판 이 문서·README의 "테스트베드 2026.9.5" | 팀 자료에 없는 표기. 팀 스키마 검토 문서(`develop:docs/schema-design-draft.md`)도 불일치로 기록. 9.5가 실제 버전이라는 근거는 없음 |
+| 대기 중 | 테스트베드 사양 정정본(담당자 수정본) | 미수령. 버전 값 포함 내용을 모름. 수령 전까지 테스트베드 대조·수집률은 보류 |
+
+이 저장소는 테스트베드 VM에 접속하거나 OpenClaw를 설치·실행하지 않았습니다. 위 "팀 자료 기록"을 실제 환경에서 확인한 값으로 쓰지 않습니다.
+
+## 2-1. `sslVerify`와 `toolFilter`
+
+> 수집 범위: **설정에 적힌 값의 기록**. 정책 적용 여부·연결 안전성·Tool 노출 여부는 판단하지 않습니다. 보안 경고 판정과 정책 실행도 없습니다.
+
+### 근거 (OpenClaw 2026.9.6 패키지)
+
+| 항목 | 문서 (`config-extensions.md`) | 설정 스키마 (번들 코드) |
+|---|---|---|
+| `sslVerify` | "HTTP TLS controls for private endpoints and mutual TLS" — 원격(HTTP) 서버용 TLS 설정. 예제는 `sslVerify: true` | `boolean().optional()` |
+| `toolFilter` | "optional per-server tool selection". `include`는 발견된 MCP Tool을 맞는 이름으로 제한하고, `exclude`는 맞는 이름을 숨김. 항목은 정확한 MCP Tool 이름 또는 단순 `*` glob. 리소스·프롬프트가 있는 서버의 유틸리티 Tool 이름(`resources_list`, `resources_read`, `prompts_list`, `prompts_get`)에도 같은 필터를 씀 | `strictObject({ include?: array(string.trim.min(1)).min(1), exclude?: (같음) })` — `include`/`exclude` 외 키는 스키마 위반 |
+
+- `nodeHost.mcp.servers`의 문서 예제도 `toolFilter: { include: [...] }`를 씁니다(`docs/nodes/mcp-and-skills.md`). 플러그인 manifest의 `mcpServers`는 같은 수집 경로를 쓰지만 이 두 필드를 manifest가 허용하는지는 확인하지 않았습니다. 적힌 값만 기록합니다.
+- 런타임 코드는 UI 상태 표시에서 `sslVerify === false`일 때만 "TLS 검증 끔"으로 취급하는 것으로 보입니다. 이것은 코드 구조에서 읽은 것이며 동작을 실행해 확인하지 않았습니다. 스캐너는 이 해석을 결과에 쓰지 않습니다.
+
+### 수집 규칙
+
+| 상황 | 결과 |
+|---|---|
+| `sslVerify`가 boolean | `declared.sslVerify`에 그대로 (`true`/`false`) |
+| `sslVerify`가 없음 | 필드 생략. 문서에 기본값이 명시되어 있지 않으며 채우지 않음 |
+| `sslVerify`가 boolean이 아님 (`"false"`, `0`, `null` 등) | 변환하지 않음. `field_type_invalid`(`expected: boolean`, 실제 자료형). 값은 없음. SecretRef 모양 객체이면 `unresolved[]`에 참조 이름만 기록 |
+| `toolFilter`가 객체 | `declared.toolFilter`에 선언된 `include`·`exclude`만 담음. 없는 목록은 채우지 않음 (`{}`이면 `{}`) |
+| `include`/`exclude`가 문자열 배열 | 순서·중복·빈 문자열·`*` 패턴·앞뒤 공백을 그대로 보존. 각 항목에 문자열 가림 규칙 적용 (`redactions[].field_path`는 `...toolFilter.include[1]`처럼 인덱스까지) |
+| `include`/`exclude`가 문자열 배열이 아님 | 그 목록만 보류하고 `field_type_invalid`(`expected: array of string`). 배열에 문자열이 아닌 항목이 섞이면 목록 전체를 보류(일부만 남기지 않음). 다른 목록·다른 필드·다른 서버는 계속 수집 |
+| `toolFilter`가 객체가 아님 | `field_type_invalid`(`expected: object`). `declared.toolFilter` 없음 |
+| `toolFilter`에 `include`/`exclude` 외 키 | `field_key_unexpected`(키 이름만). 값은 읽지 않음 |
+| 중복 키 | 기존 `duplicate_key` 규칙 그대로(마지막 값만 읽음, 해당 서버 `partial`). 예: `sslVerify` 중복, `toolFilter` 중복, `toolFilter.include` 중복 |
+| 항목에 `${VAR}` | 기존 규칙대로 `unresolved[]`에 이름만 기록(해석 안 함), 해당 서버 `partial` |
+
+### 한계
+
+- **선언과 적용은 다릅니다.** 이 필드들은 설정 파일에 적힌 값입니다. 서버가 실제로 그 설정으로 연결·필터링되는지, 설정이 로드 시점에 거부되는지(예: 빈 배열은 스키마상 `min(1)` 위반일 수 있음. 스캐너는 `[]`를 그대로 기록하고 위반으로 판정하지 않음)는 확인하지 않았습니다.
+- `sslVerify`: `true`/`false`가 실제 연결의 안전성을 확정하지 않습니다. 명시되지 않은 경우의 런타임 기본 동작도 확인하지 않았습니다(필드가 없다는 것은 "적혀 있지 않음"이라는 뜻).
+- `toolFilter`: 패턴이 어떤 Tool 이름에 맞는지, 어떤 Tool이 실제로 노출되거나 호출 가능한지는 알 수 없습니다. 문서상 규칙(정확한 이름 또는 `*`)을 이 단계에서 구현·평가하지 않습니다. 런타임이 설정을 정규화하는 방식(예: 문자열이 아닌 항목 제외)에 따라 실제 적용 목록은 기록된 값과 다를 수 있습니다.
+- `ssl_verify` 같은 snake_case 이름은 이 설정 스키마의 키로 확인하지 못했습니다. 해당 이름은 이전처럼 `other_declared_keys`에 이름만 남습니다.
+- 가림은 이름·모양 기반입니다. 필터 항목이 일반 단어처럼 생긴 비밀값이면 가려지지 않으며, 긴 무작위 문자열 모양의 Tool 이름은 `<redacted>`로 가려질 수 있습니다(5장).
+- 2026.9.6 이외 버전, 팀 테스트베드의 실제 설치 환경과의 일치는 확인하지 않았습니다(팀 문서 기록은 2026.9.6 (eb377ac), 아래 "버전 표기 정리").
 
 ## 3. 파일 전체 수집 상태 (`collection`)
 
@@ -113,7 +166,7 @@ SecretRef 판정: 키가 `source`·`provider`·`id`로만 이루어지고 `sourc
 
 - 이름은 대문자 `[A-Z_][A-Z0-9_]*`만 인식합니다 (`${lower}`는 문자 그대로).
 - 실제 환경변수 값은 읽거나 펼치지 않습니다. `declared`의 문자열은 가림 처리된 값이며, 바뀐 곳은 `redactions`에 사유와 함께 남습니다.
-- **미확인:** 위 규칙은 현행 공개 문서 기준입니다. 팀 테스트베드(OpenClaw 2026.9.5)가 같은 규칙으로 동작하는지는 실제 환경에서 확인해야 합니다.
+- **미확인:** 위 규칙은 현행 공개 문서 기준입니다. 팀 테스트베드가 같은 규칙으로 동작하는지는 실제 환경에서 확인해야 합니다. (팀 문서는 테스트베드를 OpenClaw 2026.9.6 (eb377ac)로 기록합니다. 이 문서의 이전 판이 쓴 "2026.9.5"는 근거 없는 표기라 정정했습니다. 설치 버전을 스캐너가 확인한 것은 아닙니다. 아래 "버전 표기 정리" 참조)
 
 ## 5. 비밀값 가림 규칙
 
@@ -148,7 +201,7 @@ SecretRef 판정: 키가 `source`·`provider`·`id`로만 이루어지고 `sourc
 - 비밀 판단은 이름·모양 기반 규칙입니다. 평범한 단어처럼 생긴 비밀값이 이름 없는 위치 인자로 들어 있으면(예: `sample-server mysecretword`) 가려지지 않습니다.
 - 셸 명령 문자열은 알려진 셸 플래그 다음 인자와 공백 포함 복합 인자만 다룹니다. 셸 문법(따옴표·변수·파이프)을 해석하지 않습니다.
 - 헤더 형태는 `Name: value` 한 줄만 인식합니다.
-- `other_declared_keys`의 값(`toolFilter`, `codex` 등)은 저장하지 않으므로 가림 대상이 아닙니다.
+- `other_declared_keys`의 값(`codex` 등)은 저장하지 않으므로 가림 대상이 아닙니다. `toolFilter` 항목은 `declared`에 저장되므로 위 문자열 규칙으로 가립니다.
 
 ## 6. Tool 카탈로그: 저장된 `tools/list` 응답 → 결과 필드
 
@@ -213,7 +266,7 @@ SecretRef 판정: 키가 `source`·`provider`·`id`로만 이루어지고 `sourc
 | --- | --- | --- |
 | `server_index` | 입력 파일 안 서버 순서 | 공통 ID가 아니다. |
 | `server_ref` (`server_ref_kind: capture_local_label`) | 입력 파일 안에서 서버를 구분하는 이름 | 팀 공통 `server_id`가 확정됐다고 표현하지 않는다. 가림 후 같은 문자열이 돼도 `server_index`로 구분한다. |
-| `config_link.registration_key`, `registry_path` | 설정 수집 결과와 잇기 위한 입력상 참고값 | 설정 수집 결과와 대조하지 않는다(`verified_against_config_scan: false`). |
+| `config_link.registration_key`, `registry_path`, `config_scan_ref` | 설정 수집 결과와 잇기 위한 입력상 참조값. `config_scan_ref`는 연결 단계에서 `--config-scan 라벨=경로`로 붙인 라벨 중 어느 설정 수집 결과인지 가리킨다. 문자열이 아니면 값을 옮기지 않고 `config_scan_ref_invalid_type`(JSON 자료형 이름)만 남긴다. | 이 모듈은 설정 수집 결과와 대조하지 않는다(`verified_against_config_scan: false`). 대조·연결은 9장의 `linking` 모듈이 한다. |
 | `internal_ref` (`capture-server[i]/tools[n]`) | 이 결과 파일 안의 Tool 위치 | 공통 자산 ID가 아니며 안정성을 보장하지 않는다. |
 | `source.source_kind`, `evidence_type`, `live_server_query: false` | 저장된 응답을 읽었다는 출처 표시 | 실제 서버 조회 성공으로 표현하지 않는다. |
 | `source.capture_path` | `--capture`로 받은 로컬 경로(물리 경로) | ID 입력으로 쓰지 않는다. 물리·논리 경로 기준은 팀 합의 전이다(PR #11 "추가 합의 필요"). |
@@ -432,3 +485,204 @@ JSON 파서는 같은 키가 두 번 나오면 마지막 값만 남긴다. 앞�
 - `tests/test_protocol_2025.py`: 버전별 필수 필드 차이, 빈 목록·페이지·뒤 페이지 오류, 미지원 버전, 가림, 명시적 비문자열 커서.
 - `tests/test_live_tools.py`: 개발용 서버의 2025-11-25 협상과 `tools/list`, 페이지·오류·한도·가림을 실제 stdio로 확인. `tools/call` 없음과 프로세스 종료를 함께 확인.
 - 테스트베드 결과·수집률·누락은 제시하지 않는다. 실제 VM, 원격 HTTP, 인증 서버, Resource·Prompt 수집은 별도 단계다.
+
+## 9. 서버 선언과 Tool 수집 결과의 연결 (`linking`) — 내부 개발용 초안
+
+저장된 설정 수집 결과(`agent-scope.scanner.openclaw-mcp-config`)와 저장된 Tool 카탈로그 결과(`agent-scope.scanner.mcp-tools-catalog`)만 읽는다. 서버 접속·명령 실행·`tools/list`·`tools/call`을 하지 않는다. 형식은 `agent-scope.scanner.server-tool-links` `0.1.0-draft`이며 팀 공통 스키마가 아니다. 공통 자산 ID·해시 규칙(PR #11 협의안, Issue #10)과 공통 스키마(Issue #15)는 확정되지 않았고 이 모듈도 만들지 않는다. `declaration_ref`·`internal_ref`·라벨은 결과 파일 안에서만 쓰는 이름이다.
+
+### 9-1. 연결 근거
+
+연결(`linked`)은 카탈로그 서버의 `config_link` 세 값이 **모두** 맞을 때만 한다.
+
+| 입력 | 역할 |
+| --- | --- |
+| `config_scan_ref` | 실행 때 `--config-scan 라벨=경로`로 붙인 라벨. 어느 설정 수집 결과인지 지정 |
+| `registry_path` | 그 수집 결과의 `source.registry_path`와 같아야 함 |
+| `registration_key` | 그 수집 결과 안의 같은 영역에서 정확히 하나의 선언과 같아야 함 |
+
+- 등록키와 등록 영역이 같다는 사실만으로는 연결하지 않는다. 참조가 없거나 잘못된 경우 같은 등록키·영역의 선언을 `key_region_matches`에 후보로만 보여 준다.
+- 물리 파일 경로(`source_path`)는 연결 근거도 자산 식별값도 아니다. `physical_source_path` 속성으로만 남기며 `trace.physical_path_is_identity`는 항상 `false`다. 경로 문자열을 `config_scan_ref`로 써도 라벨이 아니므로 연결되지 않는다.
+- 가림 처리된 등록키(`<redacted…>`)는 파일마다 번호가 달라 같은 서버라는 근거가 되지 못하므로 연결하지 않는다. 라벨 형식은 `[A-Za-z0-9][A-Za-z0-9._-]{0,63}`이며 대소문자를 구분한다. 형식을 통과해도 토큰 패턴·URL 자격증명·고엔트로피 문자열처럼 비밀값으로 보이는 라벨은 `label_status: invalid`로 거부한다. 거부한 라벨(설정 수집·카탈로그·`--subject` 모두)은 결과에 `label: null`로만 나가고 원문을 출력하지 않으며, 어떤 연결에도 쓰지 않는다(가려진 이름끼리 충돌해 잘못 연결되는 일이 없다). 내부 매칭용 값(`match_label`)과 출력용 값(`label`)은 분리돼 있고 매칭용 값은 결과에 나가지 않는다.
+
+### 9-2. 상태와 사유 (`links[].link_status`, `reason`)
+
+| 상태 | 사유 | 의미 |
+| --- | --- | --- |
+| `linked` | `config_scan_ref_registration_key_and_registry_path_match` | 입력 자료 사이의 연결. `declaration_ref`, `trace`, `basis`가 채워짐 |
+| `unlinked` | `no_link_basis` | `config_link`가 없거나 등록키가 없음 (`server_ref`만으로는 잇지 않음) |
+| `unlinked` | `registration_key_redacted` | 등록키가 가림 처리됨 |
+| `unlinked` | `registry_path_missing` | 등록 영역을 입력이 밝히지 않음 |
+| `unlinked` | `config_scan_ref_missing` | 참조 없음. 우연한 일치만으로 잇지 않음 |
+| `unlinked` | `config_scan_ref_invalid` | 참조가 문자열이 아니거나 비어 있음 |
+| `unlinked` | `config_scan_ref_unknown` | 그 라벨의 설정 수집 결과가 없음(라벨 미부여·형식 오류 포함) |
+| `unlinked` | `registry_path_mismatch_with_referenced_scan` | 참조한 수집 결과의 등록 영역이 다름 |
+| `unlinked` | `no_matching_declaration` | 참조한 수집 결과에 그 등록키 선언이 없음. 그 수집 결과가 불완전하면 `referenced_scan_status`로 알림. 선언이 없다는 확정이 아님 |
+| `ambiguous` | `config_scan_ref_duplicate` | 같은 라벨이 둘 이상의 수집 결과에 붙음 |
+| `ambiguous` | `multiple_matching_declarations` | 후보 선언이 둘 이상 |
+| `ambiguous` | `declaration_key_duplicated_in_source` | 설정에서 등록키가 중복 선언돼 마지막만 남음. 입력이 가리킨 선언인지 알 수 없음 |
+| `ambiguous` | `declaration_claimed_by_multiple_catalog_servers` | 같은 카탈로그 입력 안에서 둘 이상의 서버가 같은 선언을 가리킴 |
+
+`ambiguous`는 후보를 `candidates`로 남기고 하나를 고르지 않는다. `linked`는 **입력 자료 사이의 연결**이다. 서버가 실제로 기동했다는 것, 런타임에 등록됐다는 것, Agent에 노출된다는 것, 호출할 수 있다는 것을 뜻하지 않는다. 전체 `collection.status`는 모든 카탈로그 서버가 모호함 없이 연결되고 입력이 모두 완전할 때만 `complete`다.
+
+### 9-3. 선언 주체 (`declaring_subject`)
+
+| 필드 | 값 |
+| --- | --- |
+| `kind` | `gateway`, `node`, `plugin` 또는 `null` |
+| `kind_origin` | `user_provided`(`--subject`로 입력) / `inferred_unverified`(등록 영역·원천 종류에서 추정) / `unknown` |
+| `inferred_kind_from_source` | 입력과 별개로 추정한 값. 입력과 다르면 `kind_conflicts_with_inference: true`와 `subject_kind_conflict` 사유를 남기되 어느 쪽도 확정하지 않음 |
+| `id` / `id_origin` | 사용자가 입력한 식별값과 `user_provided`. 입력이 없으면 `null` / `not_collected` |
+| `verified_by_scanner` | 항상 `false`. 스캐너가 직접 확인한 주체 정보는 없다 |
+
+- 식별값(예: Gateway·Node `deviceId`)은 설정 파일에서 읽지 않는다. 입력이 없으면 만들거나 추정하지 않는다. 길이 1~200자의 비어 있지 않은 문자열이면 정규화·해시 없이 그대로 두되, 알려진 토큰 패턴과 URL 자격증명은 가린다(긴 hex 값은 엔트로피 기준으로 가리지 않음).
+- 같은 라벨에 `--subject`가 둘 이상이면 어느 쪽도 쓰지 않는다. 존재하지 않거나 중복된 라벨, 잘못된 종류·식별값도 적용하지 않고 `inputs.subject_inputs[].problems`와 `subject_input_ignored` 사유로 남긴다.
+- 주체 입력은 라벨이 붙은 설정 수집 결과 하나에만 적용되며 같은 서버 이름의 다른 설정 수집 결과로 번지지 않는다.
+
+### 9-4. 같은 선언의 여러 관측과 서로 다른 자산
+
+- `--catalog`를 여러 번 지정하면 각각이 별개의 관측이다. 서로 다른 카탈로그 입력이 같은 선언을 가리키면 모두 `linked`로 두고 `declarations[].linked_observations`에 나열한다. Tool 목록을 합치거나 덮어쓰지 않는다.
+- 한 카탈로그 입력 안에서 둘 이상의 서버가 같은 선언을 가리키는 경우는 같은 서버의 중복인지 다른 서버인지 입력만으로 알 수 없어 모두 `ambiguous`로 보류한다.
+- 같은 이름의 서버·Tool은 합치지 않는다. 서버는 `declaration_ref`, Tool은 카탈로그 입력 안의 `internal_ref`로 구분한다. 같은 서버 안의 중복 Tool 이름은 `name_repeated_in_server`, 다른 서버의 같은 이름은 `same_name_in_other_catalog_servers`(같은 카탈로그 입력 안에서만)로 표시만 한다.
+- Tool의 `original_name`은 서버가 보고한 `name`이다. 가림 처리된 이름은 `original_name: null`, `withheld_by_redaction`으로 남기고 다른 Tool과 같은 이름으로 비교하지 않는다. Gateway·Node의 투영 이름(`<server>__<tool>`, `<server>_<tool>`)은 분해하지 않는다.
+- 선언 쪽에 Tool 근거가 없으면 `tool_evidence: not_supplied`다. Tool 0개라는 뜻이 아니다.
+
+### 9-5. 하지 않는 것
+
+설정 대조, 수집률·누락 계산, 테스트베드 결과와의 비교, 서버·명령 실행과 접속, 공통 ID·해시 생성, 공통 스키마 변환. 입력 자료는 가상 예제와 직접 만든 자료뿐이며 테스트베드 자료로 검증하지 않았다. 사양 정정 여부가 확인되지 않은 테스트베드 자료는 입력으로 쓰지 않았다.
+
+### 9-6. 종료 코드와 검증
+
+종료 코드: 0 모든 카탈로그 서버가 모호함 없이 연결, 1 부분(미연결·모호·입력 불완전·라벨·주체 입력 문제), 2 인자 오류(`--subject` 형식 포함), 3 입력 실패(없는 파일·형식 불일치), 4 저장 실패. 테스트는 `tests/test_linking.py`다.
+
+## 10. Resource·ResourceTemplate·Prompt 목록 수집 (`resources_prompts`) — 내부 개발용 초안
+
+> 상태: 스캐너 내부 개발용 초안 `0.1.0-draft`. 구현은 `asset_scanner/resources_prompts.py`. 팀 공통 스키마와 공통 ID(Issue #10, PR #11 협의안)는 반영하지 않았다. 입력은 **저장된 응답 파일뿐**이며 서버를 실행하거나 접속하지 않고 `resources/read`·`prompts/get`·`tools/call`도 하지 않는다. 테스트베드 자료와는 대조하지 않았다.
+
+### 10-1. 규격 근거와 고정 버전
+
+확인일 2026-11-12. 아래 커밋 시점의 원본 파일을 내려받아(`raw.githubusercontent.com`, 저장소 `modelcontextprotocol/modelcontextprotocol`) 직접 읽었다. 요약 도구의 결과는 근거로 쓰지 않았다(6장 주의 참조). 내려받은 `schema.ts`의 해시가 기존 문서(6장·8장)에 기록한 값과 일치함을 확인했다.
+
+| 버전 | 커밋 | 파일 | 해시 |
+|---|---|---|---|
+| 2025-11-25 | `c4c367f9f58296a7053f5c78a52fd02bfbb56a49` | `schema/2025-11-25/schema.ts` | git blob `850a083fa228bf40af6feca42e23fd26342d3c59` |
+| 2025-11-25 | 같은 커밋 | `docs/specification/2025-11-25/server/resources.mdx` / `prompts.mdx` | git blob `8f8341c1b974de227a6380cdbaef2c79b1033912` / `354c6213b285f07824e990097ac6814d41f56b23` |
+| 2026-07-28 | `271ecc9accafdd9b83a3c869fa67c22953b2af80` | `schema/2026-07-28/schema.ts` | SHA-256 `742750af0bb8c716e7030c4977c992b55d1adc4407e9e66997db5846baedc2cd` |
+| 2026-07-28 | 같은 커밋 | `docs/specification/2026-07-28/server/resources.mdx` / `prompts.mdx` | git blob `f49dd8e6be3fd8f13911788ae5f5d4c87d2c53cd` / `5a6574be3c16715aaafb1c7973025c1bc3669474` |
+
+결과 JSON의 `protocol.spec_basis`에도 같은 값을 기록한다(코드의 `SPEC_BASIS`와 같다). 문서 `.mdx`의 blob 해시는 내려받은 파일을 `git hash-object`로 계산한 값이다.
+
+### 10-2. 목록마다 다른 규칙 (Tool 규칙을 복사하지 않고 각각 확인한 결과)
+
+| 항목 | Tool (`tools/list`, 6장) | `resources/list` | `resources/templates/list` | `prompts/list` |
+|---|---|---|---|---|
+| 결과 배열 이름 | `tools` | `resources` | `resourceTemplates` | `prompts` |
+| 항목 타입 | `Tool` | `Resource` | `ResourceTemplate` | `Prompt` |
+| 필수 필드 | `name`, `inputSchema` | `uri`, `name` | `uriTemplate`, `name` | `name` |
+| 선택 필드 (두 버전 동일) | `title`, `description`, `icons`, `outputSchema`, `annotations`(힌트), `_meta`, (2025만) `execution` | `title`, `description`, `mimeType`, `size`, `annotations`(`audience`·`priority` 0~1·`lastModified`), `icons`, `_meta` | `title`, `description`, `mimeType`, `annotations`, `icons`, `_meta` (`size` 없음) | `title`, `description`, `arguments`, `icons`, `_meta` (`annotations` 없음) |
+| 하위 정의 | — | — | — | `arguments[]`: `name`(필수), `title`, `description`, `required`(불리언) |
+| 능력 선언 | `tools` | `resources` | **`resources`** (목록 요청은 따로 있으나 능력은 하나) | `prompts` |
+| 2025-11-25 응답 | `PaginatedResult` | 같음 | 같음 | 같음 |
+| 2026-07-28 응답 | `PaginatedResult` + `CacheableResult` | 같음 | 같음 | 같음 |
+
+- 두 버전에서 `Resource`·`ResourceTemplate`·`Prompt`·`PromptArgument`의 필드 정의는 같다. `Result`가 다르다: 2026-07-28은 `resultType`이 필수이고 목록 결과는 `ttlMs`·`cacheScope`를 더한다(세 목록의 `ListXResult`가 모두 `CacheableResult`를 상속하는 것을 `schema.ts`에서 확인). 2025-11-25의 `Result`에는 이 필드가 없으므로 요구하지도 만들어 넣지도 않는다(같은 이름의 필드가 2025 응답에 와도 2026의 의미를 적용하지 않고 `other_result_fields`에 이름만 남긴다).
+- Tool에만 있는 규칙은 적용하지 않는다: `inputSchema`·`outputSchema` 검사, 이름 권장 형식, `x-mcp-header`. 대신 목록마다 위 필수 필드와 필드 자료형을 검사한다.
+- `uri`는 `@format uri`, `uriTemplate`은 `@format uri-template`(RFC 6570)로 정의돼 있지만 이 모듈은 문법을 검증하지 않는다(문자열 여부만 확인).
+- 규격은 `resources`·`prompts` 능력을 선언한 서버가 해당 목록 요청을 지원해야 한다고 쓴다(2026-07-28 문서는 `MUST respond`). "능력을 선언하지 않은 서버가 목록 요청을 받았을 때"의 응답은 규격에 정해져 있지 않다. 따라서 **미지원의 근거는 저장된 JSON-RPC `-32601`(Method not found) 응답뿐**이다(`METHOD_NOT_FOUND` 상수는 두 버전 `schema.ts`에 모두 정의돼 있다).
+- 항목 식별값의 서버 안 유일성을 `MUST`로 정한 곳은 확인하지 못했다(`uri`·`name`은 "unique identifier"라고 서술). 중복은 합치지 않고 두 항목을 모두 유지하며 `duplicate_identifier_in_list` 경고(상태 불변)만 남긴다.
+
+### 10-3. 입력: 목록 응답 묶음 (`mcp-lists-capture`)
+
+```json
+{ "format": "mcp-lists-capture", "origin": "synthetic_test_data",
+  "servers": [ { "server_ref": "sample-docs", "protocol_version": "2026-07-28",
+      "registration_key": "...", "registry_path": "mcp.servers", "config_scan_ref": "gw",
+      "server_capabilities": { "resources": {}, "prompts": {} },
+      "lists": { "resources": { "pages": [ <응답>, ... ] },
+                 "resource_templates": { "pages": [ ... ] },
+                 "prompts": { "pages": [ ... ] } } } ] }
+```
+
+- `server_ref`·`registration_key`·`registry_path`·`config_scan_ref`는 `tools-list-capture`와 같은 의미·같은 출력 형태(`config_link`)다. 이 모듈은 설정 수집 결과와 대조하지 않으며 `linking`도 이 결과를 읽지 않는다(기존 연결 기능과 출력은 바뀌지 않음).
+- `protocol_version`은 서버마다 선언해야 한다(`2025-11-25`·`2026-07-28`). 없으면 응답 모양으로 추측하지 않고 `failed`로 기록한다.
+- `lists`에 없는 목록은 응답이 없는 것이므로 `not_performed`다. `server_capabilities`는 저장된 능력 선언이며 `resources`·`prompts` 키의 존재만 옮긴다(`declared`/`not_declared`/`unknown`). 내용은 옮기지 않고 확인하지 않는다.
+- 응답은 `{"jsonrpc","id","result"|"error"}` 형태이거나 `result` 객체만 있어도 된다.
+
+### 10-4. 출력과 상태
+
+`servers[].lists.<resources|resource_templates|prompts>`마다 따로 기록한다. 서버 항목은 `counts`(읽은 항목 수, 읽지 못했으면 `null`)와 서버 상태를 갖는다.
+
+| 목록 `collection_status` | `outcome` | 의미 | `item_count` |
+|---|---|---|---|
+| `complete` | `items_listed` / `empty_list` | 끝까지 읽음 / 서버가 0개를 보고한 정상 빈 목록 | 개수 / `0` |
+| `partial` | `incomplete_list` / `completion_unverified` | 일부만 읽음(남은 `nextCursor`, 한도 초과, 제외된 항목, 뒤 페이지 오류, 잘못된 커서·중복 키) / 2026-07-28 `resultType`을 해석하지 못해 완료를 확인하지 못함 | 읽은 수(전체 수 아님) |
+| `failed` | `error_response`, `invalid_response_structure`, `no_response`, `input_required_result`, `unsupported_result_type` 등 | 읽지 못함. **0개가 아니다** | `null` |
+| `unsupported` | `method_not_found` | 저장된 **첫** 응답이 JSON-RPC `-32601`. 서버가 메서드를 지원하지 않는다고 응답한 근거(`evidence`) | `null` |
+| `not_performed` | `capability_not_declared` / `not_requested` | 입력에 이 목록의 응답이 없음. 능력 선언에 없음 / 능력 정보 없음·선언됨. **0개도 미지원도 아니다** | `null` |
+
+- 서버 상태: 모든 목록이 `complete` 또는 `unsupported`이면 `complete`, 모두 `failed`/`not_performed`이면 `failed`(전부 미수행이면 `no_list_performed`), 그 밖에는 `partial`. `not_performed`가 하나라도 있으면 `partial`이다(수집하지 않은 목록을 완전 수집으로 보지 않음). 파일 전체는 서버 상태를 같은 방식으로 합치며 `item_counts`와 `item_counts_complete`를 둔다.
+- 페이지 처리는 Tool 목록과 같은 규격(`PaginatedResult`)이다: `nextCursor`가 문자열이면 다음 페이지가 있다는 뜻이고 빈 문자열도 유효한 커서다. 커서 값은 저장하지 않는다. 마지막 페이지에 커서가 남았거나 마지막 페이지 뒤에 응답이 더 있거나 커서가 문자열이 아니면 `partial`이다. 개수 한도는 목록당 5000개(`MAX_ITEMS_PER_LIST`)이며 넘으면 `partial`이다.
+- 규격 적합성(`spec_conformance`)은 수집 완전성과 별개다. `resultType`·캐시 필드 누락, 필수 필드 누락, 필드 자료형 위반은 위반으로 기록하지만 읽은 항목은 보존하고 상태를 바꾸지 않는다(단 `resultType`을 해석할 수 없으면 완료를 추정하지 않아 `completion_unverified`). 식별 필드(`uri`·`uriTemplate`·`name`)가 없는 항목은 식별할 수 없어 제외하고 목록을 `partial`로 둔다.
+
+항목(`lists.*.items[]`) 필드:
+
+| 필드 | 의미 |
+|---|---|
+| `kind` | `resource` / `resource_template` / `prompt` |
+| `server_index`, `server_ref` | 소속 서버. 다른 서버의 같은 이름 항목과 합치지 않는다 |
+| `internal_ref` | `capture-server[i]/<목록>[n]`. 이 파일 안에서만 쓰는 이름이며 공통 자산 ID가 아니다 |
+| `identity.<uri, uriTemplate, name>` | `original_value`와 `status`(`as_reported`/`withheld_by_redaction`/`missing`/`invalid_type`) |
+| `definition` | 서버가 제공한 정의를 가림 처리해 옮긴 것(`uri`·`name`·`description`·`mimeType`·`annotations`·`arguments`·`_meta` 등 **있는 것만**) |
+| `definition_status`, `definition_issues` | 제한된 구조 검사 결과(`DEFINITION_VALIDATION`). 정상 사용 가능이라는 뜻이 아님 |
+| `other_definition_fields` | 공식 필드 밖의 키 이름 (값은 `definition`에 가림 처리되어 있음) |
+| `redactions`, `definition_altered` | 가림 위치·사유, 원본과 달라졌는지 |
+| `trust` | `untrusted_server_provided` — 서버 제공 데이터이며 실행·접속하지 않는다 |
+
+### 10-5. 가림과 식별값
+
+- 정의는 Tool 정의와 같은 `_sanitize`로 가린다: URI의 사용자정보·쿼리 값·fragment·토큰 모양 경로 조각, 알려진 토큰 모양, 인증 이름 키(`token`·`password`·`authorization` 등) 아래 문자열 전체, 토큰 모양 객체 키(`<redacted-key-N>`), 고립된 surrogate, 비유한 숫자, `icons[].src`의 URL 자격증명, `arguments[]`의 설명·이름, 중첩 `_meta`. 서버 이름·오류 메시지도 기존 규칙(`_text`/`_safe_short`)을 따른다.
+- `uriTemplate`은 RFC 6570 표현식(`{id}`, `{?fields}`, `{+path}`)이 URL 가림 규칙에 망가지지 않게 보호한 뒤 같은 규칙을 적용한다. 표현식 안의 변수 이름이 토큰처럼 보이면 `{<redacted>}`로 바꾼다. 템플릿을 확장하거나 해석하지 않는다. 템플릿의 쿼리 값 자리(`?k={v}`)는 URL 쿼리 값 규칙에 따라 가려져 표현식이 사라질 수 있다.
+- **가려지거나 바뀐 식별값은 원본 식별값이 아니다.** `identity.*.original_value`를 비우고 `status: withheld_by_redaction`으로 표시한다. `definition`에 남는 가린 문자열(`<redacted>` 등)을 서버의 실제 `uri`·`name`으로 쓰면 안 되고, 다른 항목과 같은 값으로 비교하지도 않는다. 가려진 식별값은 서버 안 중복 판정에서도 제외한다. 서로 다른 원본이 같은 `<redacted>`로 보여도 합쳐지지 않는다(항목은 `internal_ref`로만 구분).
+- 서버가 제공한 설명·인자·메타데이터는 콘솔에 출력하지 않는다.
+
+### 10-6. 한계와 하지 않은 것
+
+- 저장 시점의 응답이다. 지금 서버가 같은 목록을 반환하는지, 리소스를 읽을 수 있는지(`resources/read`), 프롬프트를 가져올 수 있는지(`prompts/get`), Agent에 노출되는지는 확인하지 않았다. 목록의 `uri`를 열거나 `uriTemplate`을 확장하지 않는다.
+- 능력 선언은 입력에 저장된 값을 옮긴 것이며 서버와 협상한 결과를 확인한 것이 아니다.
+- `unsupported`는 저장된 `-32601` 응답이 있을 때만 쓴다. 능력을 선언하지 않았다는 정보만으로 미지원으로 확정하지 않는다(`not_performed`).
+- 검사는 제한된 구조 검사다(`DEFINITION_VALIDATION.not_checked` 참조). URI·템플릿 문법, `mimeType` 형식, 아이콘 접근성은 검사하지 않는다.
+- 가림은 이름·모양 기반이다. 평범한 단어처럼 생긴 비밀값이 URI·설명에 있으면 가려지지 않으며, 32자 이상 무작위처럼 보이는 정상 `name`/`uri`는 가려질 수 있다.
+- 서버 접속·실행, 실제 목록 조회(live), 공통 ID·공통 스키마, `linking`에 이 결과를 반영하는 것, 테스트베드 대조·수집률 계산은 이번 범위가 아니다.
+
+### 10-7. 종료 코드와 검증
+
+종료 코드는 다른 수집 CLI와 같다: 0 완전, 1 부분, 2 인자 오류, 3 실패(읽은 서버 없음), 4 저장 실패(입력과 같은 파일·저장 오류, 기존 결과 파일은 유지). 사용 예는 README의 "저장된 목록 응답에서 Resource·ResourceTemplate·Prompt 읽기" 참조. 테스트는 `tests/test_resources_prompts.py`(가상 응답만 사용)이며 `FAKE` 표식 값이 결과·표준출력·오류출력에 남지 않는 것, 상태 구분, 합치지 않음, 기존 Tool 카탈로그 출력 불변을 확인한다.
+
+### 10-8. 검증 실행 기록 (2026-11-12)
+
+이 기능과 문서를 반영한 뒤의 pytest 실행 결과다. 로그는 `asset-scanner/output/review-resources-prompts/`에 있다(`output/`은 `.gitignore` 대상이라 저장소에는 올라가지 않으므로 아래 표에 수치를 옮겨 적는다). 이 기록의 세 실행은 모두 같은 코드 상태에서 수행했다(영향 테스트 종료 후 소스·테스트·문서·예제 파일이 바뀌지 않았음을 수정 시각으로 확인).
+
+수집된 테스트는 494개다(`collect.log`).
+
+| 구분 | 범위 | 결과 | pytest 종료 코드 | 기록 |
+|---|---|---|---|---|
+| ① 영향 테스트 | 새 모듈·재사용한 `tools_catalog`·`linking`·가림·콘솔 인코딩·등록 영역·정책 필드 등 12개 파일 | 412 passed (311초) | **0** | `impact.log`, `impact.exit.txt` |
+| ② 한 번의 전체 실행 | 494개 전체 | 458개 PASSED 기록 후 **중단** (92%). FAILED·ERROR 없음 | **기록 없음** (시스템 메모리 부족으로 Claude Code가 프로세스를 종료함) | `full.log` (`full.exit.txt` 없음) |
+| ③ 분할 실행 | ②에서 끝내지 못한 36개 (모두 `tests/test_v7_review_fixes.py`)를 7개 묶음으로 실행 | 36 passed | 7개 모두 **0** | `split/b1`~`b7` `.log`·`.exit.txt` |
+
+- **②는 통과로 보지 않는다.** 종료 코드가 없고 마지막 6개 테스트가 실행되지 않은 채 끝났다. 로그에 PASSED로 찍힌 458개 테스트 결과만 인정한다. 중단 당시 실행 중이던 테스트는 순서상 `test_r1_5_exactly_the_limit_with_a_cursor_left_is_partial_and_does_not_request_more`(개발용 MCP 서버를 별도 프로세스로 띄우는 stdio 테스트)이며, 로그에는 시작도 완료도 찍히지 않았다.
+- **③은 ②의 이어 실행이다.** 같은 494개를 한 번에 통과시킨 결과가 아니다. 대조 결과: ②의 PASSED 458 + ③의 PASSED 36 = 494, 겹침 0, 누락 0, PASSED 외 상태 0. 따라서 "494개 전부가 각각 한 번 이상 통과했고, 실패한 것은 없다"까지가 확인된 사실이다. "한 번의 전체 실행이 종료 코드 0으로 끝났다"는 확인되지 않았다.
+- ③의 묶음별 기록 (실행기는 시스템 여유 메모리 120MB 미만이면 해당 실행만 중단하도록 감시했으나 중단된 묶음은 없었다):
+
+| 묶음 | 대상 | 결과 | 종료 코드 | 실행 중 python 최대 메모리 | 실행 중 시스템 최소 여유 메모리 |
+|---|---|---|---|---|---|
+| b1 | `test_r1_5_…` (중단 당시 실행 중이던 테스트) | 1 passed | 0 | 202 MB | 947 MB |
+| b2 | `test_r1_6_…` | 1 passed | 0 | 207 MB | 890 MB |
+| b3 | `test_r1_truncation…`·`default_limit…`·`user_limit…`·`static_catalog_cli…` | 4 passed | 0 | 207 MB | 139 MB |
+| b4 | `test_r2_invalid_time_limits…` (매개변수 16개) | 16 passed | 0 | 128 MB | 269 MB |
+| b5 | `test_r2_a_valid_positive_finite_value…` | 1 passed | 0 | 206 MB | 729 MB |
+| b6 | `test_r2_the_public_function_validates_limits…` (매개변수 10개) | 10 passed | 0 | 89 MB | 746 MB |
+| b7 | `test_r2_cli_and_function_share…`·`test_ground_truth…`·`test_r2_validate_limits_bounds…` | 3 passed | 0 | 241 MB | 605 MB |
+
+- **중단 원인에 대한 판단 (추정)**: 중단 당시 테스트 자체의 결함이나 비정상적인 메모리 증가는 확인되지 않았다. 같은 테스트가 단독으로 통과했고 python 프로세스의 최대 메모리는 241MB 이하였다. 시스템 전체 메모리는 8GB 중 97%가 사용 중이었고 상위 사용 프로세스는 Claude Code·브라우저·메모 앱이었다. 묶음 3에서는 python이 207MB 이하인데도 시스템 여유가 139MB까지 내려갔다. 다만 당시 중단 시점의 메모리 사용 기록은 남아 있지 않아 원인을 확정하지는 못했다.
+- 분할 실행기 첫 시도(b1)에서 종료 코드 칸이 비어 그 기록은 무효로 보고 실행기를 고쳐 다시 실행했다(Windows PowerShell 5.1의 `Start-Process` 종료 코드 문제). 위 표의 값은 고친 뒤의 기록이다.
+- 서버를 띄우는 stdio 테스트(③의 b1·b2·b3·b5와 일부)는 프로젝트의 개발용 MCP 서버만 실행한다. 팀 테스트베드·외부 서버 접속은 없다.
