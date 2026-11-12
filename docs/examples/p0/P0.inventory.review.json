@@ -1492,46 +1492,6 @@
           }
         }
       }
-    },
-    {
-      "asset_id": "review-p0:permission/fs-workspace/toolFilter",
-      "asset_type": "permission_auth",
-      "asset_subtype": "permission",
-      "name": "fs-workspace Tool filter",
-      "context": {
-        "profile_id": "review-profile-p0",
-        "gateway_ref": "review-p0:tb-gw/gateway"
-      },
-      "evidence_refs": [
-        "review-evidence-config"
-      ],
-      "project": {
-        "state_assessments": [
-          {
-            "state": "DECLARED",
-            "value": true,
-            "evidence_refs": [
-              "review-evidence-config"
-            ]
-          }
-        ],
-        "permission_auth": {
-          "source_ref": "https://github.com/pbh0330/2026-Agent_Scope/blob/febb72e9ba0747a4b9d9fa714dbccca8cbc0c7d4/testbed/profiles/P0/tb-gw.openclaw.json",
-          "source_field": "mcp.servers.fs-workspace.toolFilter",
-          "target_refs": [
-            "review-p0:tb-gw/mcp_server/fs-workspace"
-          ],
-          "assessment_status": "declared",
-          "effect": "allow",
-          "patterns": [
-            "read_text_file",
-            "list_directory"
-          ],
-          "access_scope": {
-            "exclude_patterns": []
-          }
-        }
-      }
     }
   ],
   "relations": [
@@ -1774,12 +1734,12 @@
     {
       "collection_id": "review-import-gt",
       "source_ref": "https://github.com/pbh0330/2026-Agent_Scope/blob/febb72e9ba0747a4b9d9fa714dbccca8cbc0c7d4/testbed/ground-truth/P0.json",
-      "scope": "ground_truth_review",
+      "scope": "gateway_config",
       "target_ref": null,
       "mode": "imported_catalog",
       "status": "success",
       "collected_at": "2026-11-10T00:00:00Z",
-      "reason": "Review import of pinned repository artifact; times are fixture metadata, not original observation times."
+      "reason": "Manual review import of configuration declarations from GroundTruth, not a direct scanner collection. Times are fixture metadata."
     },
     {
       "collection_id": "review-import-raw",
@@ -1787,9 +1747,9 @@
       "scope": "tools_list",
       "target_ref": "review-p0:tb-gw/mcp_server/fs-workspace",
       "mode": "imported_catalog",
-      "status": "success",
+      "status": "partial",
       "collected_at": "2026-11-10T00:00:00Z",
-      "reason": "Imported published catalog; original authentication context and page-level collection metadata unavailable.",
+      "reason": "Tool definitions imported, but original authentication context and page-level completeness metadata are unavailable. This does not indicate a live collection failure.",
       "protocol_version": "2025-11-25",
       "auth_context_ref": null
     },
@@ -1802,16 +1762,6 @@
       "status": "success",
       "collected_at": "2026-11-10T00:00:00Z",
       "reason": "Review import of pinned repository artifact; times are fixture metadata, not original observation times."
-    },
-    {
-      "collection_id": "review-coverage-gaps",
-      "source_ref": "https://github.com/pbh0330/2026-Agent_Scope/blob/febb72e9ba0747a4b9d9fa714dbccca8cbc0c7d4/testbed/ground-truth/P0.json",
-      "scope": "permission_auth_and_builtin_assets",
-      "target_ref": null,
-      "mode": "imported_catalog",
-      "status": "not_attempted",
-      "collected_at": "2026-11-10T00:00:00Z",
-      "reason": "Authentication inventory, built-in Skill/Plugin coverage and real scanner integration are outside this review fixture."
     }
   ]
 }

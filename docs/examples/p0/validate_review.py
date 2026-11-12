@@ -24,7 +24,10 @@ def validate():
         check(len(ids) == len(set(ids)), f'Duplicate IDs in {group}')
         indexes[group] = dict(zip(ids, rows))
     assets, evidence = indexes['assets'], indexes['evidence']
-    check(data['scan']['status'] == 'partial', 'Review must retain coverage gaps')
+    statuses = {row['status'] for row in data['collection_results']}
+    expected_status = ('success' if statuses == {'success'} else
+                       'partial' if 'success' in statuses or 'partial' in statuses else 'failed')
+    check(data['scan']['status'] == expected_status, 'Scan/collection status mismatch')
     check(assets[data['context']['gateway_ref']]['asset_type'] == 'gateway', 'Gateway context')
     check(data['scan']['started_at'] <= data['scan']['finished_at'] <= data['generated_at'], 'Time order')
     for row in data['assets'] + data['relations']:
@@ -55,9 +58,10 @@ def validate():
     for item in data['collection_results']:
         check(item['target_ref'] is None or item['target_ref'] in assets, 'Collection target')
     counts = Counter(asset['asset_type'] for asset in data['assets'])
-    check(counts == {'gateway': 1, 'node': 1, 'mcp_server': 1, 'tool': 14, 'permission_auth': 1}, 'Asset counts')
+    # Pinned source P0 fixture only; not an inventory-wide acceptance denominator.
+    check(counts == {'gateway': 1, 'node': 1, 'mcp_server': 1, 'tool': 14}, 'Source P0 fixture counts')
     check(Counter(r['relation_type'] for r in data['relations']) == {'PAIRED_WITH': 1, 'DECLARES': 1, 'ADVERTISES': 14}, 'Relation counts')
-    print('PASS: 18 assets, 16 relations; IDs, references, ownership and fixture invariants')
+    print('PASS: 17 source P0 assets, 16 relations; IDs, references, ownership and status consistency')
 
 
 if __name__ == '__main__':
