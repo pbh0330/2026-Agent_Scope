@@ -11,8 +11,13 @@
 - Gateway: `openclaw gateway call gateway.identity.get --json` — 읽기 전용 호출(`callGatewayReadOnlyCli`), 메서드 범위 `operator.read`,
   결과 `{deviceId, publicKey}`.
 
-값의 출처를 구분한다. 이 모듈의 값은 `observed_from_stored_command_output`이며, `linking`의 `--subject`로 사용자가 입력한
-`user_provided` 값과 다른 필드에 둔다. 저장된 출력에는 실행 시각이 없으므로 `observed_at`은 사용자가 `--observed-at`으로 선언한
+직접 조회: `--query-gateway-identity`·`--query-node-identity`는 `--openclaw-bin`으로 지정한 OpenClaw 실행 파일에 위 두 명령**만** 실행한다
+(`openclaw_direct`: 인자 배열, 시간·출력 크기 제한, 프로세스 트리 정리, gateway call은 `gateway.identity.get` 메서드 하나로 고정). 결과는 같은 파서를 거치며
+`origin`이 `observed_from_direct_query`, `observed_at`은 스캐너 시계(`scanner_clock_at_query`)다. 조회 대상 Gateway는 OpenClaw 설정이 정하므로
+`--expect-gateway-url`로 고정하거나 `--accept-configured-gateway`로 확인해야 한다.
+
+값의 출처를 구분한다. 이 모듈의 값은 `observed_from_stored_command_output`(저장된 출력) 또는 `observed_from_direct_query`(직접 조회)이며,
+`linking`의 `--subject`로 사용자가 입력한 `user_provided` 값과 다른 필드에 둔다. 저장된 출력에는 실행 시각이 없으므로 `observed_at`은 사용자가 `--observed-at`으로 선언한
 경우에만 `operator_declared`로 기록하고, 파일 수정 시각(`file_modified_at`)은 관측 시각이 아니라고 명시한다.
 `deviceId`·`publicKey` 외의 필드는 값을 읽지 않고 이름만 남긴다. 개인 키처럼 보이는 값은 저장하지 않는다.
 종료 코드: 0 완전, 1 부분, 2 인자 오류, 3 실패, 4 저장 실패.
@@ -30,6 +35,7 @@ from typing import Any
 
 from . import __version__
 from .cli import _make_console_output_safe, _same_file
+from .openclaw_direct import DirectResult, add_direct_arguments, config_from_args, run_queries, validate_config
 from .output import OutputError, normalize_for_output, write_json_atomic
 from .redaction import REDACTED, Redactor, looks_like_secret_value
 from .tools_catalog import _read_capture, _seg, _short
@@ -114,12 +120,19 @@ def _public_key_entry(value: Any) -> dict:
     return {"original_value": value, "status": "as_reported"}
 
 
-def read_identity(kind: str, label: str | None, path: Path, observed_at: str | None, index: int) -> dict:
+def _direct_observation(src: dict, result: DirectResult) -> dict:
+    """직접 조회의 관측 기록. 명령·버전·범위·시각은 `openclaw_direct`가 만든 값이고 이 모듈은 읽기 전용 근거만 더한다."""
+    return {**{"read_only_command": src["read_only"], "required_scope": src["required_scope"], "basis": src["basis"]},
+            **result.observation, "collected_at": _now(), "file_modified_at": None}
+
+
+def read_identity(kind: str, label: str | None, path: "Path | DirectResult", observed_at: str | None, index: int) -> dict:
     src = SOURCES[kind]
+    direct = isinstance(path, DirectResult)
     item: dict[str, Any] = {
         "kind": kind, "internal_ref": f"identity-input[{index}]", "label": label,
-        "origin": "observed_from_stored_command_output",
-        "observation": {
+        "origin": "observed_from_direct_query" if direct else "observed_from_stored_command_output",
+        "observation": _direct_observation(src, path) if direct else {
             "source_kind": "stored_command_output", "command": src["command"], "read_only_command": src["read_only"],
             "required_scope": src["required_scope"], "basis": src["basis"],
             "observed_at": observed_at, "observed_at_origin": "operator_declared" if observed_at else None,
@@ -129,11 +142,16 @@ def read_identity(kind: str, label: str | None, path: Path, observed_at: str | N
         },
         "issues": [],
     }
-    data, failure = _read_capture(path)
+    if direct:
+        data, failure = path.data, ({"code": "direct_" + path.failure["code"], "message": path.failure["message"],
+                                     **{k: v for k, v in path.failure.items() if k not in ("code", "message")}} if path.failure else None)
+    else:
+        data, failure = _read_capture(path)
     if failure is not None:
         item.update(collection_status="failed", outcome=failure["code"], device_id={"original_value": None, "status": "missing"},
                     public_key={"original_value": None, "status": "missing"}, unknown_fields=[])
-        item["issues"].append(_issue("error", failure["code"], failure["message"]))
+        item["issues"].append(_issue("error", failure["code"], failure["message"],
+                                     **{k: v for k, v in failure.items() if k not in ("code", "message")}))
         return item
     if not isinstance(data, dict):
         item.update(collection_status="failed", outcome="invalid_structure", device_id={"original_value": None, "status": "missing"},
@@ -173,7 +191,8 @@ def read_identity(kind: str, label: str | None, path: Path, observed_at: str | N
     return item
 
 
-def collect_identities(gateways: list[tuple[str | None, Path]], nodes: list[tuple[str | None, Path]], observed: dict[str, str]) -> dict:
+def collect_identities(gateways: "list[tuple[str | None, Path | DirectResult]]", nodes: "list[tuple[str | None, Path | DirectResult]]",
+                       observed: dict[str, str]) -> dict:
     items: list[dict] = []
     extra_issues: list[dict] = []
     labels: dict[str, int] = {}
@@ -185,15 +204,21 @@ def collect_identities(gateways: list[tuple[str | None, Path]], nodes: list[tupl
     for kind, entries in (("gateway", gateways), ("node", nodes)):
         for label, path in entries:
             at = None
-            if label and labels.get(label) == 1 and label in observed:
+            if label and labels.get(label) == 1 and label in observed and not isinstance(path, DirectResult):
                 at = observed[label]
                 used_times.add(label)
             item = read_identity(kind, label if label and labels.get(label) == 1 else None, path, at, len(items))
             if label and labels.get(label, 0) > 1:
                 item["issues"].append(_issue("warning", "label_duplicate", "같은 라벨이 둘 이상이라 라벨과 관측 시각을 적용하지 않았습니다."))
             items.append(item)
+    direct_labels = {lb for _, entries in (("gateway", gateways), ("node", nodes)) for lb, src in entries if lb and isinstance(src, DirectResult)}
     for lb in observed:
-        if lb not in used_times:
+        if lb in used_times:
+            continue
+        if lb in direct_labels:
+            extra_issues.append(_issue("warning", "observed_at_ignored_for_direct_query",
+                                       "직접 조회 항목의 관측 시각은 스캐너 시계(조회 시점)를 쓰므로 --observed-at을 적용하지 않았습니다."))
+        else:
             extra_issues.append(_issue("warning", "observed_at_label_unused", "--observed-at의 라벨이 단일 입력과 맞지 않아 적용하지 않았습니다."))
     # 같은 deviceId가 여러 입력에 있어도 합치지 않는다. 서로 다른 종류(gateway/node)에서 같으면 사실만 표시한다.
     seen: dict[str, list[int]] = {}
@@ -221,15 +246,21 @@ def build_report(collected: dict, given: bool = True) -> dict:
         status, outcome = "failed", "no_identity_read"
     else:
         status, outcome = "partial", "some_identities_incomplete"
+    any_direct = any(i.get("origin") == "observed_from_direct_query" for i in items)
+    not_verified = list(NOT_VERIFIED)
+    if any_direct:      # 직접 조회가 섞이면 "스캐너가 명령을 실행하지 않았다"는 항목은 맞지 않는다
+        not_verified = [n for n in not_verified if n != "command_executed_by_scanner"] + ["direct_query_values_independently_verified"]
     return {
         "format": FORMAT_NAME, "format_version": FORMAT_VERSION,
         "format_status": "스캐너 내부 개발용 초안입니다. 팀 공통 스키마·공통 ID가 아닙니다. deviceId를 공통 자산 ID로 확정하지 않았습니다.",
         "producer": {"name": "agent-scope-asset-scanner", "version": __version__}, "generated_at": _now(),
         "basis": {"openclaw_version": "2026.9.6", "evidence": "패키지 문서·코드(정적 읽기). docs/asset-collection.md"},
         "scope": {
-            "method": "저장된 읽기 전용 명령 출력 파일 읽기 (명령 실행 없음)",
-            "not_verified": NOT_VERIFIED,
+            "method": ("저장된 읽기 전용 명령 출력 파일 읽기 + OpenClaw 직접 조회(허용 목록의 읽기 명령만 실행)" if any_direct
+                       else "저장된 읽기 전용 명령 출력 파일 읽기 (명령 실행 없음)"),
+            "not_verified": not_verified,
             "value_origins": {"observed_from_stored_command_output": "저장된 openclaw 명령 출력의 값. 스캐너가 확인한 것이 아님",
+                              "observed_from_direct_query": "스캐너가 지정한 OpenClaw 실행 파일에 허용 목록의 읽기 명령을 실행해 얻은 값. OpenClaw가 돌려준 값이며 스캐너가 독립적으로 확인한 것이 아님",
                               "user_provided": "linking의 --subject로 사용자가 입력한 값. 이 모듈의 값과 별개 필드"},
         },
         "collection": {"status": status, "outcome": outcome, "identity_count": len(items)},
@@ -251,6 +282,11 @@ def _parser() -> argparse.ArgumentParser:
                                             "Gateway·Node identity를 수집합니다 (명령 실행 없음, 내부 개발용 초안).")
     p.add_argument("--gateway-identity", action="append", default=[], metavar="[라벨=]파일", help="Gateway identity 출력 파일")
     p.add_argument("--node-identity", action="append", default=[], metavar="[라벨=]파일", help="Node identity 출력 파일")
+    p.add_argument("--query-gateway-identity", nargs="?", const="", default=None, metavar="[라벨]",
+                   help="OpenClaw에 gateway.identity.get을 직접 조회 (--openclaw-bin 필요, --expect-gateway-url 또는 --accept-configured-gateway 필요)")
+    p.add_argument("--query-node-identity", nargs="?", const="", default=None, metavar="[라벨]",
+                   help="OpenClaw에 `node identity --json`을 직접 조회 (--openclaw-bin 필요)")
+    add_direct_arguments(p)
     p.add_argument("--observed-at", action="append", default=[], metavar="라벨=ISO8601",
                    help="그 라벨 입력을 사용자가 관측한 시각(시간대 포함, 예: 2026-11-12T09:00:00+09:00). 선언한 값으로만 기록합니다")
     p.add_argument("--output", required=True, type=Path)
@@ -261,12 +297,28 @@ def main(argv: list[str] | None = None) -> int:
     _make_console_output_safe()
     parser = _parser()
     args = parser.parse_args(argv)
-    if not args.gateway_identity and not args.node_identity:
-        parser.error("--gateway-identity 또는 --node-identity가 필요합니다.")
+    q_gw, q_nd = args.query_gateway_identity is not None, args.query_node_identity is not None
+    if not args.gateway_identity and not args.node_identity and not q_gw and not q_nd:
+        parser.error("--gateway-identity, --node-identity, --query-gateway-identity, --query-node-identity 중 하나가 필요합니다.")
     if len(args.gateway_identity) + len(args.node_identity) > MAX_INPUTS:
         parser.error(f"입력은 {MAX_INPUTS}개까지입니다.")
-    gws = [_split(t) for t in args.gateway_identity]
-    nds = [_split(t) for t in args.node_identity]
+    gws: list = [_split(t) for t in args.gateway_identity]
+    nds: list = [_split(t) for t in args.node_identity]
+    queries = (["gateway-identity"] if q_gw else []) + (["node-identity"] if q_nd else [])
+    if queries:
+        if args.openclaw_bin is None:
+            parser.error("직접 조회에는 --openclaw-bin(실행 파일 경로)이 필요합니다.")
+        problems = validate_config(config_from_args(args), queries)
+        if problems:
+            parser.error("; ".join(problems))
+        for lb in (args.query_gateway_identity, args.query_node_identity):
+            if lb and not _LABEL_RE.match(lb):
+                parser.error("직접 조회의 라벨은 영문자·숫자로 시작하는 64자 이하여야 합니다.")
+        results, _ver = run_queries(config_from_args(args), queries)
+        if q_gw:
+            gws.append((args.query_gateway_identity or None, results["gateway-identity"]))
+        if q_nd:
+            nds.append((args.query_node_identity or None, results["node-identity"]))
     observed: dict[str, str] = {}
     for t in args.observed_at:
         label, sep, when = t.partition("=")
@@ -277,6 +329,8 @@ def main(argv: list[str] | None = None) -> int:
             parser.error("--observed-at에 같은 라벨이 둘 이상 있습니다.")
         observed[label] = parsed
     for _, path in [*gws, *nds]:
+        if isinstance(path, DirectResult):
+            continue
         if _same_file(path, args.output):
             print("오류: --output이 입력과 같은 파일입니다. 입력을 덮어쓰지 않습니다.", file=sys.stderr)
             return EXIT_OUTPUT_ERROR

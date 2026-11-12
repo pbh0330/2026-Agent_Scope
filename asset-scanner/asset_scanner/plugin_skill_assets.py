@@ -11,6 +11,9 @@
 - 설정에 선언된 활성화 값: `--config`의 `plugins.*`·`skills.*` (`declared_activation`). 선언일 뿐 실제 로딩·활성 상태가 아니다.
 - 저장된 명령 출력의 런타임 관측값: `openclaw plugins list --json`·`openclaw skills list --json` 출력 파일 (`runtime_observation`).
   실행 시점은 알 수 없고(파일 수정 시각만 기록) 출력 안의 값을 그대로 옮길 뿐 이 모듈이 확인한 것이 아니다.
+- 직접 조회한 런타임 관측값: `--openclaw-bin`으로 지정한 실행 파일에 허용 목록의 읽기 조회(`openclaw_direct`)를 실행한 결과. 같은 파서를 거치며
+  `observation.source_kind`가 `direct_query`이고 명령·설치 버전·조회 범위·관측 시각(`scanner_clock_at_query`)을 함께 기록한다. 값은 OpenClaw가 돌려준
+  것이며 이 모듈이 확인한 것이 아니다. `skills list`는 기본 거부(Gateway RPC·장치 신원 생성 가능)이고 명시적 동의가 있어야 실행한다.
 
 연결 규칙(보수적): 같은 `id`·이름만으로 합치지 않는다. 플러그인은 `id`와 루트 경로가 모두 맞을 때만, 스킬은 `SKILL.md` 경로가
 같을 때만 런타임 관측과 연결한다. 맞지 않으면 각각 별개 항목으로 남기고 후보로만 표시한다.
@@ -35,6 +38,7 @@ from . import __version__
 from .cli import _make_console_output_safe, _same_file
 from .collector import (CollectionFailure, _find_duplicate_keys, collect_plugin_manifest, dotted_path, parse_config,
                         read_config, _type_name)
+from .openclaw_direct import (DirectResult, add_direct_arguments, config_from_args, run_queries, validate_config)
 from .output import OutputError, normalize_for_output, write_json_atomic
 from .redaction import REDACTED, Redactor, classify_secret_ref, looks_like_secret_value
 from .tools_catalog import _sanitize, _safe_short, _text, _seg, _short
@@ -713,12 +717,8 @@ def _observation(path: Path, command: str) -> dict:
             "collected_at": _now(), "verified_by_scanner": False}
 
 
-def read_plugins_list_json(path: Path) -> dict:
-    data, err = _load_json(path)
-    out: dict[str, Any] = {"observation": _observation(path, "openclaw plugins list --json"), "records": [], "issues": [], "status": "complete"}
-    if err:
-        out["status"] = "failed"; out["issues"].append(err)
-        return out
+def _plugins_list_from(data: Any, observation: dict) -> dict:
+    out: dict[str, Any] = {"observation": observation, "records": [], "issues": [], "status": "complete"}
     plugins = data.get("plugins") if isinstance(data, dict) else None
     if not isinstance(plugins, list):
         out["status"] = "failed"
@@ -752,12 +752,33 @@ def read_plugins_list_json(path: Path) -> dict:
     return out
 
 
-def read_skills_list_json(path: Path) -> dict:
+def _failed_list(observation: dict, issue: dict) -> dict:
+    return {"observation": observation, "records": [], "issues": [issue], "status": "failed"}
+
+
+def _direct_failure_issue(result: DirectResult) -> dict:
+    f = result.failure or {}
+    extra = {k: v for k, v in f.items() if k not in ("code", "message")}
+    return _issue("error", f"direct_{f.get('code', 'failed')}", f.get("message", "직접 조회에 실패했습니다."), **extra)
+
+
+def read_plugins_list_json(path: Path) -> dict:
     data, err = _load_json(path)
-    out: dict[str, Any] = {"observation": _observation(path, "openclaw skills list --json"), "records": [], "issues": [], "status": "complete"}
+    obs = _observation(path, "openclaw plugins list --json")
     if err:
-        out["status"] = "failed"; out["issues"].append(err)
-        return out
+        return _failed_list(obs, err)
+    return _plugins_list_from(data, obs)
+
+
+def read_plugins_list_direct(result: DirectResult) -> dict:
+    """`openclaw_direct`로 직접 조회한 `plugins list --json` 결과를 같은 파서로 읽는다."""
+    if result.failure is not None:
+        return _failed_list(result.observation, _direct_failure_issue(result))
+    return _plugins_list_from(result.data, result.observation)
+
+
+def _skills_list_from(data: Any, observation: dict) -> dict:
+    out: dict[str, Any] = {"observation": observation, "records": [], "issues": [], "status": "complete"}
     skills = data.get("skills") if isinstance(data, dict) else (data if isinstance(data, list) else None)
     if not isinstance(skills, list):
         out["status"] = "failed"
@@ -777,6 +798,26 @@ def read_skills_list_json(path: Path) -> dict:
     return out
 
 
+def read_skills_list_json(path: Path) -> dict:
+    data, err = _load_json(path)
+    obs = _observation(path, "openclaw skills list --json")
+    if err:
+        return _failed_list(obs, err)
+    return _skills_list_from(data, obs)
+
+
+def read_skills_list_direct(result: DirectResult) -> dict:
+    if result.failure is not None:
+        return _failed_list(result.observation, _direct_failure_issue(result))
+    return _skills_list_from(result.data, result.observation)
+
+
+def _obs_note(observation: dict, what: str) -> str:
+    if observation.get("source_kind") == "direct_query":
+        return f"직접 조회한 {what} 출력의 값입니다. OpenClaw가 돌려준 값이며 스캐너가 확인한 것이 아닙니다."
+    return f"저장된 {what} 출력의 값입니다. 스캐너가 확인한 것이 아닙니다."
+
+
 def _norm(p: str | None) -> str | None:
     if not p:
         return None
@@ -789,7 +830,7 @@ def _norm(p: str | None) -> str | None:
 # ---- 전체 -------------------------------------------------------------------------------
 
 def collect_assets(plugin_dirs: list[Path], skills_dirs: list[Path], config: Path | None,
-                   plugins_list: Path | None, skills_list: Path | None) -> dict:
+                   plugins_list: Path | dict | None, skills_list: Path | dict | None) -> dict:
     settings = read_activation_settings(config) if config else None
     plugin_items: list[dict] = []
     skill_items: list[dict] = []
@@ -817,8 +858,9 @@ def collect_assets(plugin_dirs: list[Path], skills_dirs: list[Path], config: Pat
             if owner is not None:
                 owner["skills_declared"][dp["manifest_skills_index"]]["skills"].append(s["internal_ref"])
 
-    plist = read_plugins_list_json(plugins_list) if plugins_list else None
-    slist = read_skills_list_json(skills_list) if skills_list else None
+    # 경로이면 저장된 출력 파일을 읽고, dict이면 직접 조회 등으로 이미 읽은 결과(read_*_direct)를 그대로 쓴다
+    plist = plugins_list if isinstance(plugins_list, dict) else (read_plugins_list_json(plugins_list) if plugins_list else None)
+    slist = skills_list if isinstance(skills_list, dict) else (read_skills_list_json(skills_list) if skills_list else None)
     matched_plugin_records: set[int] = set()
     if plist:
         for p in plugin_items:
@@ -831,7 +873,7 @@ def collect_assets(plugin_dirs: list[Path], skills_dirs: list[Path], config: Pat
                 matched_plugin_records.add(r["index"])
                 p["runtime_observation"] = {"link_basis": "id_and_root_dir_match", "observation": plist["observation"], "observed": r["observed"],
                                             "registered_names": r["registered_names"],
-                                            "note": "저장된 plugins list --json 출력의 값입니다. 스캐너가 확인한 것이 아닙니다."}
+                                            "note": _obs_note(plist["observation"], "plugins list --json")}
             else:
                 p["runtime_observation"] = None
                 if same_id:
@@ -844,13 +886,13 @@ def collect_assets(plugin_dirs: list[Path], skills_dirs: list[Path], config: Pat
             if len(hits) == 1:
                 matched_skill_records.add(hits[0]["index"])
                 s["runtime_observation"] = {"link_basis": "skill_file_path_match", "observation": slist["observation"], "observed": hits[0]["observed"],
-                                            "note": "저장된 skills list --json 출력의 값입니다. 스캐너가 확인한 것이 아닙니다."}
+                                            "note": _obs_note(slist["observation"], "skills list --json")}
             else:
                 s["runtime_observation"] = None
-    unmatched_plugins = [{"kind": "plugin", "source": "stored_plugins_list_json_only", "observation": plist["observation"], "observed": r["observed"],
+    unmatched_plugins = [{"kind": "plugin", "source": ("direct_plugins_list_only" if plist["observation"].get("source_kind") == "direct_query" else "stored_plugins_list_json_only"), "observation": plist["observation"], "observed": r["observed"],
                           "registered_names": r["registered_names"], "identity": r["identity"], "redactions": r["redactions"]}
                          for r in (plist["records"] if plist else []) if r["index"] not in matched_plugin_records]
-    unmatched_skills = [{"kind": "skill", "source": "stored_skills_list_json_only", "observation": slist["observation"], "observed": r["observed"],
+    unmatched_skills = [{"kind": "skill", "source": ("direct_skills_list_only" if slist["observation"].get("source_kind") == "direct_query" else "stored_skills_list_json_only"), "observation": slist["observation"], "observed": r["observed"],
                          "identity": r["identity"], "redactions": r["redactions"]}
                         for r in (slist["records"] if slist else []) if r["index"] not in matched_skill_records]
     for lst in (plist, slist):
@@ -897,7 +939,7 @@ def build_report(collected: dict, inputs_given: bool = True) -> dict:
             "value_origins": {
                 "observed_from.static_file": "파일에서 관측한 값(manifest, package.json, SKILL.md frontmatter)",
                 "declared_activation": "설정에 적힌 활성화 선언. 실제 로딩·활성 상태가 아님",
-                "runtime_observation": "저장된 openclaw 명령 출력의 값. 스캐너가 확인한 것이 아니며 관측 시각 미상",
+                "runtime_observation": "openclaw 명령 출력의 값. 저장된 출력(source_kind stored_command_output)이면 관측 시각 미상, 직접 조회(source_kind direct_query)면 명령·설치 버전·조회 범위·관측 시각을 기록. 어느 쪽도 스캐너가 확인한 값이 아님",
                 "operator_selected": "어떤 경로를 읽을지 사용자가 지정한 사실. 경로의 종류(번들·관리형 등)는 판단하지 않음",
             },
         },
@@ -916,21 +958,42 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--config", type=Path, help="plugins.*·skills.* 활성화 선언을 읽을 OpenClaw 설정 파일(JSON5)")
     p.add_argument("--plugins-list-json", type=Path, help="저장해 둔 `openclaw plugins list --json` 출력 파일")
     p.add_argument("--skills-list-json", type=Path, help="저장해 둔 `openclaw skills list --json` 출력 파일")
+    p.add_argument("--openclaw-query", action="append", default=[], choices=("plugins", "skills"),
+                   help="저장된 출력 대신 OpenClaw에 직접 조회 (--openclaw-bin 필요). skills는 기본 거부이며 --accept-skills-list-gateway-rpc가 있어야 합니다")
+    add_direct_arguments(p)
     p.add_argument("--output", required=True, type=Path, help="결과 JSON 경로")
     return p
 
 
 def main(argv: list[str] | None = None) -> int:
     _make_console_output_safe()
-    args = _parser().parse_args(argv)
-    given = bool(args.plugin_dir or args.skills_dir or args.config or args.plugins_list_json or args.skills_list_json)
+    parser = _parser()
+    args = parser.parse_args(argv)
+    queries = list(dict.fromkeys(args.openclaw_query))
+    given = bool(args.plugin_dir or args.skills_dir or args.config or args.plugins_list_json or args.skills_list_json or queries)
     if not given:
-        _parser().error("입력이 없습니다. --plugin-dir, --skills-dir, --config, --plugins-list-json, --skills-list-json 중 하나 이상을 지정하세요.")
+        parser.error("입력이 없습니다. --plugin-dir, --skills-dir, --config, --plugins-list-json, --skills-list-json, --openclaw-query 중 하나 이상을 지정하세요.")
+    if queries:
+        if args.openclaw_bin is None:
+            parser.error("--openclaw-query에는 --openclaw-bin(실행 파일 경로)이 필요합니다.")
+        if ("plugins" in queries and args.plugins_list_json) or ("skills" in queries and args.skills_list_json):
+            parser.error("같은 종류를 저장된 출력과 직접 조회로 동시에 지정할 수 없습니다 (출처가 섞이지 않게 하나만 고르세요).")
+        problems = validate_config(config_from_args(args), queries)
+        if problems:
+            parser.error("; ".join(problems))
+    plugins_src: Any = args.plugins_list_json
+    skills_src: Any = args.skills_list_json
+    if queries:
+        results, _ver = run_queries(config_from_args(args), queries)
+        if "plugins" in results:
+            plugins_src = read_plugins_list_direct(results["plugins"])
+        if "skills" in results:
+            skills_src = read_skills_list_direct(results["skills"])
     for inp in [*args.plugin_dir, *args.skills_dir, *(x for x in (args.config, args.plugins_list_json, args.skills_list_json) if x)]:
         if _same_file(inp, args.output):
             print("오류: --output이 입력과 같은 경로입니다. 입력을 덮어쓰지 않습니다.", file=sys.stderr)
             return EXIT_OUTPUT_ERROR
-    report = build_report(collect_assets(args.plugin_dir, args.skills_dir, args.config, args.plugins_list_json, args.skills_list_json), given)
+    report = build_report(collect_assets(args.plugin_dir, args.skills_dir, args.config, plugins_src, skills_src), given)
     report, normalized = normalize_for_output(report)
     if normalized:
         report["collection"]["output_text_normalizations"] = normalized

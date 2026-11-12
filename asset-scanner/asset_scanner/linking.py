@@ -46,6 +46,7 @@ from .tools_catalog import FORMAT_NAME as CATALOG_FORMAT_NAME
 from .tools_catalog import _find_duplicates, _read_capture, _safe_short, _seg, _text
 
 IDENTITY_FORMAT_NAME = "agent-scope.scanner.gateway-node-identity"   # node_gateway_identity 모듈의 결과 형식
+IDENTITY_ORIGINS = ("observed_from_stored_command_output", "observed_from_direct_query")
 FORMAT_NAME = "agent-scope.scanner.server-tool-links"
 FORMAT_VERSION = "0.1.0-draft"
 
@@ -244,13 +245,15 @@ def _process_observed_identities(items: list[dict], scan_labels: list[str | None
                 did = chosen.get("device_id") if isinstance(chosen.get("device_id"), dict) else {}
                 if chosen.get("kind") not in ("gateway", "node") or did.get("status") != "as_reported" or not isinstance(did.get("original_value"), str):
                     problems.append("device_id_not_read")
+                elif chosen.get("origin") not in IDENTITY_ORIGINS:
+                    problems.append("identity_origin_invalid")      # 손으로 바뀐 파일: 출처를 알 수 없는 값은 쓰지 않는다
         records.append({"input_index": i, "scan_label": lb if _label_ok(lb) else None,
                         "status": "applied" if not problems else "ignored", "problems": problems})
         if not problems and chosen is not None:
             obs = chosen.get("observation") if isinstance(chosen.get("observation"), dict) else {}
             pk = chosen.get("public_key") if isinstance(chosen.get("public_key"), dict) else {}
             applicable[lb] = {
-                "origin": "observed_from_stored_command_output",
+                "origin": chosen["origin"],      # observed_from_stored_command_output | observed_from_direct_query (입력 파일에 적힌 출처 그대로)
                 "kind": chosen["kind"],
                 "device_id": {"original_value": chosen["device_id"]["original_value"], "status": "as_reported"},
                 "public_key_status": pk.get("status") if isinstance(pk.get("status"), str) else None,
@@ -258,6 +261,9 @@ def _process_observed_identities(items: list[dict], scan_labels: list[str | None
                 "observed_at": obs.get("observed_at") if isinstance(obs.get("observed_at"), str) else None,
                 "observed_at_origin": obs.get("observed_at_origin") if isinstance(obs.get("observed_at_origin"), str) else None,
                 "file_modified_at": obs.get("file_modified_at") if isinstance(obs.get("file_modified_at"), str) else None,
+                "source_kind": obs.get("source_kind") if isinstance(obs.get("source_kind"), str) else None,
+                "installed_version": ((obs.get("installed_version") or {}).get("version")
+                                      if isinstance(obs.get("installed_version"), dict) else None),
                 "verified_by_scanner": False,
             }
     return records, applicable
