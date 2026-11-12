@@ -1,0 +1,97 @@
+{
+  "format": "tools-list-capture",
+  "origin": "synthetic_test_data",
+  "description": "가상 자료입니다. 실제 MCP 서버를 조회한 응답이 아니며, MCP 2026-07-28 tools/list 응답 형식(ListToolsResult)에 맞춰 손으로 만들었습니다. 서버 이름·Tool·URL은 모두 가상입니다.",
+  "servers": [
+    {
+      "server_ref": "sample-files",
+      "registration_key": "sample-files",
+      "registry_path": "mcp.servers",
+      "protocol_version": "2026-07-28",
+      "pages": [
+        {
+          "jsonrpc": "2.0",
+          "id": 1,
+          "result": {
+            "resultType": "complete",
+            "tools": [
+              {
+                "name": "read_file",
+                "title": "Read File",
+                "description": "Read the contents of a file inside the sample workspace.",
+                "inputSchema": {
+                  "type": "object",
+                  "properties": {"path": {"type": "string", "description": "File path"}},
+                  "required": ["path"]
+                },
+                "outputSchema": {
+                  "type": "object",
+                  "properties": {"content": {"type": "string"}},
+                  "required": ["content"]
+                },
+                "annotations": {"readOnlyHint": true, "openWorldHint": false},
+                "icons": [{"src": "https://example.com/read.png", "mimeType": "image/png", "sizes": ["48x48"]}]
+              }
+            ],
+            "nextCursor": "page-2",
+            "ttlMs": 300000,
+            "cacheScope": "public",
+            "_meta": {"io.modelcontextprotocol/serverInfo": {"name": "sample-files-server", "version": "0.0.1"}}
+          }
+        },
+        {
+          "jsonrpc": "2.0",
+          "id": 2,
+          "result": {
+            "resultType": "complete",
+            "tools": [
+              {
+                "name": "get_current_time",
+                "description": "Returns the current server time",
+                "inputSchema": {"type": "object", "additionalProperties": false}
+              }
+            ],
+            "ttlMs": 300000,
+            "cacheScope": "public"
+          }
+        }
+      ]
+    },
+    {
+      "server_ref": "sample-notes",
+      "registration_key": "sample-notes",
+      "registry_path": "nodeHost.mcp.servers",
+      "protocol_version": "2026-07-28",
+      "pages": [
+        {
+          "jsonrpc": "2.0",
+          "id": 1,
+          "result": {
+            "resultType": "complete",
+            "tools": [
+              {
+                "name": "read_file",
+                "description": "A different server's tool that happens to share the name read_file.",
+                "inputSchema": {"type": "object", "properties": {"note_id": {"type": "string"}}, "required": ["note_id"]},
+                "annotations": {"readOnlyHint": true}
+              }
+            ],
+            "ttlMs": 0,
+            "cacheScope": "private"
+          }
+        }
+      ]
+    },
+    {
+      "server_ref": "sample-empty",
+      "protocol_version": "2026-07-28",
+      "pages": [
+        {
+          "jsonrpc": "2.0",
+          "id": 1,
+          "result": {"resultType": "complete", "tools": [], "ttlMs": 60000, "cacheScope": "public"}
+        }
+      ]
+    }
+  ]
+}

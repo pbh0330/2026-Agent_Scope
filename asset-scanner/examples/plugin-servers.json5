@@ -1,0 +1,19 @@
+// 직접 작성한 예제입니다. 실제 팀 설정이 아니며 서버를 설치하거나 실행하지 않습니다.
+// 공식 manifest의 mcpServers 예제 구조를 따릅니다. Plugin 자산·활성화 여부는 수집하지 않습니다.
+{
+  id: "sample-plugin",
+  configSchema: { type: "object", additionalProperties: false },
+  mcpServers: {
+    "sample-catalog": {
+      transport: "stdio",
+      command: "node",
+      args: ["./mcp-server.js"],
+      cwd: "./data",
+    },
+    "sample-disabled-remote": {
+      transport: "streamable-http",
+      url: "https://example.test/mcp",
+      enabled: false,
+    },
+  },
+}

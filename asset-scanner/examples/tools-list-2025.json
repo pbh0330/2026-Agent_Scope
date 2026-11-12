@@ -1,0 +1,27 @@
+{
+  "format": "tools-list-capture",
+  "servers": [
+    {
+      "server_ref": "sample-legacy-server",
+      "protocol_version": "2025-11-25",
+      "pages": [
+        {
+          "jsonrpc": "2.0",
+          "id": 1,
+          "result": {
+            "tools": [
+              {
+                "name": "read_notes",
+                "description": "Read sample notes. Handwritten example, not a live server capture.",
+                "inputSchema": {"type": "object"},
+                "annotations": {"readOnlyHint": true}
+              }
+            ],
+            "nextCursor": "sample-next-page"
+          }
+        },
+        {"jsonrpc": "2.0", "id": 2, "result": {"tools": []}}
+      ]
+    }
+  ]
+}

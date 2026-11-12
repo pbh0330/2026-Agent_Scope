@@ -1,0 +1,15 @@
+// ⚠ 테스트용 가상 설정입니다. 실제 팀 설정이 아닙니다.
+// 이번 단계에서 해석하지 않는 $include 와 환경변수 참조를 포함합니다.
+// 기대 결과: 수집 상태가 complete가 아니라 partial 이고, 미해석 항목과 사유가 기록됩니다.
+{
+  agents: { $include: "./agents.json5" }, // mcp.servers와 무관한 위치의 include (영향 없음)
+  mcp: {
+    servers: {
+      $include: "./more-servers.json5",   // 등록 목록에 항목을 추가할 수 있는 include
+      "ref-server": {
+        command: "${SAMPLE_MCP_BIN}",
+        args: ["--root", "${SAMPLE_ROOT_DIR}"],
+      },
+    },
+  },
+}

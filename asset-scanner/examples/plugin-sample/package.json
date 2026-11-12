@@ -1,0 +1,9 @@
+{
+  "name": "@sample/voice-plugin",
+  "version": "0.1.0",
+  "openclaw": {
+    "extensions": ["./dist/index.js"],
+    "install": { "npmSpec": "@sample/voice-plugin@0.1.0", "minHostVersion": ">=2026.3.22", "expectedIntegrity": "sha512-FAKE-INTEGRITY-VALUE" },
+    "compat": { "pluginApi": ">=2026.5.27" }
+  }
+}
