@@ -8,7 +8,7 @@ OpenClaw 설정 파일(JSON/JSON5)을 **읽기만 해서** 선택한 등록 영�
 - 설정 속 명령 실행, 서버 접속, 도구 조회, 환경변수 값 해석, `$include` 파일 읽기, 설정 수정을 **하지 않습니다.**
 - 실제 연결 여부·도구 목록·capabilities·protocol_version·노출/호출 가능 상태는 채우지 않습니다.
 - 이 설정 수집기는 Tool 정의를 읽지 않습니다. 저장된 `tools/list` 응답을 읽는 별도 모듈은 아래 [Tool 카탈로그 1단계](#tool-카탈로그-1단계-저장된-toolslist-응답-읽기)를 보세요.
-- 위 약속은 **이 정적 설정 수집기와 저장된 파일을 읽는 모듈**(Tool 카탈로그, `resources_prompts`, `linking`, `plugin_skill_assets`, `node_gateway_identity`, `permission_auth`)에 해당합니다. 서버를 실행하거나 접속하는 모듈은 `live_tools`(개발용 서버 stdio)뿐입니다. 개발용 MCP 서버를 실제로 실행해 조회하는 별도 모듈은 [실제 stdio 조회](#실제-stdio-조회-개발용-mcp-서버-1개--서버-프로세스를-실행합니다)에 있으며, **그 명령만 서버 프로세스를 실행**하고 팀 테스트베드 검증이 아닙니다.
+- 위 약속은 **이 정적 설정 수집기와 저장된 파일을 읽는 모듈**(Tool 카탈로그, `resources_prompts`, `linking`, `plugin_skill_assets`, `node_gateway_identity`, `permission_auth`)에 해당합니다. 서버를 실행하거나 접속하는 모듈은 `live_tools`(개발용 서버 stdio)와 `live_discovery`(명시적으로 고른 서버 하나, [아래 절](#실제-mcp-서버-목록-조회-live_discovery--서버-프로세스를-실행하거나-접속합니다))뿐입니다. 개발용 MCP 서버를 실제로 실행해 조회하는 별도 모듈은 [실제 stdio 조회](#실제-stdio-조회-개발용-mcp-서버-1개--서버-프로세스를-실행합니다)에 있으며, **그 명령만 서버 프로세스를 실행**하고 팀 테스트베드 검증이 아닙니다.
 - **실제 테스트베드 연동은 미검증입니다.** `examples/`의 설정은 모두 테스트용 가상 설정이며 실제 팀 설정이 아닙니다.
 
 ## 구성
@@ -27,6 +27,8 @@ asset-scanner/
 │   ├── plugin_skill_assets.py # 지정한 플러그인·스킬 디렉터리/설정/저장된 명령 출력 → Plugin·Skill 자체 정보 (읽기 전용)
 │   ├── node_gateway_identity.py # 저장된 `node identity`·`gateway.identity.get` 출력 → Gateway·Node identity (명령 실행 없음)
 │   ├── permission_auth.py # 설정의 정책·인증 선언 → 원천 항목 (읽기 전용, 집계 없음)
+│   ├── live_discovery.py  # 명시적으로 고른 MCP 서버 하나의 Tool·Resource·ResourceTemplate·Prompt 목록 실제 조회 (실행·접속)
+│   ├── dev_lists_server.py # 검증용 로컬 시험 서버 2 (stdio·로컬 HTTP·가짜 인증, 목록 4종)
 │   ├── live_tools.py     # 개발용 MCP 서버를 stdio로 실행해 tools/list 실제 조회 (SDK 사용, 서버 프로세스 실행)
 │   └── dev_mcp_server.py # 검증용 개발 MCP 서버 (공식 SDK, Tool 2개)
 ├── examples/          # 테스트용 가상 설정 (실제 팀 설정 아님)
@@ -36,7 +38,7 @@ asset-scanner/
 
 ## 설치 (Windows PowerShell)
 
-현재 검증 상태(Windows 10, Python 3.14.4, 프로젝트 `.venv`): 이 시점까지의 기능(설정 수집, Tool 카탈로그, 실제 stdio 조회, `linking`, `sslVerify`·`toolFilter`, 저장된 Resource·Prompt 목록 읽기)의 수집된 테스트는 494개입니다. **한 번의 전체 실행이 종료 코드 0으로 끝난 기록은 없습니다.** 이 PC(RAM 8GB)에서 전체 실행이 메모리 부족으로 중단된 적이 있어, 중단된 실행에서 통과로 기록된 458개와 나머지 36개를 파일 단위로 나눠 실행한 결과(종료 코드 모두 0)를 합쳐 494개가 각각 한 번 이상 통과했음을 확인했습니다(중복·누락·실패 없음, [필드 매핑 10-8](docs/field-mapping.md)). 로그는 `output/`(Git 제외)에 있습니다. 2026-10-31 별도 Linux Python 3.12 환경에서의 검증 기록(301개)은 과거 기록이며 현재 검증 결과가 아닙니다.
+현재 검증 상태(Windows 10, Python 3.14.4, 프로젝트 `.venv`): 수집된 테스트는 635개입니다. **한 번의 전체 실행이 종료 코드 0으로 끝난 기록은 없습니다.** 이 PC(RAM 8GB)에서 전체 실행이 메모리 부족으로 중단된 적이 있어 파일 단위로 나눠 순차 실행하고 각 실행의 pytest 종료 코드를 따로 기록했습니다. 기존 494개는 중단된 전체 실행에서 통과로 기록된 458개와 나머지 36개의 분할 실행(종료 코드 모두 0)을 합쳐 각각 한 번 이상 통과했음을 확인했고(중복·누락·실패 없음, [필드 매핑 10-8](docs/field-mapping.md)), 이번에 더한 141개(Plugin·Skill 30, Gateway·Node identity 33, Permission/Auth 18, 실제 목록 조회 60)는 파일 단위 실행에서 종료 코드 0으로 통과했습니다([자산 수집 6장](docs/asset-collection.md), [실제 목록 조회 9장](docs/live-discovery.md)). 기존 모듈 중 이번에 바뀐 것은 `linking`뿐이며 그 테스트(83개)는 다시 실행해 통과했습니다. 로그는 `output/`(Git 제외)에 있습니다. 2026-10-31 별도 Linux Python 3.12 환경에서의 검증 기록(301개)은 과거 기록이며 현재 검증 결과가 아닙니다.
 
 ```powershell
 cd asset-scanner
@@ -544,6 +546,24 @@ SDK `mcp`는 2026-07-28 규격을 지원하는 정식 2.x 중 **2.3.0**으로 �
 - **Permission/Auth**: 항목마다 설정 위치와 적용 대상(전역·Provider·Agent·발신자 그룹·Gateway·Node·MCP 서버 선언 위치)을 가집니다. MCP 서버 항목은 설정 수집기와 같은 `declaration_path`를 씁니다. 인증정보는 종류(`secret_ref`/`env_ref`/`literal_withheld`)와 참조 이름만 남기고 **원문·길이·해시를 저장하지 않으며**, 발신자 키·허용 사용자 값은 개인 식별정보일 수 있어 종류·개수만 남깁니다.
 - 검증은 **가상 입력**(임시 폴더·설정·출력 파일)으로만 했습니다. 실제 OpenClaw 설치·실제 CLI 출력·팀 테스트베드와는 대조하지 않았습니다.
 
+## 실제 MCP 서버 목록 조회 (`live_discovery`) — 서버 프로세스를 실행하거나 접속합니다
+
+명시적으로 고른 서버 **하나**에 연결해 `tools/list`·`resources/list`·`resources/templates/list`·`prompts/list`를 페이지 끝까지 조회합니다. `tools/call`·`resources/read`·`prompts/get`은 코드의 허용 목록이 보내기 전에 막습니다. 자세한 내용은 [docs/live-discovery.md](docs/live-discovery.md)입니다.
+
+```powershell
+# 내장 로컬 시험 서버: stdio, 또는 127.0.0.1 HTTP + 실행 때 만든 가짜 Bearer 인증
+.\.venv\Scripts\python.exe -m asset_scanner.live_discovery --demo-stdio --output output\live.result.json
+.\.venv\Scripts\python.exe -m asset_scanner.live_discovery --demo-http --demo-auth fake --output output\live-http.result.json
+# 설정에 선언된 서버 하나를 키로 지정 (실행·접속은 명시적으로 허용해야 함. HTTP는 기본적으로 루프백만)
+.\.venv\Scripts\python.exe -m asset_scanner.live_discovery --config C:\path\openclaw.json5 --server my-server --allow-launch --output output\live-config.result.json
+```
+
+- 설정의 서버를 자동으로 고르거나 모두 실행하지 않습니다. `--server`(키 하나)와 `--allow-launch`/`--allow-connect`가 모두 있어야 움직이며, 해석할 수 없는 참조(`${VAR}`·SecretRef·`$include`)가 있거나 OAuth·SSE·비루프백 호스트(`--allow-host` 없이)면 **실행·접속하지 않고** 사유와 함께 거부합니다. 토큰은 `--bearer-env 환경변수이름`으로 실행 때 읽고 결과에는 이름만 남깁니다.
+- 협상된 `protocol_version`을 기록하고, **SDK가 통신할 수 있는 버전**(`2024-11-05`~`2026-07-28`)과 **스캐너가 응답을 읽을 수 있는 버전**(`2025-11-25`·`2026-07-28`)을 구분합니다. 파서가 읽지 못하는 버전이면 목록을 요청하지 않습니다.
+- 목록마다 `complete`(빈 목록 포함)·`partial`·`failed`·`unsupported`(첫 응답 -32601)·`not_performed`(능력 미선언·세션 종료·연결 실패 등)를 구분합니다. 요청하지 않은 목록을 0개나 실패로 채우지 않습니다.
+- 페이지·항목 수·시간 제한을 적용하고 프로세스와 포트를 정리합니다. 이름이 같은 서로 다른 서버·유형의 항목은 자동으로 합치지 않으며, 설정 선언과의 연결은 지정한 키(`declaration_link`)와 `--config-scan-ref`를 쓴 기존 `linking` 규칙으로만 합니다.
+- **개발용 시험 서버(`dev_lists_server`)로만 실제 통신을 검증했습니다.** 팀 테스트베드·외부 서버 검증이 아니며, 허용하지 않은 호출이 없었는지는 시험 서버가 받은 요청의 메서드 이름 기록으로 확인했습니다.
+
 ## 이번 단계에서 하지 않은 것 / 후속 확인
 
 - 실제 팀 테스트베드 OpenClaw 설정 원본으로 수집 확인 (`openclaw config schema`와 필드 대조 포함). 사양 정정본 수령 후 진행
@@ -551,7 +571,7 @@ SDK `mcp`는 2026-07-28 규격을 지원하는 정식 2.x 중 **2.3.0**으로 �
 - `$include` 파일 읽기와 병합, 환경변수·SecretRef 해석(값은 계속 저장하지 않음)
 - 실제 OpenClaw 설치 환경에서 얻은 `plugins list --json`·`skills list --json`·`node identity`·`gateway call` 출력과 번들 플러그인 전체로의 검증 (가상 입력으로만 검증함)
 - 설정 대조·수집률·누락 계산, `DECLARES` 관계, 공통 자산 ID, 공통 스키마(`InventorySnapshot`) 변환 (팀 협의 대기)
-- 팀 테스트베드·OpenClaw 설정에서 읽은 서버 명령의 실제 조회 (개발용 서버 1개의 stdio 조회만 검증함), 원격(HTTP)·인증 서버, `tools/call`·`resources/read`·`prompts/get`
+- 팀 테스트베드 서버·원격 HTTPS·OAuth·SSE 서버의 실제 조회 (개발용 시험 서버의 stdio·로컬 HTTP만 검증함), `tools/call`·`resources/read`·`prompts/get`
 
 ### 테스트베드 OpenClaw 버전 표기 (확인된 것과 대기 중인 것)
 
