@@ -1,0 +1,49 @@
+{
+  "generatedAt": "2026-11-12T13:07:26.853Z",
+  "servers": {
+    "fs-workspace": {
+      "launch": "mcp-server-filesystem /home/<TB_USER>/workspace",
+      "tools": 2,
+      "codexApprovalMode": "auto",
+      "requestTimeoutMs": 60000,
+      "filteredTools": 12,
+      "listChanged": {
+        "tools": true,
+        "resources": false,
+        "prompts": false
+      }
+    },
+    "inventory-remote": {
+      "launch": "https://tb-node:9443/mcp",
+      "tools": 2,
+      "codexApprovalMode": "auto",
+      "requestTimeoutMs": 60000,
+      "resources": true,
+      "prompts": true,
+      "listChanged": {
+        "tools": true,
+        "resources": true,
+        "prompts": true
+      }
+    },
+    "shadow-notes": {
+      "launch": "node /home/<TB_USER>/mcp-servers/notes-stub/server.mjs --name shadow-notes",
+      "tools": 2,
+      "codexApprovalMode": "auto",
+      "requestTimeoutMs": 60000
+    }
+  },
+  "tools": [
+    "fs-workspace__list_directory",
+    "fs-workspace__read_text_file",
+    "inventory-remote__inventory_get_host",
+    "inventory-remote__inventory_list_hosts",
+    "inventory-remote__prompts_get",
+    "inventory-remote__prompts_list",
+    "inventory-remote__resources_list",
+    "inventory-remote__resources_read",
+    "shadow-notes__shadow_notes_get_note",
+    "shadow-notes__shadow_notes_list_notes"
+  ],
+  "diagnostics": []
+}

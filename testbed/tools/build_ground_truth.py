@@ -392,9 +392,11 @@ def threat_delta(profile, gt):
 
     def changed(k):
         before, after = b_assets[k].get("attributes", {}), t_assets[k].get("attributes", {})
+        # 노출 여부는 기준·위협 양쪽 모두 VM 수집으로 확인된 경우에만 비교한다(한쪽이라도 미확인이면 제외)
+        verified = before.get("exposed_to_agent") is not None and after.get("exposed_to_agent") is not None
         diff = {f: {"before": before.get(f), "after": after.get(f)}
                 for f in sorted(set(before) | set(after))
-                if before.get(f) != after.get(f) and f not in exposure_fields}
+                if before.get(f) != after.get(f) and (verified or f not in exposure_fields)}
         return {"asset_key": k, "changes": diff} if diff else None
 
     for alert in THREATS[profile] + UNKNOWN.get(profile, []):

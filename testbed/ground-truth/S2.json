@@ -50,6 +50,32 @@
           "after": null
         }
       }
+    },
+    {
+      "asset_key": "demo-everything/tool/get-env",
+      "changes": {
+        "exposed_to_agent": {
+          "before": false,
+          "after": true
+        },
+        "not_exposed_reason": {
+          "before": "toolFilter.exclude",
+          "after": null
+        }
+      }
+    },
+    {
+      "asset_key": "demo-everything/tool/gzip-file-as-resource",
+      "changes": {
+        "exposed_to_agent": {
+          "before": false,
+          "after": true
+        },
+        "not_exposed_reason": {
+          "before": "toolFilter.exclude",
+          "after": null
+        }
+      }
     }
   ],
   "removed_assets": [],

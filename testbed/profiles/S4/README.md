@@ -3,7 +3,7 @@
 > 기준: `SNAP-2-P2` → 결과 스냅샷 `SNAP-3-S4` (두 VM 동시, 전원 끈 상태)
 > 시나리오 명세: PR #7 `scenario-s4.md`, 기대 경고: PR #7 `expected-results.md` 5절 (v2.1)
 > 정답 목록: [../../ground-truth/S4.json](../../ground-truth/S4.json)
-> 상태: 설정 사본은 **구축 전 예상본**. 실제 비밀값은 어디에도 적지 않는다(참조 이름·저장 위치만).
+> 상태: **VM 구축 완료(2026.11.12, `SNAP-3-S4`)**. 설정 사본은 VM 실측본(자리표시자 처리). 실제 비밀값은 어디에도 적지 않는다(참조 이름·저장 위치만).
 
 ## 1. 위험 구성 (P2 대비 변경)
 
@@ -26,7 +26,7 @@ openclaw mcp set fs-workspace \
 
 # tb-node (S4-T2): .env에 가짜 INVENTORY_MCP_TOKEN 추가 후 참조 변경
 printf 'INVENTORY_MCP_TOKEN=dummy-not-same-as-gw\n' >> ~/.openclaw/.env
-openclaw config set nodeHost.mcp.servers.demo-everything.env.EVERYTHING_DEMO_KEY '${INVENTORY_MCP_TOKEN}' --strict-json
+openclaw config set nodeHost.mcp.servers.demo-everything.env.EVERYTHING_DEMO_KEY '"${INVENTORY_MCP_TOKEN}"' --strict-json   # --strict-json은 JSON 문자열(따옴표 포함)만 받는다
 openclaw node restart
 ```
 

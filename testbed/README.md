@@ -198,7 +198,7 @@
 | `tb-node` 생성 | 완료 (10.04) | `tb-gw` 전체 복제 후 식별자 재생성, 패키지 목록 해시 동일 |
 | SNAP-0 / SNAP-1 | 완료 (10.04) | OpenClaw 2026.9.6 설치·페어링, 기준선 수집 ([구축 기록](docs/build-log-snap0-snap1.md)) |
 | 정상군 P0/P1/P2, 정답 목록, SNAP-2 | 완료 (10.04) | [프로파일](profiles/README.md), [정답 목록](ground-truth/), SNAP-2-P0/P1/P2 |
-| 위협 구성 (S1→S2→S4→S3→S5) | S1~S5 설정·정답 작성 완료 (11.10, PR #7 v2.1 기준), VM 구축 전 | [S1](profiles/S1/README.md) · [S2](profiles/S2/README.md) · [S3](profiles/S3/README.md) · [S4](profiles/S4/README.md) · [S5](profiles/S5-T1/README.md) |
+| 위협 구성 (S1→S2→S4→S3→S5) | S1~S5 설정·정답 작성 완료 (11.10, PR #7 v2.1 기준). S1~S4 VM 구축·수집 완료 (11.12, `SNAP-3-S1`~`S4`), S1-T5·S5는 설정 사본 정적 검증 | [S1](profiles/S1/README.md) · [S2](profiles/S2/README.md) · [S3](profiles/S3/README.md) · [S4](profiles/S4/README.md) · [S5](profiles/S5-T1/README.md) |
 
 ---
 
@@ -239,6 +239,10 @@ SNAP-1 기준선 원본은 `testbed/baseline/SNAP-1/`에 있다.
 | SNAP-2-P0 | 2026.10.04 | 두 VM 생성 | MCP 서버 1 (도구 광고 14 / 노출 2) |
 | SNAP-2-P1 | 2026.10.04 | 두 VM 생성 | MCP 서버 3, 노드 스킬 2 |
 | SNAP-2-P2 | 2026.10.04 | 두 VM 생성 | MCP 서버 5(원격 HTTPS·플러그인 등록 포함), 플러그인 1, 스킬 3, 내장 감사 critical 1 / warn 3 |
+| SNAP-3-S1 | 2026.11.12 | 두 VM 생성 | SNAP-2-P2 기준. 비인가 서버 3(shadow-notes·node-helper·플러그인 notes-sync), inventory-remote 9443 endpoint |
+| SNAP-3-S2 | 2026.11.12 | 두 VM 생성 | SNAP-2-P2 기준. fs-workspace 범위 확대(toolFilter 유지), demo-everything toolFilter 제거 |
+| SNAP-3-S3 | 2026.11.12 | 두 VM 생성 | SNAP-2-P2 기준. inventory-remote `--scenario s3`(read_text_file·catalog_search 추가 광고) |
+| SNAP-3-S4 | 2026.11.12 | 두 VM 생성 | SNAP-2-P2 기준. fs-workspace에 `INVENTORY_MCP_TOKEN` 참조 추가, tb-node demo-everything 참조 이름 변경 |
 
 ---
 

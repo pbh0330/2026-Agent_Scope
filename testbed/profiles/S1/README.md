@@ -4,7 +4,7 @@
 > 시나리오 명세: PR #7 `scenario-s1.md` (9.3절 위험 구성 Case 1~3)
 > 승인 서버 목록: [../../ground-truth/approved-servers.json](../../ground-truth/approved-servers.json)
 > 정답 목록: [../../ground-truth/S1.json](../../ground-truth/S1.json) (P2 대비 변경분 + `expected_alerts`)
-> 상태: 설정 사본(`tb-gw.openclaw.json`, `tb-node.openclaw.json`)은 **구축 전 예상본**. VM 구축 후 실제 파일을 자리표시자 처리해 교체한다.
+> 상태: **VM 구축 완료(2026.11.12, `SNAP-3-S1`)**. 설정 사본은 VM 실제 파일을 자리표시자 처리한 실측본이며 구축 전 예상본과 내용이 같았다.
 
 ## 1. 위험 구성
 
@@ -79,7 +79,9 @@ openclaw plugins install ./agentscope-notes-sync --force
 
 ## 3. 정답 목록 재생성
 
-`ground-truth/raw/S1/`에는 저장소에서 직접 수집한 비인가 서버 3종의 광고 원본만 있다. 나머지는 생성기가 `raw/P2`를 대신 쓰고, 에이전트 노출 여부는 `null`(미확인)로 둔다. VM에서 아래를 수집해 `raw/S1/`에 넣고 다시 생성하면 노출 여부가 채워진다.
+`ground-truth/raw/S1/`에는 비인가 서버 3종의 광고 원본과 VM 수집본(probe·nodes-describe·plugin inspect·security audit·9443 광고본)이 있다(2026.11.12 수집). `shadow-notes`·`node-helper` 도구 4종의 노출 여부는 `true`로 확정됐다. `notes-sync`(플러그인 등록 서버)는 `openclaw mcp probe` 대상이 아니라 P2의 `asset-catalog`와 같이 `null`(미확인)로 남는다. 수집 명령은 아래와 같다.
+
+> SSH로 비대화형 실행할 때는 `bash -lc`로 로그인 셸을 써야 한다. 실습 CA(`NODE_EXTRA_CA_CERTS`)가 `~/.profile`에만 있어, 그렇지 않으면 `inventory-remote` probe가 `UNABLE_TO_VERIFY_LEAF_SIGNATURE`로 실패한다(게이트웨이 서비스는 drop-in으로 CA를 따로 받는다).
 
 ```bash
 openclaw mcp probe --json > tb-gw.mcp-probe.json                         # tb-gw
