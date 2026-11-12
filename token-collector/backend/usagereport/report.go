@@ -28,8 +28,8 @@ import (
 )
 
 const (
-	// SchemaVersion은 이 출력이 따르는 통합 스키마 문서 버전(PR #1 schema-design-draft).
-	SchemaVersion = "0.6.0-draft"
+	// SchemaVersion은 이 출력이 따르는 통합 스키마의 데이터 계약 버전(docs/schema-design-draft.md).
+	SchemaVersion = "0.7.0-draft"
 	// ProducerName / ProducerVersion은 usage.json의 producer.
 	ProducerName    = "agentscope-usage"
 	ProducerVersion = "0.1.0"
@@ -137,7 +137,7 @@ type Options struct {
 	Inventory *Inventory // nil이면 inventory_snapshot_id=null, 전부 unmatched
 
 	// ToolResultCounts: tool_call_id → 토큰 계산 API로 센 도구 결과 토큰 수(결과 기록 플러그인 기록).
-	// 주어지면 병렬·배치 구간 증가분을 이 비율로 나눈다. nil이면 병렬·배치는 지금처럼 null.
+	// 주어지면 병렬·배치 구간 증가분을 고정분 k + 이 토큰 수 비율로 나눈다. nil이면 병렬·배치는 null.
 	ToolResultCounts map[string]int64
 	// ToolResultsRef: evidence_source_refs에 붙일 플러그인 기록 파일 이름(경로 제외).
 	ToolResultsRef string

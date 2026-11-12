@@ -141,7 +141,7 @@ type Result struct {
 	MissingTimestamps bool
 
 	// 병렬·배치 구간의 입력 증가분(순차와 같은 공식, 구간 전체 값). 구간의 모든 도구가 같은 값을 가진다.
-	// 토큰은 AllocateByCounts가 결과별 토큰 수 비율로 나눌 때만 채운다.
+	// 토큰은 AllocateByCounts가 배분(고정분 k + 결과별 토큰 수 비율)할 때만 채운다.
 	SegmentDelta    int64
 	HasSegmentDelta bool
 	SegmentNegative bool // 구간 증가분이 음수여서 0으로 잘랐는지(배분하면 NegativeDelta로 옮김)

@@ -1,9 +1,9 @@
 {
-  "schema_version": "0.6.0-draft",
-  "usage_report_id": "usage-1187c3bd972fa94b8c9bafce",
+  "schema_version": "0.7.0-draft",
+  "usage_report_id": "usage-85cdb59dee6f5bdb97b13292",
   "environment_id": "env-test-01",
   "profile_id": "profile-test-01",
-  "generated_at": "2026-10-02T06:43:11Z",
+  "generated_at": "2026-11-12T12:37:57Z",
   "producer": {
     "name": "agentscope-usage",
     "version": "0.1.0"
@@ -35,13 +35,13 @@
       "provider": "school-gateway",
       "closing_model_span_id": "162bfad6ff0a28bc",
       "attribution_method": "sequential-input-delta",
-      "attribution_version": "attribution-go/0.2.0",
+      "attribution_version": "attribution-go/0.4.0",
       "include_cache_in_prompt": false,
       "estimated": true,
       "estimated_cost_usd": 0.000019,
       "pricing": {
         "source": "reference_list_price",
-        "version": "anthropic-list-price@2026-09-28",
+        "version": "anthropic-list-price@2026-11-09",
         "currency": "USD",
         "input_per_million": 1,
         "source_ref": "https://platform.claude.com/docs/en/about-claude/pricing"
@@ -72,13 +72,13 @@
       "provider": "school-gateway",
       "closing_model_span_id": "270a91cccf5d558f",
       "attribution_method": "sequential-input-delta",
-      "attribution_version": "attribution-go/0.2.0",
+      "attribution_version": "attribution-go/0.4.0",
       "include_cache_in_prompt": false,
       "estimated": true,
       "estimated_cost_usd": 0.000043,
       "pricing": {
         "source": "reference_list_price",
-        "version": "anthropic-list-price@2026-09-28",
+        "version": "anthropic-list-price@2026-11-09",
         "currency": "USD",
         "input_per_million": 1,
         "source_ref": "https://platform.claude.com/docs/en/about-claude/pricing"
@@ -109,13 +109,13 @@
       "provider": "school-gateway",
       "closing_model_span_id": "1cc35df5151da624",
       "attribution_method": "sequential-input-delta",
-      "attribution_version": "attribution-go/0.2.0",
+      "attribution_version": "attribution-go/0.4.0",
       "include_cache_in_prompt": false,
       "estimated": true,
       "estimated_cost_usd": 0.00015,
       "pricing": {
         "source": "reference_list_price",
-        "version": "anthropic-list-price@2026-09-28",
+        "version": "anthropic-list-price@2026-11-09",
         "currency": "USD",
         "input_per_million": 1,
         "source_ref": "https://platform.claude.com/docs/en/about-claude/pricing"
@@ -146,13 +146,13 @@
       "provider": "school-gateway",
       "closing_model_span_id": "4eb6e07a01bbf101",
       "attribution_method": "sequential-input-delta",
-      "attribution_version": "attribution-go/0.2.0",
+      "attribution_version": "attribution-go/0.4.0",
       "include_cache_in_prompt": false,
       "estimated": true,
       "estimated_cost_usd": 0.000014,
       "pricing": {
         "source": "reference_list_price",
-        "version": "anthropic-list-price@2026-09-28",
+        "version": "anthropic-list-price@2026-11-09",
         "currency": "USD",
         "input_per_million": 1,
         "source_ref": "https://platform.claude.com/docs/en/about-claude/pricing"
@@ -183,13 +183,13 @@
       "provider": "school-gateway",
       "closing_model_span_id": "457b74ddb7d28250",
       "attribution_method": "sequential-input-delta",
-      "attribution_version": "attribution-go/0.2.0",
+      "attribution_version": "attribution-go/0.4.0",
       "include_cache_in_prompt": false,
       "estimated": true,
       "estimated_cost_usd": 0.000013,
       "pricing": {
         "source": "reference_list_price",
-        "version": "anthropic-list-price@2026-09-28",
+        "version": "anthropic-list-price@2026-11-09",
         "currency": "USD",
         "input_per_million": 1,
         "source_ref": "https://platform.claude.com/docs/en/about-claude/pricing"
@@ -220,13 +220,13 @@
       "provider": "school-gateway",
       "closing_model_span_id": "7ce4ecd4be20c0b5",
       "attribution_method": "sequential-input-delta",
-      "attribution_version": "attribution-go/0.2.0",
+      "attribution_version": "attribution-go/0.4.0",
       "include_cache_in_prompt": false,
       "estimated": true,
       "estimated_cost_usd": 0.000045,
       "pricing": {
         "source": "reference_list_price",
-        "version": "anthropic-list-price@2026-09-28",
+        "version": "anthropic-list-price@2026-11-09",
         "currency": "USD",
         "input_per_million": 1,
         "source_ref": "https://platform.claude.com/docs/en/about-claude/pricing"
@@ -257,13 +257,13 @@
       "provider": "school-gateway",
       "closing_model_span_id": "6ebf8ca08094c2bc",
       "attribution_method": "sequential-input-delta",
-      "attribution_version": "attribution-go/0.2.0",
+      "attribution_version": "attribution-go/0.4.0",
       "include_cache_in_prompt": false,
       "estimated": true,
       "estimated_cost_usd": 0.000064,
       "pricing": {
         "source": "reference_list_price",
-        "version": "anthropic-list-price@2026-09-28",
+        "version": "anthropic-list-price@2026-11-09",
         "currency": "USD",
         "input_per_million": 1,
         "source_ref": "https://platform.claude.com/docs/en/about-claude/pricing"
@@ -294,13 +294,13 @@
       "provider": "school-gateway",
       "closing_model_span_id": "4847561c837797af",
       "attribution_method": "sequential-input-delta",
-      "attribution_version": "attribution-go/0.2.0",
+      "attribution_version": "attribution-go/0.4.0",
       "include_cache_in_prompt": false,
       "estimated": true,
       "estimated_cost_usd": 0.000024,
       "pricing": {
         "source": "reference_list_price",
-        "version": "anthropic-list-price@2026-09-28",
+        "version": "anthropic-list-price@2026-11-09",
         "currency": "USD",
         "input_per_million": 1,
         "source_ref": "https://platform.claude.com/docs/en/about-claude/pricing"
@@ -331,13 +331,13 @@
       "provider": "school-gateway",
       "closing_model_span_id": "585fad7329a8409e",
       "attribution_method": "sequential-input-delta",
-      "attribution_version": "attribution-go/0.2.0",
+      "attribution_version": "attribution-go/0.4.0",
       "include_cache_in_prompt": false,
       "estimated": true,
       "estimated_cost_usd": 0.000296,
       "pricing": {
         "source": "reference_list_price",
-        "version": "anthropic-list-price@2026-09-28",
+        "version": "anthropic-list-price@2026-11-09",
         "currency": "USD",
         "input_per_million": 1,
         "source_ref": "https://platform.claude.com/docs/en/about-claude/pricing"
@@ -370,13 +370,13 @@
       "provider": "school-gateway",
       "closing_model_span_id": "5fc92a73552fcbd5",
       "attribution_method": "sequential-input-delta",
-      "attribution_version": "attribution-go/0.2.0",
+      "attribution_version": "attribution-go/0.4.0",
       "include_cache_in_prompt": false,
       "estimated": true,
       "estimated_cost_usd": null,
       "pricing": {
         "source": "reference_list_price",
-        "version": "anthropic-list-price@2026-09-28",
+        "version": "anthropic-list-price@2026-11-09",
         "currency": "USD",
         "input_per_million": 1,
         "source_ref": "https://platform.claude.com/docs/en/about-claude/pricing"
@@ -384,7 +384,7 @@
       "evidence_source_refs": [
         "otlp-json:week3-sequential-batch.spans.json#trace=209f57bb15f2e101732ece8c926cdbe9\u0026span=4d364d00944f4974"
       ],
-      "note": "병렬/배치 구간 — duration_ms만 대리 지표로 기록, 토큰 귀속 안 함"
+      "note": "병렬/배치 구간 — 결과별 토큰 수가 없어 duration_ms만 대리 지표로 기록, 토큰 귀속 안 함"
     },
     {
       "usage_id": "use-680eab717cf88bd73a296f30d2d2b703",
@@ -409,13 +409,13 @@
       "provider": "school-gateway",
       "closing_model_span_id": "5fc92a73552fcbd5",
       "attribution_method": "sequential-input-delta",
-      "attribution_version": "attribution-go/0.2.0",
+      "attribution_version": "attribution-go/0.4.0",
       "include_cache_in_prompt": false,
       "estimated": true,
       "estimated_cost_usd": null,
       "pricing": {
         "source": "reference_list_price",
-        "version": "anthropic-list-price@2026-09-28",
+        "version": "anthropic-list-price@2026-11-09",
         "currency": "USD",
         "input_per_million": 1,
         "source_ref": "https://platform.claude.com/docs/en/about-claude/pricing"
@@ -423,7 +423,7 @@
       "evidence_source_refs": [
         "otlp-json:week3-sequential-batch.spans.json#trace=209f57bb15f2e101732ece8c926cdbe9\u0026span=285d31e2cec5aee5"
       ],
-      "note": "병렬/배치 구간 — duration_ms만 대리 지표로 기록, 토큰 귀속 안 함"
+      "note": "병렬/배치 구간 — 결과별 토큰 수가 없어 duration_ms만 대리 지표로 기록, 토큰 귀속 안 함"
     },
     {
       "usage_id": "use-c22957af60e0d97b684fe5ba2bbe8c97",
@@ -448,13 +448,13 @@
       "provider": "school-gateway",
       "closing_model_span_id": "5fc92a73552fcbd5",
       "attribution_method": "sequential-input-delta",
-      "attribution_version": "attribution-go/0.2.0",
+      "attribution_version": "attribution-go/0.4.0",
       "include_cache_in_prompt": false,
       "estimated": true,
       "estimated_cost_usd": null,
       "pricing": {
         "source": "reference_list_price",
-        "version": "anthropic-list-price@2026-09-28",
+        "version": "anthropic-list-price@2026-11-09",
         "currency": "USD",
         "input_per_million": 1,
         "source_ref": "https://platform.claude.com/docs/en/about-claude/pricing"
@@ -462,7 +462,7 @@
       "evidence_source_refs": [
         "otlp-json:week3-sequential-batch.spans.json#trace=209f57bb15f2e101732ece8c926cdbe9\u0026span=8f3ed6d3253bcac9"
       ],
-      "note": "병렬/배치 구간 — duration_ms만 대리 지표로 기록, 토큰 귀속 안 함"
+      "note": "병렬/배치 구간 — 결과별 토큰 수가 없어 duration_ms만 대리 지표로 기록, 토큰 귀속 안 함"
     },
     {
       "usage_id": "use-6e93a7b4919a694194d65e0b5598fb1a",
@@ -487,13 +487,13 @@
       "provider": "school-gateway",
       "closing_model_span_id": "5fc92a73552fcbd5",
       "attribution_method": "sequential-input-delta",
-      "attribution_version": "attribution-go/0.2.0",
+      "attribution_version": "attribution-go/0.4.0",
       "include_cache_in_prompt": false,
       "estimated": true,
       "estimated_cost_usd": null,
       "pricing": {
         "source": "reference_list_price",
-        "version": "anthropic-list-price@2026-09-28",
+        "version": "anthropic-list-price@2026-11-09",
         "currency": "USD",
         "input_per_million": 1,
         "source_ref": "https://platform.claude.com/docs/en/about-claude/pricing"
@@ -501,14 +501,14 @@
       "evidence_source_refs": [
         "otlp-json:week3-sequential-batch.spans.json#trace=209f57bb15f2e101732ece8c926cdbe9\u0026span=efdd1c8b09309587"
       ],
-      "note": "병렬/배치 구간 — duration_ms만 대리 지표로 기록, 토큰 귀속 안 함"
+      "note": "병렬/배치 구간 — 결과별 토큰 수가 없어 duration_ms만 대리 지표로 기록, 토큰 귀속 안 함"
     }
   ],
   "limitations": [
     "approx_input_tokens is an estimate of how much a tool result added to the next model input; it is not billed usage and must not be added to model-level input/output/cache totals.",
-    "Only sequential segments carry tokens and cost; parallel, batch and unattributed calls keep call count and duration only.",
     "environment_id and profile_id are injected by the adapter because the telemetry carries only host-level resource attributes.",
-    "Tool mapping reproduces OpenClaw's provider-safe tool names (\u003cserver\u003e__\u003ctool\u003e, 64-char limit) from the snapshot; names that OpenClaw de-duplicated with a -N suffix cannot be resolved statically.",
+    "Only sequential segments carry tokens and cost; parallel, batch and unattributed calls keep call count and duration only.",
+    "Tool mapping reproduces OpenClaw's provider-safe tool names (\u003cserver\u003e__\u003ctool\u003e, 64-char limit) and node-hosted tool names (\u003cserver\u003e_\u003ctool\u003e, servers declared under nodeHost.mcp.servers) from the snapshot; names that OpenClaw de-duplicated with a -N suffix cannot be resolved statically.",
     "pricing.source=reference_list_price uses public list prices for reference because the configured price is zero or missing; it is not the actual bill.",
     "A run cut off at the end of the capture can leave its last tools unattributed; re-run the adapter on a later capture that contains the whole run."
   ]
