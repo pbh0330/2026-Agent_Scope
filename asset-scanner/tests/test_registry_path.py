@@ -43,7 +43,10 @@ def test_node_registry_collects_two_servers_and_keeps_disabled():
     assert set(servers) == {"sample-node-files", "sample-node-remote"}
     assert servers["sample-node-remote"]["declared"]["enabled"] is False  # 비활성도 남는다
     assert servers["sample-node-files"]["declared"]["command"] == "npx"
-    assert servers["sample-node-files"]["other_declared_keys"] == ["toolFilter"]
+    # toolFilter는 이제 declared로 수집되므로 "해석하지 않은 키" 목록에는 남지 않는다. 선언 사실은 declared_keys에 있다.
+    assert servers["sample-node-files"]["other_declared_keys"] == []
+    assert "toolFilter" in servers["sample-node-files"]["declared_keys"]
+    assert servers["sample-node-files"]["declared"]["toolFilter"] == {"include": ["read_*", "search"]}
     assert servers["sample-node-files"]["collection_status"] == "complete"
 
 

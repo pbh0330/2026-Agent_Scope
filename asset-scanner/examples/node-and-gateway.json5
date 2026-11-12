@@ -13,7 +13,7 @@
         "sample-node-files": {
           command: "npx",
           args: ["-y", "@modelcontextprotocol/server-filesystem", "/srv/sample-docs"],
-          toolFilter: { include: ["read_*", "search"] }, // 값은 그대로 보존하지 않고 선언된 키 이름만 기록
+          toolFilter: { include: ["read_*", "search"] }, // declared.toolFilter로 적힌 목록을 그대로 기록 (적용 여부는 확인하지 않음)
         },
         "sample-node-remote": {
           url: "https://mcp.sample.example/mcp",

@@ -319,6 +319,41 @@ def _name_map_summary(value: Any, parts: tuple, issues: list[dict]) -> dict:
     }
 
 
+TOOL_FILTER_LISTS = ("include", "exclude")
+
+
+def _collect_tool_filter(value: Any, parts: tuple, declared: dict, issues: list[dict], redactor: Redactor) -> None:
+    """`toolFilter`의 `include`/`exclude` 목록을 적힌 그대로(순서·중복·패턴 유지) 기록한다.
+
+    목록 하나가 문자열 배열이 아니면 그 목록만 자료형 문제로 남기고 값은 저장하지 않는다. 나머지 목록은 계속
+    수집한다. 이 값은 설정에 적힌 선언일 뿐이며 필터를 적용하거나 Tool 노출 여부를 판단하지 않는다.
+    """
+    fpath = dotted_path(parts)
+    if not isinstance(value, dict):
+        issues.append({"code": "field_type_invalid", "field_path": fpath, "expected": "object",
+                       "actual": _type_name(value), "message": "toolFilter 값이 객체가 아닙니다."})
+        return
+    collected: dict[str, list[str]] = {}
+    for name, sub in value.items():
+        spath = dotted_path(parts + (name,))
+        if name == "$include":
+            continue  # 상위 항목의 $include 기록에서 한 번에 처리
+        if name not in TOOL_FILTER_LISTS:
+            # 키 이름은 파싱 단계에서 이미 가려졌다. 값은 읽지 않는다.
+            issues.append({"code": "field_key_unexpected", "field_path": spath,
+                           "message": "toolFilter에서 문서에 있는 include/exclude 외의 키입니다. 값은 읽지 않았습니다."})
+        elif isinstance(sub, list) and all(isinstance(s, str) for s in sub):
+            collected[name] = [redactor.sanitize_string(s, f"{spath}[{i}]") for i, s in enumerate(sub)]
+        else:
+            issue = {"code": "field_type_invalid", "field_path": spath, "expected": "array of string",
+                     "actual": _type_name(sub), "message": f"toolFilter.{name} 값이 문자열 배열이 아닙니다."}
+            if isinstance(sub, list):
+                issue["element_types"] = sorted({_type_name(s) for s in sub})
+            issues.append(issue)
+    # 객체가 있었다는 사실은 남긴다. 내용이 비었거나 모두 문제여도 "선언 없음"과 구분된다.
+    declared["toolFilter"] = collected
+
+
 def _base_record(key: str, source_path: str, key_masked: bool, registry_path: tuple) -> dict:
     parts = registry_path + (key,)
     record: dict[str, Any] = {
@@ -385,6 +420,15 @@ def collect_server(key: str, entry: Any, source_path: str, key_masked: bool = Fa
             else:
                 issues.append({"code": "field_type_invalid", "field_path": fpath, "expected": "string",
                                "actual": _type_name(value), "message": f"{field_name} 값이 문자열이 아닙니다."})
+        elif field_name == "sslVerify":
+            # 설정에 적힌 불리언만 기록한다. 없으면 생략하고 true/false를 채우지 않는다.
+            if isinstance(value, bool):
+                declared["sslVerify"] = value
+            else:
+                issues.append({"code": "field_type_invalid", "field_path": fpath, "expected": "boolean",
+                               "actual": _type_name(value), "message": "sslVerify 값이 true/false가 아닙니다."})
+        elif field_name == "toolFilter":
+            _collect_tool_filter(value, parts + (field_name,), declared, issues, redactor)
         elif field_name == "args":
             if isinstance(value, list) and all(isinstance(a, str) for a in value):
                 declared["args"] = redactor.sanitize_args(value, fpath)
