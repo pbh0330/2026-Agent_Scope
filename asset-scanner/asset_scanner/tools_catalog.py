@@ -553,6 +553,16 @@ def _conformance_summary(issues: list[dict], evaluated: bool) -> dict:
             "recommendations_not_met": sorted({i["code"] for i in rec})}
 
 
+def _json_type_name(value: Any) -> str:
+    """JSON 자료형 이름 (내부 클래스 이름을 결과에 내보내지 않는다)."""
+    if value is None:
+        return "null"
+    for kind, name in ((bool, "boolean"), ((int, float), "number"), (str, "string"), (list, "array"), (dict, "object")):
+        if isinstance(value, kind):
+            return name
+    return "unknown"
+
+
 def _failed_server(index: int, label: str, code: str, message: str, **extra: Any) -> dict:
     return {
         "server_index": index, "server_ref": label, "collection_status": "failed", "outcome": code,
@@ -583,8 +593,15 @@ def _collect_server(index: int, entry: Any, seen_refs: set[str]) -> dict:
         v = entry.get(key)
         if isinstance(v, str):
             link[key] = _text(srv_red, v, key)
+    # config_scan_ref: 연결 단계(linking)에서 라벨로 지정한 설정 수집 결과 중 어느 것인지 가리키는 입력상 참조.
+    # 문자열이 아니면 값을 옮기지 않고 자료형만 남긴다 (연결 단계가 잘못된 참조로 처리한다).
+    ref = entry.get("config_scan_ref", _MISSING)
+    if isinstance(ref, str):
+        link["config_scan_ref"] = _text(srv_red, ref, "config_scan_ref")
+    elif ref is not _MISSING:
+        link["config_scan_ref_invalid_type"] = _json_type_name(ref)
     if link:
-        link["verified_against_config_scan"] = False  # 입력에 적힌 값이며 설정 수집 결과와 대조하지 않았다
+        link["verified_against_config_scan"] = False  # 입력에 적힌 값이며 이 모듈은 설정 수집 결과와 대조하지 않는다 (대조·연결은 linking 모듈)
         server["config_link"] = link
 
     version = entry.get("protocol_version")
