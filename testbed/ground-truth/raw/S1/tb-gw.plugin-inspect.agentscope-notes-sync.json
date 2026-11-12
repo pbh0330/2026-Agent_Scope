@@ -1,0 +1,134 @@
+{
+  "workspaceDir": "/home/<TB_USER>/workspace",
+  "plugin": {
+    "id": "agentscope-notes-sync",
+    "name": "Agent Scope Notes Sync",
+    "description": "Contributes the unapproved notes-sync MCP server (testbed S1).",
+    "packageVersion": "0.1.0",
+    "version": "0.1.0",
+    "builtWithOpenClawVersion": "2026.9.6",
+    "packageName": "@agentscope/openclaw-notes-sync",
+    "format": "openclaw",
+    "source": "/home/<TB_USER>/.openclaw/extensions/agentscope-notes-sync/index.js",
+    "rootDir": "/home/<TB_USER>/.openclaw/extensions/agentscope-notes-sync",
+    "origin": "global",
+    "workspaceDir": "/home/<TB_USER>/workspace",
+    "trust": {
+      "reason": "origin-path",
+      "registryPath": "/home/<TB_USER>/.openclaw/state/openclaw.sqlite",
+      "origin": "global",
+      "installSource": "path"
+    },
+    "enabled": true,
+    "compat": [],
+    "explicitlyEnabled": true,
+    "activated": true,
+    "activationSource": "explicit",
+    "activationReason": "enabled in config",
+    "syntheticAuthRefs": [],
+    "status": "loaded",
+    "toolNames": [],
+    "hookNames": [],
+    "channelIds": [],
+    "cliBackendIds": [],
+    "providerIds": [],
+    "embeddingProviderIds": [],
+    "speechProviderIds": [],
+    "realtimeTranscriptionProviderIds": [],
+    "realtimeVoiceProviderIds": [],
+    "mediaUnderstandingProviderIds": [],
+    "transcriptSourceProviderIds": [],
+    "imageGenerationProviderIds": [],
+    "videoGenerationProviderIds": [],
+    "musicGenerationProviderIds": [],
+    "webFetchProviderIds": [],
+    "webSearchProviderIds": [],
+    "migrationProviderIds": [],
+    "contextEngineIds": [],
+    "agentHarnessIds": [],
+    "cliCommands": [],
+    "services": [],
+    "gatewayDiscoveryServiceIds": [],
+    "commands": [],
+    "httpRoutes": 0,
+    "hookCount": 0,
+    "configSchema": true,
+    "configJsonSchema": {
+      "type": "object",
+      "additionalProperties": false
+    },
+    "mcpServers": {
+      "notes-sync": {
+        "transport": "stdio",
+        "command": "node",
+        "args": [
+          "./mcp-server.mjs",
+          "--name",
+          "notes-sync"
+        ]
+      }
+    },
+    "imported": true,
+    "dependencyStatus": {
+      "hasDependencies": false,
+      "installed": true,
+      "requiredInstalled": true,
+      "optionalInstalled": true,
+      "missing": [],
+      "missingOptional": [],
+      "dependencies": [],
+      "optionalDependencies": []
+    }
+  },
+  "shape": "non-capability",
+  "capabilityMode": "none",
+  "capabilityCount": 0,
+  "capabilities": [],
+  "typedHooks": [],
+  "customHooks": [],
+  "tools": [],
+  "commands": [],
+  "cliCommands": [],
+  "services": [],
+  "decisions": [],
+  "gatewayDiscoveryServices": [],
+  "gatewayMethods": [],
+  "mcpServers": [
+    {
+      "name": "notes-sync",
+      "hasStdioTransport": true
+    }
+  ],
+  "lspServers": [],
+  "httpRouteCount": 0,
+  "bundleCapabilities": [],
+  "diagnostics": [],
+  "policy": {
+    "allowedModels": [],
+    "hasAllowedModelsConfig": false
+  },
+  "compatibility": [],
+  "install": {
+    "source": "path",
+    "sourcePath": "/home/<TB_USER>/s-staging/agentscope-notes-sync",
+    "installPath": "/home/<TB_USER>/.openclaw/extensions/agentscope-notes-sync",
+    "version": "0.1.0",
+    "installedAt": "2026-11-12T13:04:44.967Z",
+    "acceptedSurface": {
+      "channels": [],
+      "providers": [],
+      "tools": [],
+      "contracts": [],
+      "hooks": [],
+      "mcpServers": [
+        "notes-sync"
+      ],
+      "cliCommands": [],
+      "cliBackends": [],
+      "skills": [],
+      "dangerousConfigFlags": []
+    },
+    "acceptedSurfaceHash": "b589cfcc200cbe5ca29894a95b9fccf9af7fed67ec0cec25d584dc598422eb48",
+    "acceptedSurfaceAt": "2026-11-12T13:04:44.966Z"
+  }
+}

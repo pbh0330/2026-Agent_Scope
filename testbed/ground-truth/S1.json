@@ -61,8 +61,7 @@
       "declared_at": "shadow-notes:tools/list",
       "layer": "advertised",
       "attributes": {
-        "exposed_to_agent": null,
-        "exposure_check": "unverified: raw/S1 probe not collected yet",
+        "exposed_to_agent": true,
         "annotations": {
           "readOnlyHint": true,
           "openWorldHint": false
@@ -75,8 +74,7 @@
       "declared_at": "shadow-notes:tools/list",
       "layer": "advertised",
       "attributes": {
-        "exposed_to_agent": null,
-        "exposure_check": "unverified: raw/S1 probe not collected yet",
+        "exposed_to_agent": true,
         "annotations": {
           "readOnlyHint": true,
           "openWorldHint": false
@@ -110,8 +108,7 @@
       "declared_at": "node-helper:tools/list",
       "layer": "advertised",
       "attributes": {
-        "exposed_to_agent": null,
-        "exposure_check": "unverified: raw/S1 probe not collected yet",
+        "exposed_to_agent": true,
         "annotations": {
           "readOnlyHint": true,
           "openWorldHint": false
@@ -124,8 +121,7 @@
       "declared_at": "node-helper:tools/list",
       "layer": "advertised",
       "attributes": {
-        "exposed_to_agent": null,
-        "exposure_check": "unverified: raw/S1 probe not collected yet",
+        "exposed_to_agent": true,
         "annotations": {
           "readOnlyHint": true,
           "openWorldHint": false

@@ -3,7 +3,7 @@
 > 기준: `SNAP-2-P2` → 결과 스냅샷 `SNAP-3-S3` (두 VM 동시, 전원 끈 상태)
 > 시나리오 명세: PR #7 `scenario-s3.md`, 기대 경고: PR #7 `expected-results.md` 6절 (v2.1)
 > 정답 목록: [../../ground-truth/S3.json](../../ground-truth/S3.json)
-> 상태: 설정은 P2와 동일. `inventory-remote` 광고본은 **구축 전 예상본**(아래 3절).
+> 상태: **VM 구축 완료(2026.11.12, `SNAP-3-S3`)**. 설정은 P2와 동일. `inventory-remote` 광고본은 VM 실측본(아래 3절).
 
 ## 1. 위험 구성 (P2 대비 변경)
 
@@ -46,7 +46,7 @@ NODE_EXTRA_CA_CERTS=... node testbed/tools/mcp-advertised.mjs --url https://tb-n
 python testbed/tools/build_ground_truth.py S3
 ```
 
-`raw/S3/inventory-remote.advertised.json`은 현재 **구축 전 예상본**이다(원격 서버가 HTTPS+SDK라 로컬 수집 불가). base(P2 2종·리소스·프롬프트)는 실제 수집본이고, 추가 2종은 서버 코드 변경의 결정적 결과를 기재했다. VM 수집본으로 교체한다.
+`raw/S3/inventory-remote.advertised.json`은 VM 실측본이다(2026.11.12, tb-gw에서 8443으로 수집). 구축 전 예상본과 비교하면 도구 4종의 이름·정의가 같고, SDK가 추가 2종에도 `execution.taskSupport: "forbidden"`을 붙인다는 점만 다르다(S3-C2 비교 항목 name·title·description·inputSchema·annotations에는 해당 없음). VM의 `inventory-remote/server.mjs`는 P2 시점 사본에 S3 블록이 없어 저장소 최신본으로 교체한 뒤 구동했다(P2 동작은 동일).
 나머지 서버 raw는 생성기가 `raw/P2`를 대신 쓴다. 생성기는 S3의 의도된 이름 충돌(`read_text_file`, `catalog_search`)을 중복 검사에서 제외한다(`COLLISIONS`).
 
 > 참고(스캐너 담당): `inventory-remote`는 SDK 서버라 `catalog_search`의 `inputSchema`에 draft-07 `$schema` 래퍼가 붙는다. `asset-catalog`(자체 제작)의 것엔 없다. S3-C2("정의 동일") 판정은 이 스키마 래퍼 정규화를 전제로 한다.

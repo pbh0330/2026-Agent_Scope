@@ -4,7 +4,7 @@
 > 시나리오 명세: PR #7 `scenario-s2.md`, 기대 경고: PR #7 `expected-results.md` 4절 (v2.1)
 > 판정 기준 정책: [../../ground-truth/approved-servers.json](../../ground-truth/approved-servers.json), 도구 정책 PR #7 `policies/expected-tool-policy.json`
 > 정답 목록: [../../ground-truth/S2.json](../../ground-truth/S2.json)
-> 상태: 설정 사본은 **구축 전 예상본**. VM 구축 후 실제 파일·노출 수집본으로 교체한다.
+> 상태: **VM 구축 완료(2026.11.12, `SNAP-3-S2`)**. 설정 사본은 VM 실측본(자리표시자 처리), 노출 수집본은 `ground-truth/raw/S2/`.
 
 ## 1. 위험 구성 (P2 대비 변경)
 
@@ -51,4 +51,4 @@ python testbed/tools/build_ground_truth.py S2
 ```
 
 설정 변경(범위·필터)은 선언 계층에서 바로 잡히므로 `changed_assets`에 반영된다.
-다만 `get-env`·`gzip-file-as-resource`의 **에이전트 노출 여부**(`exposed_to_agent` false→true)는 VM 노출 수집(`raw/S2/`의 probe·nodes-describe) 전에는 미확인(`null`)이라 `changed_assets`에 포함되지 않는다. VM 수집 후 다시 생성하면 채워진다. 경고(S2-C1·S2-C2)는 설정만으로 확정되므로 그대로 둔다.
+`get-env`·`gzip-file-as-resource`의 **에이전트 노출 여부**(`exposed_to_agent` false→true, `not_exposed_reason` `toolFilter.exclude`→없음)는 VM 수집본(`raw/S2/`)으로 확인돼 `changed_assets`에 기록된다. 생성기는 기준·위협 양쪽 모두 노출이 확인된 경우에만 노출 필드를 비교한다. 경고(S2-C1·S2-C2)는 설정만으로 확정된다.

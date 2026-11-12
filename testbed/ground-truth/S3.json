@@ -29,8 +29,7 @@
       "declared_at": "inventory-remote:tools/list",
       "layer": "advertised",
       "attributes": {
-        "exposed_to_agent": null,
-        "exposure_check": "unverified: raw/S3 probe not collected yet",
+        "exposed_to_agent": true,
         "annotations": {
           "readOnlyHint": true,
           "openWorldHint": true
@@ -43,8 +42,7 @@
       "declared_at": "inventory-remote:tools/list",
       "layer": "advertised",
       "attributes": {
-        "exposed_to_agent": null,
-        "exposure_check": "unverified: raw/S3 probe not collected yet",
+        "exposed_to_agent": true,
         "annotations": {
           "readOnlyHint": true,
           "openWorldHint": false
