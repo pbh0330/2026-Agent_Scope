@@ -1,0 +1,115 @@
+{
+  "format": "mcp-lists-capture",
+  "origin": "synthetic_test_data",
+  "description": "가상 자료입니다. 실제 MCP 서버를 조회한 응답이 아니며, MCP 2026-07-28 / 2025-11-25의 resources/list, resources/templates/list, prompts/list 응답 형식에 맞춰 손으로 만들었습니다. 서버 이름·URI·프롬프트는 모두 가상입니다. lists에 없는 목록은 '수집하지 않음'(not_performed)이고, 첫 응답이 -32601 오류이면 '미지원'(unsupported)입니다.",
+  "servers": [
+    {
+      "server_ref": "sample-docs",
+      "registration_key": "sample-docs",
+      "registry_path": "mcp.servers",
+      "protocol_version": "2026-07-28",
+      "server_capabilities": {"resources": {"listChanged": true}, "prompts": {}},
+      "lists": {
+        "resources": {
+          "pages": [
+            {
+              "jsonrpc": "2.0",
+              "id": 1,
+              "result": {
+                "resultType": "complete",
+                "resources": [
+                  {
+                    "uri": "file:///srv/sample-docs/readme.md",
+                    "name": "readme",
+                    "title": "Sample README",
+                    "description": "Top-level README of the sample workspace.",
+                    "mimeType": "text/markdown",
+                    "size": 2048,
+                    "annotations": {"audience": ["user", "assistant"], "priority": 0.8, "lastModified": "2026-07-01T09:00:00Z"},
+                    "icons": [{"src": "https://example.com/doc.png", "mimeType": "image/png", "sizes": ["48x48"]}]
+                  }
+                ],
+                "nextCursor": "page-2",
+                "ttlMs": 300000,
+                "cacheScope": "public"
+              }
+            },
+            {
+              "jsonrpc": "2.0",
+              "id": 2,
+              "result": {
+                "resultType": "complete",
+                "resources": [
+                  {"uri": "https://docs.sample.example/guide?token=FAKE-QUERY-VALUE", "name": "guide", "_meta": {"owner": "docs-team"}}
+                ],
+                "ttlMs": 300000,
+                "cacheScope": "public"
+              }
+            }
+          ]
+        },
+        "resource_templates": {
+          "pages": [
+            {
+              "jsonrpc": "2.0",
+              "id": 3,
+              "result": {
+                "resultType": "complete",
+                "resourceTemplates": [
+                  {"uriTemplate": "file:///srv/sample-docs/{path}", "name": "docs-by-path", "description": "Any file under the docs root.", "mimeType": "text/plain"},
+                  {"uriTemplate": "https://api.sample.example/items/{id}{?fields}", "name": "item"}
+                ],
+                "ttlMs": 60000,
+                "cacheScope": "private"
+              }
+            }
+          ]
+        },
+        "prompts": {
+          "pages": [
+            {
+              "jsonrpc": "2.0",
+              "id": 4,
+              "result": {
+                "resultType": "complete",
+                "prompts": [
+                  {
+                    "name": "summarize_doc",
+                    "title": "Summarize a document",
+                    "description": "Summarize the given document in a few sentences.",
+                    "arguments": [
+                      {"name": "uri", "description": "Resource URI of the document", "required": true},
+                      {"name": "style", "description": "Tone of the summary", "required": false}
+                    ]
+                  },
+                  {"name": "plain_prompt"}
+                ],
+                "ttlMs": 600000,
+                "cacheScope": "public"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "server_ref": "legacy-notes",
+      "registration_key": "legacy-notes",
+      "registry_path": "mcp.servers",
+      "protocol_version": "2025-11-25",
+      "server_capabilities": {"resources": {}},
+      "lists": {
+        "resources": {
+          "pages": [
+            {"jsonrpc": "2.0", "id": 1, "result": {"resources": [{"uri": "note://inbox/1", "name": "inbox-1"}]}}
+          ]
+        },
+        "resource_templates": {
+          "pages": [
+            {"jsonrpc": "2.0", "id": 2, "error": {"code": -32601, "message": "Method not found"}}
+          ]
+        }
+      }
+    }
+  ]
+}
