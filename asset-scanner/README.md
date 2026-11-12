@@ -8,7 +8,7 @@ OpenClaw 설정 파일(JSON/JSON5)을 **읽기만 해서** 선택한 등록 영�
 - 설정 속 명령 실행, 서버 접속, 도구 조회, 환경변수 값 해석, `$include` 파일 읽기, 설정 수정을 **하지 않습니다.**
 - 실제 연결 여부·도구 목록·capabilities·protocol_version·노출/호출 가능 상태는 채우지 않습니다.
 - 이 설정 수집기는 Tool 정의를 읽지 않습니다. 저장된 `tools/list` 응답을 읽는 별도 모듈은 아래 [Tool 카탈로그 1단계](#tool-카탈로그-1단계-저장된-toolslist-응답-읽기)를 보세요.
-- 위 약속은 **이 정적 설정 수집기와 저장된 응답 읽기 모듈**에 해당합니다. 개발용 MCP 서버를 실제로 실행해 조회하는 별도 모듈은 [실제 stdio 조회](#실제-stdio-조회-개발용-mcp-서버-1개--서버-프로세스를-실행합니다)에 있으며, **그 명령만 서버 프로세스를 실행**하고 팀 테스트베드 검증이 아닙니다.
+- 위 약속은 **이 정적 설정 수집기와 저장된 파일을 읽는 모듈**(Tool 카탈로그, `resources_prompts`, `linking`, `plugin_skill_assets`, `node_gateway_identity`, `permission_auth`)에 해당합니다. 서버를 실행하거나 접속하는 모듈은 `live_tools`(개발용 서버 stdio)뿐입니다. 개발용 MCP 서버를 실제로 실행해 조회하는 별도 모듈은 [실제 stdio 조회](#실제-stdio-조회-개발용-mcp-서버-1개--서버-프로세스를-실행합니다)에 있으며, **그 명령만 서버 프로세스를 실행**하고 팀 테스트베드 검증이 아닙니다.
 - **실제 테스트베드 연동은 미검증입니다.** `examples/`의 설정은 모두 테스트용 가상 설정이며 실제 팀 설정이 아닙니다.
 
 ## 구성
@@ -24,6 +24,9 @@ asset-scanner/
 │   ├── tools_catalog.py  # 저장된 tools/list 응답 → Tool 정의 목록 (별도 CLI, 서버 접속 없음)
 │   ├── linking.py        # 저장된 설정 수집 결과와 Tool 카탈로그 결과의 서버 단위 연결 (별도 CLI, 서버 접속 없음)
 │   ├── resources_prompts.py # 저장된 resources/list·resources/templates/list·prompts/list 응답 → 정의 목록 (별도 CLI, 서버 접속 없음)
+│   ├── plugin_skill_assets.py # 지정한 플러그인·스킬 디렉터리/설정/저장된 명령 출력 → Plugin·Skill 자체 정보 (읽기 전용)
+│   ├── node_gateway_identity.py # 저장된 `node identity`·`gateway.identity.get` 출력 → Gateway·Node identity (명령 실행 없음)
+│   ├── permission_auth.py # 설정의 정책·인증 선언 → 원천 항목 (읽기 전용, 집계 없음)
 │   ├── live_tools.py     # 개발용 MCP 서버를 stdio로 실행해 tools/list 실제 조회 (SDK 사용, 서버 프로세스 실행)
 │   └── dev_mcp_server.py # 검증용 개발 MCP 서버 (공식 SDK, Tool 2개)
 ├── examples/          # 테스트용 가상 설정 (실제 팀 설정 아님)
@@ -180,6 +183,9 @@ Windows 콘솔 코드페이지(예: cp949)로 표현할 수 없는 문자(이모
 | `examples/include-and-refs.json5` | 미해석 `$include`·`${VAR}` 기록 | `partial`, 종료 코드 1 |
 | `examples/review-r1-secrets.json5` | 1차 검토 R1: `--옵션=URL`, `-H`/`--header`, 셸 명령 문자열, `$include` fallback, 토큰 모양 등록키의 가림 | `partial`(미해석 include), 종료 코드 1 |
 | `examples/resources-prompts-capture.json` | 저장된 resources/templates/prompts 목록 응답(가상): 2026-07-28 정상 3종, 2025-11-25의 미지원(-32601)·미수행, 가림 | `partial`(미수행 목록), 종료 코드 1 (`resources_prompts` CLI) |
+| `examples/plugin-sample/` | 가상 플러그인(매니페스트·package.json·skill·MCP 서버 선언) | `complete`, 종료 코드 0 (`plugin_skill_assets`) |
+| `examples/permission-auth.json5` | 가상 정책·인증 설정(가짜 토큰·발신자 키 포함) | `complete`, 종료 코드 0 (`permission_auth`) |
+| `examples/gateway-identity.sample.json` | 가상 `{deviceId, publicKey}` 출력 | `complete`, 종료 코드 0 (`node_gateway_identity`) |
 
 ## 비밀값 가림 요약
 
@@ -519,10 +525,33 @@ SDK `mcp`는 2026-07-28 규격을 지원하는 정식 2.x 중 **2.3.0**으로 �
 - 검사는 제한된 구조 검사입니다(`uri` RFC 3986 문법, 템플릿 RFC 6570 문법, `mimeType` 형식 등은 검사하지 않음).
 - 입력은 가상 예제와 직접 만든 응답뿐입니다. 팀 테스트베드와 대조하지 않았고 수집률·누락도 계산하지 않았습니다.
 
+## Plugin·Skill, Gateway·Node identity, Permission/Auth 수집 (자산 수집 확대)
+
+세 모듈 모두 **읽기 전용**입니다. 명령을 실행하지 않고 서버에 접속하지 않으며 플러그인 코드를 import·실행하지 않습니다. 근거(OpenClaw 2026.9.6 패키지 문서·코드의 정적 읽기), 필드, 한계는 [docs/asset-collection.md](docs/asset-collection.md)에 있습니다. 출력은 내부 초안이며 공통 ID·공통 스키마는 확정하지 않았습니다.
+
+```powershell
+# ① Plugin·Skill 자체 정보: 지정한 폴더/설정/저장된 `plugins list --json`·`skills list --json` 출력
+.\.venv\Scripts\python.exe -m asset_scanner.plugin_skill_assets --plugin-dir examples\plugin-sample --config examples\permission-auth.json5 --output output\plugin-skill.result.json
+# ② Gateway·Node identity: 저장해 둔 `gateway call gateway.identity.get --json`·`node identity --json` 출력 (명령 실행 없음)
+.\.venv\Scripts\python.exe -m asset_scanner.node_gateway_identity --gateway-identity gw=examples\gateway-identity.sample.json --observed-at gw=2026-11-12T09:00:00+09:00 --output output\identity.result.json
+# ③ Permission/Auth: 설정의 정책·인증 선언을 원천 항목 그대로 (집계·유효 정책 계산 없음)
+.\.venv\Scripts\python.exe -m asset_scanner.permission_auth --config examples\permission-auth.json5 --output output\permission-auth.result.json
+```
+
+- **값의 출처를 구분합니다.** 파일에서 관측한 값(`manifest`, `frontmatter`), 설정에 선언된 값(`declared_activation`), 저장된 명령 출력의 값(`runtime_observation`, 관측 시각 미상), 사용자가 제공한 값(`--subject`, `--observed-at`)을 서로 다른 필드에 둡니다. 설정의 활성화 값은 선언일 뿐 **실제 로딩·활성 상태가 아닙니다.**
+- **Plugin ↔ MCP 서버**: 같은 매니페스트의 `mcpServers`를 기존 수집기로 읽어 `mcp_servers`에 연결합니다. 선언이 있다는 뜻이며 실행·등록 성공이 아닙니다. `id`나 이름이 같다는 이유만으로 항목을 합치지 않고, 런타임 관측은 `id`+`rootDir`(플러그인), `SKILL.md` 경로(skill)가 맞을 때만 연결합니다.
+- **Gateway·Node identity**: `linking --observed-identity 라벨=파일`로 붙이면 `--subject`(사용자 입력)와 **별도 필드**(`declaring_subject.observed_identity`)에 기록되고, 둘이 다르면 충돌로 표시하되 어느 쪽도 고르지 않습니다. 옵션을 주지 않으면 기존 출력은 그대로입니다.
+- **Permission/Auth**: 항목마다 설정 위치와 적용 대상(전역·Provider·Agent·발신자 그룹·Gateway·Node·MCP 서버 선언 위치)을 가집니다. MCP 서버 항목은 설정 수집기와 같은 `declaration_path`를 씁니다. 인증정보는 종류(`secret_ref`/`env_ref`/`literal_withheld`)와 참조 이름만 남기고 **원문·길이·해시를 저장하지 않으며**, 발신자 키·허용 사용자 값은 개인 식별정보일 수 있어 종류·개수만 남깁니다.
+- 검증은 **가상 입력**(임시 폴더·설정·출력 파일)으로만 했습니다. 실제 OpenClaw 설치·실제 CLI 출력·팀 테스트베드와는 대조하지 않았습니다.
+
 ## 이번 단계에서 하지 않은 것 / 후속 확인
 
 - 실제 팀 테스트베드 OpenClaw 설정 원본으로 수집 확인 (`openclaw config schema`와 필드 대조 포함). 사양 정정본 수령 후 진행
 - 테스트베드의 환경변수 기본값 문법이 현행 공개 문서(`${A:-${B}}` → 안쪽 `B`만 참조)와 같은지 확인
+- `$include` 파일 읽기와 병합, 환경변수·SecretRef 해석(값은 계속 저장하지 않음)
+- 실제 OpenClaw 설치 환경에서 얻은 `plugins list --json`·`skills list --json`·`node identity`·`gateway call` 출력과 번들 플러그인 전체로의 검증 (가상 입력으로만 검증함)
+- 설정 대조·수집률·누락 계산, `DECLARES` 관계, 공통 자산 ID, 공통 스키마(`InventorySnapshot`) 변환 (팀 협의 대기)
+- 팀 테스트베드·OpenClaw 설정에서 읽은 서버 명령의 실제 조회 (개발용 서버 1개의 stdio 조회만 검증함), 원격(HTTP)·인증 서버, `tools/call`·`resources/read`·`prompts/get`
 
 ### 테스트베드 OpenClaw 버전 표기 (확인된 것과 대기 중인 것)
 
@@ -534,6 +563,3 @@ SDK `mcp`는 2026-07-28 규격을 지원하는 정식 2.x 중 **2.3.0**으로 �
 | 테스트베드 사양 정정본 | 담당자의 수정본 대기 | **대기 중**. 수정본의 버전·구성은 확인하지 못했고, 받기 전까지 테스트베드 대조·수집률 계산은 보류 |
 
 실제 설치 버전은 테스트베드 담당이 확인할 항목이며, 이 저장소의 계획값·문서 기록을 "관측된 환경 버전"으로 쓰지 않습니다.
-- `$include` 파일 읽기와 병합, 환경변수·SecretRef 해석(값은 계속 저장하지 않음)
-- Node-hosted MCP 서버, Gateway/Node 자산(식별값을 설정에서 읽는 것 포함), `DECLARES` 관계, 공통 스키마(`InventorySnapshot`) 변환. 선언과 Tool 수집 결과는 저장된 자료끼리만 잇습니다(위 `linking` 절).
-- 팀 테스트베드·OpenClaw 설정에서 읽은 서버 명령의 실제 조회 (개발용 서버 1개의 stdio 조회만 지원), 원격(HTTP)·인증 서버, `tools/call`, `resources/read`·`prompts/get`, Resource·ResourceTemplate·Prompt의 실제 서버 조회(저장된 응답 읽기만 지원), 공통 ID 생성
