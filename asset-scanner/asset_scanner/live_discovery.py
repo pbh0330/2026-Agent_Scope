@@ -11,6 +11,12 @@
 설정 서버는 `--server`로 하나를 지정하고 `--allow-launch`(stdio) 또는 `--allow-connect`(HTTP)를 줘야만 움직인다. HTTP는 기본적으로
 루프백(127.0.0.1·::1·localhost)만 허용하고 다른 호스트는 `--allow-host`로 정확히 그 호스트를 적어야 한다.
 
+원격 HTTPS (Streamable HTTP): 루프백이 아닌 호스트는 **https만** 허용한다(평문 http로 인증정보를 보내지 않음). TLS 인증서 체인과 호스트 이름 검증은 항상
+켜져 있고 끄는 옵션이 없다. 사설 CA는 `--ca-bundle`로 **추가 신뢰**할 수 있다(검증은 그대로 유지). 인증값은 `--bearer-env 환경변수이름`(Authorization: Bearer)
+또는 `--auth-header-env 헤더이름=환경변수이름`으로 실행 중에만 환경에서 읽고 이름만 기록한다. 같은 출처(스킴·호스트·포트)가 아닌 요청은 보내기 전에 막고
+(`cross_origin_request_blocked`), 서버의 리다이렉트는 따라가지 않아 인증 헤더가 다른 호스트로 전달되지 않는다. 프록시·인증서 관련 환경변수(HTTPS_PROXY,
+SSL_CERT_FILE 등)는 읽지 않는다. OAuth 로그인과 SSE는 지원하지 않으며(`scope.support_status`) 후속 작업이다.
+
 보내는 요청은 연결·초기화(SDK 기본 흐름)와 `tools/list`·`resources/list`·`resources/templates/list`·`prompts/list`뿐이다.
 `tools/call`·`resources/read`·`prompts/get` 등 다른 요청은 코드의 허용 목록(`ALLOWED_LIST_METHODS`)이 보내기 전에 막는다.
 서버가 `tools`/`resources`/`prompts` 능력을 선언하지 않은 목록은 요청하지 않고 `not_performed`로 둔다(`--request-undeclared`로 시도할 수 있음).
@@ -29,8 +35,10 @@ import ipaddress
 import json
 import math
 import os
+import re
 import secrets
 import socket
+import ssl
 import subprocess
 import sys
 import time
@@ -70,6 +78,19 @@ LOOPBACK_HOSTS = ("127.0.0.1", "::1", "localhost")
 DEMO_MODULE = "asset_scanner.dev_lists_server"
 DEMO_REF = "dev-lists-server"
 
+_HEADER_NAME_RE = re.compile(r"^[A-Za-z][A-Za-z0-9-]{0,63}$")
+_ENV_NAME_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]{0,63}$")
+# 프로토콜·전송 계층이 정하는 헤더는 사용자가 바꿀 수 없다.
+FORBIDDEN_HEADER_NAMES = frozenset({"host", "content-length", "content-type", "transfer-encoding", "connection", "upgrade", "te", "trailer", "accept",
+                                    "accept-encoding", "proxy-authorization", "proxy-authenticate", "mcp-session-id", "mcp-protocol-version", "origin"})
+SUPPORT_STATUS = {
+    "streamable_http": "supported",
+    "https_tls_verification": "supported (always on; no option to disable)",
+    "bearer_and_header_auth_from_environment": "supported",
+    "oauth_login": "not_supported (follow-up work; refused with oauth_not_supported)",
+    "sse_transport": "not_supported (follow-up work; refused with transport_not_supported)",
+}
+
 # 이 모듈이 서버에 보낼 수 있는 목록 요청. 이 밖의 요청 객체는 `_send`가 보내기 전에 막는다.
 ALLOWED_LIST_METHODS = frozenset({"tools/list", "resources/list", "resources/templates/list", "prompts/list"})
 FORBIDDEN_EXAMPLES = ("tools/call", "resources/read", "prompts/get", "resources/subscribe", "completion/complete")
@@ -85,6 +106,7 @@ LIST_ORDER = (
 NOT_VERIFIED = [
     "tools_call", "resources_read", "prompts_get",   # 이 모듈은 목록만 요청한다
     "authorization",                                  # 가짜/사용자 제공 Bearer 토큰으로 접속했을 뿐 권한 범위를 확인하지 않았다
+    "server_authenticity_beyond_tls",                 # TLS는 인증서 체인·호스트 이름만 검증한다. 서버가 의도한 대상인지는 별도 확인 사항
     "oauth_flow",                                     # OAuth 대화형 흐름은 지원하지 않는다
     "wire_level_raw_json",                            # JSON 파싱은 SDK가 했으므로 중복 키·NaN 토큰 원문은 확인하지 못함
     "team_testbed",                                   # 팀 테스트베드 검증이 아니다
@@ -137,6 +159,8 @@ class _State:
     connect_failure: dict | None = None
     session_dead: bool = False
     http_statuses: list[int] = field(default_factory=list)   # HTTP 응답 상태 코드 숫자만 (본문·헤더는 보지 않는다)
+    transport_error: dict | None = None                       # 전송 계층 오류 분류(TLS·연결). 예외 메시지 원문은 저장하지 않는다
+    cross_origin_blocked: int = 0
     requests_by_method: dict[str, int] = field(default_factory=dict)
     teardown_error_types: list[str] = field(default_factory=list)
     finished_listing: bool = False
@@ -157,10 +181,31 @@ class Target:
     child_env: dict[str, str] = field(default_factory=dict)
     declaration: dict | None = None
     link: dict | None = None
+    ssl_context: ssl.SSLContext | None = None   # https 대상: 인증서 체인·호스트 이름 검증이 켜진 컨텍스트 (메모리에만 존재)
 
 
-def _refuse(kind: str, code: str, message: str, description: dict | None = None, declaration: dict | None = None) -> Target:
-    return Target(kind=kind, transport="unknown", description=description or {}, refused={"code": code, "message": message}, declaration=declaration)
+def _refuse(kind: str, code: str, message: str, description: dict | None = None, declaration: dict | None = None, followup: str | None = None) -> Target:
+    refused = {"code": code, "message": message}
+    if followup:
+        refused["followup"] = followup      # 지원하지 않는 기능: 별도 후속 작업으로 남아 있음
+    return Target(kind=kind, transport="unknown", description=description or {}, refused=refused, declaration=declaration)
+
+
+def build_ssl_context(ca_bundle: Path | None) -> ssl.SSLContext:
+    """TLS 검증이 켜진 컨텍스트. 시스템 신뢰 저장소에 선택적으로 사설 CA를 **더한다**. 검증을 끄는 경로는 없다."""
+    ctx = ssl.create_default_context()      # CERT_REQUIRED + check_hostname=True
+    if ca_bundle is not None:
+        ctx.load_verify_locations(cafile=str(ca_bundle))
+    ctx.minimum_version = ssl.TLSVersion.TLSv1_2
+    if ctx.verify_mode != ssl.CERT_REQUIRED or not ctx.check_hostname:      # 방어: 기본값이 바뀌어도 검증이 꺼진 채 쓰지 않는다
+        raise ssl.SSLError("TLS verification is not enabled")
+    return ctx
+
+
+def _set_header(headers: dict[str, str], name: str, value: str) -> None:
+    for k in [k for k in headers if k.lower() == name.lower()]:
+        del headers[k]
+    headers[name] = value
 
 
 def build_demo_target(http: bool, scenario: str, auth: str, request_log: Path | None) -> Target:
@@ -199,7 +244,8 @@ def _has_ref(value: Any) -> bool:
 
 
 def build_config_target(config: Path, key: str, registry_label: str, allow_launch: bool, allow_connect: bool,
-                        allow_hosts: list[str], bearer_env: str | None) -> Target:
+                        allow_hosts: list[str], bearer_env: str | None, ca_bundle: Path | None = None,
+                        auth_header_env: list[str] | None = None) -> Target:
     """설정에서 **지정한 키 하나**의 선언을 읽어 대상을 만든다. 해석할 수 없는 참조나 허용하지 않은 동작이면 거부한다(실행·접속 없음)."""
     reg = SUPPORTED_REGISTRY_PATHS[registry_label]
     try:
@@ -241,9 +287,11 @@ def build_config_target(config: Path, key: str, registry_label: str, allow_launc
     if not allow_connect:
         return _refuse("config_http", "connect_not_allowed", "HTTP 접속은 --allow-connect를 줘야 합니다. 접속하지 않았습니다.", declaration=declaration)
     if entry.get("transport") not in (None, "streamable-http"):
-        return _refuse("config_http", "transport_not_supported", "streamable-http만 지원합니다 (sse 등은 지원하지 않음).", declaration=declaration)
+        return _refuse("config_http", "transport_not_supported", "streamable-http만 지원합니다 (sse 등은 지원하지 않으며 후속 작업입니다).",
+                       declaration=declaration, followup="sse_transport")
     if "oauth" in entry or entry.get("auth") == "oauth":
-        return _refuse("config_http", "oauth_not_supported", "OAuth 대화형 흐름은 지원하지 않습니다. 접속하지 않았습니다.", declaration=declaration)
+        return _refuse("config_http", "oauth_not_supported", "OAuth 대화형 흐름은 지원하지 않습니다(후속 작업). 접속하지 않았습니다.",
+                       declaration=declaration, followup="oauth_login")
     try:
         parts = urlsplit(entry["url"])
         host = parts.hostname
@@ -258,6 +306,21 @@ def build_config_target(config: Path, key: str, registry_label: str, allow_launc
         return _refuse("config_http", "host_not_allowed",
                        "루프백이 아닌 호스트입니다. 접속하려면 --allow-host로 정확히 그 호스트를 지정해야 합니다. 접속하지 않았습니다.",
                        description={"host": host}, declaration=declaration)
+    loopback = host.lower() in LOOPBACK_HOSTS
+    if parts.scheme == "http" and not loopback:
+        return _refuse("config_http", "insecure_remote_http",
+                       "루프백이 아닌 호스트에는 평문 http로 접속하지 않습니다(인증정보가 평문으로 전달됨). https를 쓰세요. 접속하지 않았습니다.",
+                       description={"host": host}, declaration=declaration)
+    ctx: ssl.SSLContext | None = None
+    if ca_bundle is not None and parts.scheme != "https":
+        return _refuse("config_http", "ca_bundle_requires_https", "--ca-bundle은 https 대상에만 쓸 수 있습니다.", declaration=declaration)
+    if parts.scheme == "https":
+        if ca_bundle is not None and not ca_bundle.is_file():
+            return _refuse("config_http", "ca_bundle_not_found", "--ca-bundle이 가리키는 파일이 없습니다. 접속하지 않았습니다.", declaration=declaration)
+        try:
+            ctx = build_ssl_context(ca_bundle)
+        except (ssl.SSLError, OSError, ValueError):
+            return _refuse("config_http", "ca_bundle_invalid", "--ca-bundle을 인증서 PEM으로 읽지 못했습니다. 접속하지 않았습니다.", declaration=declaration)
     headers: dict[str, str] = {}
     cfg_headers = entry.get("headers", {})
     if not (isinstance(cfg_headers, dict) and all(isinstance(v, str) for v in cfg_headers.values())):
@@ -267,13 +330,31 @@ def build_config_target(config: Path, key: str, registry_label: str, allow_launc
         token = os.environ.get(bearer_env)
         if not token:
             return _refuse("config_http", "bearer_env_not_set", "--bearer-env가 가리키는 환경변수가 비어 있어 접속하지 않았습니다.", declaration=declaration)
-        headers["Authorization"] = f"Bearer {token}"
+        _set_header(headers, "Authorization", f"Bearer {token}")
+    env_headers: list[dict] = []
+    for spec_text in auth_header_env or []:
+        hname, sep, ename = spec_text.partition("=")
+        if not sep or not _HEADER_NAME_RE.match(hname) or not _ENV_NAME_RE.match(ename):
+            return _refuse("config_http", "auth_header_env_invalid", "--auth-header-env는 '헤더이름=환경변수이름' 형식이어야 합니다.", declaration=declaration)
+        if hname.lower() in FORBIDDEN_HEADER_NAMES:
+            return _refuse("config_http", "auth_header_name_forbidden", "프로토콜·전송 계층이 정하는 헤더 이름은 쓸 수 없습니다.", declaration=declaration)
+        if any(h.lower() == hname.lower() for h in headers) or any(e["header"].lower() == hname.lower() for e in env_headers):
+            return _refuse("config_http", "duplicate_auth_header", "같은 헤더가 이미 선언되었거나 중복 지정되었습니다.", declaration=declaration)
+        value = os.environ.get(ename)
+        if not value:
+            return _refuse("config_http", "auth_header_env_not_set", "--auth-header-env가 가리키는 환경변수가 비어 있어 접속하지 않았습니다.", declaration=declaration)
+        headers[hname] = value
+        env_headers.append({"header": hname, "env": ename})      # 이름만 기록한다
+    auth_kinds = [k for k, on in (("bearer_from_env_var", bool(bearer_env)), ("header_from_env_var", bool(env_headers)),
+                                  ("declared_headers", bool(cfg_headers))) if on]
     desc = {"kind": "config_declared_http", "host": host, "scheme": parts.scheme, "port": parts.port,
-            "url": red.sanitize_url(entry["url"], "url"), "header_names": sorted(headers), "auth": "bearer_from_env_var" if bearer_env else (
-                "declared_headers" if cfg_headers else "none"),
-            "bearer_env_name": bearer_env, "allowed_by": "loopback" if host.lower() in LOOPBACK_HOSTS else "--allow-host",
+            "url": red.sanitize_url(entry["url"], "url"), "header_names": sorted(headers), "auth": "+".join(auth_kinds) or "none",
+            "bearer_env_name": bearer_env, "auth_header_env": env_headers, "allowed_by": "loopback" if loopback else "--allow-host",
             "command_origin": "OpenClaw 설정의 선언 (사용자가 키로 지정하고 --allow-connect로 접속을 허용함)", "team_testbed": False}
-    return Target("config_http", "streamable-http", desc, url=entry["url"], headers=headers, declaration=declaration)
+    if ctx is not None:
+        desc["tls"] = {"verify_certificate_chain": True, "verify_hostname": True, "can_be_disabled": False, "minimum_version": "TLSv1.2",
+                       "trust": "system_default+custom_ca_bundle" if ca_bundle else "system_default", "ca_bundle_set": ca_bundle is not None}
+    return Target("config_http", "streamable-http", desc, url=entry["url"], headers=headers, declaration=declaration, ssl_context=ctx)
 
 
 # ---- 통신 ---------------------------------------------------------------------------------
@@ -302,6 +383,89 @@ def _wait_port(port: int, timeout: float, proc: subprocess.Popen) -> bool:
         except OSError:
             time.sleep(0.15)
     return False
+
+
+_UNTRUSTED_CODES = frozenset({2, 18, 19, 20, 21})     # X509_V_ERR_*: 발급자를 찾지 못함 / 자체 서명 / 체인 검증 불가
+_HOSTNAME_CODES = frozenset({62, 64})                 # HOSTNAME_MISMATCH, IP_ADDRESS_MISMATCH
+
+
+def _walk_exceptions(exc: BaseException, depth: int = 0, seen: set[int] | None = None):
+    seen = seen if seen is not None else set()
+    if id(exc) in seen or depth > 20:
+        return
+    seen.add(id(exc))
+    yield exc
+    if isinstance(exc, BaseExceptionGroup):
+        for sub in exc.exceptions:
+            yield from _walk_exceptions(sub, depth + 1, seen)
+    for nxt in (exc.__cause__, exc.__context__):
+        if nxt is not None:
+            yield from _walk_exceptions(nxt, depth + 1, seen)
+
+
+def classify_transport_error(exc: BaseException) -> dict | None:
+    """전송 계층 예외를 범주로 분류한다. 예외 메시지·인증서 내용·호스트 이름은 저장하지 않고 범주, OpenSSL 검증 코드, 예외 종류 이름만 남긴다."""
+    leaves = list(_walk_exceptions(exc))
+    names = [type(e).__name__ for e in leaves][:8]
+    for e in leaves:
+        if isinstance(e, ssl.SSLCertVerificationError):
+            code = getattr(e, "verify_code", None)
+            cat = ("tls_hostname_mismatch" if code in _HOSTNAME_CODES else "tls_certificate_expired" if code == 10 else
+                   "tls_certificate_not_yet_valid" if code == 9 else "tls_certificate_untrusted" if code in _UNTRUSTED_CODES else "tls_certificate_invalid")
+            return {"category": cat, "verify_code": code, "error_types": names}
+    for e in leaves:
+        if isinstance(e, ssl.SSLError):
+            return {"category": "tls_error", "verify_code": None, "error_types": names}
+    for e in leaves:
+        if isinstance(e, ConnectionRefusedError):
+            return {"category": "connect_refused", "verify_code": None, "error_types": names}
+        if isinstance(e, socket.gaierror):
+            return {"category": "dns_failure", "verify_code": None, "error_types": names}
+    for e in leaves:
+        if type(e).__name__ == "ConnectTimeout" or (isinstance(e, TimeoutError) and not isinstance(e, MCPError)):
+            return {"category": "network_connect_timeout", "verify_code": None, "error_types": names}
+    for e in leaves:
+        if isinstance(e, OSError):
+            return {"category": "network_error", "verify_code": None, "error_types": names}
+    return None
+
+
+class _CrossOriginBlocked(Exception):
+    """엔드포인트와 출처(스킴·호스트·포트)가 다른 요청: 보내기 전에 막는다."""
+
+
+def _origin_of(url: str) -> tuple[str, str, int]:
+    p = urlsplit(url)
+    scheme = (p.scheme or "").lower()
+    return scheme, (p.hostname or "").lower(), p.port or (443 if scheme == "https" else 80)
+
+
+def make_origin_guard(state: "_State", endpoint_url: str) -> Any:
+    """요청 이벤트 훅: 엔드포인트와 출처(스킴·호스트·포트)가 다른 요청은 헤더(인증 포함)를 보내기 전에 막는다."""
+    endpoint_origin = _origin_of(endpoint_url)
+
+    async def guard_origin(request: Any) -> None:
+        if _origin_of(str(request.url)) != endpoint_origin:
+            state.cross_origin_blocked += 1
+            raise _CrossOriginBlocked()
+
+    return guard_origin
+
+
+class _RecordingTransport(httpx2.AsyncHTTPTransport):
+    """연결·TLS 오류를 분류해 `_State`에 남기고 그대로 다시 던진다. SDK가 예외를 일반 오류로 감싸 원인을 잃기 때문이다."""
+
+    def __init__(self, state: "_State", **kw: Any) -> None:
+        super().__init__(**kw)
+        self._state = state
+
+    async def handle_async_request(self, request: Any) -> Any:
+        try:
+            return await super().handle_async_request(request)
+        except BaseException as exc:      # noqa: BLE001
+            if self._state.transport_error is None:
+                self._state.transport_error = classify_transport_error(exc)
+            raise
 
 
 def _wait_closed(port: int, timeout: float) -> bool:
@@ -401,8 +565,14 @@ async def _run_session(target: Target, limits: DiscoveryLimits, client_mode: str
                             if len(state.http_statuses) < 200:
                                 state.http_statuses.append(int(response.status_code))
 
-                        hc = await stack.enter_async_context(httpx2.AsyncClient(headers=target.headers, timeout=limits.request_timeout_s,
-                                                                                event_hooks={"response": [record_status]}))
+                        guard_origin = make_origin_guard(state, url)
+
+                        # trust_env=False: 프록시·인증서 관련 환경변수(HTTPS_PROXY, SSL_CERT_FILE 등)를 읽지 않는다.
+                        # follow_redirects=False: 리다이렉트를 따라가지 않는다 (SDK도 같은 출처의 안전한 리다이렉트만 따른다).
+                        rec_transport = _RecordingTransport(state, verify=target.ssl_context if target.ssl_context is not None else True, trust_env=False)
+                        hc = await stack.enter_async_context(httpx2.AsyncClient(
+                            headers=target.headers, timeout=limits.request_timeout_s, transport=rec_transport, follow_redirects=False, trust_env=False,
+                            event_hooks={"request": [guard_origin], "response": [record_status]}))
                         transport = streamable_http_client(url, http_client=hc)
                     client = await stack.enter_async_context(
                         Client(transport, cache=None, mode=client_mode, read_timeout_seconds=limits.request_timeout_s))  # type: ignore[arg-type]
@@ -440,10 +610,18 @@ async def _run_session(target: Target, limits: DiscoveryLimits, client_mode: str
                 mcp_err = _mcp_error_in(exc)
                 code = ("connection_closed_before_ready" if mcp_err and mcp_err.code == types.CONNECTION_CLOSED else
                         "connect_timeout" if mcp_err and mcp_err.code == types.REQUEST_TIMEOUT else "connect_failed")
-                if any(s in (401, 403) for s in state.http_statuses):
+                if state.transport_error is not None:
+                    code = state.transport_error["category"]      # TLS 오류(미신뢰 인증서·호스트 불일치·만료)·연결 거부·DNS 실패 등
+                elif any(s in (401, 403) for s in state.http_statuses):
                     code = "connect_rejected"      # 인증 거부(HTTP 401·403). 상태 코드는 응답 훅이 기록한 숫자이며 본문은 보지 않는다
+                elif any(s in (301, 302, 303, 307, 308) for s in state.http_statuses):
+                    code = "redirect_not_followed"      # 리다이렉트를 따라가지 않았다(인증 헤더가 다른 곳으로 가지 않음)
+                if state.cross_origin_blocked:
+                    code = "cross_origin_request_blocked"
                 state.connect_failure = {"code": code, "message": "서버에 연결하지 못했습니다 (연결·초기화 실패).", "error_types": seen,
                                          "http_status_codes": sorted(set(state.http_statuses))}
+                if state.transport_error is not None:
+                    state.connect_failure["transport"] = {k: v for k, v in state.transport_error.items() if k != "category"}
             else:
                 for key, *_ in LIST_ORDER:
                     ls = state.lists[key]
@@ -575,6 +753,11 @@ def assemble(target: Target, limits: DiscoveryLimits, state: _State, client_mode
         "elapsed_ms": elapsed_ms,
         "redactions": red.redactions,
     }
+    tls_desc = target.description.get("tls") if isinstance(target.description, dict) else None
+    if tls_desc is not None:
+        report["tls"] = {**tls_desc, "error": state.transport_error, "cross_origin_requests_blocked": state.cross_origin_blocked,
+                         "redirect_responses_seen": sum(1 for s in state.http_statuses if 300 <= s < 400),
+                         "redirects_followed": 0, "env_proxy_and_cert_variables_read": False}
     if target.transport != "stdio":
         counts: dict[str, int] = {}
         for sc in state.http_statuses:
@@ -646,6 +829,7 @@ def build_report(result: dict) -> dict:
         "scope": {
             "method": "명시적으로 선택한 MCP 서버 하나에 SDK 클라이언트로 연결해 목록 요청만 보냄 (tools/call·resources/read·prompts/get 없음)",
             "not_verified": NOT_VERIFIED,
+            "support_status": SUPPORT_STATUS,
             "list_status_meaning": {"complete": "끝까지 읽음(빈 목록 포함)", "partial": "일부만 읽음", "failed": "읽지 못함. 0개가 아님",
                                     "unsupported": "첫 응답이 -32601", "not_performed": "요청하지 않았거나 응답이 없음. 0개도 미지원도 아님"},
             "note": ("lists.*는 실제로 받은 목록 응답의 정의입니다. 조회 성공은 Agent 노출·호출 가능·읽기 가능을 뜻하지 않습니다. "
@@ -683,6 +867,9 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--allow-connect", action="store_true", help="선택한 설정 서버의 HTTP 접속을 허용 (기본은 루프백만)")
     p.add_argument("--allow-host", action="append", default=[], help="루프백이 아닌 접속 허용 호스트 (정확히 일치, 여러 번 가능)")
     p.add_argument("--bearer-env", help="Authorization: Bearer 토큰을 읽을 환경변수 이름 (값은 기록하지 않음)")
+    p.add_argument("--auth-header-env", action="append", default=[], metavar="헤더이름=환경변수이름",
+                   help="인증 헤더(예: X-Api-Key=MY_KEY_VAR)의 값을 읽을 환경변수 이름 (여러 번 가능, 값은 기록하지 않음)")
+    p.add_argument("--ca-bundle", type=Path, help="https 대상이 쓰는 사설 CA 인증서 PEM을 신뢰 저장소에 **추가**로 신뢰 (인증서·호스트 이름 검증은 그대로 켜짐)")
     p.add_argument("--config-scan-ref", help="결과의 config_link.config_scan_ref (linking에서 설정 수집 결과 라벨과 맞출 때)")
     p.add_argument("--scenario", choices=SCENARIOS, default="full", help="내장 시험 서버의 동작")
     p.add_argument("--demo-auth", choices=("fake", "none"), default="fake", help="--demo-http의 인증: fake=실행 때 만든 가짜 Bearer 토큰 필요")
@@ -705,8 +892,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.config and not args.server:
         parser.error("--config에는 --server(등록키 하나)가 필요합니다. 설정의 서버를 모두 조회하지 않습니다.")
-    if not args.config and (args.server or args.allow_launch or args.allow_connect or args.allow_host or args.bearer_env):
-        parser.error("--server, --allow-*, --bearer-env는 --config와 함께만 쓸 수 있습니다.")
+    if not args.config and (args.server or args.allow_launch or args.allow_connect or args.allow_host or args.bearer_env or args.ca_bundle or args.auth_header_env):
+        parser.error("--server, --allow-*, --bearer-env, --auth-header-env, --ca-bundle은 --config와 함께만 쓸 수 있습니다.")
     limits = DiscoveryLimits(args.timeout, args.request_timeout, args.connect_timeout, args.max_pages, args.max_items)
     problems = validate_limits(limits)
     if problems:
@@ -714,7 +901,8 @@ def main(argv: list[str] | None = None) -> int:
     if args.demo_stdio or args.demo_http:
         target = build_demo_target(bool(args.demo_http), args.scenario, args.demo_auth, args.demo_request_log)
     else:
-        target = build_config_target(args.config, args.server, args.registry_path, args.allow_launch, args.allow_connect, args.allow_host, args.bearer_env)
+        target = build_config_target(args.config, args.server, args.registry_path, args.allow_launch, args.allow_connect, args.allow_host, args.bearer_env,
+                                     args.ca_bundle, args.auth_header_env)
     if target.refused is None:
         print(f"서버에 연결합니다: {target.description.get('kind')} ({target.transport}) — 목록 요청만 보냅니다 (tools/call·resources/read·prompts/get 없음)")
     result = discover(target, limits, client_mode=args.client_mode, request_undeclared=args.request_undeclared, config_scan_ref=args.config_scan_ref)
@@ -735,6 +923,9 @@ def main(argv: list[str] | None = None) -> int:
     print(f"협상된 protocol_version: {report['protocol']['negotiated_protocol_version']}  "
           f"(SDK 통신 지원: {report['protocol']['negotiated_supported_by_sdk']}, 파서 지원: {report['protocol']['negotiated_readable_by_parser']})")
     print(f"수집 상태: {col['status']} ({col['outcome']})")
+    if report.get("tls"):
+        tls = report["tls"]
+        print(f"TLS: 인증서 체인·호스트 이름 검증 켜짐(끌 수 없음), 신뢰 저장소 {tls['trust']}" + (f", 오류 {tls['error']['category']}" if tls.get("error") else ""))
     for k, v in report["lists"].items():
         n = "미확인" if v["item_count"] is None else f"{v['item_count']}개"
         print(f"  - {k}: {v['collection_status']}/{v['outcome']} ({n})")

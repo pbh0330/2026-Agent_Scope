@@ -187,7 +187,9 @@ def test_server_exit_during_a_list_ends_the_session_honestly(tmp_path):
 
 
 def test_total_timeout_marks_unfinished_lists_not_performed(tmp_path):
-    rep, *_ = live(tmp_path, "slow-resources", limits=DiscoveryLimits(total_timeout_s=3, request_timeout_s=30, connect_timeout_s=20))
+    # 총 제한이 서버 시작+Tool 목록보다 짧으면 resources 요청 전에 끝나 not_performed가 된다(부하가 큰 PC에서 3초는 부족했다). 여유를 둬서
+    # "응답 없는 요청이 총 제한에 걸림"이라는 의도를 안정적으로 확인한다.
+    rep, *_ = live(tmp_path, "slow-resources", limits=DiscoveryLimits(total_timeout_s=12, request_timeout_s=60, connect_timeout_s=20))
     r = lst(rep, "resources")
     assert r["collection_status"] == "failed" and r["outcome"] == "total_timeout"
     assert lst(rep, "resource_templates")["outcome"] == "total_timeout" and lst(rep, "resource_templates")["collection_status"] == "not_performed"

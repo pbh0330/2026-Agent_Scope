@@ -1,13 +1,19 @@
 """스캐너 검증용 로컬 MCP 시험 서버 2 (Tool·Resource·ResourceTemplate·Prompt 목록, stdio 또는 로컬 HTTP + 가짜 인증).
 
     python -m asset_scanner.dev_lists_server [--scenario NAME] [--transport stdio]
-    python -m asset_scanner.dev_lists_server --transport http --port N [--require-bearer]
+    python -m asset_scanner.dev_lists_server --transport http --port N [--require-bearer] [--tls-cert F --tls-key F]
+                                             [--require-api-key-header NAME] [--redirect-to URL]
 
 **직접 만든 검증 대상일 뿐** 팀 테스트베드의 서버가 아니다. 외부 계정·인증정보·네트워크 없이 실행되며 HTTP는 `127.0.0.1`에만 바인딩한다.
 `tools/call`·`resources/read`·`prompts/get`을 처리하는 핸들러가 없다(스캐너가 보내면 SDK가 오류를 돌려주고 요청 기록에 남는다).
 
 요청 기록: 환경변수 `DEV_MCP_SERVER_LOG`에 파일 경로가 있으면 JSON 한 줄씩 남긴다. 내용은 시작(pid·시나리오·전송 방식),
 요청의 메서드 이름과 커서 상태(없음/빈 문자열/있음), HTTP 요청의 인증 결과(ok/missing/bad)뿐이다. 응답 내용·커서 값·토큰은 기록하지 않는다.
+
+TLS: `--tls-cert`·`--tls-key`를 주면 HTTPS로 듣는다(여전히 `127.0.0.1`에만 바인딩). 인증서는 테스트가 만든 임시 CA가 서명한 것이며 서버는 어떤 신뢰
+저장소도 건드리지 않는다. `--require-api-key-header NAME`이면 환경변수 `DEV_MCP_SERVER_API_KEY` 값과 같은 `NAME` 헤더가 없는 요청을 401로 거부한다.
+`--redirect-to URL`이면 모든 HTTP 요청에 307과 `Location: URL`을 돌려준다(리다이렉트 때 인증 헤더가 다른 호스트로 가지 않는지 검증하는 용도).
+기록하는 HTTP 이벤트에는 메서드·인증 결과(ok/missing/bad/not_required)·`Host` 헤더 값만 있고 토큰·헤더 값은 없다.
 
 가짜 인증: `--require-bearer`이면 환경변수 `DEV_MCP_SERVER_TOKEN`의 값과 같은 `Authorization: Bearer <토큰>` 헤더가 없는 HTTP 요청을
 401로 거부한다. 토큰은 스캐너가 실행 때 임의로 만들어 환경변수로만 전달하며 파일·로그에 남지 않는다.
@@ -46,6 +52,7 @@ SERVER_NAME = "asset-scanner-dev-lists-server"
 SERVER_VERSION = "0.0.1"
 LOG_ENV = "DEV_MCP_SERVER_LOG"
 TOKEN_ENV = "DEV_MCP_SERVER_TOKEN"
+API_KEY_ENV = "DEV_MCP_SERVER_API_KEY"
 SCENARIOS = ("full", "empty-all", "no-prompts", "only-tools", "resources-error", "templates-mnf", "fail-second", "many", "secrets",
              "slow-resources", "exit-resources", "same-names")
 
@@ -183,9 +190,13 @@ def build_server(scenario: str) -> Server[Any]:
 class _BearerGate:
     """HTTP 요청에 가짜 Bearer 토큰이 있는지 검사하는 ASGI 래퍼. 토큰은 기록하지 않고 결과(ok/missing/bad)만 기록한다."""
 
-    def __init__(self, app: Any, token: str | None) -> None:
+    def __init__(self, app: Any, token: str | None, api_key_header: str | None = None, api_key: str | None = None,
+                 redirect_to: str | None = None) -> None:
         self.app = app
         self.token = token
+        self.api_key_header = api_key_header.lower().encode("ascii") if api_key_header else None
+        self.api_key = api_key
+        self.redirect_to = redirect_to
 
     async def __call__(self, scope: dict, receive: Any, send: Any) -> None:
         if scope["type"] != "http":
@@ -201,7 +212,15 @@ class _BearerGate:
             verdict = "ok"
         else:
             verdict = "bad"
-        _log({"event": "http", "http_method": scope.get("method"), "auth": verdict})
+        if verdict in ("not_required", "ok") and self.api_key_header is not None:
+            got = headers.get(self.api_key_header, b"").decode("latin-1")
+            verdict = "missing" if not got else ("ok" if self.api_key is not None and hmac.compare_digest(got, self.api_key) else "bad")
+        _log({"event": "http", "http_method": scope.get("method"), "auth": verdict, "host": headers.get(b"host", b"").decode("latin-1")})
+        if self.redirect_to is not None:
+            await send({"type": "http.response.start", "status": 307,
+                        "headers": [(b"location", self.redirect_to.encode("ascii")), (b"content-length", b"0")]})
+            await send({"type": "http.response.body", "body": b""})
+            return
         if verdict in ("missing", "bad"):
             body = b'{"error":"unauthorized"}'
             await send({"type": "http.response.start", "status": 401,
@@ -222,15 +241,21 @@ async def _serve_stdio(scenario: str) -> None:
         _log({"event": "stop", "pid": os.getpid()})
 
 
-def _serve_http(scenario: str, port: int, require_bearer: bool) -> None:
+def _serve_http(scenario: str, port: int, require_bearer: bool, tls_cert: str | None = None, tls_key: str | None = None,
+                api_key_header: str | None = None, redirect_to: str | None = None) -> None:
     import uvicorn
     token = os.environ.get(TOKEN_ENV) if require_bearer else None
     if require_bearer and not token:
         raise SystemExit("--require-bearer에는 환경변수 DEV_MCP_SERVER_TOKEN이 필요합니다.")
-    _log({"event": "start", "pid": os.getpid(), "scenario": scenario, "transport": "http", "auth_required": bool(token)})
-    app = _BearerGate(build_server(scenario).streamable_http_app(host="127.0.0.1"), token)
+    api_key = os.environ.get(API_KEY_ENV) if api_key_header else None
+    if api_key_header and not api_key:
+        raise SystemExit("--require-api-key-header에는 환경변수 DEV_MCP_SERVER_API_KEY가 필요합니다.")
+    _log({"event": "start", "pid": os.getpid(), "scenario": scenario, "transport": "http", "auth_required": bool(token or api_key_header),
+          "tls": bool(tls_cert), "redirect": bool(redirect_to)})
+    app = _BearerGate(build_server(scenario).streamable_http_app(host="127.0.0.1"), token, api_key_header, api_key, redirect_to)
+    ssl_kwargs: dict[str, Any] = {"ssl_certfile": tls_cert, "ssl_keyfile": tls_key} if tls_cert else {}
     try:
-        uvicorn.run(app, host="127.0.0.1", port=port, log_level="warning", lifespan="on")
+        uvicorn.run(app, host="127.0.0.1", port=port, log_level="warning", lifespan="on", **ssl_kwargs)
     finally:
         _log({"event": "stop", "pid": os.getpid()})
 
@@ -241,11 +266,17 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--transport", choices=("stdio", "http"), default="stdio")
     p.add_argument("--port", type=int, default=0, help="--transport http일 때 127.0.0.1에서 들을 포트")
     p.add_argument("--require-bearer", action="store_true", help="가짜 Bearer 토큰(환경변수 DEV_MCP_SERVER_TOKEN)이 없는 HTTP 요청을 401로 거부")
+    p.add_argument("--tls-cert", help="HTTPS로 듣기 위한 인증서 PEM 파일 (--tls-key와 함께)")
+    p.add_argument("--tls-key", help="HTTPS로 듣기 위한 개인 키 PEM 파일")
+    p.add_argument("--require-api-key-header", metavar="NAME", help="환경변수 DEV_MCP_SERVER_API_KEY 값과 같은 NAME 헤더가 없는 요청을 401로 거부")
+    p.add_argument("--redirect-to", metavar="URL", help="모든 HTTP 요청에 307 리다이렉트를 돌려줌 (인증 헤더 전달 검증용)")
     args = p.parse_args(argv)
     if args.transport == "http":
         if not (1 <= args.port <= 65535):
             p.error("--transport http에는 --port (1~65535)가 필요합니다.")
-        _serve_http(args.scenario, args.port, args.require_bearer)
+        if bool(args.tls_cert) != bool(args.tls_key):
+            p.error("--tls-cert와 --tls-key는 함께 줘야 합니다.")
+        _serve_http(args.scenario, args.port, args.require_bearer, args.tls_cert, args.tls_key, args.require_api_key_header, args.redirect_to)
     else:
         anyio.run(_serve_stdio, args.scenario)
     return 0
