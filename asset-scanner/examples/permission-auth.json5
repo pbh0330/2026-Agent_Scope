@@ -1,0 +1,16 @@
+// ⚠ 테스트용 가상 설정입니다. 실제 팀·테스트베드 OpenClaw 설정이 아닙니다. FAKE 표식은 가짜 비밀값입니다.
+{
+  tools: {
+    profile: "coding",
+    deny: ["browser", "canvas"],
+    byProvider: { anthropic: { profile: "minimal" } },
+    toolsBySender: { "e164:+15555550123": { deny: ["exec"] }, "*": { deny: ["write"] } },
+  },
+  agents: { entries: { main: { tools: { deny: ["exec"] }, skills: ["greeter"] } } },
+  gateway: {
+    auth: { mode: "token", token: "FAKE-GATEWAY-TOKEN-VALUE", allowTailscale: false },
+    nodes: { commands: { deny: ["system.run"] }, pluginTools: { enabled: false }, allowSkills: false },
+  },
+  plugins: { allow: ["sample-voice"] },
+  mcp: { servers: { remote: { url: "https://mcp.sample.example/mcp", auth: "oauth", oauth: { identity: "per-requester", scope: "docs.read" } } } },
+}
