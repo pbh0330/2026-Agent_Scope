@@ -1,0 +1,35 @@
+# 테스트베드(tb-gw)용 Collector 설정 — 원본 스팬 파일만 남긴다(대시보드·Prometheus 없음).
+#
+# OpenClaw(diagnostics-otel)와 token-guard 플러그인이 같은 VM 안에서 127.0.0.1:4318로 보낸다.
+# 바깥에서 접속할 필요가 없으므로 127.0.0.1에만 연다.
+# 남은 파일(agentscope-traces.jsonl)로 usage.json·사용 현황 API가 도구별 토큰을 계산한다.
+# 설치·실행: install-collector.sh(otelcol 버전 고정) → systemd 사용자 서비스 agentscope-collector (../../docs/testbed-setup.md)
+
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 127.0.0.1:4318
+
+processors:
+  batch:
+    timeout: 1s
+
+exporters:
+  # OpenClaw 스팬 속성(도구 이름, 모델 호출 토큰 수 등)이 그대로 들어간다. 도구 결과 내용은 없다.
+  # 폴더(~/agentscope/data)가 미리 있어야 Collector가 시작된다.
+  file/traces:
+    path: ${env:HOME}/agentscope/data/agentscope-traces.jsonl
+    rotation:
+      max_megabytes: 50
+      max_backups: 20
+
+service:
+  telemetry:
+    metrics:
+      level: none   # Collector 자체 메트릭 포트(8888)를 열지 않음
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [file/traces]
