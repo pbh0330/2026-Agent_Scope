@@ -12,8 +12,11 @@
 | 대상 PR·Issue | TBD |
 | 스캐너 commit | TBD |
 | 대시보드 commit | TBD |
+| 어댑터·탐지·토큰 commit | TBD (각각 기록) |
+| 환경 ID·논리 프로필 ID·선택 snapshot_id | TBD |
+| 문서 개정 / 데이터 계약 | v0.7.5 / 0.7.0-draft (실행 적용 여부 기록) |
 | 출력 스키마 버전 | TBD (준비 기준 0.7.0-draft) |
-| 분류 기준 | Gateway 포함 8종 확정 / PR #1 HEAD 8442670745c7d1c64cf58df945b955f06bd2f01a |
+| 분류 기준 | Gateway 포함 8종 확정 / 분류 PR #1, 계약 검토 PR #18 HEAD 9085e8deb4820b3c7582224f3e5dbac42e28a52d |
 | ID 규칙·정답 생성기·변환기 버전/commit | TBD |
 | full 정답 경로·차분 적용 규칙 | TBD |
 | 실행 기준 시나리오 문서·ID·버전 | S1~S5 / 문서 버전 TBD |
@@ -21,7 +24,7 @@
 | 기준 스냅샷 ID | TBD |
 | 프로파일·위협 구성 ID | TBD |
 | 정답 JSON 경로·commit | TBD |
-| 스키마 기준 문서·commit·합의 여부 | TBD ([공통 스키마](https://github.com/pbh0330/2026-Agent_Scope/blob/8442670745c7d1c64cf58df945b955f06bd2f01a/docs/schema-design-draft.md) 0.7.0-draft, 세부 계약 합의 확인) |
+| 스키마 기준 문서·commit·합의 여부 | TBD ([공통 스키마](https://github.com/pbh0330/2026-Agent_Scope/blob/9085e8deb4820b3c7582224f3e5dbac42e28a52d/docs/schema-design-draft.md) 0.7.0-draft, 세부 계약 합의 확인) |
 | 수집 범위·인증 맥락 | TBD (안전한 참조) |
 | 환경 차이 | 없음 / 내용 기록 |
 
@@ -29,15 +32,15 @@
 
 | 구분 | 수량 |
 |---|---:|
-| 전체 계획 | 37 |
+| 전체 계획 | 43 |
 | 실행 완료 (Pass + Fail) | 0 |
 | Pass | 0 |
 | Fail | 0 |
 | Blocked | 0 |
 | N/A | 0 |
-| NOT_RUN | 37 |
+| NOT_RUN | 43 |
 
-전체 계획 = Pass + Fail + Blocked + N/A + NOT_RUN이다. 아래 표는 현재 계획한 37개 테스트의 초기 상태이며 실행별 대상이 달라지면 행과 집계를 함께 갱신한다. Blocked와 N/A는 실행 완료 수에 포함하지 않는다.
+전체 계획 = Pass + Fail + Blocked + N/A + NOT_RUN이다. 아래 표는 현재 계획한 43개 테스트의 초기 상태이며 실행별 대상이 달라지면 행과 집계를 함께 갱신한다. Blocked와 N/A는 실행 완료 수에 포함하지 않는다.
 
 **종합 판정:** TBD
 
@@ -86,6 +89,12 @@
 | QA-UI-04 | NOT_RUN |  |  |  |  |
 | QA-NFR-01 | NOT_RUN |  |  |  |  |
 | QA-NFR-02 | NOT_RUN |  |  |  |  |
+| QA-INT-01 | NOT_RUN |  |  |  |  |
+| QA-INT-02 | NOT_RUN |  |  |  |  |
+| QA-USAGE-01 | NOT_RUN |  |  |  |  |
+| QA-USAGE-02 | NOT_RUN |  |  |  |  |
+| QA-USAGE-03 | NOT_RUN |  |  |  |  |
+| QA-USAGE-04 | NOT_RUN |  |  |  |  |
 
 ## 4. 정확도 측정
 
@@ -163,3 +172,18 @@ S1~S5 각각에 대해 관련 자산·관계·경고 근거와 탐색 경로를 
 | 스캐너 담당 | TBD | TBD | TBD |
 | 대시보드 담당 | TBD | TBD | TBD |
 | 팀장 | TBD | TBD | TBD |
+
+## 9. 첫 연동 증적과 범위별 판정
+
+이 파일은 43개 계획 항목의 미실행 양식이다. 기존 37개에 INT 2개·USAGE 4개를 추가했으며 과거 실행 결과를 갱신한 것이 아니다. [로컬 사전 검증](QA_로컬사전검증_20261113.md)의 232개 자동 테스트 통과는 전체 인수 TC 통과로 환산하지 않는다.
+
+| 비교 범위 | 기준/버전 | 기대 수 | 실제 수 | 차이·근거·판정 |
+|---|---|---|---|---|
+| 원천 P0 자산 | 실제 인수 full 정답 commit TBD | TBD (검토 fixture 17과 구분) | TBD | TBD |
+| 추가 정책/인증 자산 | 적용 정책·증적 TBD | TBD | TBD | TBD |
+| 저장 관계 / 구현 관계 / 화면 보조 선 | 각각 구분 | TBD | TBD | TBD |
+| ID matched / ambiguous / unmatched | 매핑기 버전 TBD | TBD | TBD | TBD |
+| 탐지 required / optional / unknown / not_applicable | 규칙·정책 버전 TBD | TBD | TBD | TBD |
+| 사용량 파일/API/화면 | 조회 구간·필터·페이지·배분 버전 TBD | TBD | TBD | TBD |
+
+원천·변환 출력, 정책/정답, 수집 범위·인증 맥락, 화면 증적을 연결한다. 선택 경고의 분모·심각도 차이 판정은 합의 내용을 기록한다. 추가 정책 자산은 곧바로 오탐으로 세지 않으며 포함 범위와 근거를 먼저 검토한다.

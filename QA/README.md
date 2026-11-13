@@ -8,7 +8,7 @@ AI Agent 자산 식별 및 보안 가시화 시스템의 기능과 분석 결과
 
 ## 자산·계약 기준
 
-2026-10-31 PR #1 HEAD `8442670745c7d1c64cf58df945b955f06bd2f01a`에 따라 Gateway 포함 8종 분류를 적용한다. 직접 수집·집계 유형은 gateway, node, mcp_server, tool, resource_prompt, skill, plugin, permission_auth다. [8종 분류](https://github.com/pbh0330/2026-Agent_Scope/blob/8442670745c7d1c64cf58df945b955f06bd2f01a/docs/asset-classification-proposal.md)와 [공통 스키마](https://github.com/pbh0330/2026-Agent_Scope/blob/8442670745c7d1c64cf58df945b955f06bd2f01a/docs/schema-design-draft.md)의 0.7.0-draft를 준비 기준으로 한다.
+2026-10-31 PR #1 HEAD `8442670745c7d1c64cf58df945b955f06bd2f01a`에 따라 Gateway 포함 8종 분류를 적용한다. 직접 수집·집계 유형은 gateway, node, mcp_server, tool, resource_prompt, skill, plugin, permission_auth다. [8종 분류](https://github.com/pbh0330/2026-Agent_Scope/blob/8442670745c7d1c64cf58df945b955f06bd2f01a/docs/asset-classification-proposal.md)와 [공통 스키마](https://github.com/pbh0330/2026-Agent_Scope/blob/9085e8deb4820b3c7582224f3e5dbac42e28a52d/docs/schema-design-draft.md)의 0.7.0-draft를 준비 기준으로 한다.
 
 분류 확정은 구현 완료를 뜻하지 않는다. ID 생성 방식·수집 명령·관계 세부 규칙은 별도 협의·검증 대상이다. 구버전 7종 입력은 명시적 변환과 참조·집계 검토 후 비교하고, 미지원·미확인을 정상 0건으로 처리하지 않는다. 실제 인수 전 예시와 TBD를 정답 수로 집계하지 않는다.
 
@@ -95,3 +95,15 @@ GitHub 업로드 시 `QA/`와 함께 `.github/ISSUE_TEMPLATE/qa-defect.yml`을 �
 민감정보가 발견되면 원본을 Issue에 붙이지 않고 정제본만 공유한다. 이미 commit된 비밀값은 현재 파일에서 지우는 것만으로 과거 이력에서 없어지지 않는다. 노출된 자격증명은 폐기·교체하고 이력 처리 후 공유한다.
 
 테스트 결과에는 설정 파일, 스캐너 출력, 로그 또는 화면 캡처 중 하나 이상의 재현 증적을 첨부한다. 토큰, API key, secret 등 실제 비밀값은 문서와 증적에 기록하지 않는다.
+
+## PR #18 반영 기준 (2026-11-13)
+
+- 검토 기준: [PR #18 공통 스키마](https://github.com/pbh0330/2026-Agent_Scope/blob/9085e8deb4820b3c7582224f3e5dbac42e28a52d/docs/schema-design-draft.md) HEAD `9085e8deb4820b3c7582224f3e5dbac42e28a52d`. 문서 개정 v0.7.5와 데이터 계약 `0.7.0-draft`를 구분한다. 기존 PR #1은 8종 분류의 근거로 유지한다. 이 기준은 최종 계약 합의나 구현 완료를 뜻하지 않는다.
+- 첫 실행은 최신 스캐너 → #13 기존 어댑터 → 대시보드의 실제 P0 한 건으로 진행한다. 선택한 스냅샷의 환경·프로필·자산 ID를 공유하고 Gateway 참조를 실제 Gateway asset_id에 연결한다. 최종 ID·Permission 전체 합의는 첫 연결의 선행 조건이 아니다. 미합의 조건만 Blocked로 분리한다.
+- 검토 fixture는 원천 자산 17개·관계 16개의 변환 예제다. 임시 ID와 가상 시각을 실제 실행 증적으로 사용하지 않는다. #13의 20개 자산은 정책/인증 3개를 별도 대조한다. 관계 18개는 APPLIES_TO 3개 추가·PAIRED_WITH 제외의 차이를 확인한다. 근거 없는 페어링을 만들거나 정책 자산을 개수에 맞춰 제거하지 않는다. APPLIES_TO는 구현 관계로 구분한다.
+- 정상 0건·영역 미선언·미지원·조회 실패·partial을 구분한다. fixture의 partial은 가져온 인증 맥락·페이지 완전성 정보 부족이며 실제 조회 실패가 아니다. 실제 상태는 수집 계획·결과로 계산한다. 범위 밖 작업 미수행을 실패로 집계하지 않는다.
+- 두 MCP 버전 처리·선언값 수집과 기존 어댑터·정적 탐지·사용량 API는 구현된 경로를 먼저 검증한다. 담당자 테스트 보고와 QA 독립 실행을 구분한다. 스캐너 712개는 테스트 수집 수이며 전체 실행 통과 수가 아니다.
+
+첫 연동 절차는 [테스트 계획](QA_테스트계획.md), 검증 조건은 [테스트 케이스](QA_테스트케이스.md), 과거 로컬 실행 증적은 [로컬 사전 검증](QA_로컬사전검증_20261113.md)을 따른다.
+
+PR #18 기준 인수 자료: [#7 시나리오·기대 결과](https://github.com/pbh0330/2026-Agent_Scope/tree/f3945331e1faa7505f63dbeeafe2a6aad4811bad/docs/threat-scenarios)와 #13의 기존 정적 탐지·비교 경로를 사용한다. 위 로컬 후보 자료는 과거 준비 근거이며 실행 기준을 대신하지 않는다. 실제 적용 파일·commit·정책/규칙 버전과 합의된 조건을 실행마다 고정한다.
