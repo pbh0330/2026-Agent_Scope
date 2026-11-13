@@ -42,9 +42,22 @@
 
 전체 계획 = Pass + Fail + Blocked + N/A + NOT_RUN이다. 아래 표는 현재 계획한 43개 테스트의 초기 상태이며 실행별 대상이 달라지면 행과 집계를 함께 갱신한다. Blocked와 N/A는 실행 완료 수에 포함하지 않는다.
 
-**종합 판정:** TBD
+**종합 판정:** 로컬 사전 검증 통과. 계획된 인수 QA 43개는 NOT_RUN이며 전체 인수 판정은 미실시.
 
-**주요 잔여 위험:** TBD
+**주요 잔여 위험:** 실제 팀 테스트베드 수집, full 정답과 실제 출력의 ID 매핑, S1~S5 탐지, 대시보드·사용량 연동은 이번 로컬 사전 검증에서 확인하지 않았다.
+
+### 2.1 로컬 사전 검증 결과
+
+| 항목 | 기록 |
+|---|---|
+| 실행 ID·일자 | RUN-20261113-LOCAL-01 / 2026-11-13 (KST) |
+| 환경·대상 | Windows PowerShell / Python 3.14.4 / 로컬 `.pr5-review/asset-scanner` 및 P0 검토 fixture |
+| 스캐너 자동 테스트 | 232개 통과, 31.48초, 종료 코드 0 |
+| P0 검토 fixture 검사 | 자산 17개·관계 16개의 ID·참조·소속·상태·집계 검사 통과, 종료 코드 0 |
+| 상세 보고서 | [로컬 사전 검증 결과](QA_로컬사전검증_20261113.md) |
+| 자동 테스트 증적 | [공유용 JUnit XML](evidence/RUN-20261113-LOCAL-01/scanner-tests.public.xml) |
+
+232개는 스캐너 자동 테스트의 수이며 위 43개 인수 QA와 집계 단위가 다르다. P0 검사는 검토 fixture에 대한 제한된 검사로 전체 JSON Schema 적합성이나 실제 수집 정확도를 보증하지 않는다. 실제 stdio 조회 테스트는 제외했다. 1절의 TBD 항목은 향후 인수 QA 실행 정보를 기록할 자리이며 이번 사전 검증의 실행 정보는 이 절과 상세 보고서에 기록한다.
 
 ## 3. 테스트 결과
 
@@ -66,22 +79,22 @@
 | QA-COL-02 | NOT_RUN |  |  |  |  |
 | QA-COL-03 | NOT_RUN |  |  |  |  |
 | QA-COL-04 | NOT_RUN |  |  |  |  |
-| QA-COL-05 | NOT_RUN |  |  |  |  |
-| QA-COL-06 | NOT_RUN |  |  |  |  |
+| QA-COL-05 | NOT_RUN | 사전 증적: 가상 설정의 오류·부분 수집 자동 테스트 통과. 실제 팀 설정 인수 검증 필요 | [LOCAL-01](QA_로컬사전검증_20261113.md) |  |  |
+| QA-COL-06 | NOT_RUN | 사전 증적: 가상 설정의 빈 목록·등록 영역 부재 구분 통과. 실제 목록 조회 검증 필요 | [LOCAL-01](QA_로컬사전검증_20261113.md) |  |  |
 | QA-COL-07 | NOT_RUN |  |  |  |  |
 | QA-COL-08 | NOT_RUN |  |  |  |  |
 | QA-COL-09 | NOT_RUN |  |  |  |  |
 | QA-COL-10 | NOT_RUN |  |  |  |  |
-| QA-REL-01 | NOT_RUN |  |  |  |  |
+| QA-REL-01 | NOT_RUN | 사전 증적: P0 검토 fixture의 방향·유형·소속·참조 검사 통과. 실제 출력 검증 필요 | [LOCAL-01](QA_로컬사전검증_20261113.md) |  |  |
 | QA-REL-02 | NOT_RUN |  |  |  |  |
 | QA-REL-03 | NOT_RUN |  |  |  |  |
 | QA-REL-04 | NOT_RUN |  |  |  |  |
-| QA-SCHEMA-01 | NOT_RUN |  |  |  |  |
+| QA-SCHEMA-01 | NOT_RUN | 사전 증적: P0 검토 fixture의 핵심 필드·ID·참조 검사 통과. 전체 스키마·실제 출력 검증 필요 | [LOCAL-01](QA_로컬사전검증_20261113.md) |  |  |
 | QA-SCHEMA-02 | NOT_RUN |  |  |  |  |
 | QA-SCHEMA-03 | NOT_RUN |  |  |  |  |
 | QA-SCHEMA-04 | NOT_RUN |  |  |  |  |
 | QA-SCHEMA-05 | NOT_RUN |  |  |  |  |
-| QA-SEC-01 | NOT_RUN |  |  |  |  |
+| QA-SEC-01 | NOT_RUN | 사전 증적: 가짜 비밀값 비노출 자동 테스트 통과. 실제 연동·저장 증적·화면 검증 필요 | [LOCAL-01](QA_로컬사전검증_20261113.md) |  |  |
 | QA-SEC-02 | NOT_RUN |  |  |  |  |
 | QA-UI-01 | NOT_RUN |  |  |  |  |
 | QA-UI-02 | NOT_RUN |  |  |  |  |
