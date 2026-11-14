@@ -79,6 +79,8 @@ class ProfileInput:
     node_scan: dict | None = None
     skills: list[SkillInput] = field(default_factory=list)
     capture_overrides: dict[str, Path] = field(default_factory=dict)
+    tools_catalog: dict | None = None          # 스캐너 tools_catalog 결과(저장된 tools/list를 스캐너가 읽은 것)
+    plugin_scans: dict[str, dict] = field(default_factory=dict)  # 플러그인 id → 스캐너 --plugin-manifest 결과
     stale_exposure_servers: set[str] = field(default_factory=set)
     notes: list[str] = field(default_factory=list)
 
@@ -230,7 +232,6 @@ class SnapshotBuilder:
             evs.append(self.ev("ev-gw-identity", "protocol", "tb-gw:gateway.identity.get", self.captured_at, col))
         gw_conf = self.gw_cfg.get("gateway", {})
         device_id = ident["deviceId"] if ident else None
-        self.gateway_ref = f"gwctx_{device_id[:12]}" if device_id else "gwctx_unknown"
         gw = self.asset(
             "gateway", "tb-gw/gateway", "tb-gw", evs,
             [self.st("DECLARED", True, [ev_cfg]),
@@ -246,6 +247,9 @@ class SnapshotBuilder:
             },
             host="tb-gw",
         )
+        # QA-INT-01: gateway_ref는 같은 스냅샷의 Gateway asset_id를 그대로 가리킨다(별도 문맥 ID를 만들지 않음).
+        self.gateway_ref = gw["asset_id"]
+        gw["context"]["gateway_ref"] = gw["asset_id"]
         self.gw = gw
         # Gateway 인증 — 값은 설정에 평문으로 있으므로 저장하지 않고 존재만 기록
         if dig(self.gw_cfg, "gateway.auth.mode"):
@@ -344,7 +348,8 @@ class SnapshotBuilder:
                 normalizations = []
                 # 스캐너가 키 이름만 남긴 비밀 아닌 값 보강
                 for fld in ("sslVerify", "toolFilter"):
-                    if fld in s.get("other_declared_keys", []) and fld in raw_entry:
+                    # 최신 스캐너는 두 값을 declared에 담는다. 그때는 보강하지 않고 스캐너 값을 그대로 쓴다(QA-INT-02).
+                    if fld not in s["declared"] and fld in s.get("other_declared_keys", []) and fld in raw_entry:
                         config[fld] = raw_entry[fld]
                         supplement_fields.append(f"{s['declaration_path']}.{fld}")
                         normalizations.append({"source_field": f"{s['declaration_path']}.{fld}", "target_field": f"product.config.{fld}",
@@ -447,7 +452,15 @@ class SnapshotBuilder:
                 host="tb-gw",
             )
             self.rel("DECLARES", self.gw, plg, [ev_c], "confirmed")
+            pscan = self.inp.plugin_scans.get(pid)
+            by_key = {s["registration_key"]: s for s in (pscan or {}).get("servers", [])}
+            if pscan:
+                self.collect(f"col-plugin-manifest-scan-{pid}", "plugin_manifest", f"scanner --plugin-manifest plugins/{pid}/openclaw.plugin.json",
+                             "local_file", pscan["collection"]["status"] if pscan["collection"]["status"] in ("complete", "partial") else "failed",
+                             None, details={"servers": sorted(by_key), "producer": pscan.get("producer")})
             for name, spec in (data.get("mcpServers") or {}).items():
+                if name in by_key:  # 스캐너가 manifest에서 읽은 선언값(비밀값 가림 적용)을 우선
+                    spec = dict(by_key[name]["declared"])
                 ev_s = self.ev(f"ev-plugin-srv-{pid}-{name}", "manifest", f"tb-gw:~/.openclaw/extensions/{pid}/openclaw.plugin.json",
                                self.captured_at, col, field_path=f"mcpServers.{name}")
                 srv = self.asset(
@@ -537,7 +550,20 @@ class SnapshotBuilder:
                 srv["project"]["state_assessments"].append(self.st("EXPOSED", None, reason=why, subject=self.agent_subject()))
             srv["project"]["state_assessments"] += self.static_tail()
             tf = (srv.get("product", {}).get("config") or {}).get("toolFilter") or {}
-            for tool in cap.get("tools", []):
+            tools = cap.get("tools", [])
+            crec = next(c for c in self.collections if c["collection_id"] == col)
+            cat_srv = next((s for s in (self.inp.tools_catalog or {}).get("servers", []) if s.get("server_ref") == key), None)
+            if cat_srv and cat_srv.get("collection_status") in ("complete", "partial") and cat_srv.get("tools") is not None:
+                tools = [t["definition"] for t in cat_srv["tools"] if t.get("definition")]
+                crec["details"]["parsed_by"] = {"module": "asset_scanner.tools_catalog",
+                                               "producer": self.inp.tools_catalog.get("producer"),
+                                               "collection_status": cat_srv["collection_status"], "outcome": cat_srv.get("outcome"),
+                                               "issues": cat_srv.get("issues", [])}
+            else:
+                crec["details"]["parsed_by"] = {"module": "adapter(raw advertised)",
+                                               "reason": "스캐너 tools_catalog 결과 없음" if not cat_srv
+                                               else f"스캐너가 읽지 못함({cat_srv.get('collection_status')}/{cat_srv.get('outcome')})"}
+            for tool in tools:
                 name = tool["name"]
                 states = [self.st("DISCOVERED", True, [ev_cap])]
                 if ev_expo:

@@ -6,9 +6,9 @@
     "name": "agent-scope-asset-scanner",
     "version": "0.1.0"
   },
-  "generated_at": "2026-11-10T09:16:18Z",
+  "generated_at": "2026-11-14T17:32:42Z",
   "source": {
-    "source_path": "/home/claude/br/tb19/testbed/profiles/P0/tb-node.openclaw.json",
+    "source_path": "testbed/profiles/P0/tb-node.openclaw.json",
     "source_path_redacted": false,
     "source_kind": "openclaw_config_file",
     "evidence_type": "config",

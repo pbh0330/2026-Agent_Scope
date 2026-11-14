@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-11-10T09:16:18Z",
+  "generated_at": "2026-11-14T17:32:42Z",
   "environment_id": "agentscope-testbed",
   "sources": {
-    "scanner": "feature/scanner-config · asset_scanner (openclaw-mcp-config 0.1.0-draft)",
-    "testbed": "feature/testbed-threat-s1-develop (PR #19, develop 기준) · profiles P0~P2·S1, ground-truth/raw, approved-servers.json",
+    "scanner": "feature/scanner-config(11/13) · asset_scanner 설정 수집·tools_catalog·--plugin-manifest",
+    "testbed": "develop + PR #24 feature/testbed-threat-vm-capture · profiles P0~P2·S1~S5, ground-truth/raw(VM 수집), approved-servers.json",
     "threat_rules": "docs/threat-scenarios v2.1 · scenario-catalog.json, 부록 A",
     "schema": "docs/mcp-attack-surface-definition · schema-design-draft v0.6",
     "usage": "feature/token-collector · backend/usageapi"
@@ -15,8 +15,9 @@
       "kind": "normal",
       "scenario_id": null,
       "synthetic": false,
+      "vm_label": "SNAP-2-P0",
       "test_case_ids": [],
-      "snapshot_id": "snap-p0-20261110T091618Z",
+      "snapshot_id": "snap-p0-20261114T173243Z",
       "files": {
         "snapshot": "snapshots/P0/snapshot.json",
         "detections": "snapshots/P0/detections.json",
@@ -34,8 +35,9 @@
       "kind": "normal",
       "scenario_id": null,
       "synthetic": false,
+      "vm_label": "SNAP-2-P1",
       "test_case_ids": [],
-      "snapshot_id": "snap-p1-20261110T091619Z",
+      "snapshot_id": "snap-p1-20261114T173243Z",
       "files": {
         "snapshot": "snapshots/P1/snapshot.json",
         "detections": "snapshots/P1/detections.json",
@@ -53,8 +55,9 @@
       "kind": "normal",
       "scenario_id": null,
       "synthetic": false,
+      "vm_label": "SNAP-2-P2",
       "test_case_ids": [],
-      "snapshot_id": "snap-p2-20261110T091619Z",
+      "snapshot_id": "snap-p2-20261114T173243Z",
       "files": {
         "snapshot": "snapshots/P2/snapshot.json",
         "detections": "snapshots/P2/detections.json",
@@ -84,13 +87,14 @@
       "kind": "scenario",
       "scenario_id": "S1",
       "synthetic": false,
+      "vm_label": "SNAP-3-S1",
       "test_case_ids": [
         "S1-T1",
         "S1-T2",
         "S1-T3",
         "S1-T4"
       ],
-      "snapshot_id": "snap-s1-20261110T091619Z",
+      "snapshot_id": "snap-s1-20261114T173243Z",
       "files": {
         "snapshot": "snapshots/S1/snapshot.json",
         "detections": "snapshots/S1/detections.json",
@@ -111,18 +115,20 @@
           "SKIP": 0,
           "INFO": 0
         }
-      }
+      },
+      "measured": true
     },
     {
       "key": "S1-T5",
       "label": "S1-T5 · 선언 위치 이상",
       "kind": "scenario",
       "scenario_id": "S1",
-      "synthetic": true,
+      "synthetic": false,
+      "vm_label": null,
       "test_case_ids": [
         "S1-T5"
       ],
-      "snapshot_id": "snap-s1-t5-20261110T091619Z",
+      "snapshot_id": "snap-s1-t5-20261114T173244Z",
       "files": {
         "snapshot": "snapshots/S1-T5/snapshot.json",
         "detections": "snapshots/S1-T5/detections.json",
@@ -143,19 +149,21 @@
           "SKIP": 0,
           "INFO": 0
         }
-      }
+      },
+      "measured": false
     },
     {
       "key": "S2",
       "label": "S2 · 과도한 도구 권한",
       "kind": "scenario",
       "scenario_id": "S2",
-      "synthetic": true,
+      "synthetic": false,
+      "vm_label": "SNAP-3-S2",
       "test_case_ids": [
         "S2-T1",
         "S2-T2"
       ],
-      "snapshot_id": "snap-s2-20261110T091619Z",
+      "snapshot_id": "snap-s2-20261114T173244Z",
       "files": {
         "snapshot": "snapshots/S2/snapshot.json",
         "detections": "snapshots/S2/detections.json",
@@ -176,19 +184,21 @@
           "SKIP": 0,
           "INFO": 0
         }
-      }
+      },
+      "measured": true
     },
     {
       "key": "S4",
       "label": "S4 · 자격증명 공유",
       "kind": "scenario",
       "scenario_id": "S4",
-      "synthetic": true,
+      "synthetic": false,
+      "vm_label": "SNAP-3-S4",
       "test_case_ids": [
         "S4-T1",
         "S4-T2"
       ],
-      "snapshot_id": "snap-s4-20261110T091619Z",
+      "snapshot_id": "snap-s4-20261114T173244Z",
       "files": {
         "snapshot": "snapshots/S4/snapshot.json",
         "detections": "snapshots/S4/detections.json",
@@ -209,19 +219,21 @@
           "SKIP": 0,
           "INFO": 0
         }
-      }
+      },
+      "measured": true
     },
     {
       "key": "S3",
       "label": "S3 · 도구 이름 충돌",
       "kind": "scenario",
       "scenario_id": "S3",
-      "synthetic": true,
+      "synthetic": false,
+      "vm_label": "SNAP-3-S3",
       "test_case_ids": [
         "S3-T1",
         "S3-T2"
       ],
-      "snapshot_id": "snap-s3-20261110T091619Z",
+      "snapshot_id": "snap-s3-20261114T173244Z",
       "files": {
         "snapshot": "snapshots/S3/snapshot.json",
         "detections": "snapshots/S3/detections.json",
@@ -242,18 +254,20 @@
           "SKIP": 0,
           "INFO": 0
         }
-      }
+      },
+      "measured": true
     },
     {
       "key": "S5-T1",
-      "label": "S5-T1 · 약한 연결 보안",
+      "label": "S5-T1 · 평문 전송",
       "kind": "scenario",
       "scenario_id": "S5",
-      "synthetic": true,
+      "synthetic": false,
+      "vm_label": null,
       "test_case_ids": [
         "S5-T1"
       ],
-      "snapshot_id": "snap-s5-t1-20261110T091620Z",
+      "snapshot_id": "snap-s5-t1-20261114T173245Z",
       "files": {
         "snapshot": "snapshots/S5-T1/snapshot.json",
         "detections": "snapshots/S5-T1/detections.json",
@@ -274,18 +288,20 @@
           "SKIP": 0,
           "INFO": 0
         }
-      }
+      },
+      "measured": false
     },
     {
       "key": "S5-T2",
-      "label": "S5-T2 · 약한 연결 보안",
+      "label": "S5-T2 · 인증서 검증 끔",
       "kind": "scenario",
       "scenario_id": "S5",
-      "synthetic": true,
+      "synthetic": false,
+      "vm_label": null,
       "test_case_ids": [
         "S5-T2"
       ],
-      "snapshot_id": "snap-s5-t2-20261110T091620Z",
+      "snapshot_id": "snap-s5-t2-20261114T173245Z",
       "files": {
         "snapshot": "snapshots/S5-T2/snapshot.json",
         "detections": "snapshots/S5-T2/detections.json",
@@ -306,18 +322,20 @@
           "SKIP": 0,
           "INFO": 0
         }
-      }
+      },
+      "measured": false
     },
     {
       "key": "S5-T3",
-      "label": "S5-T3 · 약한 연결 보안",
+      "label": "S5-T3 · sslVerify 항목 없음",
       "kind": "scenario",
       "scenario_id": "S5",
-      "synthetic": true,
+      "synthetic": false,
+      "vm_label": null,
       "test_case_ids": [
         "S5-T3"
       ],
-      "snapshot_id": "snap-s5-t3-20261110T091620Z",
+      "snapshot_id": "snap-s5-t3-20261114T173245Z",
       "files": {
         "snapshot": "snapshots/S5-T3/snapshot.json",
         "detections": "snapshots/S5-T3/detections.json",
@@ -338,7 +356,8 @@
           "SKIP": 0,
           "INFO": 0
         }
-      }
+      },
+      "measured": false
     }
   ],
   "diffs": [
@@ -370,7 +389,7 @@
       "file": "diffs/P2__S1.json",
       "counts": {
         "added": 10,
-        "modified": 3,
+        "modified": 1,
         "removed_from_scope": 0,
         "not_observed": 0
       }
@@ -392,7 +411,7 @@
       "file": "diffs/P2__S2.json",
       "counts": {
         "added": 0,
-        "modified": 29,
+        "modified": 4,
         "removed_from_scope": 1,
         "not_observed": 0
       }
@@ -414,7 +433,7 @@
       "file": "diffs/P2__S3.json",
       "counts": {
         "added": 2,
-        "modified": 3,
+        "modified": 0,
         "removed_from_scope": 0,
         "not_observed": 0
       }
@@ -463,7 +482,7 @@
     "tool_policy": "pol-s2-expected-tool-policy 2.1"
   },
   "expected": {
-    "source": "docs/threat-scenarios/expected-results.md + testbed/ground-truth/S1.json",
+    "source": "testbed/ground-truth/<키>.json의 expected_* (없으면 docs/threat-scenarios/expected-results.md)",
     "version": "2.1",
     "profiles": [
       "P2",
@@ -480,7 +499,7 @@
   "usage_api": {
     "dir": "usage-api",
     "api_base": "/api/v1/usage",
-    "captured_at": "2026-11-10T09:16:18Z",
+    "captured_at": "2026-11-14T17:32:42Z",
     "mode": "fixed",
     "sources": [
       "pc-1029.traces.jsonl"

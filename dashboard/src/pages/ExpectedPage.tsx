@@ -54,7 +54,7 @@ export function ExpectedPage({ manifest, entry, model, onSelect, onSnapshot }: {
     <div className="dash">
       <div className="notice">
         <Info size={16} />
-        <span>기준: 위협 시나리오 v{manifest.expected?.version} <code>expected-results.md</code>, S1은 테스트베드 <code>S1.json</code>.
+        <span>기준: 위협 시나리오 v{manifest.expected?.version} 기대 결과를 담은 테스트베드 정답 파일(<code>ground-truth/&lt;구성&gt;.json</code>), 없으면 <code>expected-results.md</code>.
           경고 하나가 맞으려면 <b>조건 ID</b>와 <b>대상 자산</b>이 같아야 하고, 심각도가 다르면 "심각도 다름"으로 표시합니다. 판단 불가 항목은 경고가 없을 뿐 아니라 unknown으로 평가돼야 맞습니다.</span>
       </div>
 
@@ -79,7 +79,7 @@ export function ExpectedPage({ manifest, entry, model, onSelect, onSnapshot }: {
                 const v = VERDICT[r?.verdict ?? s.expected?.verdict ?? 'PASS']
                 return (
                   <tr key={s.key} aria-selected={s.key === entry.key} className={s.key === entry.key ? 'sel' : ''} onClick={() => onSnapshot(s.key)}>
-                    <td><b>{s.key}</b> <span className="small muted">{s.label.split(' · ')[1] ?? ''}</span>{s.synthetic && <span className="tag" style={{ marginLeft: 6 }}>합성</span>}</td>
+                    <td><b>{s.key}</b> <span className="small muted">{s.label.split(' · ')[1] ?? ''}</span>{s.synthetic ? <span className="tag" style={{ marginLeft: 6 }}>합성</span> : s.kind === 'scenario' && <span className="tag" style={{ marginLeft: 6 }}>{s.measured ? 'VM 수집' : '설정 사본'}</span>}</td>
                     <td className="small muted">{s.test_case_ids?.join(', ') || (s.kind === 'normal' ? '정상군' : '—')}</td>
                     <td className="num">{cnt('required')}</td>
                     <td className="num">{cnt('optional', c => c.result === 'PASS')}</td>

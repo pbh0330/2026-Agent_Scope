@@ -371,7 +371,14 @@ class Detector:
         collisions = {n: ts for n, ts in groups.items() if len({t["owner_ref"] for t in ts}) > 1}
         for name, ts in sorted(collisions.items()):
             fields = ("title", "description", "inputSchema", "annotations", "outputSchema")
-            diffs = [f for f in fields if len({json.dumps(_defn(t).get(f), sort_keys=True) for t in ts}) > 1]
+
+            def norm(t: dict, f: str):
+                v = _defn(t).get(f)
+                # JSON Schema 방언 선언($schema)은 SDK가 붙이는 메타데이터라 정의 비교에서 뺀다(S3 실측: 같은 정의에 $schema만 다름)
+                if f in ("inputSchema", "outputSchema") and isinstance(v, dict):
+                    v = {k: x for k, x in v.items() if k != "$schema"}
+                return json.dumps(v, sort_keys=True)
+            diffs = [f for f in fields if len({norm(t, f) for t in ts}) > 1]
             owners = [self.assets[t["owner_ref"]] for t in ts]
             eps = {self.ep_text(self.facts(o)["endpoint"]) for o in owners}
             ids = [t["asset_id"] for t in ts] + [o["asset_id"] for o in owners]

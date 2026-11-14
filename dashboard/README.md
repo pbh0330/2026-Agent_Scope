@@ -5,7 +5,7 @@ AI 에이전트 환경(OpenClaw + MCP)의 자산을 식별·가시화하는 대�
 
 ```text
 feature/scanner-config      자산 스캐너 ──┐
-develop + PR #19          테스트베드 원본·정답·S1 구성·승인 목록 ─┤
+develop + PR #24           테스트베드 P0~P2·S1~S5 구성·VM 수집본·정답·승인 목록 ─┤
 docs/threat-scenarios       S1~S5 규칙 v2.1 (카탈로그·S2 정책) ─┼─▶ pipeline/build_data.py ─▶ public/data/*.json ─▶ 대시보드
 docs/mcp-attack-surface     공통 스키마 v0.6 ─┤
 feature/token-collector     사용 현황 API(usageapi) ──┘
@@ -58,7 +58,7 @@ develop에 팀원 작업이 합쳐지면 저장소 구조는 아래와 같습니
 ```text
 2026-Agent_Scope/
 ├── asset-scanner/            feature/scanner-config
-├── testbed/                  develop(P0~P2, PR #12 병합) + PR #19 feature/testbed-threat-s1-develop(S1, approved-servers.json)
+├── testbed/                  develop(P0~P2·S1~S5 구성) + PR #24 feature/testbed-threat-vm-capture(S1~S4 VM 수집본)
 ├── docs/threat-scenarios/    docs/threat-scenarios (v2.1)
 ├── token-collector/          feature/token-collector
 └── dashboard/                이 폴더
@@ -97,18 +97,18 @@ cd dashboard
 ### 스냅샷 구성
 
 - **P0, P1, P2**: 테스트베드 정상군. 설정 사본에 스캐너를 실행하고 `ground-truth/raw`의 서버 광고·노출 원본을 붙였습니다. 정답 목록과 비교해 선언·광고 자산 수집률 100%, 관계 일치율 P1·P2 100%(P0는 페어링 원본이 없어 15/16).
-- **위험 구성**: `docs/threat-scenarios/expected-results.md`의 테스트 케이스를 그대로 옮겼고, 탭 순서는 구현 우선순위(S1 → S2 → S4 → S3 → S5)입니다.
+- **위험 구성**: 테스트베드 `profiles/<키>` 설정과 `ground-truth/raw/<키>` VM 수집본을 그대로 씁니다. 탭 순서는 구현 우선순위(S1 → S2 → S4 → S3 → S5)이고, 기대 결과는 테스트베드 정답 파일(`ground-truth/<키>.json`의 `expected_*`)과 대조합니다.
 
 | 탭 | 테스트 | 출처 |
 |---|---|---|
-| S1 | S1-T1~T4 (S4-T3 동반) | **테스트베드 구성 사본** `testbed/profiles/S1` + `raw/S1` 광고 원본. 플러그인 점검 원본이 없으면 저장소 manifest로 대신 읽고, 노출 목록은 S1에서 다시 수집하기 전까지 미확인 |
-| S1-T5 | 선언 위치 이상 | 합성 (P2 설정 변경) |
-| S2 | S2-T1, T2 | 합성 |
-| S4 | S4-T1, T2 | 합성 |
-| S3 | S3-T1, T2 | 합성 (inventory-remote 광고 원본에 도구 2개 추가) |
-| S5-T1~T3 | 평문 전송, 인증서 검증 끔, sslVerify 없음 | 합성 |
+| S1 | S1-T1~T4 (S4-T3 동반) | **VM 수집** SNAP-3-S1 (PR #24) |
+| S2 | S2-T1, T2 | **VM 수집** SNAP-3-S2 |
+| S4 | S4-T1, T2 | **VM 수집** SNAP-3-S4 |
+| S3 | S3-T1, T2 | **VM 수집** SNAP-3-S3 (inventory-remote 실제 광고본) |
+| S1-T5 | 선언 위치 이상 | 설정 사본(VM 미구축) — 수집본은 P2 기준, 바뀐 서버의 노출은 미확인 |
+| S5-T1~T3 | 평문 전송, 인증서 검증 끔, sslVerify 없음 | 설정 사본(VM 미구축) |
 
-합성 구성은 화면에 "P2 기반 합성 위험 구성"으로 표시됩니다. 테스트베드에 실제 위험 스냅샷이 생기면 S1처럼 `profiles/<키>`를 읽도록 추가하면 됩니다.
+화면에는 "VM 수집"과 "설정 사본"으로 구분해 표시합니다. 이제 대시보드가 직접 만든 합성 구성은 없습니다.
 
 ### 다른 팀원 결과 바로 보기
 
@@ -118,11 +118,28 @@ cd dashboard
 ## 어댑터가 한 일과 남은 차이
 
 - **자산 ID**: ID 규칙 협의안 B안(canonical key + SHA-256 앞 16자리). canonical key는 정답 목록의 `asset_key` 형식(`tb-gw/mcp_server/fs-workspace`)을 그대로 써서 QA 매핑이 이름이 아닌 키로 됩니다. 규칙 확정 시 `pipeline/agentscope_pipeline/ids.py`만 바꾸면 됩니다.
-- **8종 분류**: 8종 협의안에 따라 Gateway를 자산으로 두고 `context.gateway_ref`도 채웠습니다(스키마 v0.6 본문은 7종 + Gateway 문맥).
-- **스캐너 보강**: 스캐너 0.1.0은 `sslVerify`, `toolFilter`의 키 이름만 남깁니다. S2·S5 판정에 값이 필요해 어댑터가 설정에서 비밀이 아닌 두 값만 보강하고, 수집 작업 `adapter_supplement`와 자산의 `normalizations`에 기록했습니다. **스캐너에서 값을 수집하도록 바뀌면 이 보강은 지워도 됩니다.**
-- **MCP 버전**: 테스트베드 실제 협상 버전은 `2025-11-25`라 스캐너의 tools_catalog(2026-07-28 전용)를 쓰지 않고 `*.advertised.json`을 직접 읽었습니다. 근거에 버전 차이를 표시합니다.
+- **8종 분류**: 8종 협의안에 따라 Gateway를 자산으로 두고, 모든 자산의 `context.gateway_ref`는 같은 스냅샷의 Gateway `asset_id`를 가리킵니다(QA-INT-01).
+- **스캐너 값 우선**: 최신 스캐너(11/13)가 `sslVerify`·`toolFilter` 선언값을 직접 수집하므로 그 값을 그대로 씁니다. 예전 스캐너처럼 키 이름만 있을 때에만 어댑터가 설정에서 보강하고 `adapter_supplement`로 기록합니다. 최신 수집값을 덮어쓰지 않습니다(QA-INT-02). 플러그인이 등록한 서버도 스캐너 `--plugin-manifest` 결과(비밀값 가림 적용)를 우선 씁니다.
+- **MCP 버전**: 스캐너 tools_catalog가 `2025-11-25`·`2026-07-28`을 모두 지원하게 되어, 저장된 `*.advertised.json`을 스캐너가 읽은 결과로 Tool 자산을 만듭니다(수집 작업 `details.parsed_by`). 스캐너가 읽지 못한 경우에만 원본을 직접 읽고 사유를 남깁니다.
 - **탐지기**: 팀 탐지 모듈이 아직 없어 위협 시나리오 v2.1(부록 A, `scenario-catalog.json`)을 옮긴 구현(`detector.py`)을 넣었습니다. 조건 ID(`S1-C1` 등)와 기본 심각도·신뢰도는 카탈로그에서 읽고, 판정 기준은 S1·S4-C3 `approved-servers.json`, S2 `expected-tool-policy.json`입니다. 모든 위험 구성에서 `expected-results.md`의 필수 경고·비경고·판단 불가와 일치하는 것을 확인했습니다. 평가를 항상 함께 출력해 "이상 없음"과 "판단 불가"를 구분하며, 탐지 모듈이 생기면 같은 `detections.json` 형식으로 교체하면 화면은 그대로입니다.
 - **토큰 사용**: 사용 현황 API 응답 필드를 그대로 씁니다(`src/types/contracts.ts`의 Usage* 타입, `src/data/usage.ts`). 지금 사본은 PC 실측 데이터(`env-pc`)라 테스트베드 스냅샷과 자산 연결이 0건입니다. 테스트베드 실시간 모드에서 `--inventory`로 띄우면 이어집니다. 사용 기록은 자산의 "사용됨" 상태를 바꾸지 않고 따로 표시합니다(스키마 14.2).
+
+## QA 첫 통합 실행(QA-INT-01) 대조표
+
+P0 기준으로 대시보드 출력과 테스트베드 정답(`ground-truth/P0.json`)의 차이와 이유입니다.
+
+| 구분 | 정답 | 대시보드 | 차이 이유 |
+|---|---|---|---|
+| Gateway · Node · MCP Server · Tool | 1 · 1 · 1 · 14 | 1 · 1 · 1 · 14 | 일치 |
+| Permission/Auth | — (정답 범위 밖) | 3 | `Gateway 접속 인증`(gateway.auth), `에이전트 도구 정책`(tools.profile), `fs-workspace · toolFilter`. 별도 대조 대상 |
+| **자산 합계** | **17** | **20** | 위 Permission/Auth 3개 |
+| DECLARES · ADVERTISES | 1 · 14 | 1 · 14 | 일치 |
+| PAIRED_WITH | 1 | 0 | 페어링 원본(`devices list`)이 P0 수집본에 없어 만들지 않음 |
+| APPLIES_TO | — | 3 | 위 Permission/Auth 3개가 적용 대상(Gateway 2, fs-workspace 1)을 가리킴 |
+| **관계 합계** | **16** | **18** | +3(APPLIES_TO) −1(PAIRED_WITH) |
+
+- `gateway_ref`는 모든 자산에서 같은 스냅샷의 Gateway `asset_id`입니다.
+- 실행 commit·스냅샷 ID는 `public/data/manifest.json`의 `generated_at`, `sources`와 `snapshots/P0/snapshot.json`의 `snapshot_id`로 고정합니다.
 
 ## 구조
 

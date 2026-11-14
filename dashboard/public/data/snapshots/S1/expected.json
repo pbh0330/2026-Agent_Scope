@@ -1,14 +1,14 @@
 {
   "schema_version": "0.6.0-draft",
-  "qa_run_id": "exp-snap-s1-20261110T091619Z",
+  "qa_run_id": "exp-snap-s1-20261114T173243Z",
   "environment_id": "agentscope-testbed",
   "profile_id": "tb-openclaw",
-  "snapshot_id": "snap-s1-20261110T091619Z",
+  "snapshot_id": "snap-s1-20261114T173243Z",
   "expected_profile": "S1",
-  "expected_source": "testbed/ground-truth/S1.json (조건 ID는 expected-results.md 3절 대응표)",
+  "expected_source": "testbed/ground-truth/S1.json",
   "expected_version": "2.1",
-  "generated_at": "2026-11-10T09:16:19Z",
-  "detection_report_id": "det-snap-s1-20261110T091619Z",
+  "generated_at": "2026-11-14T17:32:43Z",
+  "detection_report_id": "det-snap-s1-20261114T173243Z",
   "verdict": "PASS",
   "checks": [
     {

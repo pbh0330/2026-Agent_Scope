@@ -1,5 +1,5 @@
 {
-  "ts": 1791096543663,
+  "ts": 1794488859491,
   "summary": {
     "critical": 1,
     "warn": 3,
@@ -30,14 +30,14 @@
       "checkId": "plugins.extensions_no_allowlist",
       "severity": "warn",
       "title": "Extensions exist but plugins.allow is not set",
-      "detail": "Found 1 extension(s) under /home/<TB_USER>/.openclaw/extensions. Without plugins.allow, any discovered plugin id may load (depending on config and plugin behavior).",
+      "detail": "Found 2 extension(s) under /home/<TB_USER>/.openclaw/extensions. Without plugins.allow, any discovered plugin id may load (depending on config and plugin behavior).",
       "remediation": "Set plugins.allow to an explicit list of plugin ids you trust."
     },
     {
       "checkId": "plugins.tools_reachable_permissive_policy",
       "severity": "warn",
       "title": "Extension plugin tools may be reachable under permissive tool policy",
-      "detail": "Enabled extension plugins: agentscope-asset-catalog.\nPermissive tool policy contexts:\n- default\n- agents.entries.main",
+      "detail": "Enabled extension plugins: agentscope-asset-catalog, agentscope-notes-sync.\nPermissive tool policy contexts:\n- default\n- agents.entries.main",
       "remediation": "Use restrictive profiles (`minimal`/`coding`) or explicit tool allowlists that exclude plugin tools for agents handling untrusted input."
     }
   ],

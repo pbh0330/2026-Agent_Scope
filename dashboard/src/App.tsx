@@ -180,7 +180,7 @@ export default function App() {
         <main className="page">
           <header className="page-head">
             <div>
-              <p className="hello">{entry ? (entry.kind === 'scenario' ? (entry.synthetic ? 'P2 기반 합성 위험 구성' : '테스트베드 위험 구성 사본') : entry.kind === 'imported' ? '불러온 데이터' : '테스트베드 정상 구성') : ''}</p>
+              <p className="hello">{entry ? (entry.kind === 'scenario' ? (entry.synthetic ? 'P2 기반 합성 위험 구성' : entry.measured ? `테스트베드 위험 구성 · VM 수집 ${entry.vm_label ?? ''}` : '테스트베드 위험 구성 · 설정 사본(VM 미구축)') : entry.kind === 'imported' ? '불러온 데이터' : '테스트베드 정상 구성') : ''}</p>
               <h1>{entry ? (entry.label.split(' · ')[1] ? `${entry.key} ${entry.label.split(' · ')[1]}` : entry.label) : info.title}</h1>
               <p>{info.desc}</p>
             </div>

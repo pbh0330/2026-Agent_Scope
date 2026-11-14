@@ -1,14 +1,14 @@
 {
   "schema_version": "0.6.0-draft",
-  "qa_run_id": "exp-snap-s5-t3-20261110T091620Z",
+  "qa_run_id": "exp-snap-s5-t3-20261114T173245Z",
   "environment_id": "agentscope-testbed",
   "profile_id": "tb-openclaw",
-  "snapshot_id": "snap-s5-t3-20261110T091620Z",
+  "snapshot_id": "snap-s5-t3-20261114T173245Z",
   "expected_profile": "S5-T3",
-  "expected_source": "docs/threat-scenarios/expected-results.md",
+  "expected_source": "testbed/ground-truth/S5-T3.json",
   "expected_version": "2.1",
-  "generated_at": "2026-11-10T09:16:20Z",
-  "detection_report_id": "det-snap-s5-t3-20261110T091620Z",
+  "generated_at": "2026-11-14T17:32:45Z",
+  "detection_report_id": "det-snap-s5-t3-20261114T173245Z",
   "verdict": "PASS",
   "checks": [
     {

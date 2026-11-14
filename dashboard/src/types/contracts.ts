@@ -236,6 +236,8 @@ export interface ManifestSnapshot {
   scenario_id: string | null
   synthetic: boolean
   test_case_ids?: string[]
+  vm_label?: string | null
+  measured?: boolean        // 위험 구성을 VM에 구축해 수집했는지(SNAP-3-*). false면 설정 사본만
   snapshot_id: string
   files: { snapshot: string; detections: string; audit?: string; qa?: string; expected?: string }
   counts: { assets: number; relations: number; alerts: number }

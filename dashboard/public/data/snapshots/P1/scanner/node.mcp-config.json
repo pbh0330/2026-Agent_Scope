@@ -6,9 +6,9 @@
     "name": "agent-scope-asset-scanner",
     "version": "0.1.0"
   },
-  "generated_at": "2026-11-10T09:16:19Z",
+  "generated_at": "2026-11-14T17:32:43Z",
   "source": {
-    "source_path": "/home/claude/br/tb19/testbed/profiles/P1/tb-node.openclaw.json",
+    "source_path": "testbed/profiles/P1/tb-node.openclaw.json",
     "source_path_redacted": false,
     "source_kind": "openclaw_config_file",
     "evidence_type": "config",
@@ -39,7 +39,7 @@
   "servers": [
     {
       "registration_key": "kg-memory",
-      "source_path": "/home/claude/br/tb19/testbed/profiles/P1/tb-node.openclaw.json",
+      "source_path": "testbed/profiles/P1/tb-node.openclaw.json",
       "declaration_path": "nodeHost.mcp.servers.kg-memory",
       "declaration_pointer": "/nodeHost/mcp/servers/kg-memory",
       "collection_status": "complete",
@@ -72,7 +72,7 @@
     },
     {
       "registration_key": "demo-everything",
-      "source_path": "/home/claude/br/tb19/testbed/profiles/P1/tb-node.openclaw.json",
+      "source_path": "testbed/profiles/P1/tb-node.openclaw.json",
       "declaration_path": "nodeHost.mcp.servers.demo-everything",
       "declaration_pointer": "/nodeHost/mcp/servers/demo-everything",
       "collection_status": "complete",
@@ -80,7 +80,13 @@
         "command": "mcp-server-everything",
         "args": [
           "stdio"
-        ]
+        ],
+        "toolFilter": {
+          "exclude": [
+            "get-env",
+            "gzip-file-as-resource"
+          ]
+        }
       },
       "declared_keys": [
         "command",
@@ -88,9 +94,7 @@
         "toolFilter"
       ],
       "credentials": {},
-      "other_declared_keys": [
-        "toolFilter"
-      ],
+      "other_declared_keys": [],
       "unresolved": [],
       "redactions": [],
       "issues": []

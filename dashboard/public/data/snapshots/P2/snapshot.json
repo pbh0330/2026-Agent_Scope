@@ -1,10 +1,10 @@
 {
   "schema_version": "0.6.0-draft",
-  "snapshot_id": "snap-p2-20261110T091619Z",
+  "snapshot_id": "snap-p2-20261114T173243Z",
   "environment_id": "agentscope-testbed",
   "profile_id": "tb-openclaw",
   "context": {
-    "gateway_ref": "gwctx_e3e14de28133"
+    "gateway_ref": "gw_4261ac71d127a248"
   },
   "basis": {
     "mcp_spec_version": "2026-07-28"
@@ -24,10 +24,10 @@
       }
     ]
   },
-  "generated_at": "2026-11-10T09:16:19Z",
+  "generated_at": "2026-11-14T17:32:43Z",
   "scan": {
-    "started_at": "2026-11-10T09:16:19Z",
-    "finished_at": "2026-11-10T09:16:19Z",
+    "started_at": "2026-11-14T17:32:43Z",
+    "finished_at": "2026-11-14T17:32:43Z",
     "status": "partial"
   },
   "testbed_context": {
@@ -46,8 +46,8 @@
       "name": "tb-gw",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
-        "host": "tb-gw"
+        "host": "tb-gw",
+        "gateway_ref": "gw_4261ac71d127a248"
       },
       "evidence_refs": [
         "ev-gw-config",
@@ -93,7 +93,7 @@
       "name": "Gateway 접속 인증",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-gw"
       },
       "evidence_refs": [
@@ -148,7 +148,7 @@
       "name": "에이전트 도구 정책 · full",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-gw"
       },
       "evidence_refs": [
@@ -195,7 +195,7 @@
       "name": "tb-node",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -238,7 +238,7 @@
       "name": "fs-workspace",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-gw"
       },
       "evidence_refs": [
@@ -290,16 +290,7 @@
         "host": "tb-gw",
         "transport": "stdio",
         "credential_refs": [],
-        "normalizations": [
-          {
-            "source_field": "mcp.servers.fs-workspace.toolFilter",
-            "target_field": "product.config.toolFilter",
-            "rule_id": "adapter-supplement-non-secret",
-            "evidence_refs": [
-              "ev-decl-tb-gw-fs-workspace"
-            ]
-          }
-        ],
+        "normalizations": [],
         "scanner_metadata": {
           "declared_keys": [
             "command",
@@ -307,9 +298,7 @@
             "toolFilter",
             "enabled"
           ],
-          "other_declared_keys": [
-            "toolFilter"
-          ],
+          "other_declared_keys": [],
           "collection_status": "complete"
         }
       },
@@ -322,13 +311,13 @@
           "args": [
             "/home/<TB_USER>/workspace"
           ],
-          "enabled": true,
           "toolFilter": {
             "include": [
               "read_text_file",
               "list_directory"
             ]
-          }
+          },
+          "enabled": true
         }
       },
       "mcp": {
@@ -353,7 +342,7 @@
       "name": "fs-workspace · toolFilter",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-gw"
       },
       "evidence_refs": [
@@ -404,7 +393,7 @@
       "name": "inventory-remote",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-gw"
       },
       "evidence_refs": [
@@ -467,16 +456,7 @@
             ]
           }
         ],
-        "normalizations": [
-          {
-            "source_field": "mcp.servers.inventory-remote.sslVerify",
-            "target_field": "product.config.sslVerify",
-            "rule_id": "adapter-supplement-non-secret",
-            "evidence_refs": [
-              "ev-decl-tb-gw-inventory-remote"
-            ]
-          }
-        ],
+        "normalizations": [],
         "scanner_metadata": {
           "declared_keys": [
             "url",
@@ -485,9 +465,7 @@
             "sslVerify",
             "enabled"
           ],
-          "other_declared_keys": [
-            "sslVerify"
-          ],
+          "other_declared_keys": [],
           "collection_status": "partial"
         }
       },
@@ -498,8 +476,8 @@
         "config": {
           "url": "https://tb-node:8443/mcp",
           "transport": "streamable-http",
-          "enabled": true,
-          "sslVerify": true
+          "sslVerify": true,
+          "enabled": true
         }
       },
       "mcp": {
@@ -530,7 +508,7 @@
       "name": "inventory-remote · 자격증명 참조",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-gw"
       },
       "evidence_refs": [
@@ -586,7 +564,7 @@
       "name": "kg-memory",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -682,7 +660,7 @@
       "name": "demo-everything",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -745,16 +723,7 @@
             ]
           }
         ],
-        "normalizations": [
-          {
-            "source_field": "nodeHost.mcp.servers.demo-everything.toolFilter",
-            "target_field": "product.config.toolFilter",
-            "rule_id": "adapter-supplement-non-secret",
-            "evidence_refs": [
-              "ev-decl-tb-node-demo-everything"
-            ]
-          }
-        ],
+        "normalizations": [],
         "scanner_metadata": {
           "declared_keys": [
             "command",
@@ -762,9 +731,7 @@
             "env",
             "toolFilter"
           ],
-          "other_declared_keys": [
-            "toolFilter"
-          ],
+          "other_declared_keys": [],
           "collection_status": "partial"
         }
       },
@@ -826,7 +793,7 @@
       "name": "demo-everything · toolFilter",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -877,7 +844,7 @@
       "name": "demo-everything · 자격증명 참조",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -933,7 +900,7 @@
       "name": "agentscope-asset-catalog",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-gw"
       },
       "evidence_refs": [
@@ -989,7 +956,7 @@
       "name": "asset-catalog",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-gw"
       },
       "evidence_refs": [
@@ -1074,7 +1041,7 @@
       "name": "read_file",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-gw"
       },
       "evidence_refs": [
@@ -1133,7 +1100,7 @@
           "title": "Read File (Deprecated)",
           "description": "Read the complete contents of a file as text. DEPRECATED: Use read_text_file instead.",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "path": {
@@ -1160,7 +1127,7 @@
             "taskSupport": "forbidden"
           },
           "outputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "content": {
@@ -1181,7 +1148,7 @@
       "name": "read_text_file",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-gw"
       },
       "evidence_refs": [
@@ -1239,7 +1206,7 @@
           "title": "Read Text File",
           "description": "Read the complete contents of a file from the file system as text. Handles various text encodings and provides detailed error messages if the file cannot be read. Use this tool when you need to examine the contents of a single file. Use the 'head' parameter to read only the first N lines of a file, or the 'tail' parameter to read only the last N lines of a file. Operates on the file as text regardless of extension. Only works within allowed directories.",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "path": {
@@ -1266,7 +1233,7 @@
             "taskSupport": "forbidden"
           },
           "outputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "content": {
@@ -1287,7 +1254,7 @@
       "name": "read_media_file",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-gw"
       },
       "evidence_refs": [
@@ -1346,7 +1313,7 @@
           "title": "Read Media File",
           "description": "Read a file and return it as a base64-encoded content block with its MIME type. Image and audio files are returned as image/audio content; any other file type is returned as an embedded resource. Only works within allowed directories.",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "path": {
@@ -1365,7 +1332,7 @@
             "taskSupport": "forbidden"
           },
           "outputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "content": {
@@ -1447,7 +1414,7 @@
       "name": "read_multiple_files",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-gw"
       },
       "evidence_refs": [
@@ -1506,7 +1473,7 @@
           "title": "Read Multiple Files",
           "description": "Read the contents of multiple files simultaneously. This is more efficient than reading files one by one when you need to analyze or compare multiple files. Each file's content is returned with its path as a reference. Failed reads for individual files won't stop the entire operation. Only works within allowed directories.",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "paths": {
@@ -1530,7 +1497,7 @@
             "taskSupport": "forbidden"
           },
           "outputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "content": {
@@ -1551,7 +1518,7 @@
       "name": "write_file",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-gw"
       },
       "evidence_refs": [
@@ -1610,7 +1577,7 @@
           "title": "Write File",
           "description": "Create a new file or completely overwrite an existing file with new content. Use with caution as it will overwrite existing files without warning. Handles text content with proper encoding. Only works within allowed directories.",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "path": {
@@ -1635,7 +1602,7 @@
             "taskSupport": "forbidden"
           },
           "outputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "content": {
@@ -1656,7 +1623,7 @@
       "name": "edit_file",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-gw"
       },
       "evidence_refs": [
@@ -1715,7 +1682,7 @@
           "title": "Edit File",
           "description": "Make line-based edits to a text file. Each edit replaces exact line sequences with new content. Returns a git-style diff showing the changes made. Only works within allowed directories.",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "path": {
@@ -1762,7 +1729,7 @@
             "taskSupport": "forbidden"
           },
           "outputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "content": {
@@ -1783,7 +1750,7 @@
       "name": "create_directory",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-gw"
       },
       "evidence_refs": [
@@ -1842,7 +1809,7 @@
           "title": "Create Directory",
           "description": "Create a new directory or ensure a directory exists. Can create multiple nested directories in one operation. If the directory already exists, this operation will succeed silently. Perfect for setting up directory structures for projects or ensuring required paths exist. Only works within allowed directories.",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "path": {
@@ -1863,7 +1830,7 @@
             "taskSupport": "forbidden"
           },
           "outputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "content": {
@@ -1884,7 +1851,7 @@
       "name": "list_directory",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-gw"
       },
       "evidence_refs": [
@@ -1942,7 +1909,7 @@
           "title": "List Directory",
           "description": "Get a detailed listing of all files and directories in a specified path. Results clearly distinguish between files and directories with [FILE] and [DIR] prefixes. This tool is essential for understanding directory structure and finding specific files within a directory. Only works within allowed directories.",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "path": {
@@ -1961,7 +1928,7 @@
             "taskSupport": "forbidden"
           },
           "outputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "content": {
@@ -1982,7 +1949,7 @@
       "name": "list_directory_with_sizes",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-gw"
       },
       "evidence_refs": [
@@ -2041,7 +2008,7 @@
           "title": "List Directory with Sizes",
           "description": "Get a detailed listing of all files and directories in a specified path, including sizes. Results clearly distinguish between files and directories with [FILE] and [DIR] prefixes. This tool is useful for understanding directory structure and finding specific files within a directory. Only works within allowed directories.",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "path": {
@@ -2069,7 +2036,7 @@
             "taskSupport": "forbidden"
           },
           "outputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "content": {
@@ -2090,7 +2057,7 @@
       "name": "directory_tree",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-gw"
       },
       "evidence_refs": [
@@ -2149,7 +2116,7 @@
           "title": "Directory Tree",
           "description": "Get a recursive tree view of files and directories as a JSON structure. Each entry includes 'name', 'type' (file/directory), and 'children' for directories. Files have no children array, while directories always have a children array (which may be empty). The output is formatted with 2-space indentation for readability. Only works within allowed directories.",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "path": {
@@ -2175,7 +2142,7 @@
             "taskSupport": "forbidden"
           },
           "outputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "content": {
@@ -2196,7 +2163,7 @@
       "name": "move_file",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-gw"
       },
       "evidence_refs": [
@@ -2255,7 +2222,7 @@
           "title": "Move File",
           "description": "Move or rename files and directories. Can move files between directories and rename them in a single operation. If the destination exists, the operation will fail. Works across different directories and can be used for simple renaming within the same directory. Both source and destination must be within allowed directories.",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "source": {
@@ -2280,7 +2247,7 @@
             "taskSupport": "forbidden"
           },
           "outputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "content": {
@@ -2301,7 +2268,7 @@
       "name": "search_files",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-gw"
       },
       "evidence_refs": [
@@ -2360,7 +2327,7 @@
           "title": "Search Files",
           "description": "Recursively search for files and directories matching a pattern. The patterns should be glob-style patterns that match paths relative to the working directory. Use pattern like '*.ext' to match files in current directory, and '**/*.ext' to match files in all subdirectories. Returns full paths to all matching items. Great for finding files when you don't know their exact location. Only searches within allowed directories.",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "path": {
@@ -2390,7 +2357,7 @@
             "taskSupport": "forbidden"
           },
           "outputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "content": {
@@ -2411,7 +2378,7 @@
       "name": "get_file_info",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-gw"
       },
       "evidence_refs": [
@@ -2470,7 +2437,7 @@
           "title": "Get File Info",
           "description": "Retrieve detailed metadata about a file or directory. Returns comprehensive information including size, creation time, last modified time, permissions, and type. This tool is perfect for understanding file characteristics without reading the actual content. Only works within allowed directories.",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "path": {
@@ -2489,7 +2456,7 @@
             "taskSupport": "forbidden"
           },
           "outputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "content": {
@@ -2510,7 +2477,7 @@
       "name": "list_allowed_directories",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-gw"
       },
       "evidence_refs": [
@@ -2569,7 +2536,7 @@
           "title": "List Allowed Directories",
           "description": "Returns the list of directories that this server is allowed to access. Subdirectories within these allowed directories are also accessible. Use this to understand which directories and their nested paths are available before trying to access files.",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {}
           },
@@ -2581,7 +2548,7 @@
             "taskSupport": "forbidden"
           },
           "outputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "content": {
@@ -2602,7 +2569,7 @@
       "name": "inventory_list_hosts",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-gw"
       },
       "evidence_refs": [
@@ -2660,7 +2627,7 @@
           "title": "List inventory hosts",
           "description": "List the host IDs in the testbed's fictional inventory.",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {}
           },
@@ -2680,7 +2647,7 @@
       "name": "inventory_get_host",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-gw"
       },
       "evidence_refs": [
@@ -2738,7 +2705,7 @@
           "title": "Get inventory host",
           "description": "Get one fictional inventory host record by ID.",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "id": {
@@ -2766,7 +2733,7 @@
       "name": "inventory-hosts",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-gw"
       },
       "evidence_refs": [
@@ -2826,7 +2793,7 @@
       "name": "inventory_owner_report",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-gw"
       },
       "evidence_refs": [
@@ -2891,7 +2858,7 @@
       "name": "create_entities",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -2949,7 +2916,7 @@
           "title": "Create Entities",
           "description": "Create multiple new entities in the knowledge graph",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "entities": {
@@ -2995,7 +2962,7 @@
             "taskSupport": "forbidden"
           },
           "outputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "entities": {
@@ -3042,7 +3009,7 @@
       "name": "create_relations",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -3100,7 +3067,7 @@
           "title": "Create Relations",
           "description": "Create multiple new relations between entities in the knowledge graph. Relations should be in active voice",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "relations": {
@@ -3143,7 +3110,7 @@
             "taskSupport": "forbidden"
           },
           "outputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "relations": {
@@ -3187,7 +3154,7 @@
       "name": "add_observations",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -3245,7 +3212,7 @@
           "title": "Add Observations",
           "description": "Add new observations to existing entities in the knowledge graph",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "observations": {
@@ -3286,7 +3253,7 @@
             "taskSupport": "forbidden"
           },
           "outputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "results": {
@@ -3326,7 +3293,7 @@
       "name": "delete_entities",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -3384,7 +3351,7 @@
           "title": "Delete Entities",
           "description": "Delete multiple entities and their associated relations from the knowledge graph",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "entityNames": {
@@ -3409,7 +3376,7 @@
             "taskSupport": "forbidden"
           },
           "outputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "success": {
@@ -3434,7 +3401,7 @@
       "name": "delete_observations",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -3492,7 +3459,7 @@
           "title": "Delete Observations",
           "description": "Delete specific observations from entities in the knowledge graph",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "deletions": {
@@ -3533,7 +3500,7 @@
             "taskSupport": "forbidden"
           },
           "outputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "success": {
@@ -3558,7 +3525,7 @@
       "name": "delete_relations",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -3616,7 +3583,7 @@
           "title": "Delete Relations",
           "description": "Delete multiple relations from the knowledge graph",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "relations": {
@@ -3660,7 +3627,7 @@
             "taskSupport": "forbidden"
           },
           "outputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "success": {
@@ -3685,7 +3652,7 @@
       "name": "read_graph",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -3743,7 +3710,7 @@
           "title": "Read Graph",
           "description": "Read the entire knowledge graph",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {}
           },
@@ -3757,7 +3724,7 @@
             "taskSupport": "forbidden"
           },
           "outputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "entities": {
@@ -3831,7 +3798,7 @@
       "name": "search_nodes",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -3889,7 +3856,7 @@
           "title": "Search Nodes",
           "description": "Search for nodes in the knowledge graph based on a query",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "query": {
@@ -3911,7 +3878,7 @@
             "taskSupport": "forbidden"
           },
           "outputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "entities": {
@@ -3985,7 +3952,7 @@
       "name": "open_nodes",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -4043,7 +4010,7 @@
           "title": "Open Nodes",
           "description": "Open specific nodes in the knowledge graph by their names",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "names": {
@@ -4068,7 +4035,7 @@
             "taskSupport": "forbidden"
           },
           "outputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "entities": {
@@ -4142,7 +4109,7 @@
       "name": "knowledge-graph",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -4202,7 +4169,7 @@
       "name": "echo",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -4260,7 +4227,7 @@
           "title": "Echo Tool",
           "description": "Echoes back the input string",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "message": {
@@ -4290,7 +4257,7 @@
       "name": "get-annotated-message",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -4348,7 +4315,7 @@
           "title": "Get Annotated Message Tool",
           "description": "Demonstrates how annotations can be used to provide metadata about content.",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "messageType": {
@@ -4388,7 +4355,7 @@
       "name": "get-env",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -4447,7 +4414,7 @@
           "title": "Print Environment Tool",
           "description": "Returns all environment variables, helpful for debugging MCP server configuration",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {}
           },
@@ -4469,7 +4436,7 @@
       "name": "get-resource-links",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -4527,7 +4494,7 @@
           "title": "Get Resource Links Tool",
           "description": "Returns up to ten resource links that reference different types of resources",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "count": {
@@ -4557,7 +4524,7 @@
       "name": "get-resource-reference",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -4615,7 +4582,7 @@
           "title": "Get Resource Reference Tool",
           "description": "Returns a resource reference that can be used by MCP clients",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "resourceType": {
@@ -4651,7 +4618,7 @@
       "name": "get-structured-content",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -4709,7 +4676,7 @@
           "title": "Get Structured Content Tool",
           "description": "Returns structured content along with an output schema for client data validation",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "location": {
@@ -4736,7 +4703,7 @@
             "taskSupport": "forbidden"
           },
           "outputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "temperature": {
@@ -4768,7 +4735,7 @@
       "name": "get-sum",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -4826,7 +4793,7 @@
           "title": "Get Sum Tool",
           "description": "Returns the sum of two numbers",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "a": {
@@ -4861,7 +4828,7 @@
       "name": "get-tiny-image",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -4919,7 +4886,7 @@
           "title": "Get Tiny Image Tool",
           "description": "Returns a tiny MCP logo image.",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {}
           },
@@ -4941,7 +4908,7 @@
       "name": "gzip-file-as-resource",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -5000,7 +4967,7 @@
           "title": "GZip File as Resource Tool",
           "description": "Compresses a single file using gzip compression. Depending upon the selected output type, returns either the compressed data as a gzipped resource or a resource link, allowing it to be downloaded in a subsequent request during the current session.",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "name": {
@@ -5043,7 +5010,7 @@
       "name": "toggle-simulated-logging",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -5101,7 +5068,7 @@
           "title": "Toggle Simulated Logging",
           "description": "Toggles simulated, random-leveled logging on or off.",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {}
           },
@@ -5123,7 +5090,7 @@
       "name": "toggle-subscriber-updates",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -5181,7 +5148,7 @@
           "title": "Toggle Subscriber Updates",
           "description": "Toggles simulated resource subscription updates on or off.",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {}
           },
@@ -5203,7 +5170,7 @@
       "name": "trigger-long-running-operation",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -5261,7 +5228,7 @@
           "title": "Trigger Long Running Operation Tool",
           "description": "Demonstrates a long running operation with progress updates.",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "duration": {
@@ -5294,7 +5261,7 @@
       "name": "simulate-research-query",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -5353,7 +5320,7 @@
           "title": "Simulate Research Query",
           "description": "Simulates a deep research operation that gathers, analyzes, and synthesizes information. Demonstrates MCP task-based operations with progress through multiple stages. If 'ambiguous' is true and client supports elicitation, sends an elicitation request for clarification.",
           "inputSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "http://json-schema.org/draft-07/schema",
             "type": "object",
             "properties": {
               "topic": {
@@ -5388,7 +5355,7 @@
       "name": "architecture.md",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -5447,7 +5414,7 @@
       "name": "extension.md",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -5506,7 +5473,7 @@
       "name": "features.md",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -5565,7 +5532,7 @@
       "name": "how-it-works.md",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -5624,7 +5591,7 @@
       "name": "instructions.md",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -5683,7 +5650,7 @@
       "name": "startup.md",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -5742,7 +5709,7 @@
       "name": "structure.md",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -5801,7 +5768,7 @@
       "name": "Dynamic Text Resource",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -5860,7 +5827,7 @@
       "name": "Dynamic Blob Resource",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -5919,7 +5886,7 @@
       "name": "simple-prompt",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -5977,7 +5944,7 @@
       "name": "args-prompt",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -6046,7 +6013,7 @@
       "name": "completable-prompt",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -6116,7 +6083,7 @@
       "name": "resource-prompt",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -6186,7 +6153,7 @@
       "name": "catalog_search",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-gw"
       },
       "evidence_refs": [
@@ -6266,7 +6233,7 @@
       "name": "catalog_get_entry",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-gw"
       },
       "evidence_refs": [
@@ -6346,7 +6313,7 @@
       "name": "node-disk-report",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -6387,7 +6354,7 @@
       "name": "node-notes-summary",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-node"
       },
       "evidence_refs": [
@@ -6428,7 +6395,7 @@
       "name": "inventory-owner-report",
       "context": {
         "profile_id": "tb-openclaw",
-        "gateway_ref": "gwctx_e3e14de28133",
+        "gateway_ref": "gw_4261ac71d127a248",
         "host": "tb-gw"
       },
       "evidence_refs": [
@@ -7494,7 +7461,7 @@
       "evidence_id": "ev-gw-config",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-11-10T09:16:19Z",
+      "observed_at": "2026-11-14T17:32:43Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "redacted",
       "field_path": "gateway",
@@ -7514,7 +7481,7 @@
       "evidence_id": "ev-gw-auth",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-11-10T09:16:19Z",
+      "observed_at": "2026-11-14T17:32:43Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "redacted",
       "field_path": "gateway.auth",
@@ -7526,7 +7493,7 @@
       "evidence_id": "ev-gw-tools-profile",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-11-10T09:16:19Z",
+      "observed_at": "2026-11-14T17:32:43Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "not_needed",
       "field_path": "tools.profile"
@@ -7552,7 +7519,7 @@
       "evidence_id": "ev-decl-tb-gw-fs-workspace",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-11-10T09:16:19Z",
+      "observed_at": "2026-11-14T17:32:43Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "not_needed",
       "field_path": "mcp.servers.fs-workspace"
@@ -7561,7 +7528,7 @@
       "evidence_id": "ev-decl-tb-gw-inventory-remote",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-11-10T09:16:19Z",
+      "observed_at": "2026-11-14T17:32:43Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "redacted",
       "field_path": "mcp.servers.inventory-remote",
@@ -7573,7 +7540,7 @@
       "evidence_id": "ev-decl-tb-node-kg-memory",
       "evidence_type": "config",
       "source_ref": "tb-node:~/.openclaw/openclaw.json",
-      "observed_at": "2026-11-10T09:16:19Z",
+      "observed_at": "2026-11-14T17:32:43Z",
       "collection_ref": "col-node-config",
       "redaction_status": "redacted",
       "field_path": "nodeHost.mcp.servers.kg-memory",
@@ -7585,7 +7552,7 @@
       "evidence_id": "ev-decl-tb-node-demo-everything",
       "evidence_type": "config",
       "source_ref": "tb-node:~/.openclaw/openclaw.json",
-      "observed_at": "2026-11-10T09:16:19Z",
+      "observed_at": "2026-11-14T17:32:43Z",
       "collection_ref": "col-node-config",
       "redaction_status": "redacted",
       "field_path": "nodeHost.mcp.servers.demo-everything",
@@ -7605,7 +7572,7 @@
       "evidence_id": "ev-plugin-cfg-agentscope-asset-catalog",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-11-10T09:16:19Z",
+      "observed_at": "2026-11-14T17:32:43Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "not_needed",
       "field_path": "plugins.entries.agentscope-asset-catalog"
@@ -7756,7 +7723,7 @@
       "target_ref": null,
       "mode": "local_file",
       "status": "partial",
-      "collected_at": "2026-11-10T09:16:19Z",
+      "collected_at": "2026-11-14T17:32:43Z",
       "reason": "profile-scoped configuration collection · server_entries_incomplete",
       "details": {
         "outcome": "servers_found",
@@ -7792,7 +7759,7 @@
       "target_ref": null,
       "mode": "local_file",
       "status": "partial",
-      "collected_at": "2026-11-10T09:16:19Z",
+      "collected_at": "2026-11-14T17:32:43Z",
       "reason": "profile-scoped configuration collection · server_entries_incomplete",
       "details": {
         "outcome": "servers_found",
@@ -7822,23 +7789,6 @@
       }
     },
     {
-      "collection_id": "col-adapter-supplement",
-      "source_ref": "pipeline:adapter",
-      "scope": "adapter_supplement",
-      "target_ref": null,
-      "mode": "local_file",
-      "status": "success",
-      "collected_at": "2026-11-10T09:16:19Z",
-      "reason": "스캐너 0.1.0은 sslVerify·toolFilter의 키 이름만 수집 — 비밀이 아닌 값을 어댑터가 설정에서 보강",
-      "details": {
-        "fields": [
-          "mcp.servers.fs-workspace.toolFilter",
-          "mcp.servers.inventory-remote.sslVerify",
-          "nodeHost.mcp.servers.demo-everything.toolFilter"
-        ]
-      }
-    },
-    {
       "collection_id": "col-plugin-agentscope-asset-catalog",
       "source_ref": "tb-gw:openclaw plugins inspect agentscope-asset-catalog --runtime --json",
       "scope": "plugin_manifest",
@@ -7846,6 +7796,24 @@
       "mode": "imported_catalog",
       "status": "success",
       "collected_at": "2026-10-04T06:49:26Z"
+    },
+    {
+      "collection_id": "col-plugin-manifest-scan-agentscope-asset-catalog",
+      "source_ref": "scanner --plugin-manifest plugins/agentscope-asset-catalog/openclaw.plugin.json",
+      "scope": "plugin_manifest",
+      "target_ref": null,
+      "mode": "local_file",
+      "status": "complete",
+      "collected_at": "2026-10-04T06:49:26Z",
+      "details": {
+        "servers": [
+          "asset-catalog"
+        ],
+        "producer": {
+          "name": "agent-scope-asset-scanner",
+          "version": "0.1.0"
+        }
+      }
     },
     {
       "collection_id": "col-tools_list-fs-workspace",
@@ -7865,7 +7833,25 @@
           "resourceTemplates",
           "prompts"
         ],
-        "synthetic": false
+        "synthetic": false,
+        "parsed_by": {
+          "module": "asset_scanner.tools_catalog",
+          "producer": {
+            "name": "agent-scope-asset-scanner",
+            "version": "0.1.0"
+          },
+          "collection_status": "complete",
+          "outcome": "tools_listed",
+          "issues": [
+            {
+              "category": "conformance",
+              "severity": "violation",
+              "code": "jsonrpc_version_unexpected",
+              "message": "jsonrpc 값이 \"2.0\"이 아닙니다.",
+              "page_index": 0
+            }
+          ]
+        }
       }
     },
     {
@@ -7882,7 +7868,25 @@
         "reported_count": 2,
         "requested_protocol_version": "2026-07-28",
         "capabilities_not_advertised": [],
-        "synthetic": false
+        "synthetic": false,
+        "parsed_by": {
+          "module": "asset_scanner.tools_catalog",
+          "producer": {
+            "name": "agent-scope-asset-scanner",
+            "version": "0.1.0"
+          },
+          "collection_status": "complete",
+          "outcome": "tools_listed",
+          "issues": [
+            {
+              "category": "conformance",
+              "severity": "violation",
+              "code": "jsonrpc_version_unexpected",
+              "message": "jsonrpc 값이 \"2.0\"이 아닙니다.",
+              "page_index": 0
+            }
+          ]
+        }
       }
     },
     {
@@ -7943,7 +7947,25 @@
         "capabilities_not_advertised": [
           "prompts"
         ],
-        "synthetic": false
+        "synthetic": false,
+        "parsed_by": {
+          "module": "asset_scanner.tools_catalog",
+          "producer": {
+            "name": "agent-scope-asset-scanner",
+            "version": "0.1.0"
+          },
+          "collection_status": "complete",
+          "outcome": "tools_listed",
+          "issues": [
+            {
+              "category": "conformance",
+              "severity": "violation",
+              "code": "jsonrpc_version_unexpected",
+              "message": "jsonrpc 값이 \"2.0\"이 아닙니다.",
+              "page_index": 0
+            }
+          ]
+        }
       }
     },
     {
@@ -7988,7 +8010,25 @@
         "reported_count": 13,
         "requested_protocol_version": "2026-07-28",
         "capabilities_not_advertised": [],
-        "synthetic": false
+        "synthetic": false,
+        "parsed_by": {
+          "module": "asset_scanner.tools_catalog",
+          "producer": {
+            "name": "agent-scope-asset-scanner",
+            "version": "0.1.0"
+          },
+          "collection_status": "complete",
+          "outcome": "tools_listed",
+          "issues": [
+            {
+              "category": "conformance",
+              "severity": "violation",
+              "code": "jsonrpc_version_unexpected",
+              "message": "jsonrpc 값이 \"2.0\"이 아닙니다.",
+              "page_index": 0
+            }
+          ]
+        }
       }
     },
     {
@@ -8051,7 +8091,25 @@
           "resourceTemplates",
           "prompts"
         ],
-        "synthetic": false
+        "synthetic": false,
+        "parsed_by": {
+          "module": "asset_scanner.tools_catalog",
+          "producer": {
+            "name": "agent-scope-asset-scanner",
+            "version": "0.1.0"
+          },
+          "collection_status": "complete",
+          "outcome": "tools_listed",
+          "issues": [
+            {
+              "category": "conformance",
+              "severity": "violation",
+              "code": "jsonrpc_version_unexpected",
+              "message": "jsonrpc 값이 \"2.0\"이 아닙니다.",
+              "page_index": 0
+            }
+          ]
+        }
       }
     },
     {

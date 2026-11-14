@@ -28,21 +28,27 @@ CASE_MAP = {  # expected-results.md 3절: 병하님 case → 조건 ID, severity
 }
 
 
-def load_expected(md_path: Path, s1_json: Path | None) -> dict[str, dict]:
+def load_expected(md_path: Path, gt_dir: Path | None) -> dict[str, dict]:
+    """기대 결과: 테스트베드 정답 파일(<키>.json의 expected_*)을 우선, 없으면 expected-results.md의 JSON 블록."""
     exp: dict[str, dict] = {}
     for block in re.findall(r"```json\n(.*?)```", md_path.read_text(encoding="utf-8"), re.S):
         data = json.loads(block)
         for p in data if isinstance(data, list) else [data]:
             exp[p["profile"]] = {**p, "_source": f"docs/threat-scenarios/{md_path.name}"}
-    if s1_json and s1_json.exists():
-        s1 = json.loads(s1_json.read_text(encoding="utf-8"))
-        for a in s1["expected_alerts"]:
-            cid, sev = CASE_MAP[(a["scenario"], a["case"])]
-            a.setdefault("condition_id", cid)
-            a.setdefault("severity", sev)
-        s1.setdefault("expected_unknown", [])
-        s1["_source"] = "testbed/ground-truth/S1.json (조건 ID는 expected-results.md 3절 대응표)"
-        exp["S1"] = s1
+    for f in sorted(gt_dir.glob("*.json")) if gt_dir and gt_dir.exists() else []:
+        if f.stem in ("P0", "P1", "approved-servers"):
+            continue
+        g = json.loads(f.read_text(encoding="utf-8"))
+        if not isinstance(g, dict) or "expected_alerts" not in g:
+            continue
+        for a in g["expected_alerts"]:
+            if "condition_id" not in a and (a["scenario"], a["case"]) in CASE_MAP:
+                a["condition_id"], sev = CASE_MAP[(a["scenario"], a["case"])]
+                a.setdefault("severity", sev)
+        g.setdefault("expected_unknown", [])
+        g["profile"] = g.get("profile") or f.stem
+        g["_source"] = f"testbed/ground-truth/{f.name}"
+        exp[f.stem] = g
     return exp
 
 
