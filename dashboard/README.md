@@ -41,12 +41,22 @@ npm run build      # dist/
 정철님 토큰 수집기의 사용 현황 API를 띄우면 개발 서버가 `/api`를 그쪽으로 넘깁니다(`vite.config.ts` 프록시). API가 꺼져 있으면 `public/data/usage-api`의 저장된 응답을 보여 줍니다.
 
 ```bash
-# token-collector/backend/usageapi (Go 1.24 이상)
-go run ./cmd/agentscope-usage-api --env env-pc --profile profile-pc --input testdata/pc-1029.traces.jsonl
-# 테스트베드: --live --input '~/agentscope/data/agentscope-traces*.jsonl' --tool-results ~/.openclaw/agentscope/agentscope-tool-results.jsonl
+# token-collector/backend/usageapi (Go 1.24 이상) — 대시보드 스냅샷에 연결해 띄우기
+go run ./cmd/agentscope-usage-api --env agentscope-testbed --profile tb-openclaw \
+  --inventory ../../../dashboard/public/data/snapshots/P2/snapshot.json \
+  --input testdata/pc-1029.traces.jsonl
+# 테스트베드(tb-gw): --live --addr 0.0.0.0:8088 --input '~/agentscope/data/agentscope-traces*.jsonl'
+#                    --tool-results ~/.openclaw/agentscope/agentscope-tool-results.jsonl (+ 같은 --env/--profile/--inventory)
 ```
 
-자산 상세의 "실제 사용"은 API를 `--inventory <snapshot.json>`과 같은 environment_id·profile_id로 띄웠을 때만 채워집니다. 대시보드는 이름으로 추측해서 연결하지 않습니다.
+- **스냅샷 연결(`--inventory`)**: 자산 상세의 "실제 사용"과 토큰 화면의 자산 연결은 API를 대시보드 스냅샷 파일과 같은 `--env agentscope-testbed --profile tb-openclaw`로 띄웠을 때만 채워집니다. 값이 다르면 API가 시작을 거부합니다. 대시보드는 이름으로 추측해서 연결하지 않습니다. 위 예시의 PC 실측 데이터(16건)는 테스트베드 도구가 아니라서 연결 0건이 정상입니다.
+- **API 주소(`USAGE_API_TARGET`)**: 기본은 같은 PC(`http://127.0.0.1:8088`)입니다. 테스트베드 tb-gw의 API에 붙이려면 주소를 바꿔 개발 서버를 띄웁니다. API가 CORS를 지원하지 않아 브라우저에서 직접 부를 수 없으므로 항상 이 프록시를 거칩니다.
+
+```powershell
+$env:USAGE_API_TARGET="http://<TB_GW_IP>:8088"; npm run dev      # PowerShell
+USAGE_API_TARGET=http://<TB_GW_IP>:8088 npm run dev               # bash
+# 또는 .env.example을 .env.local로 복사해 값을 고친 뒤 npm run dev
+```
 
 `public/data`에 생성된 데이터가 들어 있으므로 바로 실행됩니다.
 

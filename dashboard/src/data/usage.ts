@@ -1,6 +1,6 @@
 // 토큰 사용 데이터 원천.
 // 1) 사용 현황 API(token-collector/backend/usageapi)가 떠 있으면 그 응답을 그대로 쓴다.
-//    개발 서버는 vite.config.ts의 프록시로 /api → http://127.0.0.1:8088 에 붙는다.
+//    개발 서버는 vite.config.ts의 프록시로 /api → USAGE_API_TARGET(기본 http://127.0.0.1:8088)에 붙는다.
 // 2) API에 닿지 않으면 파이프라인이 저장해 둔 같은 응답의 정적 사본(public/data/usage-api)을 쓴다.
 import type { BrakeEvents, Manifest, UsageByAsset, UsageHealth, UsageRecords, UsageSummary, UsageTimeseries } from '../types/contracts'
 import { getJSON } from './load'

@@ -38,7 +38,7 @@ export function UsagePage({ manifest, model, onSelect }: { manifest: Manifest; m
   if (b === null) return (
     <div className="empty">
       사용 현황 API에 연결하지 못했고 저장된 사본도 없습니다.<br />
-      <span className="small muted">token-collector/backend/usageapi에서 <code>agentscope-usage-api</code>를 띄우면(기본 127.0.0.1:8088) 개발 서버가 /api로 붙습니다.</span>
+      <span className="small muted">token-collector/backend/usageapi에서 <code>agentscope-usage-api</code>를 띄우면 개발 서버가 /api로 붙습니다(기본 127.0.0.1:8088, 다른 주소는 <code>USAGE_API_TARGET</code>).</span>
     </div>
   )
 
@@ -77,7 +77,7 @@ export function UsagePage({ manifest, model, onSelect }: { manifest: Manifest; m
         <Panel title="시간대별 귀속 토큰" note={`${timeseries.step.replace('m0s', '분').replace('h0m0s', '시간')} 단위 · 기록이 없는 구간은 0`}>
           <AreaChart unit=" 토큰" points={timeseries.total.points.map(p => ({ label: hhmm(p.t), value: p.tokens, note: `호출 ${p.calls}건` }))} />
         </Panel>
-        <Panel title="계산 방식" note="병렬·배치는 구간 증가분을 결과별 토큰 수 비율로 나눔">
+        <Panel title="계산 방식" note="병렬·배치는 결과마다 고정분을 먼저 주고, 나머지를 결과별 토큰 수 비율로 나눔">
           <div className="method-stack" role="img" aria-label="계산 방식별 토큰 비율">
             <span style={{ flex: s.by_method.sequential.tokens, background: 'var(--c1)' }} />
             <span style={{ flex: s.by_method.allocated.tokens, background: 'var(--c2)' }} />
@@ -98,8 +98,14 @@ export function UsagePage({ manifest, model, onSelect }: { manifest: Manifest; m
       {!linked && (
         <div className="notice warn">
           <Link2 size={16} />
-          <span>사용 기록이 지금 보는 스냅샷의 자산과 연결되지 않았습니다(연결 {s.by_mapping.matched}건). 사용 현황 API를 <code>--inventory</code>에 이 스냅샷을 주고
-            같은 environment_id·profile_id로 띄우면 도구가 자산 ID로 묶이고, 자산 상세에 "실제 사용"이 표시됩니다. 이름이 비슷해도 대시보드가 임의로 연결하지 않습니다.</span>
+          <span>사용 기록이 지금 보는 스냅샷의 자산과 연결되지 않았습니다(연결 {s.by_mapping.matched}/{s.calls}건).{' '}
+            {!health.inventory_snapshot_id
+              ? <>사용 현황 API가 스냅샷 없이 실행되었습니다. </>
+              : health.inventory_snapshot_id !== model.snapshot.snapshot_id
+                ? <>API는 <code>{health.inventory_snapshot_id}</code>에 연결되어 있고, 지금 보는 스냅샷은 <code>{model.snapshot.snapshot_id}</code>입니다. </>
+                : <>API는 이 스냅샷에 연결되어 있지만 사용 기록의 도구가 스냅샷에 없습니다(다른 환경에서 측정한 기록일 수 있음). </>}
+            API를 <code>--env {model.snapshot.environment_id} --profile {model.snapshot.profile_id} --inventory public/data/snapshots/{model.snapshot.testbed_context?.configuration_id ?? 'P2'}/snapshot.json</code>로 띄우면
+            도구가 자산 ID로 묶이고 자산 상세에 "실제 사용"이 표시됩니다. 이름이 비슷해도 대시보드가 임의로 연결하지 않습니다.</span>
         </div>
       )}
 

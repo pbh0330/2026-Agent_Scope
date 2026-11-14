@@ -4,3 +4,6 @@ dist
 pipeline/.work
 __pycache__
 .venv
+
+# 개인 환경 설정(USAGE_API_TARGET 등)
+.env.local
