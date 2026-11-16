@@ -1,0 +1,44 @@
+{
+  "window": {
+    "start": "2026-10-29T05:24:02.000Z",
+    "end": "2026-10-29T05:29:03.000Z"
+  },
+  "estimated": true,
+  "group": "pattern",
+  "total_tokens": 15769,
+  "inventory_snapshot_id": null,
+  "items": [
+    {
+      "key": "pattern:parallel",
+      "label": "parallel",
+      "asset_id": null,
+      "asset_type": null,
+      "calls": 13,
+      "calls_not_computed": 0,
+      "tokens": 13501,
+      "tokens_sequential": 0,
+      "tokens_allocated": 13501,
+      "estimated_cost_usd": 0.013501,
+      "share": 0.8562,
+      "relative": 1,
+      "last_used_at": "2026-10-29T05:26:56.716Z",
+      "last_trace_id": "abd2a05c50eb322349e1cf6552544896"
+    },
+    {
+      "key": "pattern:sequential",
+      "label": "sequential",
+      "asset_id": null,
+      "asset_type": null,
+      "calls": 3,
+      "calls_not_computed": 0,
+      "tokens": 2268,
+      "tokens_sequential": 2268,
+      "tokens_allocated": 0,
+      "estimated_cost_usd": 0.002268,
+      "share": 0.1438,
+      "relative": 0.168,
+      "last_used_at": "2026-10-29T05:29:02.132Z",
+      "last_trace_id": "78f1519286fc431fe44ec8345e5d3e79"
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "window": {
+    "start": "2026-10-29T05:24:02.000Z",
+    "end": "2026-10-29T05:29:03.000Z"
+  },
+  "estimated": true,
+  "group": "server",
+  "total_tokens": 15769,
+  "inventory_snapshot_id": null,
+  "items": [
+    {
+      "key": "source:core",
+      "label": "core",
+      "asset_id": null,
+      "asset_type": null,
+      "tool_source": "core",
+      "calls": 14,
+      "calls_not_computed": 0,
+      "tokens": 11849,
+      "tokens_sequential": 2268,
+      "tokens_allocated": 9581,
+      "estimated_cost_usd": 0.011849,
+      "share": 0.7514,
+      "relative": 1,
+      "last_used_at": "2026-10-29T05:29:02.132Z",
+      "last_trace_id": "78f1519286fc431fe44ec8345e5d3e79"
+    },
+    {
+      "key": "mcp:fs",
+      "label": "fs",
+      "asset_id": null,
+      "asset_type": null,
+      "mapping_status": "unmatched",
+      "tool_source": "mcp",
+      "mcp_server": "fs",
+      "calls": 2,
+      "calls_not_computed": 0,
+      "tokens": 3920,
+      "tokens_sequential": 0,
+      "tokens_allocated": 3920,
+      "estimated_cost_usd": 0.00392,
+      "share": 0.2486,
+      "relative": 0.3308,
+      "last_used_at": "2026-10-29T05:26:56.716Z",
+      "last_trace_id": "abd2a05c50eb322349e1cf6552544896"
+    }
+  ]
+}
