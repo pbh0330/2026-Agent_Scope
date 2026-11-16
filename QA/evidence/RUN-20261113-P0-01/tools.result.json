@@ -1,0 +1,107 @@
+{
+  "format": "agent-scope.scanner.mcp-tools-catalog",
+  "format_version": "0.1.0-draft",
+  "format_status": "스캐너 내부 개발용 초안입니다. 팀 공통 스키마가 아니며 필드명과 구조는 협의 후 변경될 수 있습니다. 공통 server_id·asset_id는 정하지 않았고 server_ref·internal_ref는 이 파일 안에서만 쓰는 이름입니다.",
+  "producer": {
+    "name": "agent-scope-asset-scanner",
+    "version": "0.1.0"
+  },
+  "generated_at": "2026-11-13T04:38:15Z",
+  "protocol": {
+    "supported_version": "2026-07-28",
+    "basis": "MCP 2026-07-28 server/tools, utilities/pagination, schema.ts (ListToolsResult, Tool, ToolAnnotations)"
+  },
+  "source": {
+    "capture_path": "<LOCAL_PATH>",
+    "source_kind": "stored_tools_list_response",
+    "evidence_type": "stored_protocol_response",
+    "live_server_query": false,
+    "origin_declared_by_input": "saved P0 advertised response; no live query; page completeness unverified"
+  },
+  "scope": {
+    "method": "저장된 tools/list 응답 JSON 읽기",
+    "not_verified": [
+      "live_server_query",
+      "current_server_state",
+      "tools_call",
+      "resources_prompts",
+      "capabilities",
+      "exposure",
+      "callability",
+      "common_server_id"
+    ],
+    "status_meaning": {
+      "collection_status": "수집 완전성: 응답 전체를 끝까지 읽었는가 (complete/partial/failed)",
+      "spec_conformance": "규격 적합성: 읽은 응답이 2026-07-28 규격의 필수·권장 사항을 지키는가. 수집 완전성과 별개이며 상태를 바꾸지 않음"
+    },
+    "definition_validation": {
+      "level": "limited_structure",
+      "checked": [
+        "name이 비어 있지 않은 문자열인가",
+        "inputSchema가 객체이고 루트 type이 \"object\"인가",
+        "title·description·outputSchema·annotations(및 힌트 자료형)·icons[].src·_meta의 기본 JSON 자료형"
+      ],
+      "not_checked": [
+        "inputSchema·outputSchema 전체의 JSON Schema 유효성 (2020-12·draft-07 키워드, 형식)",
+        "$ref·$defs·$anchor 해석",
+        "x-mcp-header 제약",
+        "outputSchema 내부 구조, annotations 의미, icons 접근 가능 여부"
+      ],
+      "note": "passed_limited_checks는 위 제한된 검사를 통과했다는 뜻일 뿐 정상 사용 가능한 Tool이라는 뜻이 아니다. failed_limited_checks 항목도 인벤토리 수집 대상이므로 오류 근거(definition_issues)와 함께 보존한다.",
+      "redaction_note": "비밀값 가림과 입력 정규화(토큰 모양·고립된 surrogate 키 이름, 인증정보가 있는 URL, 인증 이름 필드 값, 고립된 surrogate, 비유한 숫자)를 적용한 정의(definition_altered: true)는 서버가 보낸 원본과 달라질 수 있다. 키 이름이 바뀌면 이름을 가리키는 참조가 어긋날 수 있다(required는 같은 자리표시자로 맞추지만 그 밖의 참조는 맞추지 않는다). 가린 정의를 실행 가능한 원본 스키마로 보증하지 않으며 $ref는 문자열로만 저장하고 실행·조회하지 않고 접속하지 않는다. 가림 위치와 이유는 tools[].redactions에 있고 원문 값은 기록하지 않는다."
+    },
+    "note": "tools[]는 입력 파일의 응답에 적힌 Tool 정의를 옮긴 것입니다. 서버에 접속하지 않았으므로 실제 서버가 지금 이 목록을 반환하는지, Agent에 노출되는지, 호출할 수 있는지는 확인하지 않았습니다. 서버가 제공한 설명·메타데이터는 비신뢰 데이터로만 저장하며 실행하지 않습니다."
+  },
+  "collection": {
+    "status": "failed",
+    "outcome": "no_server_listed",
+    "server_count": 1,
+    "tool_count": 0,
+    "tool_count_complete": false,
+    "reasons": [
+      {
+        "code": "server_list_incomplete",
+        "server_index": 0,
+        "server_outcome": "protocol_version_unsupported",
+        "message": "이 서버의 tools/list 수집이 완전하지 않습니다. tool_count는 읽은 항목 수일 뿐 서버의 전체 Tool 수가 아닙니다."
+      }
+    ],
+    "spec_conformance": {
+      "checks": "limited",
+      "servers_with_violations": 0,
+      "servers_no_violations_found": 0,
+      "servers_not_evaluated": 1,
+      "violation_count": 0
+    }
+  },
+  "servers": [
+    {
+      "server_index": 0,
+      "server_ref": "fs-workspace",
+      "server_ref_kind": "capture_local_label",
+      "declared_protocol_version": "2025-11-25",
+      "collection_status": "failed",
+      "outcome": "protocol_version_unsupported",
+      "tool_count": null,
+      "pages": [],
+      "issues": [
+        {
+          "category": "completeness",
+          "severity": "error",
+          "code": "protocol_version_unsupported",
+          "message": "이 모듈은 MCP 2026-07-28 응답만 읽습니다. 다른 버전의 응답을 같은 구조로 가정하지 않습니다.",
+          "declared": "2025-11-25"
+        }
+      ],
+      "tools": [],
+      "redactions": [],
+      "spec_conformance": {
+        "status": "not_evaluated",
+        "checks": "limited",
+        "violation_count": 0,
+        "violations": [],
+        "recommendations_not_met": []
+      }
+    }
+  ]
+}

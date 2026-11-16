@@ -1,0 +1,242 @@
+<?xml version='1.0' encoding='utf-8'?>
+<testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="20" skipped="0" tests="45" time="2.416" timestamp="2026-11-13T13:47:07.891989+09:00"><testcase classname="tests.test_openclaw_direct" name="test_each_allowed_query_runs_exactly_its_argument_array" time="0.172"><failure message="assert (False)&#10; +  where False = all(&lt;generator object test_each_allowed_query_runs_exactly_its_argument_array.&lt;locals&gt;.&lt;genexpr&gt; at 0x000001ED24428BA0&gt;)">fake = namespace(cfg=&lt;function fake.&lt;locals&gt;.cfg at 0x000001ED25613CC0&gt;, calls=&lt;function fake.&lt;locals&gt;.calls at 0x000001ED256...f-ajou/pytest-26/test_each_allowed_query_runs_e0'), env=&lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001ED243F48A0&gt;)
+
+    def test_each_allowed_query_runs_exactly_its_argument_array(fake):
+        cfg = fake.cfg(expect_gateway_url=GW_URL, accept_skills_gateway_rpc=True)
+        results, ver = run_queries(cfg, ["plugins", "node-identity", "gateway-identity", "skills"])
+&gt;       assert all(r.failure is None for r in results.values()) and ver.failure is None
+E       assert (False)
+E        +  where False = all(&lt;generator object test_each_allowed_query_runs_exactly_its_argument_array.&lt;locals&gt;.&lt;genexpr&gt; at 0x000001ED24428BA0&gt;)
+
+tests\test_openclaw_direct.py:78: AssertionError</failure></testcase><testcase classname="tests.test_openclaw_direct" name="test_gateway_call_is_pinned_to_one_method_and_the_query_table_is_closed" time="0.000" /><testcase classname="tests.test_openclaw_direct" name="test_profile_and_dev_flags_go_before_the_subcommand_and_are_validated" time="0.002" /><testcase classname="tests.test_openclaw_direct" name="test_scope_paths_must_already_exist_and_reach_the_child_as_environment" time="0.046"><failure message="AssertionError: assert {'code': 'command_failed', 'message': '명령이 0이 아닌 종료 코드로 끝났습니다.', 'exit_code': 1, 'stderr_excerpt_sanitized': '������ ��θ� ã�� �� �����ϴ�.'} is None&#10; +  where {'code': 'command_failed', 'message': '명령이 0이 아닌 종료 코드로 끝났습니다.', 'exit_code': 1, 'stderr_excerpt_sanitized': '������ ��θ� ã�� �� �����ϴ�.'} = DirectResult(query='plugins', data=None, failure={'code': 'command_failed', 'message': '명령이 0이 아닌 종료 코드로 끝났습니다.', 'exi...se, 'limits': {'timeout_s': 20.0, 'max_stdout_bytes': 8388608, 'max_stderr_bytes': 65536}, 'raw_output_stored': False}).failure">fake = namespace(cfg=&lt;function fake.&lt;locals&gt;.cfg at 0x000001ED255C90C0&gt;, calls=&lt;function fake.&lt;locals&gt;.calls at 0x000001ED255...f-ajou/pytest-26/test_scope_paths_must_already_0'), env=&lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001ED255D6570&gt;)
+tmp_path = WindowsPath('&lt;LOCAL_PATH&gt;')
+
+    def test_scope_paths_must_already_exist_and_reach_the_child_as_environment(fake, tmp_path):
+        cfgfile, state, home = tmp_path / "openclaw.json5", tmp_path / "state", tmp_path / "home"
+        cfgfile.write_text("{}", encoding="utf-8")
+        state.mkdir(); home.mkdir()
+        assert validate_config(fake.cfg(config_path=tmp_path / "nope.json5"), ["plugins"])         # 새로 만들게 될 경로는 거부
+        assert validate_config(fake.cfg(state_dir=tmp_path / "nostate"), ["plugins"])
+        assert validate_config(fake.cfg(home=tmp_path / "nohome"), ["plugins"])
+        res = run_query(fake.cfg(config_path=cfgfile, state_dir=state, home=home, profile="stg"), "plugins")
+&gt;       assert res.failure is None
+E       AssertionError: assert {'code': 'command_failed', 'message': '명령이 0이 아닌 종료 코드로 끝났습니다.', 'exit_code': 1, 'stderr_excerpt_sanitized': '������ ��θ� ã�� �� �����ϴ�.'} is None
+E        +  where {'code': 'command_failed', 'message': '명령이 0이 아닌 종료 코드로 끝났습니다.', 'exit_code': 1, 'stderr_excerpt_sanitized': '������ ��θ� ã�� �� �����ϴ�.'} = DirectResult(query='plugins', data=None, failure={'code': 'command_failed', 'message': '명령이 0이 아닌 종료 코드로 끝났습니다.', 'exi...se, 'limits': {'timeout_s': 20.0, 'max_stdout_bytes': 8388608, 'max_stderr_bytes': 65536}, 'raw_output_stored': False}).failure
+
+tests\test_openclaw_direct.py:118: AssertionError</failure></testcase><testcase classname="tests.test_openclaw_direct" name="test_default_scope_is_reported_as_the_users_default_location" time="0.047" /><testcase classname="tests.test_openclaw_direct" name="test_refusals_never_start_a_process" time="0.002" /><testcase classname="tests.test_openclaw_direct" name="test_expect_url_must_be_a_plain_websocket_address[http://127.0.0.1:1]" time="0.002" /><testcase classname="tests.test_openclaw_direct" name="test_expect_url_must_be_a_plain_websocket_address[ws://h/x?token=1]" time="0.002" /><testcase classname="tests.test_openclaw_direct" name="test_expect_url_must_be_a_plain_websocket_address[ws://u:p@h/]" time="0.002" /><testcase classname="tests.test_openclaw_direct" name="test_expect_url_must_be_a_plain_websocket_address[ws://h/ a]" time="0.002" /><testcase classname="tests.test_openclaw_direct" name="test_expect_url_must_be_a_plain_websocket_address[ws://h;x]" time="0.002" /><testcase classname="tests.test_openclaw_direct" name="test_expect_url_must_be_a_plain_websocket_address[ws://h/%20]" time="0.002" /><testcase classname="tests.test_openclaw_direct" name="test_expect_url_must_be_a_plain_websocket_address[ws://h/&amp;x]" time="0.002" /><testcase classname="tests.test_openclaw_direct" name="test_expect_url_must_be_a_plain_websocket_address[file:///x]" time="0.002" /><testcase classname="tests.test_openclaw_direct" name="test_gateway_identity_can_be_accepted_without_pinning_and_is_marked_unverified" time="0.046"><failure message="AssertionError: assert {'code': 'command_failed', 'message': '명령이 0이 아닌 종료 코드로 끝났습니다.', 'exit_code': 1, 'stderr_excerpt_sanitized': '������ ��θ� ã�� �� �����ϴ�.'} is None&#10; +  where {'code': 'command_failed', 'message': '명령이 0이 아닌 종료 코드로 끝났습니다.', 'exit_code': 1, 'stderr_excerpt_sanitized': '������ ��θ� ã�� �� �����ϴ�.'} = DirectResult(query='gateway-identity', data=None, failure={'code': 'command_failed', 'message': '명령이 0이 아닌 종료 코드로 끝났습니... 'configured_by_openclaw_unverified', 'expect_url': None, 'gateway_method': 'gateway.identity.get', 'params': 'none'}}).failure">fake = namespace(cfg=&lt;function fake.&lt;locals&gt;.cfg at 0x000001ED2441D640&gt;, calls=&lt;function fake.&lt;locals&gt;.calls at 0x000001ED244...f-ajou/pytest-26/test_gateway_identity_can_be_a0'), env=&lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001ED24568890&gt;)
+
+    def test_gateway_identity_can_be_accepted_without_pinning_and_is_marked_unverified(fake):
+        res = run_query(fake.cfg(accept_configured_gateway=True), "gateway-identity")
+&gt;       assert res.failure is None
+E       AssertionError: assert {'code': 'command_failed', 'message': '명령이 0이 아닌 종료 코드로 끝났습니다.', 'exit_code': 1, 'stderr_excerpt_sanitized': '������ ��θ� ã�� �� �����ϴ�.'} is None
+E        +  where {'code': 'command_failed', 'message': '명령이 0이 아닌 종료 코드로 끝났습니다.', 'exit_code': 1, 'stderr_excerpt_sanitized': '������ ��θ� ã�� �� �����ϴ�.'} = DirectResult(query='gateway-identity', data=None, failure={'code': 'command_failed', 'message': '명령이 0이 아닌 종료 코드로 끝났습니... 'configured_by_openclaw_unverified', 'expect_url': None, 'gateway_method': 'gateway.identity.get', 'params': 'none'}}).failure
+
+tests\test_openclaw_direct.py:156: AssertionError</failure></testcase><testcase classname="tests.test_openclaw_direct" name="test_skills_list_requires_explicit_acknowledgement_and_records_it" time="0.026"><failure message="AssertionError: assert ({'code': 'command_failed', 'message': '명령이 0이 아닌 종료 코드로 끝났습니다.', 'exit_code': 1, 'stderr_excerpt_sanitized': '������ ��θ� ã�� �� �����ϴ�.'} is None)&#10; +  where {'code': 'command_failed', 'message': '명령이 0이 아닌 종료 코드로 끝났습니다.', 'exit_code': 1, 'stderr_excerpt_sanitized': '������ ��θ� ã�� �� �����ϴ�.'} = DirectResult(query='skills', data=None, failure={'code': 'command_failed', 'message': '명령이 0이 아닌 종료 코드로 끝났습니다.', 'exit...ax_stderr_bytes': 65536}, 'raw_output_stored': False, 'acknowledged_risk': 'skills_list_gateway_rpc', 'agent': 'main'}).failure">fake = namespace(cfg=&lt;function fake.&lt;locals&gt;.cfg at 0x000001ED2441CEB0&gt;, calls=&lt;function fake.&lt;locals&gt;.calls at 0x000001ED244...f-ajou/pytest-26/test_skills_list_requires_expl0'), env=&lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001ED2441CE10&gt;)
+
+    def test_skills_list_requires_explicit_acknowledgement_and_records_it(fake):
+        ok = run_query(fake.cfg(accept_skills_gateway_rpc=True, agent="main"), "skills")
+&gt;       assert ok.failure is None and ok.observation["acknowledged_risk"] == "skills_list_gateway_rpc" and ok.observation["uses_gateway"] is True
+E       AssertionError: assert ({'code': 'command_failed', 'message': '명령이 0이 아닌 종료 코드로 끝났습니다.', 'exit_code': 1, 'stderr_excerpt_sanitized': '������ ��θ� ã�� �� �����ϴ�.'} is None)
+E        +  where {'code': 'command_failed', 'message': '명령이 0이 아닌 종료 코드로 끝났습니다.', 'exit_code': 1, 'stderr_excerpt_sanitized': '������ ��θ� ã�� �� �����ϴ�.'} = DirectResult(query='skills', data=None, failure={'code': 'command_failed', 'message': '명령이 0이 아닌 종료 코드로 끝났습니다.', 'exit...ax_stderr_bytes': 65536}, 'raw_output_stored': False, 'acknowledged_risk': 'skills_list_gateway_rpc', 'agent': 'main'}).failure
+
+tests\test_openclaw_direct.py:166: AssertionError</failure></testcase><testcase classname="tests.test_openclaw_direct" name="test_missing_or_non_file_binary_is_rejected_and_never_searched_on_path" time="0.003" /><testcase classname="tests.test_openclaw_direct" name="test_only_base_scope_and_named_environment_reaches_the_child" time="0.046"><failure message="IndexError: list index out of range">fake = namespace(cfg=&lt;function fake.&lt;locals&gt;.cfg at 0x000001ED22693CC0&gt;, calls=&lt;function fake.&lt;locals&gt;.calls at 0x000001ED226...f-ajou/pytest-26/test_only_base_scope_and_named0'), env=&lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001ED25638D70&gt;)
+
+    def test_only_base_scope_and_named_environment_reaches_the_child(fake):
+        fake.env.setenv("FAKESECRET_PARENT", "FAKE-PARENT-SECRET")
+        fake.env.setenv("OPENCLAW_GATEWAY_TOKEN", "FAKE-GATEWAY-TOKEN-VALUE")
+        fake.env.setenv("OPENCLAW_CONFIG_PATH", "C:/should/not/leak.json5")
+        run_query(fake.cfg(), "plugins")
+&gt;       names = fake.calls()[-1]["interesting_env_names"]
+                ^^^^^^^^^^^^^^^^
+E       IndexError: list index out of range
+
+tests\test_openclaw_direct.py:188: IndexError</failure></testcase><testcase classname="tests.test_openclaw_direct" name="test_pass_env_cannot_override_scope_options[OPENCLAW_CONFIG_PATH]" time="0.002" /><testcase classname="tests.test_openclaw_direct" name="test_pass_env_cannot_override_scope_options[openclaw_state_dir]" time="0.002" /><testcase classname="tests.test_openclaw_direct" name="test_pass_env_cannot_override_scope_options[OPENCLAW_HOME]" time="0.002" /><testcase classname="tests.test_openclaw_direct" name="test_pass_env_cannot_override_scope_options[OPENCLAW_PROFILE]" time="0.002" /><testcase classname="tests.test_openclaw_direct" name="test_pass_env_cannot_override_scope_options[bad name]" time="0.002" /><testcase classname="tests.test_openclaw_direct" name="test_pass_env_cannot_override_scope_options[1ABC]" time="0.002" /><testcase classname="tests.test_openclaw_direct" name="test_pass_env_cannot_override_scope_options[]" time="0.002" /><testcase classname="tests.test_openclaw_direct" name="test_child_runs_in_a_neutral_directory_with_closed_stdin" time="0.025"><failure message="IndexError: list index out of range">fake = namespace(cfg=&lt;function fake.&lt;locals&gt;.cfg at 0x000001ED25612C40&gt;, calls=&lt;function fake.&lt;locals&gt;.calls at 0x000001ED256...f-ajou/pytest-26/test_child_runs_in_a_neutral_d0'), env=&lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001ED226EE3C0&gt;)
+
+    def test_child_runs_in_a_neutral_directory_with_closed_stdin(fake):
+        run_query(fake.cfg(), "plugins")
+&gt;       call = fake.calls()[-1]
+               ^^^^^^^^^^^^^^^^
+E       IndexError: list index out of range
+
+tests\test_openclaw_direct.py:204: IndexError</failure></testcase><testcase classname="tests.test_openclaw_direct" name="test_observation_records_command_version_scope_and_time_without_raw_output" time="0.092"><failure message="AssertionError: assert ('openclaw --p...s list --json' == 'openclaw --p...s list --json'&#10;  &#10;    openclaw --profile stg plugins list --json and False is False and 1 == 0)">fake = namespace(cfg=&lt;function fake.&lt;locals&gt;.cfg at 0x000001ED25612820&gt;, calls=&lt;function fake.&lt;locals&gt;.calls at 0x000001ED256...f-ajou/pytest-26/test_observation_records_comma0'), env=&lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001ED2442D160&gt;)
+
+    def test_observation_records_command_version_scope_and_time_without_raw_output(fake):
+        cfg = fake.cfg(profile="stg")
+        results, ver = run_queries(cfg, ["plugins"])
+        obs = results["plugins"].observation
+        assert obs["source_kind"] == "direct_query" and obs["executed_by_scanner"] is True and obs["verified_by_scanner"] is False
+&gt;       assert obs["command"] == "openclaw --profile stg plugins list --json" and obs["shell"] is False and obs["exit_code"] == 0
+E       AssertionError: assert ('openclaw --p...s list --json' == 'openclaw --p...s list --json'
+E         
+E           openclaw --profile stg plugins list --json and False is False and 1 == 0)
+
+tests\test_openclaw_direct.py:216: AssertionError</failure></testcase><testcase classname="tests.test_openclaw_direct" name="test_version_differences_are_flagged_and_can_be_required" time="0.048"><failure message="TypeError: 'NoneType' object is not subscriptable">fake = namespace(cfg=&lt;function fake.&lt;locals&gt;.cfg at 0x000001ED25611FE0&gt;, calls=&lt;function fake.&lt;locals&gt;.calls at 0x000001ED256...f-ajou/pytest-26/test_version_differences_are_f0'), env=&lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001ED2442DCC0&gt;)
+
+    def test_version_differences_are_flagged_and_can_be_required(fake):
+        ver = probe_version(fake.cfg("version_other"))
+        iv = ver.observation["installed_version"]
+&gt;       assert iv["version"] == "2026.10.1" and iv["version_matches_researched_basis"] is False and iv["researched_basis"] == "2026.9.6"
+               ^^^^^^^^^^^^^
+E       TypeError: 'NoneType' object is not subscriptable
+
+tests\test_openclaw_direct.py:227: TypeError</failure></testcase><testcase classname="tests.test_openclaw_direct" name="test_failure_modes_are_classified_without_storing_raw_output" time="0.048"><failure message="KeyError: 'stdout_error_json_keys'">fake = namespace(cfg=&lt;function fake.&lt;locals&gt;.cfg at 0x000001ED256117A0&gt;, calls=&lt;function fake.&lt;locals&gt;.calls at 0x000001ED256...f-ajou/pytest-26/test_failure_modes_are_classif0'), env=&lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001ED255C5A90&gt;)
+
+    def test_failure_modes_are_classified_without_storing_raw_output(fake):
+        r = run_query(fake.cfg("fail"), "plugins")
+        assert r.failure["code"] == "command_failed" and r.failure["exit_code"] == 1
+&gt;       assert r.failure["stdout_error_json_keys"] == ["code", "error", "ok"]                      # 키 이름만
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'stdout_error_json_keys'
+
+tests\test_openclaw_direct.py:241: KeyError</failure></testcase><testcase classname="tests.test_openclaw_direct" name="test_timeout_kills_the_process_tree_and_reports_it" time="0.047"><failure message="AssertionError: assert ('command_failed' == 'timeout'&#10;  &#10;  - timeout&#10;  + command_failed)">fake = namespace(cfg=&lt;function fake.&lt;locals&gt;.cfg at 0x000001ED25610E00&gt;, calls=&lt;function fake.&lt;locals&gt;.calls at 0x000001ED256...f-ajou/pytest-26/test_timeout_kills_the_process0'), env=&lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001ED255C69E0&gt;)
+
+    def test_timeout_kills_the_process_tree_and_reports_it(fake):
+        started = time.monotonic()
+        r = run_query(fake.cfg("slow", timeout_s=1.5), "plugins")
+&gt;       assert r.failure["code"] == "timeout" and r.observation["timed_out"] is True and r.observation["process_tree_killed"] is True
+E       AssertionError: assert ('command_failed' == 'timeout'
+E         
+E         - timeout
+E         + command_failed)
+
+tests\test_openclaw_direct.py:255: AssertionError</failure></testcase><testcase classname="tests.test_openclaw_direct" name="test_grandchild_processes_do_not_survive_a_timeout" time="0.047"><failure message="AssertionError: assert 'command_failed' == 'timeout'&#10;  &#10;  - timeout&#10;  + command_failed">fake = namespace(cfg=&lt;function fake.&lt;locals&gt;.cfg at 0x000001ED25610040&gt;, calls=&lt;function fake.&lt;locals&gt;.calls at 0x000001ED256...f-ajou/pytest-26/test_grandchild_processes_do_n0'), env=&lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001ED255C6580&gt;)
+
+    def test_grandchild_processes_do_not_survive_a_timeout(fake):
+        r = run_query(fake.cfg("grandchild", timeout_s=2.0), "plugins")
+&gt;       assert r.failure["code"] == "timeout"
+E       AssertionError: assert 'command_failed' == 'timeout'
+E         
+E         - timeout
+E         + command_failed
+
+tests\test_openclaw_direct.py:261: AssertionError</failure></testcase><testcase classname="tests.test_openclaw_direct" name="test_oversized_output_stops_the_process_and_discards_the_excess" time="0.047"><failure message="AssertionError: assert ('command_failed' == 'output_too_large'&#10;  &#10;  - output_too_large&#10;  + command_failed)">fake = namespace(cfg=&lt;function fake.&lt;locals&gt;.cfg at 0x000001ED255C8F60&gt;, calls=&lt;function fake.&lt;locals&gt;.calls at 0x000001ED255...f-ajou/pytest-26/test_oversized_output_stops_th0'), env=&lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001ED255C6190&gt;)
+
+    def test_oversized_output_stops_the_process_and_discards_the_excess(fake):
+        started = time.monotonic()
+        cfg = fake.cfg("huge", max_stdout_bytes=4096, timeout_s=20.0)
+        r = run_query(cfg, "plugins")
+&gt;       assert r.failure["code"] == "output_too_large" and r.observation["output_truncated"] is True and r.observation["process_tree_killed"] is True
+E       AssertionError: assert ('command_failed' == 'output_too_large'
+E         
+E         - output_too_large
+E         + command_failed)
+
+tests\test_openclaw_direct.py:272: AssertionError</failure></testcase><testcase classname="tests.test_openclaw_direct" name="test_stdout_limit_is_validated" time="0.002" /><testcase classname="tests.test_openclaw_direct" name="test_direct_plugins_list_flows_into_the_existing_parser_and_links_by_id_and_root" time="0.091"><failure message="TypeError: 'NoneType' object is not subscriptable">fake = namespace(cfg=&lt;function fake.&lt;locals&gt;.cfg at 0x000001ED255C8E00&gt;, calls=&lt;function fake.&lt;locals&gt;.calls at 0x000001ED255...f-ajou/pytest-26/test_direct_plugins_list_flows0'), env=&lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001ED255C6200&gt;)
+tmp_path = WindowsPath('&lt;LOCAL_PATH&gt;')
+
+    def test_direct_plugins_list_flows_into_the_existing_parser_and_links_by_id_and_root(fake, tmp_path):
+        d = make_plugin_dir(tmp_path)
+        fake.env.setenv("FAKE_PLUGIN_ROOT", str(d))
+        results, _ = run_queries(fake.cfg(), ["plugins"])
+        rep = assets_report(collect_assets([d], [], None, read_plugins_list_direct(results["plugins"]), None))
+        p = rep["plugins"][0]
+        ro = p["runtime_observation"]
+&gt;       assert ro["link_basis"] == "id_and_root_dir_match" and ro["observed"]["status"] == "loaded" and ro["registered_names"]["toolNames"] == ["call"]
+               ^^^^^^^^^^^^^^^^
+E       TypeError: 'NoneType' object is not subscriptable
+
+tests\test_openclaw_direct.py:298: TypeError</failure></testcase><testcase classname="tests.test_openclaw_direct" name="test_stored_and_direct_results_stay_distinguishable" time="0.091" /><testcase classname="tests.test_openclaw_direct" name="test_direct_failure_becomes_a_failed_input_not_an_empty_inventory" time="0.070"><failure message="AssertionError: assert ('direct_command_failed' == 'direct_output_not_json'&#10;  &#10;  - direct_output_not_json&#10;  + direct_command_failed)">fake = namespace(cfg=&lt;function fake.&lt;locals&gt;.cfg at 0x000001ED255CADA0&gt;, calls=&lt;function fake.&lt;locals&gt;.calls at 0x000001ED255...f-ajou/pytest-26/test_direct_failure_becomes_a_0'), env=&lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001ED255C6970&gt;)
+
+    def test_direct_failure_becomes_a_failed_input_not_an_empty_inventory(fake):
+        r = run_queries(fake.cfg("badjson"), ["plugins"])[0]["plugins"]
+        rep = assets_report(collect_assets([], [], None, read_plugins_list_direct(r), None))
+        assert rep["collection"]["status"] == "failed" and rep["stored_outputs"]["plugins_list"]["status"] == "failed"
+&gt;       assert rep["stored_outputs"]["plugins_list"]["issues"][0]["code"] == "direct_output_not_json" and rep["runtime_only"]["plugins"] == []
+E       AssertionError: assert ('direct_command_failed' == 'direct_output_not_json'
+E         
+E         - direct_output_not_json
+E         + direct_command_failed)
+
+tests\test_openclaw_direct.py:321: AssertionError</failure></testcase><testcase classname="tests.test_openclaw_direct" name="test_direct_skills_list_links_by_file_path" time="0.089"><failure message="TypeError: 'NoneType' object is not subscriptable">fake = namespace(cfg=&lt;function fake.&lt;locals&gt;.cfg at 0x000001ED255CB480&gt;, calls=&lt;function fake.&lt;locals&gt;.calls at 0x000001ED255...f-ajou/pytest-26/test_direct_skills_list_links_0'), env=&lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001ED255C5710&gt;)
+tmp_path = WindowsPath('&lt;LOCAL_PATH&gt;')
+
+    def test_direct_skills_list_links_by_file_path(fake, tmp_path):
+        sd = tmp_path / "greeter"
+        sd.mkdir()
+        (sd / "SKILL.md").write_text("---\nname: greeter\ndescription: d\n---\nbody", encoding="utf-8")
+        fake.env.setenv("FAKE_SKILL_FILE", str(sd / "SKILL.md"))
+        results, _ = run_queries(fake.cfg(accept_skills_gateway_rpc=True), ["skills"])
+        rep = assets_report(collect_assets([], [sd], None, None, read_skills_list_direct(results["skills"])))
+        s = rep["skills"][0]
+&gt;       assert s["runtime_observation"]["link_basis"] == "skill_file_path_match" and s["runtime_observation"]["observed"]["eligible"] is True
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: 'NoneType' object is not subscriptable
+
+tests\test_openclaw_direct.py:333: TypeError</failure></testcase><testcase classname="tests.test_openclaw_direct" name="test_secret_looking_values_in_direct_output_are_masked" time="0.089" /><testcase classname="tests.test_openclaw_direct" name="test_direct_identity_goes_through_the_identity_parser_with_its_own_origin" time="0.091"><failure message="AssertionError: assert ('observed_from_direct_query' == 'observed_from_direct_query'&#10;  &#10;    observed_from_direct_query and 'failed' == 'complete'&#10;  &#10;  - complete&#10;  + failed)">fake = namespace(cfg=&lt;function fake.&lt;locals&gt;.cfg at 0x000001ED25648510&gt;, calls=&lt;function fake.&lt;locals&gt;.calls at 0x000001ED256...f-ajou/pytest-26/test_direct_identity_goes_thro0'), env=&lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001ED255C6740&gt;)
+
+    def test_direct_identity_goes_through_the_identity_parser_with_its_own_origin(fake):
+        results, _ = run_queries(fake.cfg(expect_gateway_url=GW_URL), ["gateway-identity", "node-identity"])
+        rep = identity_report(collect_identities([("gw", results["gateway-identity"])], [("nd", results["node-identity"])], {"gw": "2026-11-12T00:00:00Z"}))
+        g, n = rep["identities"]
+&gt;       assert g["origin"] == n["origin"] == "observed_from_direct_query" and g["collection_status"] == n["collection_status"] == "complete"
+E       AssertionError: assert ('observed_from_direct_query' == 'observed_from_direct_query'
+E         
+E           observed_from_direct_query and 'failed' == 'complete'
+E         
+E         - complete
+E         + failed)
+
+tests\test_openclaw_direct.py:347: AssertionError</failure></testcase><testcase classname="tests.test_openclaw_direct" name="test_direct_identity_failures_are_reported_per_item" time="0.058" /><testcase classname="tests.test_openclaw_direct" name="test_linking_keeps_direct_and_user_provided_identity_apart_and_rejects_unknown_origin" time="0.051"><failure message="KeyError: 'observed_identity'">fake = namespace(cfg=&lt;function fake.&lt;locals&gt;.cfg at 0x000001ED25648F60&gt;, calls=&lt;function fake.&lt;locals&gt;.calls at 0x000001ED256...f-ajou/pytest-26/test_linking_keeps_direct_and_0'), env=&lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001ED255C74D0&gt;)
+tmp_path = WindowsPath('&lt;LOCAL_PATH&gt;')
+
+    def test_linking_keeps_direct_and_user_provided_identity_apart_and_rejects_unknown_origin(fake, tmp_path):
+        from asset_scanner.collector import SUPPORTED_REGISTRY_PATHS, collect
+        from asset_scanner.report import build_report as config_report
+        from asset_scanner.tools_catalog import build_catalog_report, collect_tools_catalog
+        cfg = tmp_path / "c.json5"
+        cfg.write_text('{ mcp: { servers: { files: { command: "demo" } } } }', encoding="utf-8")
+        scan = tmp_path / "scan.json"
+        scan.write_text(json.dumps(config_report(collect(cfg, SUPPORTED_REGISTRY_PATHS["mcp.servers"]))), encoding="utf-8")
+        cap = tmp_path / "cap.json"
+        cap.write_text(json.dumps({"servers": [{"server_ref": "a", "protocol_version": "2026-07-28", "registration_key": "files", "registry_path": "mcp.servers",
+                                                "config_scan_ref": "gw", "pages": [{"result": {"resultType": "complete", "tools": [], "ttlMs": 1, "cacheScope": "public"}}]}]}),
+                       encoding="utf-8")
+        cat = tmp_path / "cat.json"
+        cat.write_text(json.dumps(build_catalog_report(collect_tools_catalog(cap))), encoding="utf-8")
+        r = run_queries(fake.cfg(expect_gateway_url=GW_URL), ["gateway-identity"])[0]["gateway-identity"]
+        ident = tmp_path / "ident.json"
+        ident.write_text(dump(identity_report(collect_identities([(None, r)], [], {}))), encoding="utf-8")
+        rep = link([("gw", scan)], [("obs", cat)], [{"scan_label": "gw", "kind": "gateway", "id": "user-typed-id"}], [{"scan_label": "gw", "path": ident}])
+        subj = rep["declarations"][0]["declaring_subject"]
+        assert subj["id"] == "user-typed-id" and subj["id_origin"] == "user_provided"
+&gt;       oi = subj["observed_identity"]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'observed_identity'
+
+tests\test_openclaw_direct.py:389: KeyError</failure></testcase><testcase classname="tests.test_openclaw_direct" name="test_cli_openclaw_direct_summary_has_no_raw_output" time="0.173"><failure message="AssertionError: assert (1 == 0)&#10; +  where 1 = CompletedProcess(args=['&lt;LOCAL_PATH&gt;', stderr='').returncode">fake = namespace(cfg=&lt;function fake.&lt;locals&gt;.cfg at 0x000001ED256496F0&gt;, calls=&lt;function fake.&lt;locals&gt;.calls at 0x000001ED256...f-ajou/pytest-26/test_cli_openclaw_direct_summa0'), env=&lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001ED255C7C40&gt;)
+tmp_path = WindowsPath('&lt;LOCAL_PATH&gt;')
+
+    def test_cli_openclaw_direct_summary_has_no_raw_output(fake, tmp_path):
+        fake.env.setenv("FAKE_OPENCLAW_MODE", "secrets")
+        out = tmp_path / "o.json"
+        p = cli("openclaw_direct", "--openclaw-bin", fake.shim, *pass_args(), "--query", "plugins", "--query", "node-identity", "--output", out)
+&gt;       assert p.returncode == 0 and "출력 원문 저장 없음" in p.stdout
+E       AssertionError: assert (1 == 0)
+E        +  where 1 = CompletedProcess(args=['&lt;LOCAL_PATH&gt;', stderr='').returncode
+
+tests\test_openclaw_direct.py:419: AssertionError</failure></testcase><testcase classname="tests.test_openclaw_direct" name="test_cli_plugin_skill_assets_direct_query_end_to_end" time="0.150"><failure message="AssertionError: &#10;assert 1 == 0&#10; +  where 1 = CompletedProcess(args=['&lt;LOCAL_PATH&gt;', stderr='').returncode">fake = namespace(cfg=&lt;function fake.&lt;locals&gt;.cfg at 0x000001ED2564A400&gt;, calls=&lt;function fake.&lt;locals&gt;.calls at 0x000001ED256...f-ajou/pytest-26/test_cli_plugin_skill_assets_d0'), env=&lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001ED256A8280&gt;)
+tmp_path = WindowsPath('&lt;LOCAL_PATH&gt;')
+
+    def test_cli_plugin_skill_assets_direct_query_end_to_end(fake, tmp_path):
+        d = make_plugin_dir(tmp_path)
+        fake.env.setenv("FAKE_PLUGIN_ROOT", str(d))
+        out = tmp_path / "assets.json"
+        ok = cli("plugin_skill_assets", "--plugin-dir", d, "--openclaw-query", "plugins", "--openclaw-bin", fake.shim, *pass_args(), "--output", out)
+&gt;       assert ok.returncode == 0, ok.stderr
+E       AssertionError: 
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['&lt;LOCAL_PATH&gt;', stderr='').returncode
+
+tests\test_openclaw_direct.py:433: AssertionError</failure></testcase><testcase classname="tests.test_openclaw_direct" name="test_cli_identity_direct_query_end_to_end" time="0.170"><failure message="AssertionError: &#10;assert 3 == 0&#10; +  where 3 = CompletedProcess(args=['&lt;LOCAL_PATH&gt;', stderr='').returncode">fake = namespace(cfg=&lt;function fake.&lt;locals&gt;.cfg at 0x000001ED2564AFB0&gt;, calls=&lt;function fake.&lt;locals&gt;.calls at 0x000001ED256...f-ajou/pytest-26/test_cli_identity_direct_query0'), env=&lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001ED256A8360&gt;)
+tmp_path = WindowsPath('&lt;LOCAL_PATH&gt;')
+
+    def test_cli_identity_direct_query_end_to_end(fake, tmp_path):
+        out = tmp_path / "id.json"
+        ok = cli("node_gateway_identity", "--query-gateway-identity", "gw", "--query-node-identity", "--expect-gateway-url", GW_URL,
+                 "--openclaw-bin", fake.shim, *pass_args(), "--output", out)
+&gt;       assert ok.returncode == 0, ok.stderr
+E       AssertionError: 
+E       assert 3 == 0
+E        +  where 3 = CompletedProcess(args=['&lt;LOCAL_PATH&gt;', stderr='').returncode
+
+tests\test_openclaw_direct.py:453: AssertionError</failure></testcase><testcase classname="tests.test_openclaw_direct" name="test_no_raw_cli_output_is_written_anywhere" time="0.168" /></testsuite></testsuites>

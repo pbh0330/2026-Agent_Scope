@@ -1,5 +1,7 @@
 # QA 테스트 케이스
 
+> 2026-11-16: PR #24 Ground Truth를 기존 TC에 적용하는 세부 입력·판정 기준을 11절에 추가했다. 기존 43개 TC ID를 유지한다.
+
 ## 1. 공통 기록 규칙
 
 - 실제 실행 결과는 `QA_실행결과.md`에 기록한다.
@@ -112,6 +114,8 @@
 - 입력: 8종 자산이 각각 하나 이상 존재하는 테스트 환경
 - 기대 결과: Gateway, Node, MCP Server, Tool, Resource/Template/Prompt, Skill, Plugin, Permission/Auth가 유형을 보존해 수집된다.
 - 확인 사항: resource_prompt의 resource/resource_template/prompt, permission_auth의 permission/authentication을 asset_subtype으로 구분한다. Credential·Host·Client·Agent를 별도 아홉 번째 수집 유형으로 만들지 않는다. 미지원 유형은 정상 0건으로 처리하지 않으며 미구현 때문에 검증할 수 없는 조건은 Blocked로 기록한다.
+
+- SNAP-1 기준선 확인: 내장 Plugin·Skill의 포함·제외 범위와 설치·활성·ready 상태별 집계 기준을 먼저 합의한다. 사용자 추가 자산 0건을 전체 자산 0건으로 처리하지 않고, 포함 대상만 정답·출력에서 같은 범위로 비교한다. 합의된 제외와 미지원·조회 실패를 구분한다. 집계 기준이 미합의이면 해당 조건은 Blocked로 남기며 PR #9 보고 수치를 직접 검증한 기대 수로 대입하지 않는다.
 
 ### QA-COL-02 Gateway·Node 분산 설정 수집
 
@@ -323,3 +327,21 @@
 - 사전 조건: k, 경계 처리와 허용 오차를 토큰 담당자와 확정한다. 미합의 경계 조건만 Blocked로 기록하고 나머지 매핑·표시 검증은 진행한다.
 
 PR #18 기준 인수 자료: [#7 시나리오·기대 결과](https://github.com/pbh0330/2026-Agent_Scope/tree/f3945331e1faa7505f63dbeeafe2a6aad4811bad/docs/threat-scenarios)와 #13의 기존 정적 탐지·비교 경로를 사용한다. 위 로컬 후보 자료는 과거 준비 근거이며 실행 기준을 대신하지 않는다. 실제 적용 파일·commit·정책/규칙 버전과 합의된 조건을 실행마다 고정한다.
+
+## 11. PR #24 Ground Truth 기반 세부 확인 (2026-11-16)
+
+공통 입력은 [원천 확인 정리](reports/QA_GroundTruth_확인정리_20261116.md)의 고정 commit `444f558893315e6c3a02e0a29d3d1dfe5f5a7bdb`다. 아래는 기존 TC의 구체화이며 새 TC나 실행 결과가 아니다. 기존 합격 조건도 함께 확인한다.
+
+| 기존 TC | 추가 입력·확인 조건 |
+|---|---|
+| QA-SCHEMA-05 | P2에 각 위협 차분을 독립 적용한다. S1-T5의 Server 삭제·추가와 관계 재연결, changed_assets의 before/after, summary 일치·중복·참조 무결성을 확인한다. 원천 구조 확인과 출력 ID 매핑·전체 계약 검사를 분리한다. |
+| QA-COL-01, QA-INT-01 | P0 17/16·P1 57/56·P2 67/67 원천 집계를 사용한다. 내장 제외와 정책/인증 추가 범위를 구분하고 원천→가공→화면 차이의 근거를 기록한다. |
+| QA-COL-10, QA-REL-01 | inventory-remote의 Gateway 선언·Node 실행을 보존한다. Plugin manifest 등록 서버를 확인하고 원천 ASSOCIATED_WITH와 공통 소속/관계의 변환 근거를 기록한다. |
+| QA-S1-01 | S1-C1 대상 2개, C2 endpoint 변경, C3 Plugin 등록 서버를 구분한다. S1-T5는 C4 선언 위치 이상이며 C1 미승인 서버로 오판하지 않는다. notes-sync 노출 null을 유지한다. |
+| QA-S2-01, QA-INT-02 | fs-workspace 홈 범위 확대와 demo 필터 제거를 구분한다. get-env·gzip-file-as-resource 노출 false→true와 정의를 확인한다. 광고·필터 일치만으로 실제 실행 성공을 확정하지 않는다. |
+| QA-S3-01 | read_text_file 정의 차이와 catalog_search 정의 동일을 각각 확인한다. inputSchema draft-07 래퍼 정규화 규칙을 기록하고 서버별 ID·owner_ref를 유지한다. |
+| QA-S4-01, QA-SCHEMA-03 | 동일 Gateway 저장소의 공유 참조는 S4-C1, 다른 Node 저장소의 같은 이름은 S4-C2 unknown으로 구분한다. 실제 비밀값 비교 없이 동일성을 확정하지 않는다. |
+| QA-S5-01, QA-S5-02, QA-INT-02 | T1 HTTP, T2 명시적 sslVerify=false, T3 생략을 각각 입력한다. T3는 S5-C3 unknown이며 C2 경고를 내면 실패다. 정상 HTTPS와 미확인을 구분한다. |
+| QA-SCHEMA-03, QA-INT-02 | P0 Tool 광고 14개·노출 2개와 Plugin 도구의 null을 보존한다. MCP 기준 버전과 실제 협상 버전을 별도 기록한다. |
+
+기대 경고는 구성·condition_id·target 단위로 대조하고 required:false를 필수 경고 분모에 더하지 않는다. expected_no_alert의 시나리오 범위를 지키며 unknown과 not_applicable을 구분한다. S1~S4 저장 실측 자료 기반 검사와 S1-T5·S5 설정 사본 검사를 결과에 명시하고, 어느 쪽도 이번 실행에서 VM을 재수집한 것으로 기록하지 않는다.

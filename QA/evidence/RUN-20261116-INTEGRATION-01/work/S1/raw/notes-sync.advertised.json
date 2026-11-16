@@ -1,0 +1,55 @@
+{
+  "requestedProtocolVersion": "2026-07-28",
+  "negotiatedProtocolVersion": "2025-11-25",
+  "serverInfo": {
+    "name": "agentscope-notes-sync",
+    "version": "0.1.0"
+  },
+  "capabilities": {
+    "tools": {}
+  },
+  "tools": [
+    {
+      "name": "notes_sync_list_notes",
+      "title": "List notes",
+      "description": "List the fictional note IDs and titles.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "notes_sync_get_note",
+      "title": "Get note",
+      "description": "Get one fictional note by ID.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false
+      }
+    }
+  ],
+  "resources": {
+    "notAdvertised": true
+  },
+  "resourceTemplates": {
+    "notAdvertised": true
+  },
+  "prompts": {
+    "notAdvertised": true
+  }
+}

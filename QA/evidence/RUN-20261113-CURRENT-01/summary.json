@@ -1,0 +1,312 @@
+{
+  "commit": "0b2ff6bb2dd2f87e95550223008050e960cd07af",
+  "runs": [
+    {
+      "file": "test_collector.py",
+      "exit_code": 0,
+      "suites": [
+        {
+          "tests": "22",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "0.092"
+        }
+      ]
+    },
+    {
+      "file": "test_console_encoding.py",
+      "exit_code": 0,
+      "suites": [
+        {
+          "tests": "4",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "0.497"
+        }
+      ]
+    },
+    {
+      "file": "test_key_collision.py",
+      "exit_code": 0,
+      "suites": [
+        {
+          "tests": "7",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "0.130"
+        }
+      ]
+    },
+    {
+      "file": "test_linking.py",
+      "exit_code": 0,
+      "suites": [
+        {
+          "tests": "83",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "1.794"
+        }
+      ]
+    },
+    {
+      "file": "test_live_discovery.py",
+      "exit_code": 0,
+      "suites": [
+        {
+          "tests": "60",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "45.617"
+        }
+      ]
+    },
+    {
+      "file": "test_live_https.py",
+      "exit_code": 0,
+      "suites": [
+        {
+          "tests": "32",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "27.451"
+        }
+      ]
+    },
+    {
+      "file": "test_live_tools.py",
+      "exit_code": 1,
+      "suites": [
+        {
+          "tests": "34",
+          "failures": "1",
+          "errors": "0",
+          "skipped": "0",
+          "time": "53.078"
+        }
+      ]
+    },
+    {
+      "file": "test_node_gateway_identity.py",
+      "exit_code": 0,
+      "suites": [
+        {
+          "tests": "33",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "1.039"
+        }
+      ]
+    },
+    {
+      "file": "test_openclaw_direct.py",
+      "exit_code": 1,
+      "suites": [
+        {
+          "tests": "45",
+          "failures": "20",
+          "errors": "0",
+          "skipped": "0",
+          "time": "2.299"
+        }
+      ]
+    },
+    {
+      "file": "test_permission_auth.py",
+      "exit_code": 0,
+      "suites": [
+        {
+          "tests": "18",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "0.684"
+        }
+      ]
+    },
+    {
+      "file": "test_plugin_manifest.py",
+      "exit_code": 0,
+      "suites": [
+        {
+          "tests": "13",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "0.418"
+        }
+      ]
+    },
+    {
+      "file": "test_plugin_skill_assets.py",
+      "exit_code": 0,
+      "suites": [
+        {
+          "tests": "30",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "0.636"
+        }
+      ]
+    },
+    {
+      "file": "test_policy_fields.py",
+      "exit_code": 0,
+      "suites": [
+        {
+          "tests": "26",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "0.104"
+        }
+      ]
+    },
+    {
+      "file": "test_pr5_feedback.py",
+      "exit_code": 0,
+      "suites": [
+        {
+          "tests": "31",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "0.119"
+        }
+      ]
+    },
+    {
+      "file": "test_protocol_2025.py",
+      "exit_code": 0,
+      "suites": [
+        {
+          "tests": "22",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "0.527"
+        }
+      ]
+    },
+    {
+      "file": "test_registry_path.py",
+      "exit_code": 0,
+      "suites": [
+        {
+          "tests": "26",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "0.453"
+        }
+      ]
+    },
+    {
+      "file": "test_resources_prompts.py",
+      "exit_code": 0,
+      "suites": [
+        {
+          "tests": "53",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "0.821"
+        }
+      ]
+    },
+    {
+      "file": "test_review_fixes.py",
+      "exit_code": 0,
+      "suites": [
+        {
+          "tests": "31",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "0.148"
+        }
+      ]
+    },
+    {
+      "file": "test_safety.py",
+      "exit_code": 0,
+      "suites": [
+        {
+          "tests": "6",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "0.635"
+        }
+      ]
+    },
+    {
+      "file": "test_secrets.py",
+      "exit_code": 0,
+      "suites": [
+        {
+          "tests": "4",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "0.291"
+        }
+      ]
+    },
+    {
+      "file": "test_tools_catalog.py",
+      "exit_code": 0,
+      "suites": [
+        {
+          "tests": "48",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "0.765"
+        }
+      ]
+    },
+    {
+      "file": "test_v5_review_fixes.py",
+      "exit_code": 0,
+      "suites": [
+        {
+          "tests": "43",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "2.287"
+        }
+      ]
+    },
+    {
+      "file": "test_v7_review_fixes.py",
+      "exit_code": 0,
+      "suites": [
+        {
+          "tests": "41",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0",
+          "time": "27.552"
+        }
+      ]
+    }
+  ],
+  "totals": {
+    "tests": 712,
+    "failures": 21,
+    "errors": 0,
+    "skipped": 0
+  },
+  "passed": 691,
+  "execution_mode": "sequential per test file; not a single pytest invocation"
+}

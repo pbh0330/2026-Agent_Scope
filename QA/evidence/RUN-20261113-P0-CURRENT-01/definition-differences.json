@@ -1,0 +1,142 @@
+[
+  {
+    "path": "/0/inputSchema/$schema",
+    "source": "http://json-schema.org/draft-07/schema#",
+    "output": "http://json-schema.org/draft-07/schema"
+  },
+  {
+    "path": "/0/outputSchema/$schema",
+    "source": "http://json-schema.org/draft-07/schema#",
+    "output": "http://json-schema.org/draft-07/schema"
+  },
+  {
+    "path": "/1/inputSchema/$schema",
+    "source": "http://json-schema.org/draft-07/schema#",
+    "output": "http://json-schema.org/draft-07/schema"
+  },
+  {
+    "path": "/1/outputSchema/$schema",
+    "source": "http://json-schema.org/draft-07/schema#",
+    "output": "http://json-schema.org/draft-07/schema"
+  },
+  {
+    "path": "/2/inputSchema/$schema",
+    "source": "http://json-schema.org/draft-07/schema#",
+    "output": "http://json-schema.org/draft-07/schema"
+  },
+  {
+    "path": "/2/outputSchema/$schema",
+    "source": "http://json-schema.org/draft-07/schema#",
+    "output": "http://json-schema.org/draft-07/schema"
+  },
+  {
+    "path": "/3/inputSchema/$schema",
+    "source": "http://json-schema.org/draft-07/schema#",
+    "output": "http://json-schema.org/draft-07/schema"
+  },
+  {
+    "path": "/3/outputSchema/$schema",
+    "source": "http://json-schema.org/draft-07/schema#",
+    "output": "http://json-schema.org/draft-07/schema"
+  },
+  {
+    "path": "/4/inputSchema/$schema",
+    "source": "http://json-schema.org/draft-07/schema#",
+    "output": "http://json-schema.org/draft-07/schema"
+  },
+  {
+    "path": "/4/outputSchema/$schema",
+    "source": "http://json-schema.org/draft-07/schema#",
+    "output": "http://json-schema.org/draft-07/schema"
+  },
+  {
+    "path": "/5/inputSchema/$schema",
+    "source": "http://json-schema.org/draft-07/schema#",
+    "output": "http://json-schema.org/draft-07/schema"
+  },
+  {
+    "path": "/5/outputSchema/$schema",
+    "source": "http://json-schema.org/draft-07/schema#",
+    "output": "http://json-schema.org/draft-07/schema"
+  },
+  {
+    "path": "/6/inputSchema/$schema",
+    "source": "http://json-schema.org/draft-07/schema#",
+    "output": "http://json-schema.org/draft-07/schema"
+  },
+  {
+    "path": "/6/outputSchema/$schema",
+    "source": "http://json-schema.org/draft-07/schema#",
+    "output": "http://json-schema.org/draft-07/schema"
+  },
+  {
+    "path": "/7/inputSchema/$schema",
+    "source": "http://json-schema.org/draft-07/schema#",
+    "output": "http://json-schema.org/draft-07/schema"
+  },
+  {
+    "path": "/7/outputSchema/$schema",
+    "source": "http://json-schema.org/draft-07/schema#",
+    "output": "http://json-schema.org/draft-07/schema"
+  },
+  {
+    "path": "/8/inputSchema/$schema",
+    "source": "http://json-schema.org/draft-07/schema#",
+    "output": "http://json-schema.org/draft-07/schema"
+  },
+  {
+    "path": "/8/outputSchema/$schema",
+    "source": "http://json-schema.org/draft-07/schema#",
+    "output": "http://json-schema.org/draft-07/schema"
+  },
+  {
+    "path": "/9/inputSchema/$schema",
+    "source": "http://json-schema.org/draft-07/schema#",
+    "output": "http://json-schema.org/draft-07/schema"
+  },
+  {
+    "path": "/9/outputSchema/$schema",
+    "source": "http://json-schema.org/draft-07/schema#",
+    "output": "http://json-schema.org/draft-07/schema"
+  },
+  {
+    "path": "/10/inputSchema/$schema",
+    "source": "http://json-schema.org/draft-07/schema#",
+    "output": "http://json-schema.org/draft-07/schema"
+  },
+  {
+    "path": "/10/outputSchema/$schema",
+    "source": "http://json-schema.org/draft-07/schema#",
+    "output": "http://json-schema.org/draft-07/schema"
+  },
+  {
+    "path": "/11/inputSchema/$schema",
+    "source": "http://json-schema.org/draft-07/schema#",
+    "output": "http://json-schema.org/draft-07/schema"
+  },
+  {
+    "path": "/11/outputSchema/$schema",
+    "source": "http://json-schema.org/draft-07/schema#",
+    "output": "http://json-schema.org/draft-07/schema"
+  },
+  {
+    "path": "/12/inputSchema/$schema",
+    "source": "http://json-schema.org/draft-07/schema#",
+    "output": "http://json-schema.org/draft-07/schema"
+  },
+  {
+    "path": "/12/outputSchema/$schema",
+    "source": "http://json-schema.org/draft-07/schema#",
+    "output": "http://json-schema.org/draft-07/schema"
+  },
+  {
+    "path": "/13/inputSchema/$schema",
+    "source": "http://json-schema.org/draft-07/schema#",
+    "output": "http://json-schema.org/draft-07/schema"
+  },
+  {
+    "path": "/13/outputSchema/$schema",
+    "source": "http://json-schema.org/draft-07/schema#",
+    "output": "http://json-schema.org/draft-07/schema"
+  }
+]

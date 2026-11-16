@@ -1,0 +1,1543 @@
+{
+  "profile": "P2",
+  "snapshot": "SNAP-2-P2",
+  "environment": {
+    "openclaw_version": "2026.9.6",
+    "mcp_spec_version": "2026-07-28"
+  },
+  "scope": "테스트베드가 추가한 자산만 포함. 내장(stock) 플러그인 63종·스킬 57종은 제외(testbed/baseline/SNAP-1 참조)",
+  "summary": {
+    "asset_counts": {
+      "gateway": 1,
+      "node": 1,
+      "plugin": 1,
+      "mcp_server": 5,
+      "tool": 40,
+      "resource": 11,
+      "prompt": 5,
+      "skill": 3
+    },
+    "relation_count": 67
+  },
+  "assets": [
+    {
+      "asset_key": "tb-gw/gateway",
+      "asset_type": "gateway",
+      "declared_at": "tb-gw:~/.openclaw/openclaw.json",
+      "layer": "declared",
+      "attributes": {
+        "device_id": "e3e14de2813332ecf443e9e8400ad142f50d89b3af238d162826b31785eddaa4",
+        "identity_source": "openclaw gateway call gateway.identity.get --json",
+        "bind": "lan",
+        "port": 18789,
+        "auth_mode": "token"
+      }
+    },
+    {
+      "asset_key": "tb-node/node",
+      "asset_type": "node",
+      "declared_at": "tb-node:~/.openclaw/state/openclaw.sqlite#nodeHost.config",
+      "layer": "declared",
+      "attributes": {
+        "device_id": "b8cd252a851642463b068cdb75c716c7e472114557924c8e472355e0848da921",
+        "identity_source": "openclaw node identity --json",
+        "pairing_record": "tb-gw:openclaw devices list --json#paired[deviceId]"
+      }
+    },
+    {
+      "asset_key": "tb-gw/plugin/agentscope-asset-catalog",
+      "asset_type": "plugin",
+      "declared_at": "tb-gw:~/.openclaw/extensions/agentscope-asset-catalog",
+      "layer": "declared",
+      "attributes": {
+        "install_source": "local path (openclaw plugins install ./agentscope-asset-catalog)",
+        "config_entry": "plugins.entries.agentscope-asset-catalog",
+        "enabled": true
+      }
+    },
+    {
+      "asset_key": "tb-gw/mcp_server/fs-workspace",
+      "asset_type": "mcp_server",
+      "declared_at": "tb-gw:~/.openclaw/openclaw.json#mcp.servers.fs-workspace",
+      "layer": "declared",
+      "attributes": {
+        "transport": "stdio",
+        "negotiated_protocol_version": "2025-11-25",
+        "server_info": {
+          "name": "secure-filesystem-server",
+          "version": "0.2.0"
+        },
+        "command": "mcp-server-filesystem",
+        "args": [
+          "/home/<TB_USER>/workspace"
+        ],
+        "runs_on": "tb-gw",
+        "tool_filter": {
+          "include": [
+            "read_text_file",
+            "list_directory"
+          ]
+        }
+      }
+    },
+    {
+      "asset_key": "fs-workspace/tool/read_file",
+      "asset_type": "tool",
+      "declared_at": "fs-workspace:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": false,
+        "not_exposed_reason": "toolFilter.include",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "fs-workspace/tool/read_text_file",
+      "asset_type": "tool",
+      "declared_at": "fs-workspace:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": true,
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "fs-workspace/tool/read_media_file",
+      "asset_type": "tool",
+      "declared_at": "fs-workspace:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": false,
+        "not_exposed_reason": "toolFilter.include",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "fs-workspace/tool/read_multiple_files",
+      "asset_type": "tool",
+      "declared_at": "fs-workspace:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": false,
+        "not_exposed_reason": "toolFilter.include",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "fs-workspace/tool/write_file",
+      "asset_type": "tool",
+      "declared_at": "fs-workspace:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": false,
+        "not_exposed_reason": "toolFilter.include",
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": true,
+          "destructiveHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "fs-workspace/tool/edit_file",
+      "asset_type": "tool",
+      "declared_at": "fs-workspace:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": false,
+        "not_exposed_reason": "toolFilter.include",
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": false,
+          "destructiveHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "fs-workspace/tool/create_directory",
+      "asset_type": "tool",
+      "declared_at": "fs-workspace:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": false,
+        "not_exposed_reason": "toolFilter.include",
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": true,
+          "destructiveHint": false,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "fs-workspace/tool/list_directory",
+      "asset_type": "tool",
+      "declared_at": "fs-workspace:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": true,
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "fs-workspace/tool/list_directory_with_sizes",
+      "asset_type": "tool",
+      "declared_at": "fs-workspace:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": false,
+        "not_exposed_reason": "toolFilter.include",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "fs-workspace/tool/directory_tree",
+      "asset_type": "tool",
+      "declared_at": "fs-workspace:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": false,
+        "not_exposed_reason": "toolFilter.include",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "fs-workspace/tool/move_file",
+      "asset_type": "tool",
+      "declared_at": "fs-workspace:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": false,
+        "not_exposed_reason": "toolFilter.include",
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": false,
+          "destructiveHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "fs-workspace/tool/search_files",
+      "asset_type": "tool",
+      "declared_at": "fs-workspace:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": false,
+        "not_exposed_reason": "toolFilter.include",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "fs-workspace/tool/get_file_info",
+      "asset_type": "tool",
+      "declared_at": "fs-workspace:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": false,
+        "not_exposed_reason": "toolFilter.include",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "fs-workspace/tool/list_allowed_directories",
+      "asset_type": "tool",
+      "declared_at": "fs-workspace:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": false,
+        "not_exposed_reason": "toolFilter.include",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "tb-gw/mcp_server/inventory-remote",
+      "asset_type": "mcp_server",
+      "declared_at": "tb-gw:~/.openclaw/openclaw.json#mcp.servers.inventory-remote",
+      "layer": "declared",
+      "attributes": {
+        "transport": "streamable-http",
+        "negotiated_protocol_version": "2025-11-25",
+        "server_info": {
+          "name": "agentscope-inventory-remote",
+          "version": "0.1.0"
+        },
+        "url": "https://tb-node:8443/mcp",
+        "ssl_verify": true,
+        "runs_on": "tb-node",
+        "credential_ref": {
+          "env_ref": "INVENTORY_MCP_TOKEN",
+          "store": "tb-gw:~/.openclaw/.env",
+          "used_in": "headers.Authorization"
+        }
+      }
+    },
+    {
+      "asset_key": "inventory-remote/tool/inventory_list_hosts",
+      "asset_type": "tool",
+      "declared_at": "inventory-remote:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": true,
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "inventory-remote/tool/inventory_get_host",
+      "asset_type": "tool",
+      "declared_at": "inventory-remote:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": true,
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "inventory-remote/resource/inventory://hosts",
+      "asset_type": "resource",
+      "declared_at": "inventory-remote:resources/list",
+      "layer": "advertised",
+      "attributes": {
+        "name": "inventory-hosts"
+      }
+    },
+    {
+      "asset_key": "inventory-remote/prompt/inventory_owner_report",
+      "asset_type": "prompt",
+      "declared_at": "inventory-remote:prompts/list",
+      "layer": "advertised",
+      "attributes": {
+        "name": "inventory_owner_report"
+      }
+    },
+    {
+      "asset_key": "tb-node/mcp_server/kg-memory",
+      "asset_type": "mcp_server",
+      "declared_at": "tb-node:~/.openclaw/openclaw.json#nodeHost.mcp.servers.kg-memory",
+      "layer": "declared",
+      "attributes": {
+        "transport": "stdio",
+        "negotiated_protocol_version": "2025-11-25",
+        "server_info": {
+          "name": "memory-server",
+          "version": "0.6.3"
+        },
+        "command": "mcp-server-memory",
+        "args": [],
+        "runs_on": "tb-node"
+      }
+    },
+    {
+      "asset_key": "kg-memory/tool/create_entities",
+      "asset_type": "tool",
+      "declared_at": "kg-memory:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": true,
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "kg-memory/tool/create_relations",
+      "asset_type": "tool",
+      "declared_at": "kg-memory:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": true,
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "kg-memory/tool/add_observations",
+      "asset_type": "tool",
+      "declared_at": "kg-memory:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": true,
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "kg-memory/tool/delete_entities",
+      "asset_type": "tool",
+      "declared_at": "kg-memory:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": true,
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "kg-memory/tool/delete_observations",
+      "asset_type": "tool",
+      "declared_at": "kg-memory:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": true,
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "kg-memory/tool/delete_relations",
+      "asset_type": "tool",
+      "declared_at": "kg-memory:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": true,
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "kg-memory/tool/read_graph",
+      "asset_type": "tool",
+      "declared_at": "kg-memory:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": true,
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "kg-memory/tool/search_nodes",
+      "asset_type": "tool",
+      "declared_at": "kg-memory:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": true,
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "kg-memory/tool/open_nodes",
+      "asset_type": "tool",
+      "declared_at": "kg-memory:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": true,
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "kg-memory/resource/memory://knowledge-graph",
+      "asset_type": "resource",
+      "declared_at": "kg-memory:resources/list",
+      "layer": "advertised",
+      "attributes": {
+        "name": "knowledge-graph"
+      }
+    },
+    {
+      "asset_key": "tb-node/mcp_server/demo-everything",
+      "asset_type": "mcp_server",
+      "declared_at": "tb-node:~/.openclaw/openclaw.json#nodeHost.mcp.servers.demo-everything",
+      "layer": "declared",
+      "attributes": {
+        "transport": "stdio",
+        "negotiated_protocol_version": "2025-11-25",
+        "server_info": {
+          "name": "mcp-servers/everything",
+          "title": "Everything Reference Server",
+          "version": "2.0.0"
+        },
+        "command": "mcp-server-everything",
+        "args": [
+          "stdio"
+        ],
+        "runs_on": "tb-node",
+        "tool_filter": {
+          "exclude": [
+            "get-env",
+            "gzip-file-as-resource"
+          ]
+        },
+        "credential_ref": {
+          "env_ref": "EVERYTHING_DEMO_KEY",
+          "store": "tb-node:~/.openclaw/.env",
+          "used_in": "env.EVERYTHING_DEMO_KEY"
+        }
+      }
+    },
+    {
+      "asset_key": "demo-everything/tool/echo",
+      "asset_type": "tool",
+      "declared_at": "demo-everything:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": true,
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "demo-everything/tool/get-annotated-message",
+      "asset_type": "tool",
+      "declared_at": "demo-everything:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": true,
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "demo-everything/tool/get-env",
+      "asset_type": "tool",
+      "declared_at": "demo-everything:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": false,
+        "not_exposed_reason": "toolFilter.exclude",
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "demo-everything/tool/get-resource-links",
+      "asset_type": "tool",
+      "declared_at": "demo-everything:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": true,
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "demo-everything/tool/get-resource-reference",
+      "asset_type": "tool",
+      "declared_at": "demo-everything:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": true,
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "demo-everything/tool/get-structured-content",
+      "asset_type": "tool",
+      "declared_at": "demo-everything:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": true,
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "demo-everything/tool/get-sum",
+      "asset_type": "tool",
+      "declared_at": "demo-everything:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": true,
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "demo-everything/tool/get-tiny-image",
+      "asset_type": "tool",
+      "declared_at": "demo-everything:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": true,
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "demo-everything/tool/gzip-file-as-resource",
+      "asset_type": "tool",
+      "declared_at": "demo-everything:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": false,
+        "not_exposed_reason": "toolFilter.exclude",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        }
+      }
+    },
+    {
+      "asset_key": "demo-everything/tool/toggle-simulated-logging",
+      "asset_type": "tool",
+      "declared_at": "demo-everything:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": true,
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "demo-everything/tool/toggle-subscriber-updates",
+      "asset_type": "tool",
+      "declared_at": "demo-everything:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": true,
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "demo-everything/tool/trigger-long-running-operation",
+      "asset_type": "tool",
+      "declared_at": "demo-everything:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": true,
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "demo-everything/tool/simulate-research-query",
+      "asset_type": "tool",
+      "declared_at": "demo-everything:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": false,
+        "not_exposed_reason": "taskSupport=required (OpenClaw 미지원)",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "demo-everything/resource/demo://resource/static/document/architecture.md",
+      "asset_type": "resource",
+      "declared_at": "demo-everything:resources/list",
+      "layer": "advertised",
+      "attributes": {
+        "name": "architecture.md"
+      }
+    },
+    {
+      "asset_key": "demo-everything/resource/demo://resource/static/document/extension.md",
+      "asset_type": "resource",
+      "declared_at": "demo-everything:resources/list",
+      "layer": "advertised",
+      "attributes": {
+        "name": "extension.md"
+      }
+    },
+    {
+      "asset_key": "demo-everything/resource/demo://resource/static/document/features.md",
+      "asset_type": "resource",
+      "declared_at": "demo-everything:resources/list",
+      "layer": "advertised",
+      "attributes": {
+        "name": "features.md"
+      }
+    },
+    {
+      "asset_key": "demo-everything/resource/demo://resource/static/document/how-it-works.md",
+      "asset_type": "resource",
+      "declared_at": "demo-everything:resources/list",
+      "layer": "advertised",
+      "attributes": {
+        "name": "how-it-works.md"
+      }
+    },
+    {
+      "asset_key": "demo-everything/resource/demo://resource/static/document/instructions.md",
+      "asset_type": "resource",
+      "declared_at": "demo-everything:resources/list",
+      "layer": "advertised",
+      "attributes": {
+        "name": "instructions.md"
+      }
+    },
+    {
+      "asset_key": "demo-everything/resource/demo://resource/static/document/startup.md",
+      "asset_type": "resource",
+      "declared_at": "demo-everything:resources/list",
+      "layer": "advertised",
+      "attributes": {
+        "name": "startup.md"
+      }
+    },
+    {
+      "asset_key": "demo-everything/resource/demo://resource/static/document/structure.md",
+      "asset_type": "resource",
+      "declared_at": "demo-everything:resources/list",
+      "layer": "advertised",
+      "attributes": {
+        "name": "structure.md"
+      }
+    },
+    {
+      "asset_key": "demo-everything/resource/demo://resource/dynamic/text/{resourceId}",
+      "asset_type": "resource",
+      "declared_at": "demo-everything:resources/templates/list",
+      "layer": "advertised",
+      "attributes": {
+        "name": "Dynamic Text Resource",
+        "subtype": "template"
+      }
+    },
+    {
+      "asset_key": "demo-everything/resource/demo://resource/dynamic/blob/{resourceId}",
+      "asset_type": "resource",
+      "declared_at": "demo-everything:resources/templates/list",
+      "layer": "advertised",
+      "attributes": {
+        "name": "Dynamic Blob Resource",
+        "subtype": "template"
+      }
+    },
+    {
+      "asset_key": "demo-everything/prompt/simple-prompt",
+      "asset_type": "prompt",
+      "declared_at": "demo-everything:prompts/list",
+      "layer": "advertised",
+      "attributes": {
+        "name": "simple-prompt"
+      }
+    },
+    {
+      "asset_key": "demo-everything/prompt/args-prompt",
+      "asset_type": "prompt",
+      "declared_at": "demo-everything:prompts/list",
+      "layer": "advertised",
+      "attributes": {
+        "name": "args-prompt"
+      }
+    },
+    {
+      "asset_key": "demo-everything/prompt/completable-prompt",
+      "asset_type": "prompt",
+      "declared_at": "demo-everything:prompts/list",
+      "layer": "advertised",
+      "attributes": {
+        "name": "completable-prompt"
+      }
+    },
+    {
+      "asset_key": "demo-everything/prompt/resource-prompt",
+      "asset_type": "prompt",
+      "declared_at": "demo-everything:prompts/list",
+      "layer": "advertised",
+      "attributes": {
+        "name": "resource-prompt"
+      }
+    },
+    {
+      "asset_key": "tb-gw/mcp_server/asset-catalog",
+      "asset_type": "mcp_server",
+      "declared_at": "tb-gw:~/.openclaw/extensions/agentscope-asset-catalog/openclaw.plugin.json#mcpServers.asset-catalog",
+      "layer": "declared",
+      "attributes": {
+        "transport": "stdio",
+        "negotiated_protocol_version": "2025-11-25",
+        "server_info": {
+          "name": "agentscope-asset-catalog",
+          "version": "0.1.0"
+        },
+        "command": "node",
+        "args": [
+          "./mcp-server.mjs"
+        ],
+        "runs_on": "tb-gw",
+        "visible_in_openclaw_mcp_list": false
+      }
+    },
+    {
+      "asset_key": "asset-catalog/tool/catalog_search",
+      "asset_type": "tool",
+      "declared_at": "asset-catalog:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": null,
+        "exposure_check": "unverified: plugin-contributed server is not covered by openclaw mcp probe",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "asset-catalog/tool/catalog_get_entry",
+      "asset_type": "tool",
+      "declared_at": "asset-catalog:tools/list",
+      "layer": "advertised",
+      "attributes": {
+        "exposed_to_agent": null,
+        "exposure_check": "unverified: plugin-contributed server is not covered by openclaw mcp probe",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        }
+      }
+    },
+    {
+      "asset_key": "tb-node/skill/node-disk-report",
+      "asset_type": "skill",
+      "declared_at": "tb-node:~/.openclaw/skills/node-disk-report/SKILL.md",
+      "layer": "declared",
+      "attributes": {
+        "source": "openclaw-node"
+      }
+    },
+    {
+      "asset_key": "tb-node/skill/node-notes-summary",
+      "asset_type": "skill",
+      "declared_at": "tb-node:~/.openclaw/skills/node-notes-summary/SKILL.md",
+      "layer": "declared",
+      "attributes": {
+        "source": "openclaw-node"
+      }
+    },
+    {
+      "asset_key": "tb-gw/skill/inventory-owner-report",
+      "asset_type": "skill",
+      "declared_at": "tb-gw:~/workspace/skills/inventory-owner-report/SKILL.md",
+      "layer": "declared",
+      "attributes": {
+        "source": "openclaw-workspace"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "type": "PAIRED_WITH",
+      "source": "tb-gw/gateway",
+      "target": "tb-node/node",
+      "evidence_refs": [
+        "tb-gw:openclaw devices list --json#paired",
+        "tb-gw:openclaw nodes describe --node tb-node"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "DECLARES",
+      "source": "tb-gw/gateway",
+      "target": "tb-gw/plugin/agentscope-asset-catalog",
+      "evidence_refs": [
+        "tb-gw:~/.openclaw/openclaw.json#plugins.entries.agentscope-asset-catalog"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "DECLARES",
+      "source": "tb-gw/gateway",
+      "target": "tb-gw/mcp_server/fs-workspace",
+      "evidence_refs": [
+        "tb-gw:~/.openclaw/openclaw.json#mcp.servers.fs-workspace"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/fs-workspace",
+      "target": "fs-workspace/tool/read_file",
+      "evidence_refs": [
+        "fs-workspace:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/fs-workspace",
+      "target": "fs-workspace/tool/read_text_file",
+      "evidence_refs": [
+        "fs-workspace:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/fs-workspace",
+      "target": "fs-workspace/tool/read_media_file",
+      "evidence_refs": [
+        "fs-workspace:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/fs-workspace",
+      "target": "fs-workspace/tool/read_multiple_files",
+      "evidence_refs": [
+        "fs-workspace:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/fs-workspace",
+      "target": "fs-workspace/tool/write_file",
+      "evidence_refs": [
+        "fs-workspace:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/fs-workspace",
+      "target": "fs-workspace/tool/edit_file",
+      "evidence_refs": [
+        "fs-workspace:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/fs-workspace",
+      "target": "fs-workspace/tool/create_directory",
+      "evidence_refs": [
+        "fs-workspace:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/fs-workspace",
+      "target": "fs-workspace/tool/list_directory",
+      "evidence_refs": [
+        "fs-workspace:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/fs-workspace",
+      "target": "fs-workspace/tool/list_directory_with_sizes",
+      "evidence_refs": [
+        "fs-workspace:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/fs-workspace",
+      "target": "fs-workspace/tool/directory_tree",
+      "evidence_refs": [
+        "fs-workspace:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/fs-workspace",
+      "target": "fs-workspace/tool/move_file",
+      "evidence_refs": [
+        "fs-workspace:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/fs-workspace",
+      "target": "fs-workspace/tool/search_files",
+      "evidence_refs": [
+        "fs-workspace:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/fs-workspace",
+      "target": "fs-workspace/tool/get_file_info",
+      "evidence_refs": [
+        "fs-workspace:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/fs-workspace",
+      "target": "fs-workspace/tool/list_allowed_directories",
+      "evidence_refs": [
+        "fs-workspace:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "DECLARES",
+      "source": "tb-gw/gateway",
+      "target": "tb-gw/mcp_server/inventory-remote",
+      "evidence_refs": [
+        "tb-gw:~/.openclaw/openclaw.json#mcp.servers.inventory-remote"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/inventory-remote",
+      "target": "inventory-remote/tool/inventory_list_hosts",
+      "evidence_refs": [
+        "inventory-remote:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/inventory-remote",
+      "target": "inventory-remote/tool/inventory_get_host",
+      "evidence_refs": [
+        "inventory-remote:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/inventory-remote",
+      "target": "inventory-remote/resource/inventory://hosts",
+      "evidence_refs": [
+        "inventory-remote:resources/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/inventory-remote",
+      "target": "inventory-remote/prompt/inventory_owner_report",
+      "evidence_refs": [
+        "inventory-remote:prompts/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "DECLARES",
+      "source": "tb-node/node",
+      "target": "tb-node/mcp_server/kg-memory",
+      "evidence_refs": [
+        "tb-node:~/.openclaw/openclaw.json#nodeHost.mcp.servers.kg-memory"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/kg-memory",
+      "target": "kg-memory/tool/create_entities",
+      "evidence_refs": [
+        "kg-memory:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/kg-memory",
+      "target": "kg-memory/tool/create_relations",
+      "evidence_refs": [
+        "kg-memory:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/kg-memory",
+      "target": "kg-memory/tool/add_observations",
+      "evidence_refs": [
+        "kg-memory:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/kg-memory",
+      "target": "kg-memory/tool/delete_entities",
+      "evidence_refs": [
+        "kg-memory:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/kg-memory",
+      "target": "kg-memory/tool/delete_observations",
+      "evidence_refs": [
+        "kg-memory:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/kg-memory",
+      "target": "kg-memory/tool/delete_relations",
+      "evidence_refs": [
+        "kg-memory:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/kg-memory",
+      "target": "kg-memory/tool/read_graph",
+      "evidence_refs": [
+        "kg-memory:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/kg-memory",
+      "target": "kg-memory/tool/search_nodes",
+      "evidence_refs": [
+        "kg-memory:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/kg-memory",
+      "target": "kg-memory/tool/open_nodes",
+      "evidence_refs": [
+        "kg-memory:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/kg-memory",
+      "target": "kg-memory/resource/memory://knowledge-graph",
+      "evidence_refs": [
+        "kg-memory:resources/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "DECLARES",
+      "source": "tb-node/node",
+      "target": "tb-node/mcp_server/demo-everything",
+      "evidence_refs": [
+        "tb-node:~/.openclaw/openclaw.json#nodeHost.mcp.servers.demo-everything"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/demo-everything",
+      "target": "demo-everything/tool/echo",
+      "evidence_refs": [
+        "demo-everything:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/demo-everything",
+      "target": "demo-everything/tool/get-annotated-message",
+      "evidence_refs": [
+        "demo-everything:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/demo-everything",
+      "target": "demo-everything/tool/get-env",
+      "evidence_refs": [
+        "demo-everything:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/demo-everything",
+      "target": "demo-everything/tool/get-resource-links",
+      "evidence_refs": [
+        "demo-everything:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/demo-everything",
+      "target": "demo-everything/tool/get-resource-reference",
+      "evidence_refs": [
+        "demo-everything:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/demo-everything",
+      "target": "demo-everything/tool/get-structured-content",
+      "evidence_refs": [
+        "demo-everything:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/demo-everything",
+      "target": "demo-everything/tool/get-sum",
+      "evidence_refs": [
+        "demo-everything:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/demo-everything",
+      "target": "demo-everything/tool/get-tiny-image",
+      "evidence_refs": [
+        "demo-everything:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/demo-everything",
+      "target": "demo-everything/tool/gzip-file-as-resource",
+      "evidence_refs": [
+        "demo-everything:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/demo-everything",
+      "target": "demo-everything/tool/toggle-simulated-logging",
+      "evidence_refs": [
+        "demo-everything:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/demo-everything",
+      "target": "demo-everything/tool/toggle-subscriber-updates",
+      "evidence_refs": [
+        "demo-everything:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/demo-everything",
+      "target": "demo-everything/tool/trigger-long-running-operation",
+      "evidence_refs": [
+        "demo-everything:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/demo-everything",
+      "target": "demo-everything/tool/simulate-research-query",
+      "evidence_refs": [
+        "demo-everything:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/demo-everything",
+      "target": "demo-everything/resource/demo://resource/static/document/architecture.md",
+      "evidence_refs": [
+        "demo-everything:resources/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/demo-everything",
+      "target": "demo-everything/resource/demo://resource/static/document/extension.md",
+      "evidence_refs": [
+        "demo-everything:resources/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/demo-everything",
+      "target": "demo-everything/resource/demo://resource/static/document/features.md",
+      "evidence_refs": [
+        "demo-everything:resources/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/demo-everything",
+      "target": "demo-everything/resource/demo://resource/static/document/how-it-works.md",
+      "evidence_refs": [
+        "demo-everything:resources/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/demo-everything",
+      "target": "demo-everything/resource/demo://resource/static/document/instructions.md",
+      "evidence_refs": [
+        "demo-everything:resources/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/demo-everything",
+      "target": "demo-everything/resource/demo://resource/static/document/startup.md",
+      "evidence_refs": [
+        "demo-everything:resources/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/demo-everything",
+      "target": "demo-everything/resource/demo://resource/static/document/structure.md",
+      "evidence_refs": [
+        "demo-everything:resources/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/demo-everything",
+      "target": "demo-everything/resource/demo://resource/dynamic/text/{resourceId}",
+      "evidence_refs": [
+        "demo-everything:resources/templates/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/demo-everything",
+      "target": "demo-everything/resource/demo://resource/dynamic/blob/{resourceId}",
+      "evidence_refs": [
+        "demo-everything:resources/templates/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/demo-everything",
+      "target": "demo-everything/prompt/simple-prompt",
+      "evidence_refs": [
+        "demo-everything:prompts/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/demo-everything",
+      "target": "demo-everything/prompt/args-prompt",
+      "evidence_refs": [
+        "demo-everything:prompts/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/demo-everything",
+      "target": "demo-everything/prompt/completable-prompt",
+      "evidence_refs": [
+        "demo-everything:prompts/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-node/mcp_server/demo-everything",
+      "target": "demo-everything/prompt/resource-prompt",
+      "evidence_refs": [
+        "demo-everything:prompts/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ASSOCIATED_WITH",
+      "source": "tb-gw/plugin/agentscope-asset-catalog",
+      "target": "tb-gw/mcp_server/asset-catalog",
+      "evidence_refs": [
+        "tb-gw:~/.openclaw/extensions/agentscope-asset-catalog/openclaw.plugin.json#mcpServers.asset-catalog",
+        "tb-gw:openclaw plugins inspect agentscope-asset-catalog --runtime --json#install.acceptedSurface.mcpServers"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/asset-catalog",
+      "target": "asset-catalog/tool/catalog_search",
+      "evidence_refs": [
+        "asset-catalog:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ADVERTISES",
+      "source": "tb-gw/mcp_server/asset-catalog",
+      "target": "asset-catalog/tool/catalog_get_entry",
+      "evidence_refs": [
+        "asset-catalog:tools/list"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "DECLARES",
+      "source": "tb-node/node",
+      "target": "tb-node/skill/node-disk-report",
+      "evidence_refs": [
+        "tb-node:~/.openclaw/skills/node-disk-report/SKILL.md"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "DECLARES",
+      "source": "tb-node/node",
+      "target": "tb-node/skill/node-notes-summary",
+      "evidence_refs": [
+        "tb-node:~/.openclaw/skills/node-notes-summary/SKILL.md"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "DECLARES",
+      "source": "tb-gw/gateway",
+      "target": "tb-gw/skill/inventory-owner-report",
+      "evidence_refs": [
+        "tb-gw:~/workspace/skills/inventory-owner-report/SKILL.md"
+      ],
+      "confidence": "high"
+    },
+    {
+      "type": "ASSOCIATED_WITH",
+      "source": "tb-gw/skill/inventory-owner-report",
+      "target": "tb-gw/mcp_server/inventory-remote",
+      "evidence_refs": [
+        "tb-gw:~/workspace/skills/inventory-owner-report/SKILL.md (본문에서 inventory-remote 도구 호출을 지시)"
+      ],
+      "confidence": "medium"
+    }
+  ]
+}

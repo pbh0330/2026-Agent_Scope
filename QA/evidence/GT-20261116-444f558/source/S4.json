@@ -1,0 +1,102 @@
+{
+  "profile": "S4",
+  "snapshot": "SNAP-3-S4",
+  "base_profile": "P2",
+  "base_snapshot": "SNAP-2-P2",
+  "environment": {
+    "openclaw_version": "2026.9.6",
+    "mcp_spec_version": "2026-07-28"
+  },
+  "scope": "P2 대비 추가·변경·삭제된 자산과 관계만 기록. 나머지는 ground-truth/P2.json과 같다",
+  "approved_servers": "ground-truth/approved-servers.json",
+  "summary": {
+    "asset_counts": {
+      "gateway": 1,
+      "node": 1,
+      "plugin": 1,
+      "mcp_server": 5,
+      "tool": 40,
+      "resource": 11,
+      "prompt": 5,
+      "skill": 3
+    },
+    "relation_count": 67
+  },
+  "added_assets": [],
+  "changed_assets": [
+    {
+      "asset_key": "tb-gw/mcp_server/fs-workspace",
+      "changes": {
+        "credential_ref": {
+          "before": null,
+          "after": {
+            "env_ref": "INVENTORY_MCP_TOKEN",
+            "store": "tb-gw:~/.openclaw/.env",
+            "used_in": "env.FS_SYNC_TOKEN"
+          }
+        }
+      }
+    },
+    {
+      "asset_key": "tb-node/mcp_server/demo-everything",
+      "changes": {
+        "credential_ref": {
+          "before": {
+            "env_ref": "EVERYTHING_DEMO_KEY",
+            "store": "tb-node:~/.openclaw/.env",
+            "used_in": "env.EVERYTHING_DEMO_KEY"
+          },
+          "after": {
+            "env_ref": "INVENTORY_MCP_TOKEN",
+            "store": "tb-node:~/.openclaw/.env",
+            "used_in": "env.EVERYTHING_DEMO_KEY"
+          }
+        }
+      }
+    }
+  ],
+  "removed_assets": [],
+  "added_relations": [],
+  "removed_relations": [],
+  "expected_alerts": [
+    {
+      "required": true,
+      "case": "1",
+      "scenario": "S4",
+      "condition_id": "S4-C1",
+      "target": "tb-gw/mcp_server/fs-workspace",
+      "related_targets": [
+        "tb-gw/mcp_server/inventory-remote"
+      ],
+      "credential_ref": {
+        "env_ref": "INVENTORY_MCP_TOKEN",
+        "store": "tb-gw:~/.openclaw/.env"
+      },
+      "risk_condition": "같은 저장소의 자격증명 참조를 여러 Server가 공유",
+      "reason": "tb-gw .env의 INVENTORY_MCP_TOKEN을 inventory-remote(헤더)와 fs-workspace(env) 두 서버가 참조",
+      "severity": "medium",
+      "confidence": "high"
+    }
+  ],
+  "expected_no_alert": {
+    "scenario": "S4",
+    "targets": [
+      "tb-node/mcp_server/kg-memory",
+      "tb-gw/mcp_server/asset-catalog"
+    ],
+    "note": "자격증명 참조가 없는 서버"
+  },
+  "expected_unknown": [
+    {
+      "case": "2",
+      "scenario": "S4",
+      "condition_id": "S4-C2",
+      "target": "tb-node/mcp_server/demo-everything",
+      "related_targets": [
+        "tb-gw/mcp_server/inventory-remote",
+        "tb-gw/mcp_server/fs-workspace"
+      ],
+      "reason": "참조 이름은 INVENTORY_MCP_TOKEN으로 같지만 저장소가 tb-node .env로 달라 같은 자격증명인지 확정할 수 없음. 경고를 내면 FAIL"
+    }
+  ]
+}
