@@ -456,7 +456,7 @@ class SnapshotBuilder:
             by_key = {s["registration_key"]: s for s in (pscan or {}).get("servers", [])}
             if pscan:
                 self.collect(f"col-plugin-manifest-scan-{pid}", "plugin_manifest", f"scanner --plugin-manifest plugins/{pid}/openclaw.plugin.json",
-                             "local_file", pscan["collection"]["status"] if pscan["collection"]["status"] in ("complete", "partial") else "failed",
+                             "local_file", {"complete": "success", "partial": "partial"}.get(pscan["collection"]["status"], "failed"),
                              None, details={"servers": sorted(by_key), "producer": pscan.get("producer")})
             for name, spec in (data.get("mcpServers") or {}).items():
                 if name in by_key:  # 스캐너가 manifest에서 읽은 선언값(비밀값 가림 적용)을 우선

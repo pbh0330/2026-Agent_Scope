@@ -48,8 +48,10 @@ export function ResultMark({ result }: { result: string }) {
   return <span className={`sev ${cls}`}>{RESULT_LABEL[result] ?? result}</span>
 }
 
+/** 시나리오·조건 ID 태그. S1~S5마다 색이 정해져 있음 */
 export function Scn({ id }: { id: string }) {
-  return <span className="scn">{id}</span>
+  const m = /^S(\d)/.exec(id)
+  return <span className={`scn${m ? ` s${m[1]}` : ''}`}>{id}</span>
 }
 
 export function Panel({ title, note, action, children, pad = true, className = '' }: {
@@ -72,7 +74,6 @@ export function BrandMark({ size = 30 }: { size?: number }) {
   // 측량 표식: 자산을 찾는 조준선 + 노출된 도구 눈금
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden>
-      <rect x="1.5" y="1.5" width="29" height="29" rx="5" fill="none" stroke="currentColor" strokeWidth="2" />
       <circle cx="16" cy="16" r="7" fill="none" stroke="currentColor" strokeWidth="2" />
       <path d="M16 3.5v6M16 22.5v6M3.5 16h6M22.5 16h6" stroke="currentColor" strokeWidth="2" />
       <circle cx="16" cy="16" r="2.4" fill="currentColor" />

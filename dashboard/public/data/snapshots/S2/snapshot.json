@@ -7735,7 +7735,7 @@
       "scope": "plugin_manifest",
       "target_ref": null,
       "mode": "local_file",
-      "status": "complete",
+      "status": "success",
       "collected_at": "2026-11-12T13:12:01Z",
       "details": {
         "servers": [

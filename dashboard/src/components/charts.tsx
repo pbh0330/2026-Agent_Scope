@@ -89,7 +89,7 @@ export function GroupedBars({ groups, series }: {
         {ticks.map(t => (
           <g key={t}>
             <line x1={padL} x2={W - padR} y1={y(t)} y2={y(t)} stroke="var(--line)" strokeDasharray={t ? '3 4' : undefined} />
-            <text x={padL - 8} y={y(t) + 4} textAnchor="end" className="axis">{t}</text>
+            <text x={padL - 10} y={y(t) + 6} textAnchor="end" className="axis">{t.toLocaleString('ko-KR')}</text>
           </g>
         ))}
         {groups.map((g, gi) => {
@@ -127,7 +127,7 @@ export function GroupedBars({ groups, series }: {
 /** 영역 차트 — 호출 순서별 값. null은 계산하지 않은 점(빈 원)으로 표시 */
 export function AreaChart({ points, unit = '' }: { points: { label: string; value: number | null; note?: string }[]; unit?: string }) {
   const [hover, setHover] = useState<number | null>(null)
-  const W = 1100, H = 280, padL = 44, padR = 16, padT = 16, padB = 32
+  const W = 1100, H = 300, padL = 80, padR = 40, padT = 20, padB = 40
   const vals = points.map(p => p.value ?? 0)
   const max = Math.max(1, ...vals)
   const raw = max / 5, mag = 10 ** Math.floor(Math.log10(raw))
@@ -141,22 +141,22 @@ export function AreaChart({ points, unit = '' }: { points: { label: string; valu
   const line = known.map((p, k) => `${k ? 'L' : 'M'}${x(p.i).toFixed(1)},${y(p.value!).toFixed(1)}`).join(' ')
   const area = known.length ? `${line} L${x(known[known.length - 1].i)},${y(0)} L${x(known[0].i)},${y(0)} Z` : ''
   return (
-    <div className="area">
+    <div className="area wide">
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="호출 순서별 추정 입력 토큰 영역 차트">
         <defs>
           <linearGradient id="area-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--c5)" stopOpacity=".55" />
-            <stop offset="100%" stopColor="var(--c1)" stopOpacity=".05" />
+            <stop offset="0%" stopColor="#5B5FEF" stopOpacity=".3" />
+            <stop offset="100%" stopColor="#5B5FEF" stopOpacity="0" />
           </linearGradient>
           <linearGradient id="area-line" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="var(--c1)" />
-            <stop offset="100%" stopColor="var(--c5)" />
+            <stop offset="0%" stopColor="#5B5FEF" />
+            <stop offset="100%" stopColor="#8B6CF6" />
           </linearGradient>
         </defs>
         {ticks.map(t => (
           <g key={t}>
             <line x1={padL} x2={W - padR} y1={y(t)} y2={y(t)} stroke="var(--line)" strokeDasharray={t ? '3 4' : undefined} />
-            <text x={padL - 8} y={y(t) + 4} textAnchor="end" className="axis">{t}</text>
+            <text x={padL - 10} y={y(t) + 6} textAnchor="end" className="axis">{t.toLocaleString('ko-KR')}</text>
           </g>
         ))}
         {area && <path d={area} fill="url(#area-fill)" />}
@@ -167,7 +167,7 @@ export function AreaChart({ points, unit = '' }: { points: { label: string; valu
             <circle cx={x(i)} cy={y(p.value ?? 0)} r={hover === i ? 6 : 4}
               fill={p.value === null ? 'var(--surface)' : 'var(--surface)'} stroke={p.value === null ? 'var(--ink-3)' : 'var(--c1)'} strokeWidth="2"
               strokeDasharray={p.value === null ? '2 2' : undefined} />
-            <text x={x(i)} y={H - 10} textAnchor="middle" className="axis">{p.label}</text>
+            <text x={x(i)} y={H - 8} textAnchor="middle" className="axis">{p.label}</text>
           </g>
         ))}
       </svg>
@@ -177,6 +177,66 @@ export function AreaChart({ points, unit = '' }: { points: { label: string; valu
           {points[hover].note && <span>{points[hover].note}</span>}
         </div>
       )}
+    </div>
+  )
+}
+
+/** 꺾은선 — 구성별 보안 경고 수. 점을 누르면 그 구성으로 이동 */
+export function ConfigLine({ points, onPick }: {
+  points: { key: string; value: number; active: boolean }[]; onPick?: (key: string) => void
+}) {
+  const [hover, setHover] = useState<number | null>(null)
+  const W = 520, H = 230, padL = 30, padR = 14, padT = 44, padB = 40
+  const max = Math.max(2, ...points.map(p => p.value))
+  const step = max <= 6 ? 2 : max <= 15 ? 5 : 10
+  const top = Math.ceil(max / step) * step
+  const ticks = Array.from({ length: top / step + 1 }, (_, i) => i * step)
+  const n = Math.max(points.length - 1, 1)
+  const x = (i: number) => padL + 8 + (i / n) * (W - padL - padR - 16)
+  const y = (v: number) => padT + (H - padT - padB) * (1 - v / top)
+  const line = points.map((p, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(p.value).toFixed(1)}`).join(' ')
+  const area = points.length ? `${line} L${x(points.length - 1)},${y(0)} L${x(0)},${y(0)} Z` : ''
+  const focus = hover ?? points.findIndex(p => p.active)
+  return (
+    <div className="area">
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="구성별 보안 경고 수 꺾은선 그래프">
+        <defs>
+          <linearGradient id="cfg-fill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#5B5FEF" stopOpacity=".26" />
+            <stop offset="100%" stopColor="#5B5FEF" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        {ticks.map(t => (
+          <g key={t}>
+            <line x1={padL} x2={W - padR} y1={y(t)} y2={y(t)} stroke="var(--line)" />
+            <text x={padL - 10} y={y(t) + 6} textAnchor="end" className="axis">{t.toLocaleString('ko-KR')}</text>
+          </g>
+        ))}
+        {area && <path d={area} fill="url(#cfg-fill)" />}
+        <path d={line} fill="none" stroke="var(--indigo)" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+        {points.map((p, i) => {
+          const dash = p.key.indexOf('-')
+          return (
+            <g key={p.key} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} onClick={() => onPick?.(p.key)} style={{ cursor: onPick ? 'pointer' : undefined }}>
+              <rect x={x(i) - (W / n) / 2} y={padT - 30} width={W / n} height={H - padT - padB + 60} fill="transparent" />
+              <circle cx={x(i)} cy={y(p.value)} r={i === focus ? 6 : 4} fill={p.active ? 'var(--indigo)' : 'var(--surface)'} stroke="var(--indigo)" strokeWidth="2" />
+              {dash < 0
+                ? <text x={x(i)} y={H - 20} textAnchor="middle" className="axis" fontWeight={p.active ? 700 : 400}>{p.key}</text>
+                : <text x={x(i)} y={H - 24} textAnchor="middle" className="axis" fontWeight={p.active ? 700 : 400}>
+                    <tspan x={x(i)}>{p.key.slice(0, dash)}</tspan><tspan x={x(i)} dy="1.2em">{p.key.slice(dash)}</tspan>
+                  </text>}
+            </g>
+          )
+        })}
+        {focus >= 0 && (() => {
+          const p = points[focus], label = `${p.key} · ${p.value}`, w = label.length * 7.4 + 18
+          const cx = Math.min(Math.max(x(focus), padL + w / 2), W - padR - w / 2)
+          return <g pointerEvents="none">
+            <rect x={cx - w / 2} y={y(p.value) - 38} width={w} height={26} rx="8" fill="var(--surface)" stroke="var(--line-strong)" />
+            <text x={cx} y={y(p.value) - 20.5} textAnchor="middle" fontSize="12" fontWeight="800" fill="var(--ink)">{label}</text>
+          </g>
+        })()}
+      </svg>
     </div>
   )
 }

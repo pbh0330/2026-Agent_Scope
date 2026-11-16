@@ -22,7 +22,7 @@ from pathlib import Path
 
 from . import SCHEMA_VERSION
 
-CASE_MAP = {  # expected-results.md 3절: 병하님 case → 조건 ID, severity
+CASE_MAP = {  # expected-results.md 3절: 테스트베드 정답 case → 조건 ID, severity
     ("S1", "1-gw"): ("S1-C1", "high"), ("S1", "1-node"): ("S1-C1", "high"), ("S1", "2"): ("S1-C2", "high"),
     ("S1", "3"): ("S1-C3", "high"), ("S4", "2"): ("S4-C3", "high"),
 }
