@@ -1,6 +1,6 @@
 // 자산 지도: 어디서 실행되나(게이트웨이·노드) → 무엇이 연결됐나(MCP 서버) → 무엇을 할 수 있나(도구·리소스)
 // 플러그인·스킬·권한·인증은 실행 위치 상자 안에 개수로, 세부는 오른쪽 패널에서 보여 준다.
-// 색은 상태에만 쓴다: 빨강=위협, 초록=에이전트가 쓸 수 있는 도구, 회색=막힘·확인 못 함.
+// 색은 상태에만 쓴다: 빨강=위협, 초록=에이전트에 보이는 도구, 회색=막힘·확인 못 함.
 import { ChevronDown, ChevronRight, Lock, X } from 'lucide-react'
 import { useState } from 'react'
 import type { Model } from '../data/model'
@@ -54,7 +54,7 @@ export function StructureMap({ model, present, mode = 'all', focus, picked, onPi
               role="button" tabIndex={0} onKeyDown={e => { if (e.key === 'Enter') onPick?.({ kind: 'group', host: h.asset_id, type: g.t }) }}>
               <title>{`${TYPE_KO[g.t]} ${g.items.length}개 · 눌러서 보기`}</title>
               <rect x={C1 + 16} y={gy} width={HW - 32} height={30} rx={9} fill={risk ? 'var(--rose-t)' : 'rgba(255,255,255,.18)'}
-                stroke={risk ? 'var(--rose)' : isPicked ? '#fff' : 'none'} strokeWidth={2} />
+                stroke={risk ? 'var(--rose)' : isPicked ? '#fff' : 'none'} strokeWidth={1.2} />
               <text x={C1 + 30} y={gy + 20} fontSize={13} fontWeight={800} fill={risk ? '#C92F49' : '#fff'}>{TYPE_KO[g.t]} {g.items.length}</text>
               <text x={C1 + HW - 30} y={gy + 20} textAnchor="end" fontSize={11} fill={risk ? '#C92F49' : '#fff'} opacity={0.85}>보기</text>
               {risk > 0 && <Badge x={C1 + HW - 16} y={gy} n={risk} />}
@@ -69,7 +69,7 @@ export function StructureMap({ model, present, mode = 'all', focus, picked, onPi
       const risk = alertsOn([s.asset_id])
       const st = serverStats(model, s)
       const nt = st.tools.length
-      const step = nt ? Math.min(15, (W - C3 - 96) / nt) : 15
+      const step = nt ? Math.min(15, (W - C3 - 150) / nt) : 15
       const sel = picked?.kind === 'asset' && picked.id === s.asset_id
       const foc = focus?.has(s.asset_id)
       out.push(
@@ -79,20 +79,35 @@ export function StructureMap({ model, present, mode = 'all', focus, picked, onPi
             onKeyDown={e => { if (e.key === 'Enter') onPick?.({ kind: 'asset', id: s.asset_id }) }}>
             <title>{`${present.name(s)} · 눌러서 자세히 보기`}</title>
             <rect x={C2} y={ry} width={SW} height={48} rx={12} fill={risk ? '#FFF5F6' : 'var(--surface)'}
-              stroke={sel || foc ? 'var(--indigo)' : risk ? 'var(--rose)' : 'var(--line-strong)'} strokeWidth={sel || foc ? 2.8 : risk ? 2 : 1.2} />
+              stroke={sel || foc ? 'var(--indigo)' : risk ? 'var(--rose)' : 'var(--line-strong)'} strokeWidth={sel || foc ? 2.2 : risk ? 1.3 : 1.2} />
             <text x={C2 + 14} y={ry + 21} fontSize={14} fontWeight={800} fill="var(--ink)">{present.name(s)}</text>
             <text x={C2 + 14} y={ry + 39} fontSize={11.5} fill={risk ? '#D9374F' : 'var(--ink-2)'}>{present.sub(s)}</text>
             {risk > 0 && <Badge x={C2 + SW} y={ry} n={risk} />}
           </g>
           <line x1={C2 + SW} y1={cy} x2={C3} y2={cy} stroke="var(--line)" strokeWidth={1.5} />
           {st.tools.map((t, ti) => {
-            const on = model.stateValue(t, 'EXPOSED') === true
+            const ex = model.state(t, 'EXPOSED')
+            const on = ex?.value === true
+            const why = on ? '에이전트에 보이는 도구' : ex?.value === false ? `막힌 도구 · ${exposureReason(ex.reason)}` : `확인 못 한 도구 · ${exposureReason(ex?.reason)}`
             return <rect key={t.asset_id} x={C3 + 6 + ti * step} y={cy - 6} width={Math.min(12, step - 2)} height={12} rx={3} fill={on ? 'var(--mint)' : 'var(--off)'}>
-              <title>{on ? '에이전트가 쓸 수 있는 도구' : '막혀 있거나 확인 못 한 도구'}</title>
+              <title>{why}</title>
             </rect>
           })}
           {nt === 0 && <text x={C3 + 6} y={cy + 4} fontSize={11.5} fill="var(--ink-3)">도구 목록 없음</text>}
-          {st.res > 0 && <text x={W - 24} y={cy + 4} textAnchor="end" fontSize={12} fontWeight={700} fill="var(--ink-2)">리소스 {st.res}</text>}
+          {nt > 0 && <text x={C3 + 14 + nt * step} y={cy + 4} fontSize={12} fontWeight={700} fill="var(--ink-2)">{st.usable}/{nt}</text>}
+          {st.res > 0 && (() => {
+            const rx = C3 + 14 + Math.max(nt, 1) * step + 44
+            const label = `리소스 ${st.res}`
+            const w = 30 + label.length * 9
+            return (
+              <g>
+                <title>{`서버가 에이전트에게 주는 자료(파일·문서·프롬프트 등) ${st.res}개`}</title>
+                <rect x={rx} y={cy - 11} width={w} height={22} rx={8} fill="var(--indigo-t)" />
+                <path d={`M${rx + 10},${cy - 1} l6,-4 l6,4 l-6,4 z M${rx + 10},${cy + 3} l6,4 l6,-4`} fill="none" stroke="var(--indigo)" strokeWidth={1.4} strokeLinejoin="round" />
+                <text x={rx + 26} y={cy + 4} fontSize={11.5} fontWeight={700} fill="var(--indigo)">{label}</text>
+              </g>
+            )
+          })()}
         </g>,
       )
     })
@@ -117,15 +132,27 @@ export function StructureMap({ model, present, mode = 'all', focus, picked, onPi
   )
 }
 
+/** 노출 판정 사유를 사람 말로 */
+export function exposureReason(r?: string): string {
+  if (!r) return '이유 기록 없음'
+  if (r.includes('toolFilter.include')) return '도구 필터의 허용 목록에 없음'
+  if (r.includes('toolFilter.exclude')) return '도구 필터로 막음'
+  if (r.includes('taskSupport')) return 'OpenClaw가 지원하지 않는 방식의 도구라 에이전트에 올리지 않음'
+  if (r.includes('probe 대상 아님')) return '플러그인이 등록한 서버라 에이전트 도구 목록을 수집하지 못함'
+  return r
+}
+
 function Badge({ x, y, n }: { x: number; y: number; n: number }) {
-  return <g><circle cx={x} cy={y} r={11} fill="var(--rose)" /><text x={x} y={y + 4.5} textAnchor="middle" fontSize={12} fontWeight={800} fill="#fff">{n}</text></g>
+  return <g><circle cx={x} cy={y} r={9} fill="var(--rose)" /><text x={x} y={y + 4} textAnchor="middle" fontSize={11} fontWeight={800} fill="#fff">{n}</text></g>
 }
 
 export function MapLegend() {
   return (
     <div className="mk">
-      <span><i className="sq" style={{ background: 'var(--mint)' }} />도구 · 에이전트가 쓸 수 있음</span>
+      <span><i className="sq" style={{ background: 'var(--mint)' }} />도구 · 에이전트에 보임</span>
       <span><i className="sq" style={{ background: 'var(--off)' }} />도구 · 막혀 있거나 확인 못 함</span>
+      <span>2/14 · 보이는 도구 / 전체 도구</span>
+      <span><i className="rs-pill">리소스 2</i>서버가 주는 자료</span>
       <span><i className="bd" />위협이 있는 자산</span>
       <span><i className="ct">2</i>위협 수</span>
       <span className="hint">상자를 누르면 자세히 볼 수 있어요</span>
@@ -183,7 +210,7 @@ export function AssetPanel({ model, present, pick, usage, onClose, onThreat, onP
         <section className="ap-sec">
           <h4>연결된 자산</h4>
           <div className="ap-rel">
-            <div><b>{st.tools.length}</b>도구</div><div><b>{st.usable}</b>쓸 수 있는 도구</div><div><b>{st.res}</b>리소스</div>
+            <div><b>{st.tools.length}</b>도구</div><div><b>{st.usable}</b>에이전트에 보임</div><div><b>{st.res}</b>리소스</div>
           </div>
           {rules.length > 0 && (
             <ul className="ap-rules">

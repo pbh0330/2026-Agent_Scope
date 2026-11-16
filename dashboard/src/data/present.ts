@@ -20,7 +20,7 @@ export const TYPES_8: AssetType[] = ['gateway', 'node', 'mcp_server', 'tool', 'r
 /** 위협 시나리오: 사용자에게 보이는 이름과 무엇을 보는지 */
 export const SCENARIO_KO: { id: string; name: string; what: string }[] = [
   { id: 'S1', name: '승인 안 된 서버', what: '서버·플러그인 승인 여부' },
-  { id: 'S2', name: '도구 권한 과다', what: '에이전트가 쓸 수 있는 도구 범위' },
+  { id: 'S2', name: '도구 권한 과다', what: '에이전트에 보이는 도구 범위' },
   { id: 'S4', name: '토큰 공유', what: '서버끼리 같은 토큰 사용' },
   { id: 'S3', name: '도구 이름 겹침', what: '서로 다른 서버의 같은 도구 이름' },
   { id: 'S5', name: '약한 연결 보안', what: '암호화·인증서 확인' },
@@ -144,7 +144,10 @@ export const bySeverity = (a: SecurityAlert, b: SecurityAlert) => (SEV_RANK[a.se
 
 /** 판정 결과를 사용자 용어로 */
 export type Verdict = 'threat' | 'safe' | 'unknown'
-export const isUnknown = (r: string) => r === 'unknown' || r === 'not_evaluated' || r === 'error'
+/** 판단할 정보가 없어서 결론을 못 낸 것 */
+export const isUnknown = (r: string) => r === 'unknown' || r === 'error'
+/** 이번 버전에서 아예 검사하지 않는 조건(어느 환경에서나 같음). 사용자 판정 수에 넣지 않는다 */
+export const isOutOfScope = (r: string) => r === 'not_evaluated'
 
 // ── 이름 붙이기 ────────────────────────────────────────────────
 

@@ -3,7 +3,7 @@
 import { ChevronDown, ChevronRight, Network } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import type { Model } from '../data/model'
-import { type Present, SCENARIO_KO, SEVERITY_KO, TYPE_KO, bySeverity, copyFor, isUnknown, reasonFor, serverStats } from '../data/present'
+import { type Present, SCENARIO_KO, SEVERITY_KO, TYPE_KO, bySeverity, copyFor, isOutOfScope, isUnknown, reasonFor, serverStats } from '../data/present'
 import type { Asset, SecurityAlert } from '../types/contracts'
 
 export function ThreatsPage({ model, present, scenario, alertId, onScenario, onShowMap }: {
@@ -11,11 +11,14 @@ export function ThreatsPage({ model, present, scenario, alertId, onScenario, onS
 }) {
   const all = useMemo(() => model.detections.alerts.slice().sort(bySeverity), [model])
   const list = scenario ? all.filter(a => a.scenario_id === scenario) : all
-  const [sel, setSel] = useState<string | undefined>(alertId ?? list[0]?.alert_id)
-  useEffect(() => { setSel(alertId ?? list[0]?.alert_id) }, [alertId, scenario, model])
-  const current = list.find(a => a.alert_id === sel) ?? list[0]
-  const unknowns = model.detections.evaluations.filter(e => isUnknown(e.result) && (!scenario || e.scenario_id === scenario))
+  // 처음에는 모두 접어 둔다. 다른 화면에서 특정 위협을 골라 들어온 경우만 그 위협을 펼친다.
+  const [open, setOpen] = useState<string | undefined>(alertId)
+  useEffect(() => { setOpen(alertId) }, [alertId, scenario, model])
+  const scoped = model.detections.evaluations.filter(e => !scenario || e.scenario_id === scenario)
+  const unknowns = scoped.filter(e => isUnknown(e.result))
+  const outOfScope = scoped.filter(e => isOutOfScope(e.result))
   const reasons = [...new Set(unknowns.map(reasonFor))]
+  const notChecked = [...new Set(outOfScope.map(reasonFor))]
   const [showUnk, setShowUnk] = useState(false)
 
   return (
@@ -31,31 +34,44 @@ export function ThreatsPage({ model, present, scenario, alertId, onScenario, onS
       {list.length === 0 ? (
         <section className="card empty-card">{scenario ? '이 시나리오에서는 고쳐야 할 위협이 나오지 않았어요.' : '고쳐야 할 위협이 없어요.'}</section>
       ) : (
-        <div className="rk">
-          <div className="rk-main">
-            <ol className="tlist">
-              {list.map((a, i) => (
-                <li key={a.alert_id}>
-                  <button className={a.alert_id === current?.alert_id ? 'on' : ''} onClick={() => setSel(a.alert_id)} aria-pressed={a.alert_id === current?.alert_id}>
-                    <span className="n">{i + 1}</span>
-                    <span className="who"><b>{copyFor(a.rule_id).title}</b><small>{whereLine(model, present, a)}</small></span>
-                    <span className={`sv ${a.severity}`}>{SEVERITY_KO[a.severity] ?? a.severity}</span>
-                  </button>
-                </li>
-              ))}
-            </ol>
-          </div>
-          {current && <ThreatDetail model={model} present={present} alert={current} index={list.indexOf(current) + 1} onShowMap={onShowMap} />}
-        </div>
+        <ol className="tlist">
+          {list.map((a, i) => {
+            const isOpen = open === a.alert_id
+            return (
+              <li key={a.alert_id} className={isOpen ? 'open' : ''}>
+                <button className="th" onClick={() => setOpen(isOpen ? undefined : a.alert_id)} aria-expanded={isOpen}>
+                  <span className="n">{i + 1}</span>
+                  <span className="who"><b>{copyFor(a.rule_id).title}</b><small>{whereLine(model, present, a)}</small></span>
+                  <span className={`sv ${a.severity}`}>{SEVERITY_KO[a.severity] ?? a.severity}</span>
+                  {isOpen ? <ChevronDown size={18} className="chev" /> : <ChevronRight size={18} className="chev" />}
+                </button>
+                {isOpen && <ThreatDetail model={model} present={present} alert={a} onShowMap={onShowMap} />}
+              </li>
+            )
+          })}
+        </ol>
       )}
 
-      {reasons.length > 0 && (
+      {(reasons.length > 0 || notChecked.length > 0) && (
         <section className="card unk">
           <button className="unk-h" onClick={() => setShowUnk(!showUnk)} aria-expanded={showUnk}>
-            <span><b>확인 못 한 항목 {unknowns.length}건</b><small>위협인지 판단할 정보가 부족했던 곳이에요</small></span>
+            <span>
+              <b>{unknowns.length ? `확인 못 한 항목 ${unknowns.length}건` : '점검하지 않은 항목'}</b>
+              <small>{unknowns.length ? '위협인지 판단할 정보가 부족했던 곳이에요' : '이번 버전에서는 검사하지 않는 조건이에요'}</small>
+            </span>
             {showUnk ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
           </button>
-          {showUnk && <ul>{reasons.map(r => <li key={r}>{r}</li>)}</ul>}
+          {showUnk && (
+            <>
+              {reasons.length > 0 && <ul>{reasons.map(r => <li key={r}>{r}</li>)}</ul>}
+              {notChecked.length > 0 && (
+                <>
+                  <p className="unk-sub">이번 버전에서 검사하지 않는 조건 (어느 환경에서나 같아요)</p>
+                  <ul className="muted-list">{notChecked.map(r => <li key={r}>{r}</li>)}</ul>
+                </>
+              )}
+            </>
+          )}
         </section>
       )}
     </>
@@ -87,7 +103,14 @@ function whereLine(m: Model, p: Present, a: SecurityAlert): string {
 function doesLine(m: Model, p: Present, a: Asset): string {
   if (a.asset_type === 'mcp_server') {
     const st = serverStats(m, a)
-    return st.tools.length ? `도구 ${st.tools.length}개 중 ${st.usable}개를 에이전트가 쓸 수 있어요.${st.res ? ` 리소스 ${st.res}개도 내놓아요.` : ''}` : '도구 목록을 받지 못했어요.'
+    const n = st.tools.length
+    const res = st.res ? ` 자료(리소스) ${st.res}개도 함께 제공해요.` : ''
+    if (!n) return `에이전트에게 제공하는 도구가 없어요.${res}`
+    const unknown = st.tools.filter(t => m.stateValue(t, 'EXPOSED') == null).length
+    if (unknown === n) return `에이전트에게 도구 ${n}개를 제공해요. 이 도구들이 에이전트에 실제로 올라갔는지는 확인하지 못했어요.${res}`
+    if (st.usable === n) return `에이전트에게 도구 ${n}개를 제공하고, 에이전트는 이 도구를 모두 쓸 수 있는 상태예요.${res}`
+    if (st.usable === 0) return `도구 ${n}개를 갖고 있지만 설정으로 모두 막혀 있어 에이전트가 쓸 수 없어요.${res}`
+    return `도구 ${n}개를 갖고 있고, 그중 ${st.usable}개만 에이전트가 쓸 수 있게 열려 있어요. 나머지는 설정으로 막혀 있어요.${res}`
   }
   if (a.asset_type === 'plugin') return `설치되면 MCP 서버를 함께 등록해요. (${p.sub(a)})`
   if (a.asset_type === 'permission_auth') return a.asset_subtype === 'authentication' ? '서버에 접속할 때 쓰는 인증 토큰이에요. 값은 읽지 않고 이름만 확인해요.' : '에이전트에게 열어 줄 도구를 정하는 규칙이에요.'
@@ -95,17 +118,16 @@ function doesLine(m: Model, p: Present, a: Asset): string {
   return ''
 }
 
-function ThreatDetail({ model, present, alert, index, onShowMap }: { model: Model; present: Present; alert: SecurityAlert; index: number; onShowMap: (assetId: string) => void }) {
+function ThreatDetail({ model, present, alert, onShowMap }: { model: Model; present: Present; alert: SecurityAlert; onShowMap: (assetId: string) => void }) {
   const c = copyFor(alert.rule_id)
   const main = primaryAsset(model, alert)
   const related = alert.asset_ids.map(id => model.byId.get(id)).filter((a): a is Asset => !!a && a !== main)
   const [raw, setRaw] = useState(false)
   useEffect(() => setRaw(false), [alert.alert_id])
   return (
-    <aside className="td">
+    <div className="td">
       <div className="tt">
-        <small>위협 {index} · 심각도 {SEVERITY_KO[alert.severity] ?? alert.severity}</small>
-        <h2>{c.title}</h2>
+        <small>무슨 위협인가요?</small>
         <p>{c.why}</p>
       </div>
       <div className="bd">
@@ -113,7 +135,7 @@ function ThreatDetail({ model, present, alert, index, onShowMap }: { model: Mode
           <section className="sec">
             <h4>어떤 자산인가요?</h4>
             <dl className="kv">
-              <dt>자산 종류</dt><dd><span className="tg">{TYPE_KO[main.asset_type]}</span>자산 8종 중 하나</dd>
+              <dt>자산 종류</dt><dd><span className="tg">{TYPE_KO[main.asset_type]}</span></dd>
               <dt>이름</dt><dd>{present.name(main)}</dd>
               <dt>위치</dt><dd>{present.where(main)}</dd>
               <dt>하는 일</dt><dd>{doesLine(model, present, main)}</dd>
@@ -123,6 +145,10 @@ function ThreatDetail({ model, present, alert, index, onShowMap }: { model: Mode
           </section>
         )}
         <section className="sec">
+          <h4>해야 할 일</h4>
+          <ol className="steps">{c.steps.map(s => <li key={s}>{s}</li>)}</ol>
+        </section>
+        <section className="sec full">
           <button className="raw-btn" onClick={() => setRaw(!raw)} aria-expanded={raw}>세부 내용 보기{raw ? <ChevronDown size={16} /> : <ChevronRight size={16} />}</button>
           {raw && (
             <div className="raw">
@@ -138,11 +164,7 @@ function ThreatDetail({ model, present, alert, index, onShowMap }: { model: Mode
             </div>
           )}
         </section>
-        <section className="sec">
-          <h4>해야 할 일</h4>
-          <ol className="steps">{c.steps.map(s => <li key={s}>{s}</li>)}</ol>
-        </section>
       </div>
-    </aside>
+    </div>
   )
 }
