@@ -3,9 +3,9 @@
 > 2026-10-31: 사용자 확인에 따라 Gateway 포함 8종 분류를 확정 반영했습니다. 분류 확정과 별개로 ID 생성 방식·원천 명령·관계 세부 규칙 및 구현 지원 여부는 검증·협의 대상입니다.
 
 > 작성일: 2026-09-29 · 상태: 팀 협의 전 초안
-> 문서 버전: v0.7.5 · 수정일: 2026-11-13 (KST)
+> 문서 버전: v0.7.7 · 수정일: 2026-11-17 (KST)
 > 공유 상태: 팀 검토용 협의안. 구현 계약 확정 전 검토를 위해 공유한다.
-> 검토 기준: 최초 PR 통합 검토에 2026-11-10 조회한 #3·#5·#7·#11·#12·#13·#16·#17 및 이슈 #10·#14·#15의 문서·보고를 반영했다. 최신 확인 범위와 과거 검토 기록은 15절에서 구분한다. 코드 실행·전체 구현 검증을 뜻하지 않는다.
+> 적용 기준일: 2026-11-17 (KST). 확정 범위·현재 구현은 15절, 계약 합의가 필요한 항목은 16.3절에 정리한다.
 > 8종 분류는 확정 사항이다. 그 밖의 프로젝트 필드·필수 조건·관계 허용값은 구현 계약 초안이며 합의 완료를 뜻하지 않는다. 11~16절에 생산자·소비자 매핑과 결정 사항을 정리한다.
 > 데이터 계약 버전: `0.7.0-draft` · 신규 연계 계약을 포함한 제안 버전. 기존 생산자가 지원한다는 의미가 아님.
 > 설계 기준 MCP 규격: **2026-07-28**
@@ -655,7 +655,7 @@ scope 후보: gateway_config/node_config/skill_files/plugin_manifest/server_disc
 
 PR #5의 `agent-scope.scanner.openclaw-mcp-config / 0.1.0-draft` 등은 스캐너 내부 출력이며 공통 InventorySnapshot과 구분한다. 2026-11-13 확인한 HEAD에는 Gateway/Node 등록 영역·Plugin manifest, sslVerify/toolFilter 값 수집, 저장된 목록 4종(Tool·Resource·ResourceTemplate·Prompt), 선언-카탈로그 연결, Plugin/Skill·Gateway/Node identity·Permission/Auth 원천 수집 모듈이 있다. live_discovery는 명시적으로 선택한 서버 하나의 목록을 조회하며 직접 OpenClaw 조회·HTTPS 시험 기능도 추가됐다. 실제 OpenClaw 실행·실제 원격 서버·팀 테스트베드 전체 연동은 검증 완료로 보고되지 않았다.
 
-PR #13에는 이미 `dashboard/pipeline/agentscope_pipeline/adapter.py`가 있다. 설정 사본에 스캐너를 실행한 출력과 테스트베드 raw를 공통 스냅샷으로 변환하고 탐지·QA·화면 데이터를 생성한다. 새 어댑터를 중복 작성하기보다 기존 경로를 재사용하고 최신 스캐너 필드와 맞춘다. 해당 파이프라인이 실제 팀 환경에서 모든 수집 경로를 실행했다는 뜻은 아니다. 현재 버전·Gateway 참조·집계 차이는 15.2절을 따른다.
+PR #13에는 이미 `dashboard/pipeline/agentscope_pipeline/adapter.py`가 있다. 설정 사본에 스캐너를 실행한 출력과 테스트베드 raw를 공통 스냅샷으로 변환하고 탐지·QA·화면 데이터를 생성한다. 새 어댑터를 중복 작성하기보다 기존 경로를 재사용하고 최신 스캐너 필드와 맞춘다. 해당 파이프라인이 실제 팀 환경에서 모든 수집 경로를 실행했다는 뜻은 아니다. 현재 버전·Gateway 참조·집계는 15절을 따른다.
 
 | 실제 출력 | 공통 위치·처리 | 현재 한계 |
 |---|---|---|
@@ -683,7 +683,7 @@ PR #13에는 이미 `dashboard/pipeline/agentscope_pipeline/adapter.py`가 있�
 
 - 서버 항목을 읽었으면 `DECLARED=true`를 설정 증적과 함께 기록한다. `enabled=false`여도 선언 자산은 남긴다.
 - DISCOVERED를 연결 성공 의미로 만들지 않는다. EXPOSED·POTENTIALLY_CALLABLE·CALLABLE·USED는 이 출력만으로 확정하지 않는다.
-- 최신 #5는 선언된 `sslVerify` boolean과 `toolFilter` include/exclude 배열 값을 수집한다. 생략 시 기본값을 만들지 않고 잘못된 자료형은 issues와 partial로 남긴다. 과거 키 이름만 제공하던 제약은 해소됐으며 codex·timeout 등 다른 필드의 값 지원을 함께 완료한 것으로 일반화하지 않는다. 값 수집은 실제 정책 적용·연결 안전성·노출 판정과 별개다.
+- 최신 #5는 선언된 `sslVerify` boolean과 `toolFilter` include/exclude 배열 값을 수집한다. 생략 시 기본값을 만들지 않고 잘못된 자료형은 issues와 partial로 남긴다. codex·timeout 등 다른 필드의 값 지원은 별도로 확인한다. 값 수집은 실제 정책 적용·연결 안전성·노출 판정과 별개다.
 - `credentials.*.present=true`는 설정 항목의 존재다. 인증 성공이나 참조한 실제 비밀값의 존재가 아니다. credential_refs.presence도 **선언 참조 존재**로 해석하며 유효성 검증과 구분한다.
 - 일반 env 항목을 모두 자격증명 자산으로 만들지 않는다. 인증 목적과 안전한 원천 위치가 확인된 항목만 permission_auth(authentication)으로 정규화한다.
 
@@ -855,22 +855,11 @@ changes 원소 후보: asset_id:string, change_type:string(added/modified/remove
 
 ### 12.7 Gateway 독립 자산 및 구버전 전환
 
-Gateway를 독립 자산으로 포함하는 8종 분류를 사용한다. context.gateway_ref는 같은 스냅샷의 Gateway asset_id를 참조한다. 이름만으로 구버전 문맥을 자산화하지 않고 실제 identity·증적을 확보해 매핑한다. Server owner_ref·TargetRef·관계·집계·GroundTruth를 함께 전환한다. 0.6.0-draft의 7종 입력은 명시적 어댑터 없이 새 계약으로 수용하지 않는다. 구현 전환 완료는 실제 출력으로 검증한다.
+Gateway를 독립 자산으로 포함하는 8종 분류를 사용한다. context.gateway_ref는 같은 스냅샷의 Gateway asset_id를 참조한다. 이름만으로 구버전 문맥을 자산화하지 않고 실제 identity·증적을 확보해 매핑한다. Server owner_ref·TargetRef·관계·집계·GroundTruth를 함께 전환한다. 구버전 입력은 버전과 실제 구조를 확인해 명시적으로 변환한다. 현재 0.6.0-draft 어댑터 출력에도 Gateway 포함 8종이 있으므로 버전 문자열만으로 자산 유형 수를 판단하지 않는다. 구현 전환 완료는 실제 출력으로 검증한다.
 
-### 12.8 PR #6 표시 모델과의 변환
+### 12.8 표시와 집계
 
-| PR #6 | 이 문서의 공통 계약 | 변환·표시 규칙 |
-|---|---|---|
-| `MCP_SERVER` 등 대문자 유형 | 3절의 소문자 asset_type | 명시적 enum 매핑. Gateway는 gateway 자산, Resource/Prompt는 resource_prompt + subtype |
-| 단일 `state` | `project.state_assessments[]` | 선택 Agent/Host의 판정과 근거를 표시. 한 상태로 원본 배열을 덮어쓰지 않음 |
-| Asset의 `source` | product.source_ref / evidence_refs | 표시 출처와 관계의 출발점 필드를 혼용하지 않음 |
-| Asset의 `confidence` | 각 상태·관계·탐지 결과의 신뢰도 | 자산 전체에 HIGH를 일괄 부여하지 않음 |
-| Relation의 문자열 `source/target` | source_asset_ref / TargetRef | asset 대상만 실제 자산 간선. 문맥·외부 대상은 별도 표시 |
-| `PROVIDES` | `ADVERTISES` | 서버 목록 제공 근거일 때만 변환 |
-| `CONNECTS_TO`, `EXPOSES`, `USES` | 원천 주장에 맞는 관계 또는 context | 선언→연결 성공, 노출→사용으로 자동 변환 금지 |
-| `CONTAINS/REFERENCES/AUTHENTICATES` | 12.3절 후보 또는 상세 참조 | 의미·방향 합의 전 임의 확정 간선 생성 금지 |
-| HIGH/MEDIUM/LOW | 탐지 confidence는 high/medium/low | 관계 confirmed는 직접 관측 주장. 단순 대소문자 변환으로 탐지 HIGH와 동일시하지 않음 |
-| Normal/Warning/High | 평가 범위·결과 + 경고 severity | unknown/not_evaluated/error를 Normal로 표시하지 않음 |
+자산 유형은 3절의 소문자 `asset_type`을 사용한다. 상태는 `project.state_assessments[]`의 대상·값·근거를 보존하고 단일 대표 상태로 원본 배열을 덮어쓰지 않는다. 관계는 `source_asset_ref`와 `TargetRef`로 읽는다. 상태·관계·탐지 결과의 신뢰도를 구분하고 `unknown`·`not_evaluated`·`error`는 정상으로 표시하지 않는다.
 
 Total Assets는 8종 고유 asset_id 수, Total Relations는 저장된 고유 relation_id 수다. Gateway 묶음·target_refs로 만든 보조 선은 두 집계에서 제외한다. Detected Alerts는 선택 report의 alerts 수이며 High Risk Assets는 high/critical 경고의 asset_ids 합집합이다. 하나의 자산에 경고가 여러 개 있어도 자산 수는 한 번만 센다.
 
@@ -1027,74 +1016,26 @@ pricing 필수 필드: `source:string`(config/reference_list_price/placeholder/u
 
 API 집계 응답은 UsageReport 파일과 별도 형식이다. UI 필드·유형 표기, 조회 구간, 페이지 처리, unmatched 묶음 표시, 계산 불가와 0 구분, 스냅샷 연결을 합의해야 한다. 플러그인 소비 브레이크의 경고·승인 요청·차단 기록은 S1~S5 SecurityAlert와 자동 통합하지 않는다. 실제 테스트베드 InventorySnapshot 연결 및 UI 연동 완료는 아직 확인되지 않았다.
 
-근거: [UsageReport README](https://github.com/pbh0330/2026-Agent_Scope/blob/1dcf100c3adc34be226a789fe070d5ddc737288d/token-collector/backend/usagereport/README.md), [API README](https://github.com/pbh0330/2026-Agent_Scope/blob/1dcf100c3adc34be226a789fe070d5ddc737288d/token-collector/backend/usageapi/README.md). README의 이전 비율식과 최신 고정분 배분 설명은 원천 문서에서도 통일이 필요하다.
+근거: [UsageReport README](https://github.com/pbh0330/2026-Agent_Scope/blob/6e4cf5c0cf7116821d48fd3231c7cb2a6595a4ae/token-collector/backend/usagereport/README.md), [API README](https://github.com/pbh0330/2026-Agent_Scope/blob/6e4cf5c0cf7116821d48fd3231c7cb2a6595a4ae/token-collector/backend/usageapi/README.md). 최신 토큰 구현 6e4cf5c의 UsageReport는 0.7.0-draft를 출력하고 README는 고정분 k 배분식을 반영한다. 배분 허용 오차는 합의 대상이다.
 
-## 15. 전체 PR 검토 기록과 불일치
+## 15. 확정 범위와 현재 적용 상태
 
-기존 검토 표는 최초 통합 검토 당시의 기록이며 현재 HEAD·병합 상태를 뜻하지 않는다. #1·#8은 병합됐고 #12는 2026-11-10 KST에 develop으로 병합됐다. 이번 수정은 문서·PR 본문·댓글·리뷰 보고 검토이며 코드 실행·연동 검증이 아니다. #3·#7은 아래 문서 범위를 추가 확인했으며 #6·#13 UI 코드는 전체 재검토하지 않았다.
+기준일은 2026-11-17이다. 확정된 분류, 구현에서 확인한 동작, 계약 초안을 구분한다. 본문의 필수 필드·관계 후보는 0.7.0-draft 계약 제안이며 전체 합의 완료를 뜻하지 않는다.
 
-### 2026-11-10~13 추가 확인
+| 구분 | 현재 기준 |
+|---|---|
+| 확정된 자산 분류 | Gateway 포함 8종: gateway, node, mcp_server, tool, resource_prompt, skill, plugin, permission_auth |
+| 계약 문서 | 데이터 계약 0.7.0-draft. 필드·관계·ID·검사기 전체 확정은 별도 협의 대상 |
+| 실제 출력 버전 | 대시보드 어댑터 InventorySnapshot은 0.6.0-draft, 최신 UsageReport는 0.7.0-draft. 버전별 호환성은 별도 검증 |
+| 저장 자료 연동 | 스캐너 0b2ff6b → 어댑터 cef7f2f → 탐지·비교, 11개 구성 연결. Gateway 참조는 실제 Gateway asset_id로 연결됨 |
+| P0 집계 범위 | 원천 자산/관계 17/16, 어댑터 출력 20/18. 추가 정책/인증 자산 3개·APPLIES_TO 3개와 PAIRED_WITH 미생성의 차이를 보존 |
+| 식별자 | 구현은 환경+canonical key 기반 ID를 사용. 저장 입력 3회 재현성 확인. 최종 공통 ID 알고리즘·프로필/복제 범위는 미확정 |
+| 정책 관계 | APPLIES_TO·AUTHENTICATES는 현재 구현 관계. 공통 허용값·target_refs와의 집계 규칙은 미확정 |
+| 구성 출처 | S1/S2/S3/S4는 VM 저장 수집본. S1-T5/S5-T1~T3은 설정 사본이며 변경 서버의 실제 노출은 미확인 |
+| 최신 대시보드 | ba926b5: 자산 현황·자산 지도·위협과 조치 3개 화면. expected/diff/qa 출력 파일은 유지. 최신 화면·파이프라인은 QA 실행 전 |
+| QA 확인 범위 | cef7f2f 기준 저장 입력 3회, 독립 검사 179개 통과. 43개 TC는 10 Pass·3 Blocked·30 NOT_RUN. 실제 VM 재수집·화면·사용량 API·전체 0.7 계약 검증은 포함하지 않음 |
 
-| 근거 | 기준 HEAD | 확인 범위와 상태 |
-|---|---|---|
-| [스캐너 #5 최신 확인](https://github.com/pbh0330/2026-Agent_Scope/pull/5) | `0b2ff6bb2dd2f87e95550223008050e960cd07af` | 11-13 README: 선언값·목록·연결·identity·정책 원천·실제 조회 기능 확장. 테스트 수집 712개이며 한 번의 전체 실행 완료 기록은 없음. 분할 검증과 타이밍 테스트 재확인을 구분하고 실제 OpenClaw·원격 서버 검증은 미완료 |
-| [대시보드 #13 최신 확인](https://github.com/pbh0330/2026-Agent_Scope/pull/13) | `fac3075e3697ef5981f2c960fcd7c7c75a745ffd` | 11-13 본문·README·어댑터·타입·P0 출력 확인. 실제 스캐너 실행 출력+저장 raw 기반 어댑터·탐지·QA·사용량 API 연결 구현. 실행·빌드 결과는 담당자 보고이며 이번 문서 작업에서 재실행하지 않음 |
-| [S1 테스트베드 #19](https://github.com/pbh0330/2026-Agent_Scope/pull/19) | `a91e7a12589dabd45dcdfbb6fee709c476607670` | develop 병합. #17은 미병합 종료 후 대체됨. S1 설정은 VM 구축 전 예상 사본이며 노출 미확인 |
-| [스캐너 #5 후속 확인](https://github.com/pbh0330/2026-Agent_Scope/pull/5) | `c9d20ae122bea665111c7c69625022595ac9d4c9` | 11-11 README·수정 댓글: 두 MCP 버전별 처리·Plugin manifest 입력 및 피드백 3건 수정 보고. 전체 332개 통과는 담당자 보고이며 실제 팀 테스트베드 검증은 보류 |
-| [토큰 백엔드 #3](https://github.com/pbh0330/2026-Agent_Scope/pull/3) | `1dcf100c3adc34be226a789fe070d5ddc737288d` | open. 본문·댓글·리뷰·UsageReport/API README: 병렬 배분, 자산 매핑·usage.json·API 구현. 리뷰 3건 수정은 담당자 보고이며 이번 작업에서 재실행하지 않음 |
-| [위협 시나리오 #7](https://github.com/pbh0330/2026-Agent_Scope/pull/7) | `f3945331e1faa7505f63dbeeafe2a6aad4811bad` | open. README·expected-results: 정책·기대 결과·full 정답 변환 제안. 탐지 실행 완료를 뜻하지 않음 |
-| [S1 테스트베드 #17](https://github.com/pbh0330/2026-Agent_Scope/pull/17) | `208a97323bc47d3e8a3cf4c4af3ff3a239cc9194` | open. 본문·approved-servers.json 확인: S1 구성·정답·raw 추가 보고와 버전 있는 승인 목록 존재. develop 병합·탐지 연동 완료 아님 |
-| [스캐너 #5](https://github.com/pbh0330/2026-Agent_Scope/pull/5) | `ed7652e328a57c0a73a3d2e2ec44527015ba6c30` | open. PR 본문·README: Node 등록 영역 선택, 저장 응답 Tool 카탈로그, 개발용 서버 stdio 조회. 공통 ID·변환·팀 테스트베드 검증 미완료 |
-| [테스트베드 #12](https://github.com/pbh0330/2026-Agent_Scope/pull/12) | `febb72e9ba0747a4b9d9fa714dbccca8cbc0c7d4` | merged. ground-truth README·P0: P0/P1/P2 작성본·raw 근거 존재. 공통 ID는 합의 후 생성기 교체 대상 |
-| [대시보드 #13](https://github.com/pbh0330/2026-Agent_Scope/pull/13) | `86b101940511112ecc1b908546a435f6770ec9dd` | open. PR 본문은 테스트 데이터 기반 UI·실제 스캐너 연동 전 단계라고 명시. 이번 수정에서 UI 코드·실행은 미검증 |
-
-[이슈 #10 담당자 댓글](https://github.com/pbh0330/2026-Agent_Scope/issues/10#issuecomment-6012426423)은 deviceId·페어링 대응, 원래 Tool 이름 사용, Plugin 선언 서버, 논리 설정 경로·JCS를 보고·제안한다. 프로필·재설치·복제 시 식별 범위와 최종 ID 규칙은 미확정이다. 댓글의 계산 결과를 이번 수정에서 재실행하지 않았다.
-
-[스캐너 #5 검토 댓글](https://github.com/pbh0330/2026-Agent_Scope/pull/5#issuecomment-6587702869)의 비밀 속성 객체형 기본값 가림, 절단 전 URL 비밀값 가림, 하위 중복 키의 partial 반영 요청 3건에 대해 [담당자 수정 응답](https://github.com/pbh0330/2026-Agent_Scope/pull/5#issuecomment-6763930612)이 추가됐다. 2026-11-11 확인 HEAD는 `c9d20ae122bea665111c7c69625022595ac9d4c9`다. 담당자는 수정 전 실패를 재현한 뒤 보완했고 회귀 66개·전체 332개 테스트 통과를 보고했다. README도 버전 호환성·manifest·피드백 통합 상태의 결과임을 명시한다. 이 3건은 수정 보고가 있는 항목으로 갱신하되 이번 문서 작업에서 독립 재현·코드 전체 검토는 수행하지 않았다.
-
-#11은 ID 협의안·수집 확인표를 제공하지만 담당자 확인 대기다. #16은 SNAP-1 내장 자산 범위·설치/활성/ready 집계 기준을 보완하는 문서 PR이다. #13의 어댑터·탐지·QA 구현은 최신 확인에 반영했다. 이전 #10·#15 상태 조회는 과거 기록이며 이번 수정에서 해당 이슈의 합의 상태를 재판정하지 않았다.
-
-기존 검토 기록:
-
-| PR | 기준 HEAD | base | 스키마에 반영한 내용 |
-|---|---|---|---|
-| [#1 기획·공격표면·스키마](https://github.com/pbh0330/2026-Agent_Scope/pull/1) | `03fa4cabda5ee7bc3f8cd01a2096b1873136fb84` | develop | 공식 객체/제품 설정/프로젝트 해석 분리, 6개 상태, 증적·수집 결과 |
-| [#3 토큰 수집·비용](https://github.com/pbh0330/2026-Agent_Scope/pull/3) | `b3ccbb206c4443952185bc0d110344d02d06861b` | develop | 실제 Go Result·메트릭·Python 귀속, 추정/미귀속·단가·중복 규칙 |
-| [#4 테스트베드](https://github.com/pbh0330/2026-Agent_Scope/pull/4) | `53ada7c8742b24c03a966f541549f8de3dd40cdc` | main | VM 2대, P0/P1/P2, SNAP 라벨, 수동 Ground Truth |
-| [#5 스캐너](https://github.com/pbh0330/2026-Agent_Scope/pull/5) | `0c9a230a5db6cd39ed9143f2e4c2e5440d5bedd5` | main | 실제 내부 형식·수집 상태·값 미수집·비밀값 가림의 변환 규칙 |
-| [#6 대시보드](https://github.com/pbh0330/2026-Agent_Scope/pull/6) | `b34cb3bd7d27c0f806f6368aa73bda09b1efd265` | main | 자산/관계/경고 화면, 상태·유형 변환, 관계·경고 Diff |
-| [#7 위협 시나리오](https://github.com/pbh0330/2026-Agent_Scope/pull/7) | `f8adc5eb44b7f3cf59a9c4b995a40819ae39ea32` | main | S1~S5, 조건·평가·경고·근거·QA 연결 |
-
-### 15.1 구현 전에 해소할 차이
-
-| 항목 | 확인한 차이 | 이번 정리의 제안·담당 |
-|---|---|---|
-| 7종의 구성 | 로컬 스키마는 permission_auth 포함·Gateway 제외, #4·#6은 Gateway 포함. #4 GT는 resource/prompt 별도 | 8종 확정 반영. Gateway 독립 자산과 permission_auth를 모두 포함하고 구버전 변환을 검증 |
-| 실제 출력 | #5는 내부 형식, #13은 기존 어댑터로 중첩 snapshot 생성 | 기존 어댑터 재사용. 최신 스캐너와 필드·참조·버전 대조 |
-| 상태 | 단일 state와 대상별 state_assessments 차이 | 배열이 원본. UI 요약은 대상과 근거를 유지 |
-| 관계 | PROVIDES/CONNECTS_TO와 ADVERTISES/DECLARES 차이 | 의미별 명시적 변환. 근거가 있는 Gateway 자산 간선은 집계에 포함하고 그룹 보조 선은 제외 |
-| 경고 | #6 예제는 evidence·평가 상태·규칙 버전 없음 | 13절 평가 보고서로 미평가와 정상 구분 |
-| S2·S5 입력 | #5는 sslVerify/toolFilter 선언값 수집 지원. #13에는 과거 제약을 우회하는 보강 경로 존재 | 최신 수집값 우선 사용, 중복 보강 경로 정리 여부 확인. 실제 정책 적용·TLS 동작과 구분 |
-| 설치 버전 | #12 정답은 OpenClaw 2026.9.6, P0 서버 협상은 MCP 2025-11-25. #5는 MCP 두 버전별 처리 지원으로 갱신됨 | 버전 지원 공백은 해소. 제품·설계 기준·협상 버전은 구분하고 실제 팀 P0 연동 검증 필요 |
-| Node 수집 | #5는 nodeHost.mcp.servers 선택 구현. 실제 등록 Node 설정 검증·identity 자산화는 별도 | 영역별 scope·registry_absent·실패를 유지하고 실환경 검증 필요 |
-| 사용량 ID | #3은 스냅샷 기반 자산 매핑·환경/프로필 주입을 구현. 실제 팀 스냅샷 연동은 미검증 | 14절의 매핑 규칙·서버 키 표현·ID 정합성 검증 |
-| 정답·기준선 | #4의 SNAP-1 ‘0건’은 Node/정책/번들 자산을 포함하는 전체 수와 충돌 가능 | 0건 대상 범위를 명시. VM 라벨과 수집 snapshot_id 분리 |
-| 비교 | #6은 자산·관계·경고 Diff, 이전 초안은 자산만 | 12.9절 확장. 수집 실패·미평가를 삭제·해결로 취급하지 않음 |
-| 병합 기준 | 기존 표의 base·open 상태는 과거 기록. #12는 develop 병합, #5·#13은 develop 대상 open | 통합 기준 commit과 적용 범위를 확정 버전에 명시 |
-
-PR #3에는 이전 리뷰에 대한 수정 응답과 코드 변경이 있다. 이번 검토는 최신 출력 구조를 반영했으며 과거 지적을 미수정 결함으로 다시 단정하지 않는다. PR에 적힌 테스트 통과 기록을 이번 작업에서 재실행한 결과로 보고하지 않는다.
-
-### 15.2 최신 구현과 남은 연동 차이 (2026-11-13)
-
-대시보드 #13의 기존 어댑터를 첫 연결 경로로 사용한다. 아래는 문서·코드·저장된 출력의 대조 결과이며 이 PR에서 구현 코드를 수정한 것은 아니다.
-
-| 항목 | 확인한 차이 | 최소 조정 방향 |
-|---|---|---|
-| Gateway 참조 | #13 P0의 context.gateway_ref는 gwctx_e3e14de28133, 실제 Gateway asset_id는 gw_4261ac71d127a248이다. 자산 20개의 context도 별도 문맥 ID를 사용한다. 본 계약은 Gateway 자산 ID 참조를 요구한다. | 기존 Gateway 자산 ID로 참조를 연결. 새 Gateway 자산 추가 불필요. 구현 수정·검증은 후속 |
-| P0 범위 | 본 검토 예제는 원천 정답의 17개 자산·16개 관계. #13 출력은 정책/인증 자산 3개 추가로 20개, APPLIES_TO 3개 추가·원천 페어링 부재로 PAIRED_WITH 제외하여 관계 18개 | 기존 정답 대상과 추가 정책 자산을 구분해 QA. 실제 근거 없는 페어링 생성을 강제하지 않음. APPLIES_TO는 현재 공통 후보 표에 없으므로 구현 관계로 구분 |
-| 버전·ID | #13 snapshot과 #3 usage.json은 0.6.0-draft. #13 ID는 환경+문자열 키의 해시 앞 16자리, #11은 별도 미확정 제안, 본 예제는 review-p0 임시 ID | 첫 연결은 하나의 실제 어댑터 출력 ID를 소비자가 공유. #10 최종 ID·버전 전환은 별도 검증. 문자열 버전만 교체해 호환 완료 처리하지 않음 |
-| 환경·프로필 | #13 P0는 agentscope-testbed / tb-openclaw, 본 예제는 review-testbed / review-profile-p0다. #3은 인벤토리와 실행 인자의 환경·프로필 불일치를 거부한다. | 실제 선택 스냅샷에 토큰 실행 인자를 맞춤. 검토용 값을 운영 식별자로 복사하지 않음 |
-| 최신 스캐너 적용 | #13은 과거 sslVerify/toolFilter 미수집 보강과 MCP 버전 우회 경로를 보유. #5는 두 버전과 선언값 수집을 지원 | 최신 스캐너 출력부터 기존 어댑터에 대조. 새 어댑터 중복 작성·기존 정책 자산 일괄 제거 불필요 |
+현재 원천: [스캐너 #5](https://github.com/pbh0330/2026-Agent_Scope/pull/5) `0b2ff6b`, [대시보드 #13](https://github.com/pbh0330/2026-Agent_Scope/pull/13) `ba926b5`, [토큰 #3](https://github.com/pbh0330/2026-Agent_Scope/pull/3) `6e4cf5c`, [시나리오 #7](https://github.com/pbh0330/2026-Agent_Scope/pull/7) `4b0007f`, [VM 자료 #24](https://github.com/pbh0330/2026-Agent_Scope/pull/24) `444f558`. 각 PR은 조회 시점 open이며 코드 존재·저장 자료 검증·실환경 인수를 구분한다.
 
 ## 16. GroundTruth·QA·적용 순서
 
@@ -1107,7 +1048,7 @@ PR #3에는 이전 리뷰에 대한 수정 응답과 코드 변경이 있다. �
 - 기대 평가: `condition_id`, `scenario_id`, `rule_id`, `rule_version`, `asset_gt_refs:string[]`, `expected_result`(13절 result enum), `expected_alert:boolean`, `policy_refs:object[]`. 규칙·정책 버전 없는 기대 결과를 확정 정답으로 집계하지 않는다.
 - 정답 증적: `evidence_id`, `source_ref`, `observed_at`, `redaction_status`, redacted이면 `redacted_fields:string[]`. 정답 문서의 증적 ID는 스캐너 snapshot 증적과 별도 namespace다.
 
-현행 PR #12의 P0/P1/P2도 아직 공통 GroundTruth 계약과 다르다. `asset_key`, `declared_at`, `layer`, `attributes`, `relations[].type/source/target`를 사용한다. 정답에는 PAIRED_WITH·ADVERTISES, device_id, exposed_to_agent, resource의 subtype=template이 잠정 반영돼 있다. raw 응답·관계 근거의 존재를 공통 ID·증적 namespace 변환 완료와 혼동하지 않는다.
+현재 테스트베드 P0/P1/P2 원천은 공통 GroundTruth 제안과 구조가 다르다. `asset_key`, `declared_at`, `layer`, `attributes`, `relations[].type/source/target`를 사용한다. 정답에는 PAIRED_WITH·ADVERTISES, device_id, exposed_to_agent, resource의 subtype=template이 잠정 반영돼 있다. raw 응답·관계 근거의 존재를 공통 ID·증적 namespace 변환 완료와 혼동하지 않는다.
 
 P0 summary는 Gateway 1·Node 1·Server 1·Tool 14, 관계 16을 기록한다. 이는 테스트베드 추가 자산 범위의 집계이며 Permission/Auth까지 변환한 공통 계약의 기대 총수로 고정하지 않는다. 내장 Plugin 63종·Skill 57종은 정답 범위에서 제외된다. README의 필드 표와 실제 작성본 보충을 함께 읽는다.
 
@@ -1125,9 +1066,7 @@ PR #7은 catalog_version=2.1을 rule_version으로 사용하고 condition_id를 
 
 PR #19로 병합된 [approved-servers.json](https://github.com/pbh0330/2026-Agent_Scope/blob/a91e7a12589dabd45dcdfbb6fee709c476607670/testbed/ground-truth/approved-servers.json)은 version=2026-10-31이며 name·declared_at_vm·registered_by·endpoint를 match_keys로 지정한다. #13 탐지기는 이 목록을 사용한다. 새 정책 연결을 중복 구현하기보다 기존 policy_refs·비교 결과를 확인한다. 실행 위치 runs_on과 선언 위치를 혼동하지 않는다.
 
-PR #7에는 expected-tool-policy.json과 S1~S5 기대 결과가 있다. #13에는 정적 탐지와 기대 결과 비교가 구현돼 있다. S1은 테스트베드 구성 사본이고 다른 위험 구성은 P2 기반 합성임을 구분한다. 기대 결과 일치·수집률·빌드 통과는 담당자 보고이며 실제 위험 VM 실행 검증이나 본 작업의 재실행 결과가 아니다.
-
-로컬 `QA/QA_GroundTruth.md`에도 Gateway 집계와 Gateway→Server 예시가 남아 있다. 이 문서만 수정했다고 QA 원본·PR #4가 변환된 것은 아니며, 실제 인수 시 확정된 8종 기준으로 변환·검토해야 한다.
+PR #7에는 expected-tool-policy.json과 S1~S5 기대 결과가 있다. #13에는 정적 탐지와 기대 결과 비교가 구현돼 있다. S1/S2/S3/S4는 VM 저장 수집본, S1-T5/S5-T1~T3은 설정 사본이다. 저장 자료의 탐지·비교 실행은 QA에서 확인했으며 실제 위험 VM 재수집·최신 화면 실행과 구분한다.
 
 ### 16.2 QAResult 계약 제안
 
@@ -1143,27 +1082,18 @@ checks의 evidence_refs는 평가 snapshot의 증적이며 정답 증적은 grou
 
 수집률은 같은 범위의 매핑된 고유 정답 자산 수 / 고유 정답 자산 수다. 선언 계층·광고 계층을 구분하고 위협 시나리오 S1/S2와 혼동되지 않도록 metric.name에 `declared_asset_recall`, `advertised_asset_recall`을 사용한다. 분모가 0이면 value=null과 limitations를 남긴다. Gateway 자산은 해당 수집 범위의 분모에 포함한다. 그룹 문맥·예시 TBD 행·수집 범위 밖 자산은 분모에서 제외하되 제외 범위를 명시한다. 이름 중복을 정답 일치로 계산하지 않는다.
 
-### 16.3 다음 구현과 검증 순서
+### 16.3 계약 합의와 추가 검증 범위
 
-1. **확정 범위 적용:** 8종 자산·Gateway 독립 자산화를 반영하고, ID 생성과 관계 이름, 실제 OpenClaw 버전, evidence 저장 위치를 담당자들이 확인한다.
-2. **첫 연동:** #13의 기존 어댑터를 재사용해 #5 최신 내부 출력과 대조한다. Gateway 참조를 실제 자산 ID로 맞추고, 선택한 한 스냅샷의 환경·프로필·ID를 소비자가 공유한다. 새 어댑터를 먼저 작성하지 않는다.
-3. **수집 확장:** 두 MCP 버전별 처리 구현은 완료된 항목으로 구분한다. 실제 팀 P0 서버에서 협상·목록·페이지·실패 처리를 확인하고 선언과 조회 결과 연결을 검증한다. Node 영역·Plugin manifest 수집의 실제 적용 범위와 정책·Resource/Prompt·Skill/Plugin 및 sslVerify/toolFilter 값 수집은 최신 출력과 대조한다. 문서 필드가 있다는 이유로 수집 완료 처리하지 않는다.
-4. **분석 연동:** #13의 기존 정적 탐지·기대 결과 비교를 재사용하고 unknown/not_applicable·경고 근거와 실제/합성 구성 구분을 검증한다.
-5. **사용량·QA:** 안전한 자산 매핑, 추정/미귀속 표시, full GroundTruth와 ID 매핑으로 비교한다.
-6. **계약 고정:** JSON Schema·참조 무결성 검사기·생산자/소비자 어댑터와 실제 예제를 같은 버전으로 확정한다. v0.5·v0.6·v0.7을 같은 형식으로 자동 수용하지 않는다.
+확정된 8종 분류와 15절의 저장 자료 검증 범위로 현재 결과를 공유할 수 있다. 아래는 전체 공통 계약 확정·실환경 인수에 필요한 후속 범위이며 현재 자료 제출의 일괄 선행 조건은 아니다.
 
-최소 인수 예제는 정상 빈 등록 영역, 영역 미선언, 파일 실패, 부분 수집/include, 가려진 등록키, 동명 Tool, 목록 페이지 실패, 권한/인증 참조, 미평가 탐지, 경고 근거, 관계·경고 Diff, 병렬/미귀속 사용량이다. 8절과 13.4절은 설명용 JSON이며 이 전체 인수 검증을 대체하지 않는다.
+| 항목 | 남은 합의·검증 |
+|---|---|
+| 계약·버전 | 실행 가능한 JSON Schema·참조 검사·공통 예제, InventorySnapshot/UsageReport 버전별 변환 또는 비호환 거부 |
+| 공통 ID | 환경·프로필·원천 키·직렬화·해시·충돌 처리와 기대 ID 벡터 |
+| 정책·페어링 | permission_auth target_refs·하위유형·집계, 구현 관계와 공통 관계의 대응, 실제 페어링 정상/실패/재페어링 증적 |
+| 소비자 검증 | 중복 ID·없는 참조·잘못된 TargetRef, 유효 partial 수용, 상태 false/null·정책 참조·매핑 모호성 |
+| 사용량 연동 | 동일 환경·프로필·자산 ID의 파일/API/화면 연결, 미귀속·모호성·페이지 집계, k 배분 경계·합계·허용 오차 |
+| 실환경·화면 | 실제 P0 재수집 및 최신 화면 확인. 선언·노출·호출과 자격증명 참조·실제 전송을 구분하고 실행 위치는 별도 근거로 표시 |
+| 시나리오 QA | S3 outputSchema 비교와 최상위 $schema 제외, 선택 경고·unknown/not_applicable·심각도 차이의 판정·분모 |
 
-### 16.4 첫 구현 연결과 최종 확정 구분 (2026-11-13)
-
-두 MCP 버전별 응답 처리와 개발용 stdio 검증 보고, #5 피드백 3건 수정 보고는 더 이상 미구현 항목으로 나열하지 않는다. 실제 팀 환경의 인수 검증과 담당자 합의는 별도로 진행한다.
-
-| 순서 | 담당·남은 일 | 완료 기준 |
-|---|---|---|
-| 1 | 스캐너·테스트베드·소비자: 기존 어댑터 P0로 첫 연동 | 원천 17개와 추가 정책 자산을 구분하고, Gateway 참조·환경·프로필·ID 연결 확인. 정책 자산 제거·실제 근거 없는 페어링 강제·새 승인 절차 불필요 |
-| 2 | #10, 스캐너·테스트베드·QA: 공통 ID 고정 | 환경/프로필 범위·원천 키·직렬화·해시·충돌 처리와 기대 ID 벡터 확정 |
-| 3 | 스캐너·테스트베드: 실제 P0 수집 | 사양 수정본 확보 후 실제 서버 협상·목록·페이지·실패·선언-조회 연결 검증. 버전 지원 구현 완료와 구분 |
-| 4 | 스캐너·QA: 기존 공통 출력 변환 점검 | #13 어댑터 출력과 #5 최신 필드 대조. 본 검토 예제와 실제 출력 구분, 인증 맥락·증적·scope·참조·범위별 집계 확인 |
-| 5 | 대시보드·토큰: 파일/API 연동 | 동일 자산 ID로 화면·사용량 연결, ambiguous/unmatched·부분 수집·계산 불가 표시 검증. 병렬 배분 조건·경계·허용 오차 합의 |
-| 6 | 탐지·테스트베드·QA: 정책과 기대 결과 연결 | 승인 정책 참조·full 정답 변환·선택 경고·unknown/not_applicable 분모와 탐지 결과 검증 |
-| 7 | 전체 담당자: #15 계약 확정 | JSON Schema·참조 검사·공통 예제·문서·QA 기준과 적용 버전 정합성 확인 후 합의 기록 |
+최소 인수 예제는 정상 빈 등록 영역, 영역 미선언, 파일 실패, 부분 수집/include, 가려진 등록키, 동명 Tool, 목록 페이지 실패, 권한/인증 참조, 미평가 탐지, 경고 근거, 관계·경고 Diff, 병렬/미귀속 사용량이다. 설명용 JSON 예제는 인수 검증을 대신하지 않는다.
