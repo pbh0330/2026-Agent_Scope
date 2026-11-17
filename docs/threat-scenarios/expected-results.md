@@ -1,6 +1,6 @@
 # S1~S5 기대 결과 (QA·테스트베드 인계용)
 
-> 문서 버전: v2.1 · 기준일 2026-11-08 · 작성: 고혜림 (위협 시나리오)  
+> 문서 버전: v2.1 · 기준일 2026-11-08 · 작성: 위협 시나리오·대시보드 파트  
 > 기준 구성: `SNAP-2-P2` (테스트베드 정상군 P2)  
 > 조건 ID·심각도·신뢰도 기본값: [`scenario-catalog.json`](scenario-catalog.json)  
 > 판정 기준 정책: S1 `testbed/ground-truth/approved-servers.json`, S2 [`policies/expected-tool-policy.json`](policies/expected-tool-policy.json)

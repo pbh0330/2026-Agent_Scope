@@ -274,12 +274,13 @@ Ground Truth는 테스트베드의 실제 설정을 기준으로 사전에 작�
 | `S4-C1` | 자격증명 참조 중복 + 서버별 분리 부족 — 같은 **저장소**의 같은 참조를 서로 다른 Server가 사용 | detected | medium / high |
 | `S4-C2` | 다른 저장소의 같은 참조 이름 | **unknown** (경고 없음) | — |
 | `S4-C3` | 인증 대상 불일치 — 자격증명을 붙인 Server의 Endpoint가 승인 목록과 다름 | detected | high / medium |
-| `S4-C4` | 권한 범위 과다, 참조 경로 확대(scope·audience) | not_evaluated | 스캐너가 scope·audience를 수집하지 않음. 후속 |
+| `S4-C4` | 권한 범위 과다, 참조 경로 확대(scope·audience) | not_evaluated | 스캐너가 scope·audience를 수집하지 않음. 테스트베드 토큰은 Bearer 값이라 설정에 권한 범위 정보 자체가 없다. 후속 |
 
 - 참조 식별자(`credential_reference_id`)는 `저장소 + 참조 이름`이다. 예: `tb-gw:~/.openclaw/.env#INVENTORY_MCP_TOKEN`. 실제 값은 수집·비교하지 않는다.
 - `S4-C2`: 결정 사항 2. 4.2절 규칙 4의 "확인 필요 상태"를 `unknown`으로 기록한다. 같은 env 이름이라도 저장소가 다르면 같은 자격증명으로 단정하지 않는다.
 - `S4-C3`: 결정 사항 7. S1 Case 2와 같은 구성에서 나오는 동반 경고다. confidence가 medium인 이유는 바뀐 Endpoint가 실제로 자격증명을 받는지 정적으로 확인할 수 없어서다.
 - `S4-C1`에 `S4-C3` 근거가 함께 있으면 severity를 high로 올린다(4.2절 규칙 3).
+- `S4-C4`: 설정 파일만으로는 토큰이 실제로 어디까지 할 수 있는지 알 수 없다. 범위 정보가 있는 인증 방식(OAuth scope·audience 등)을 수집하게 되면 평가한다. 그 전까지 대시보드는 이 조건을 "미점검"으로 표시하고, 시나리오를 "안전"으로 표시하지 않는다.
 
 ### A.3 검증 케이스
 
