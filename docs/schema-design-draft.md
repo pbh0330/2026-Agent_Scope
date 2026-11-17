@@ -3,9 +3,9 @@
 > 2026-10-31: 사용자 확인에 따라 Gateway 포함 8종 분류를 확정 반영했습니다. 분류 확정과 별개로 ID 생성 방식·원천 명령·관계 세부 규칙 및 구현 지원 여부는 검증·협의 대상입니다.
 
 > 작성일: 2026-09-29 · 상태: 팀 협의 전 초안
-> 문서 버전: v0.7 · 수정일: 2026-10-31 (KST)
+> 문서 버전: v0.7.7 · 수정일: 2026-11-17 (KST)
 > 공유 상태: 팀 검토용 협의안. 구현 계약 확정 전 검토를 위해 공유한다.
-> 검토 기준: 열린 PR #1, #3, #4, #5, #6, #7의 조회 시점 HEAD 및 로컬 v0.5 편집본. PR별 기준 commit과 불일치는 15절 참조.
+> 적용 기준일: 2026-11-17 (KST). 확정 범위·현재 구현은 15절, 계약 합의가 필요한 항목은 16.3절에 정리한다.
 > 8종 분류는 확정 사항이다. 그 밖의 프로젝트 필드·필수 조건·관계 허용값은 구현 계약 초안이며 합의 완료를 뜻하지 않는다. 11~16절에 생산자·소비자 매핑과 결정 사항을 정리한다.
 > 데이터 계약 버전: `0.7.0-draft` · 신규 연계 계약을 포함한 제안 버전. 기존 생산자가 지원한다는 의미가 아님.
 > 설계 기준 MCP 규격: **2026-07-28**
@@ -251,7 +251,7 @@ subject_ref는 “누구에게 노출·호출 가능한가”의 대상이다. �
 
 ## 7. 관계·근거·수집 결과
 
-Server의 선언 소속과 실행 위치는 구분한다. `project.execution_location`은 선택 객체 후보로 `location_ref:string`, `evidence_refs:string[]`를 기록하며 미확인이면 생략한다. URL이나 owner_ref만으로 실행 위치를 추정하지 않는다. P2의 Gateway 선언·Node VM 실행을 검증 사례로 사용한다. Node identity 원천과 CLI 명령은 실측 대기다. 페어링 목록 실패·부분 수집은 관계 해제나 Node 삭제의 근거가 아니다.
+Server의 선언 소속과 실행 위치는 구분한다. `project.execution_location`은 선택 객체 후보로 `location_ref:string`, `evidence_refs:string[]`를 기록하며 미확인이면 생략한다. URL이나 owner_ref만으로 실행 위치를 추정하지 않는다. P2의 Gateway 선언·Node VM 실행을 검증 사례로 사용한다. 이슈 #10 담당자 보고에는 Node identity CLI와 Gateway 페어링 목록의 deviceId 대응이 있으며, 프로필·재설치·복제 시 식별 범위와 공통 ID 채택은 미확정이다. 페어링 목록 실패·부분 수집은 관계 해제나 Node 삭제의 근거가 아니다.
 
 ### Relation
 
@@ -331,6 +331,8 @@ scope 후보: gateway_config/node_config/skill_files/plugin_manifest/server_disc
 - 이전 스냅샷의 자산·증적을 최신 관측값처럼 복사하지 않는다.
 
 ## 8. 통합 정상 예제
+
+실제 P0 자료를 바탕으로 한 별도 전체 구조 검토 파일은 [P0.inventory.review.json](examples/p0/P0.inventory.review.json)과 [검토 설명](examples/p0/README.md)에 있다. 임시 ID·가상 fixture 시각을 사용한다. 기존 P0의 17개 자산·16개 관계와 Server의 toolFilter를 유지하며, 가져온 자료의 인증·페이지 정보 부족을 partial 사유로 남긴다. 실제 스캐너 출력·확정 정답으로 사용하지 않는다. 아래 예제는 기존 설명용 가상 데이터로 유지한다.
 
 설정과 Tool 목록만 수집한 예제다. 제품 버전은 미확인, MCP 응답은 기준 버전으로 수집했다는 가정이다. 원본 요청·페이지 응답은 source_ref가 가리키는 가상 증적에 있고 아래 definition은 Tool 객체만 포함한다.
 
@@ -651,7 +653,9 @@ scope 후보: gateway_config/node_config/skill_files/plugin_manifest/server_disc
 
 ## 11. PR #5 실제 스캐너 출력 → 공통 스냅샷
 
-PR #5의 `agent-scope.scanner.openclaw-mcp-config / 0.1.0-draft`는 공통 InventorySnapshot이 아니다. 현재 구현은 JSON/JSON5의 `mcp.servers`만 읽는다. Node 설정, MCP 목록 조회, Skill/Plugin, 전역 자산 ID, 관계 생성은 후속 구현이다. 어댑터 없이 대시보드가 공통 출력으로 읽어서는 안 된다.
+PR #5의 `agent-scope.scanner.openclaw-mcp-config / 0.1.0-draft` 등은 스캐너 내부 출력이며 공통 InventorySnapshot과 구분한다. 2026-11-13 확인한 HEAD에는 Gateway/Node 등록 영역·Plugin manifest, sslVerify/toolFilter 값 수집, 저장된 목록 4종(Tool·Resource·ResourceTemplate·Prompt), 선언-카탈로그 연결, Plugin/Skill·Gateway/Node identity·Permission/Auth 원천 수집 모듈이 있다. live_discovery는 명시적으로 선택한 서버 하나의 목록을 조회하며 직접 OpenClaw 조회·HTTPS 시험 기능도 추가됐다. 실제 OpenClaw 실행·실제 원격 서버·팀 테스트베드 전체 연동은 검증 완료로 보고되지 않았다.
+
+PR #13에는 이미 `dashboard/pipeline/agentscope_pipeline/adapter.py`가 있다. 설정 사본에 스캐너를 실행한 출력과 테스트베드 raw를 공통 스냅샷으로 변환하고 탐지·QA·화면 데이터를 생성한다. 새 어댑터를 중복 작성하기보다 기존 경로를 재사용하고 최신 스캐너 필드와 맞춘다. 해당 파이프라인이 실제 팀 환경에서 모든 수집 경로를 실행했다는 뜻은 아니다. 현재 버전·Gateway 참조·집계는 15절을 따른다.
 
 | 실제 출력 | 공통 위치·처리 | 현재 한계 |
 |---|---|---|
@@ -679,7 +683,7 @@ PR #5의 `agent-scope.scanner.openclaw-mcp-config / 0.1.0-draft`는 공통 Inven
 
 - 서버 항목을 읽었으면 `DECLARED=true`를 설정 증적과 함께 기록한다. `enabled=false`여도 선언 자산은 남긴다.
 - DISCOVERED를 연결 성공 의미로 만들지 않는다. EXPOSED·POTENTIALLY_CALLABLE·CALLABLE·USED는 이 출력만으로 확정하지 않는다.
-- `sslVerify`, `toolFilter`, `codex`, timeout은 현재 other_declared_keys에 이름만 남는다. S2·S5 판정에는 필요한 값의 추가 수집이 필요하다.
+- 최신 #5는 선언된 `sslVerify` boolean과 `toolFilter` include/exclude 배열 값을 수집한다. 생략 시 기본값을 만들지 않고 잘못된 자료형은 issues와 partial로 남긴다. codex·timeout 등 다른 필드의 값 지원은 별도로 확인한다. 값 수집은 실제 정책 적용·연결 안전성·노출 판정과 별개다.
 - `credentials.*.present=true`는 설정 항목의 존재다. 인증 성공이나 참조한 실제 비밀값의 존재가 아니다. credential_refs.presence도 **선언 참조 존재**로 해석하며 유효성 검증과 구분한다.
 - 일반 env 항목을 모두 자격증명 자산으로 만들지 않는다. 인증 목적과 안전한 원천 위치가 확인된 항목만 permission_auth(authentication)으로 정규화한다.
 
@@ -696,6 +700,25 @@ PR #5의 `agent-scope.scanner.openclaw-mcp-config / 0.1.0-draft`는 공통 Inven
 
 등록 영역 미선언과 빈 영역은 모두 환경 전체 자산의 부재를 증명하지 않는다. Diff는 동일 파일·동일 범위를 비교하고, include 등 미해석 가능성이 있으면 removed_from_scope를 생성하지 않는다.
 
+
+### 11.3 Tool 출력의 공통 계약 변환 제안
+
+설정 수집과 `agent-scope.scanner.mcp-tools-catalog / 0.1.0-draft`는 별도 입력이다. 아래는 공통 변환의 검토 규칙이며 확정 계약이 아니다. 선언-카탈로그 연결 모듈과 대시보드 어댑터는 이미 존재하므로 실제 필드 대응과 제약을 확인하며 재사용한다.
+
+| 실제 출력·상황 | 공통 계약에서 검토할 처리 |
+|---|---|
+| `source.registry_path` | 선택한 설정 영역을 증적·수집 scope에 보존한다. 한 실행은 한 영역만 수집한다. |
+| `server_ref`, `registration_key`, `registry_path` | 내부 라벨·참고값이다. 환경·프로필·선언 주체·논리 경로로 Server를 검증한 뒤 owner_ref를 연결한다. 이름만으로 조인하지 않는다. |
+| `tools[].internal_ref` | 위치 기반 내부 참조다. 영속 asset_id로 복사하지 않는다. 같은 서버의 동명 항목은 임의 병합하지 않고 충돌 처리 규칙을 합의한다. |
+| `tools[].definition` | 가림·정규화된 공식 객체를 mcp.definition 후보로 사용한다. definition_altered·redactions를 증적에 보존한다. |
+| `definition_status`, `definition_issues`, `spec_conformance` | 제한된 구조 검사 결과를 증적에 보존한다. 수집 complete와 규격 적합성·호출 가능성은 별개다. inputSchema 누락 등 잘못된 정의의 공통 계약 수용 방식은 추가 합의가 필요하며 정상 객체로 보정하지 않는다. |
+| `collection_status`, `tool_count_complete` | complete/partial/failed를 success/partial/failed로 대응한다. 정상 empty_list의 0과 실패 시 null을 구분하고 불완전 건수는 하한으로 표시한다. |
+| `source.live_server_query`, `source.source_kind`, `servers[].live` | 저장 응답과 실제 stdio 조회를 구분한다. 저장 응답은 imported_catalog 후보이며 live stdio의 mode는 현 enum에 없으므로 확정 전에 정한다. |
+| 페이지 실패·커서 잔존·시간/개수 제한 | 확보한 Tool과 사유를 유지하되 전체 목록 완료·이전 Tool 삭제를 주장하지 않는다. |
+
+2026-11-11 확인한 PR #5의 Tool 모듈은 `2025-11-25`와 `2026-07-28`을 각각의 버전 규칙으로 처리한다. 저장 응답은 선언된 버전, stdio 조회는 실제 협상된 버전을 사용하며 미선언·미지원 버전은 추정하지 않는다. 2025-11-25에 2026-07-28의 resultType·ttlMs·cacheScope 필수 조건을 적용하지 않는다. 따라서 P0의 2025-11-25 응답을 미지원하는 구현 공백은 해소됐다. P0 파일의 실제 협상 버전은 그대로 유지한다. 개발용 서버 stdio 검증은 담당자 보고이며 실제 팀 P0 서버 연동 검증은 별도로 남아 있다.
+
+Tool 원래 name과 검증된 Server 소속을 식별에 사용한다. Gateway의 `<server>__<tool>`·Node의 `<server>_<tool>` 투영 이름으로 원래 name을 대체하지 않는다. 필터 일치만으로 EXPOSED·CALLABLE을 true로 만들지 않는다. 인증 맥락·관측 시각·수집 시작/종료 시각 등 원본에 없는 공통 필수 정보는 별도 제공·검증해야 한다.
 
 ## 12. 스캐너·대시보드 출력 형식 조정안
 
@@ -832,22 +855,11 @@ changes 원소 후보: asset_id:string, change_type:string(added/modified/remove
 
 ### 12.7 Gateway 독립 자산 및 구버전 전환
 
-Gateway를 독립 자산으로 포함하는 8종 분류를 사용한다. context.gateway_ref는 같은 스냅샷의 Gateway asset_id를 참조한다. 이름만으로 구버전 문맥을 자산화하지 않고 실제 identity·증적을 확보해 매핑한다. Server owner_ref·TargetRef·관계·집계·GroundTruth를 함께 전환한다. 0.6.0-draft의 7종 입력은 명시적 어댑터 없이 새 계약으로 수용하지 않는다. 구현 전환 완료는 실제 출력으로 검증한다.
+Gateway를 독립 자산으로 포함하는 8종 분류를 사용한다. context.gateway_ref는 같은 스냅샷의 Gateway asset_id를 참조한다. 이름만으로 구버전 문맥을 자산화하지 않고 실제 identity·증적을 확보해 매핑한다. Server owner_ref·TargetRef·관계·집계·GroundTruth를 함께 전환한다. 구버전 입력은 버전과 실제 구조를 확인해 명시적으로 변환한다. 현재 0.6.0-draft 어댑터 출력에도 Gateway 포함 8종이 있으므로 버전 문자열만으로 자산 유형 수를 판단하지 않는다. 구현 전환 완료는 실제 출력으로 검증한다.
 
-### 12.8 PR #6 표시 모델과의 변환
+### 12.8 표시와 집계
 
-| PR #6 | 이 문서의 공통 계약 | 변환·표시 규칙 |
-|---|---|---|
-| `MCP_SERVER` 등 대문자 유형 | 3절의 소문자 asset_type | 명시적 enum 매핑. Gateway는 gateway 자산, Resource/Prompt는 resource_prompt + subtype |
-| 단일 `state` | `project.state_assessments[]` | 선택 Agent/Host의 판정과 근거를 표시. 한 상태로 원본 배열을 덮어쓰지 않음 |
-| Asset의 `source` | product.source_ref / evidence_refs | 표시 출처와 관계의 출발점 필드를 혼용하지 않음 |
-| Asset의 `confidence` | 각 상태·관계·탐지 결과의 신뢰도 | 자산 전체에 HIGH를 일괄 부여하지 않음 |
-| Relation의 문자열 `source/target` | source_asset_ref / TargetRef | asset 대상만 실제 자산 간선. 문맥·외부 대상은 별도 표시 |
-| `PROVIDES` | `ADVERTISES` | 서버 목록 제공 근거일 때만 변환 |
-| `CONNECTS_TO`, `EXPOSES`, `USES` | 원천 주장에 맞는 관계 또는 context | 선언→연결 성공, 노출→사용으로 자동 변환 금지 |
-| `CONTAINS/REFERENCES/AUTHENTICATES` | 12.3절 후보 또는 상세 참조 | 의미·방향 합의 전 임의 확정 간선 생성 금지 |
-| HIGH/MEDIUM/LOW | 탐지 confidence는 high/medium/low | 관계 confirmed는 직접 관측 주장. 단순 대소문자 변환으로 탐지 HIGH와 동일시하지 않음 |
-| Normal/Warning/High | 평가 범위·결과 + 경고 severity | unknown/not_evaluated/error를 Normal로 표시하지 않음 |
+자산 유형은 3절의 소문자 `asset_type`을 사용한다. 상태는 `project.state_assessments[]`의 대상·값·근거를 보존하고 단일 대표 상태로 원본 배열을 덮어쓰지 않는다. 관계는 `source_asset_ref`와 `TargetRef`로 읽는다. 상태·관계·탐지 결과의 신뢰도를 구분하고 `unknown`·`not_evaluated`·`error`는 정상으로 표시하지 않는다.
 
 Total Assets는 8종 고유 asset_id 수, Total Relations는 저장된 고유 relation_id 수다. Gateway 묶음·target_refs로 만든 보조 선은 두 집계에서 제외한다. Detected Alerts는 선택 report의 alerts 수이며 High Risk Assets는 high/critical 경고의 asset_ids 합집합이다. 하나의 자산에 경고가 여러 개 있어도 자산 수는 한 번만 센다.
 
@@ -913,13 +925,13 @@ detected/not_detected는 필요한 입력·비교 기준이 확보됐을 때만 
 
 | 시나리오 | 공격표면(PR #7) | 필요한 입력 | 정적 판정의 한계·PR #5 지원 |
 |---|---|---|---|
-| S1 비인가 서버 등록 | A | 선언 Server + 버전 있는 승인 목록 | 등록은 수집 가능, 승인 목록은 별도 제공 필요. 등록만으로 노출 완료를 주장하지 않음 |
-| S2 과도한 권한 도구 광고 | B | Tool 광고 + 허용 범위 정책 + 관측한 권한/필터 | PR #5에는 Tool·필터 값 없음. description/inputSchema만으로 실효 접근 권한 확정 금지 |
+| S1 비인가 서버 등록 | A | 선언 Server + 버전 있는 승인 목록 | #19 승인 목록은 develop 병합. #13 정적 탐지 구현 존재. 실제 VM 위험 구성·노출 확인 완료와 구분 |
+| S2 과도한 권한 도구 광고 | B | Tool 광고 + 허용 범위 정책 + 관측한 권한/필터 | #5는 Tool·필터 선언값 수집, #13은 정적 탐지 구현. description/inputSchema만으로 실효 접근 권한 확정 금지 |
 | S3 도구 이름 충돌 | B | 서로 다른 owner_ref의 Tool 공식 name | 목록 수집 후 가능. 동일 Agent의 노출명 충돌은 추가 문맥 필요. 동명을 악성 위장 확정으로 표현하지 않음 |
 | S4 자격증명 공유 | C | namespace·provider·안전한 reference_id + 서버별 대상·scope | 일부 참조 메타데이터만 있음. 같은 env 이름만으로 동일 Credential 확정 금지 |
-| S5 연결 보안 | A | 전송 방식·URL·sslVerify + 적용 신뢰 정책 | URL/transport 일부만 수집. sslVerify 값은 미수집. stdio는 해당 없음, 생략은 false가 아님 |
+| S5 연결 보안 | A | 전송 방식·URL·sslVerify + 적용 신뢰 정책 | #5는 sslVerify 선언값 수집, #13은 정적 조건 평가 구현. 실제 인증서 검증 동작과 구분. stdio는 해당 없음, 생략은 false가 아님 |
 
-S2의 B 분류는 PR #7 기준이며 권한 검토에는 C 영역 근거도 사용한다. 시나리오 구현 우선순위는 데이터 의미와 별개다. PR #4의 S1→S2→S4→S3→S5와 PR #7의 번호순 우선순위는 담당자 합의 대상으로 남긴다.
+S2의 B 분류는 PR #7 기준이며 권한 검토에는 C 영역 근거도 사용한다. 시나리오 구현 우선순위는 데이터 의미와 별개다. PR #7 expected-results는 S1→S2→S4→S3→S5 순서로 우선순위를 제시한다. 적용 범위와 실제 검증 일정은 담당자 합의 대상으로 남긴다.
 
 ### 13.4 미확인 평가 예제
 
@@ -954,7 +966,7 @@ S2의 B 분류는 PR #7 기준이며 권한 검토에는 C 영역 근거도 사�
 
 ## 14. 토큰 사용량·비용 계약
 
-PR #3은 OTLP Span → Go 귀속 Result → 누적 메트릭과 Python 보고서를 구현한다. 아래 UsageReport는 그 출력을 자산 화면에 연결하기 위한 **어댑터 계약 제안**이며 PR #3에 이미 있는 JSON 출력 형식이 아니다.
+PR #3의 현행 MVP는 원본 OTLP 스팬 → Go 귀속 계산 → usage.json 생성기와 읽기 전용 사용 현황 API, 결과별 토큰 계산·소비 브레이크 플러그인으로 구성된다. 아래 계약은 구현된 출력과 조정하는 **공통 계약 초안**이다. 구현 README에는 0.6.0-draft 참조와 이전 배분식이 남아 있어 본 문서의 0.7.0-draft 및 현행 계산 버전과 함께 정리해야 한다. 이전 Collector 커넥터·Grafana 중심 설명은 과거 검토 기록이며 현행 MVP 범위로 간주하지 않는다.
 
 ### 14.1 UsageReport와 UsageRecord
 
@@ -974,7 +986,7 @@ UsageRecord의 별도 선택 표기가 없는 필드는 필수다.
 | mapping_evidence_refs | string[] | matched면 연결 snapshot의 증적 하나 이상, 그 외 [] 허용 |
 | pattern | enum | sequential/parallel/batch/unattributed |
 | duration_ms | number 또는 null | HasDuration=false이면 null, 단위 ms |
-| approx_input_tokens | integer 또는 null | HasTokens=false 또는 비순차이면 null. 0 이상 |
+| approx_input_tokens | integer 또는 null | 순차 귀속값 또는 근거를 갖춘 병렬·배치 배분값. 계산 불가·귀속불가는 null. 0 이상 |
 | negative_delta / missing_timestamps | boolean | 보정·시각 누락 표시 |
 | model / provider / closing_model_span_id | string 또는 null | 닫는 model.call 기준. 원천이 없으면 null |
 | attribution_method / attribution_version | string | 계산법·구현 버전 식별 |
@@ -990,45 +1002,40 @@ pricing 필수 필드: `source:string`(config/reference_list_price/placeholder/u
 ### 14.2 집계·연결 규칙
 
 1. 기본 순차 근사식은 `next.input - prev.input - prev.output`이다. PR #3 Go 옵션으로 cache read/write를 포함할 수 있으므로 옵션과 계산 버전을 보존한다. 음수 보정 0은 negative_delta=true와 함께 표시하며 정확한 0 토큰으로 해석하지 않는다.
-2. parallel/batch/unattributed는 도구별 토큰·비용을 임의 균등 배분하지 않는다. approx_input_tokens와 estimated_cost_usd는 null로 두되 호출 수·관측 실행 시간은 별도로 유지한다.
+2. parallel/batch는 구간 내 모든 결과의 토큰 수와 구간 증가분이 확보된 경우 PR #3의 배분값을 수용하는 안으로 갱신한다. 결과당 고정분 k를 먼저 주고 나머지를 결과별 토큰 수 비율로 배분하며, 구간 합계를 보존한다. `attribution_method`는 parallel-token-count/batch-token-count, 현행 `attribution_version`은 attribution-go/0.4.0이다. 사용한 k와 근거는 limitations, 결과별 계산 근거는 evidence_source_refs에 보존한다. 일부 결과의 토큰 수가 없거나 일부 블록만 계산됐다면 해당 구간은 null을 유지한다. unattributed도 null이며 호출 수·관측 시간은 보존한다. 음수 증가분 보정은 negative_delta로 구분한다. 배분 경계 조건·QA 허용 오차는 #15에서 합의한다.
 3. 이 근사값은 도구 결과가 다음 모델 입력에 기여한 추정량이다. 전체 모델 입력·출력·캐시 비용 또는 실제 청구액과 더해서 총비용을 만들지 않는다.
-4. PR #3은 `<server>__<tool>`에서 서버 이름을 추출하지만 공통 asset_id가 없고 메트릭 차원에도 환경·프로필 ID가 없다. 주입한 환경 ID와 검증된 노출명 매핑을 사용한다. 이름만으로 여러 서버의 동명 Tool을 연결하지 않는다.
+4. PR #3은 InventorySnapshot의 소속 Server 설정 키와 Tool 원래 name으로 Gateway의 정규화된 `<server>__<tool>` 및 Node의 `<server>_<tool>` 노출 이름을 재현해 매핑한다. 환경·프로필 ID는 호출 측에서 주입한다. 근거가 있는 후보가 하나면 matched, 여러 개면 ambiguous, 후보·스냅샷이 없으면 unmatched다. 내부 이름만으로 여러 서버의 동명 Tool을 연결하지 않는다. 서버 키의 config_path/name 대체 규칙과 Plugin 도구 소속은 공통 계약과 추가 조정하고 실제 테스트베드 스냅샷으로 검증한다.
 5. matched는 해당 snapshot·문맥에서 후보가 하나이며 매핑 근거가 있을 때만 가능하다. builtin 도구에 가짜 MCP 자산을 만들지 않는다. 매핑이 없으면 호출 통계는 보존하고 자산별 합계에서 별도 미귀속으로 표시한다.
-6. 메트릭은 cumulative다. 여러 scrape 값을 단순 합산하지 않는다. 기간 증가량과 재시작을 고려하며, 메트릭만으로 원래 호출별 UsageRecord나 누락된 trace를 복원하지 않는다. 집계 API는 별도 계약이 필요하다.
-7. usage_id로 중복 제거하고 같은 호출의 수정 결과는 버전 정책에 따라 교체한다. PR #3의 완료 run 보존 기간 이후 재전송까지 영구 중복 방지가 보장된다고 가정하지 않는다.
+6. 호출별 기록은 원본 스팬에서 생성하며 누적 메트릭의 여러 scrape 값을 합산하거나 호출 기록을 복원하지 않는다. 사용 현황 API는 이미 구현돼 있으며 응답 계약과 UI 타입을 추가 조정한다(14.3절).
+7. usage_id는 호출 식별자로 유지하고 같은 호출의 수정 결과는 버전 정책에 따라 교체한다. PR #3 담당자는 리포트 ID 해시에 토큰·비용·매핑·근거 등 레코드 내용을 반영했다고 보고했다. 내용이 바뀐 리포트와 동일 호출을 구분해 소비자 중복 수신·갱신을 검증한다. 이번 문서 수정에서 해당 테스트를 재실행하지 않았다.
 8. 런타임 기록은 정적 snapshot의 USED/CALLABLE을 덮어쓰지 않는다. 사용 사실을 표시하려면 자산 매핑과 실행 증적을 연결하고, 호출 span의 존재만으로 실행 성공을 주장하지 않는다.
 
-## 15. 전체 PR 검토 기록과 불일치
+### 14.3 구현된 사용 현황 API와 남은 연동
 
-검토 범위는 GitHub에서 조회한 열린 PR 6개의 변경 파일·문서·데이터 출력 경로다. 코드의 런타임 전체 검증이나 모든 PR의 승인 여부를 판정하는 리뷰는 아니다. 모두 open/unmerged이며 아래 commit을 기준으로 확인했다. 로컬 v0.5 편집 내용을 보존해 통합했다.
+`/api/v1/usage/` 아래 summary, by-asset, records, timeseries, assets/{asset_id}, brake-events, health가 구현돼 있다. 고정 파일 모드와 기본 15초 간격 재계산의 live 모드를 제공한다. live 재읽기 실패 시 이전 데이터를 유지하고 health=degraded로 알린다. 소비자는 이전 데이터와 최신 정상 관측을 구분해야 한다.
 
-| PR | 기준 HEAD | base | 스키마에 반영한 내용 |
-|---|---|---|---|
-| [#1 기획·공격표면·스키마](https://github.com/pbh0330/2026-Agent_Scope/pull/1) | `03fa4cabda5ee7bc3f8cd01a2096b1873136fb84` | develop | 공식 객체/제품 설정/프로젝트 해석 분리, 6개 상태, 증적·수집 결과 |
-| [#3 토큰 수집·비용](https://github.com/pbh0330/2026-Agent_Scope/pull/3) | `b3ccbb206c4443952185bc0d110344d02d06861b` | develop | 실제 Go Result·메트릭·Python 귀속, 추정/미귀속·단가·중복 규칙 |
-| [#4 테스트베드](https://github.com/pbh0330/2026-Agent_Scope/pull/4) | `53ada7c8742b24c03a966f541549f8de3dd40cdc` | main | VM 2대, P0/P1/P2, SNAP 라벨, 수동 Ground Truth |
-| [#5 스캐너](https://github.com/pbh0330/2026-Agent_Scope/pull/5) | `0c9a230a5db6cd39ed9143f2e4c2e5440d5bedd5` | main | 실제 내부 형식·수집 상태·값 미수집·비밀값 가림의 변환 규칙 |
-| [#6 대시보드](https://github.com/pbh0330/2026-Agent_Scope/pull/6) | `b34cb3bd7d27c0f806f6368aa73bda09b1efd265` | main | 자산/관계/경고 화면, 상태·유형 변환, 관계·경고 Diff |
-| [#7 위협 시나리오](https://github.com/pbh0330/2026-Agent_Scope/pull/7) | `f8adc5eb44b7f3cf59a9c4b995a40819ae39ea32` | main | S1~S5, 조건·평가·경고·근거·QA 연결 |
+API 집계 응답은 UsageReport 파일과 별도 형식이다. UI 필드·유형 표기, 조회 구간, 페이지 처리, unmatched 묶음 표시, 계산 불가와 0 구분, 스냅샷 연결을 합의해야 한다. 플러그인 소비 브레이크의 경고·승인 요청·차단 기록은 S1~S5 SecurityAlert와 자동 통합하지 않는다. 실제 테스트베드 InventorySnapshot 연결 및 UI 연동 완료는 아직 확인되지 않았다.
 
-### 15.1 구현 전에 해소할 차이
+근거: [UsageReport README](https://github.com/pbh0330/2026-Agent_Scope/blob/6e4cf5c0cf7116821d48fd3231c7cb2a6595a4ae/token-collector/backend/usagereport/README.md), [API README](https://github.com/pbh0330/2026-Agent_Scope/blob/6e4cf5c0cf7116821d48fd3231c7cb2a6595a4ae/token-collector/backend/usageapi/README.md). 최신 토큰 구현 6e4cf5c의 UsageReport는 0.7.0-draft를 출력하고 README는 고정분 k 배분식을 반영한다. 배분 허용 오차는 합의 대상이다.
 
-| 항목 | 확인한 차이 | 이번 정리의 제안·담당 |
-|---|---|---|
-| 7종의 구성 | 로컬 스키마는 permission_auth 포함·Gateway 제외, #4·#6은 Gateway 포함. #4 GT는 resource/prompt 별도 | 8종 확정 반영. Gateway 독립 자산과 permission_auth를 모두 포함하고 구버전 변환을 검증 |
-| 실제 출력 | #5는 servers[] 내부 형식, #6 예제는 평탄 Asset, 본문은 중첩 snapshot | 11절 어댑터 구현 후 공통 연동. 세 형식을 같은 버전으로 취급하지 않음 |
-| 상태 | 단일 state와 대상별 state_assessments 차이 | 배열이 원본. UI 요약은 대상과 근거를 유지 |
-| 관계 | PROVIDES/CONNECTS_TO와 ADVERTISES/DECLARES 차이 | 의미별 명시적 변환. 근거가 있는 Gateway 자산 간선은 집계에 포함하고 그룹 보조 선은 제외 |
-| 경고 | #6 예제는 evidence·평가 상태·규칙 버전 없음 | 13절 평가 보고서로 미평가와 정상 구분 |
-| S2·S5 입력 | #5는 Tool 및 sslVerify/toolFilter 값을 제공하지 않음 | 추가 수집 전 unknown/not_evaluated. 탐지 완료로 표시하지 않음 |
-| 설치 버전 | #4는 2026.9.6 고정 계획, #5 README/매핑은 2026.9.5 언급 | 테스트베드 담당이 실제 버전·commit 확인. 계획값을 observed 환경 버전에 복사하지 않음 |
-| Node 수집 | #4는 nodeHost.mcp.servers 관측 계획, #5는 mcp.servers만 구현 | 별도 수집 scope와 실패 상태 필요. 설치 버전 실측 전 공식 지원 확정 아님 |
-| 사용량 ID | #3은 이름·trace 중심, 자산 ID·환경 차원 부족 | 14절 매핑·미귀속 처리. 이름 기반 조인 금지 |
-| 정답·기준선 | #4의 SNAP-1 ‘0건’은 Node/정책/번들 자산을 포함하는 전체 수와 충돌 가능 | 0건 대상 범위를 명시. VM 라벨과 수집 snapshot_id 분리 |
-| 비교 | #6은 자산·관계·경고 Diff, 이전 초안은 자산만 | 12.9절 확장. 수집 실패·미평가를 삭제·해결로 취급하지 않음 |
-| 병합 기준 | #1·#3은 develop, 나머지는 main | 통합 브랜치 전략과 적용 commit을 팀에서 정리. 이 문서 수정으로 base를 변경하지 않음 |
+## 15. 확정 범위와 현재 적용 상태
 
-PR #3에는 이전 리뷰에 대한 수정 응답과 코드 변경이 있다. 이번 검토는 최신 출력 구조를 반영했으며 과거 지적을 미수정 결함으로 다시 단정하지 않는다. PR에 적힌 테스트 통과 기록을 이번 작업에서 재실행한 결과로 보고하지 않는다.
+기준일은 2026-11-17이다. 확정된 분류, 구현에서 확인한 동작, 계약 초안을 구분한다. 본문의 필수 필드·관계 후보는 0.7.0-draft 계약 제안이며 전체 합의 완료를 뜻하지 않는다.
+
+| 구분 | 현재 기준 |
+|---|---|
+| 확정된 자산 분류 | Gateway 포함 8종: gateway, node, mcp_server, tool, resource_prompt, skill, plugin, permission_auth |
+| 계약 문서 | 데이터 계약 0.7.0-draft. 필드·관계·ID·검사기 전체 확정은 별도 협의 대상 |
+| 실제 출력 버전 | 대시보드 어댑터 InventorySnapshot은 0.6.0-draft, 최신 UsageReport는 0.7.0-draft. 버전별 호환성은 별도 검증 |
+| 저장 자료 연동 | 스캐너 0b2ff6b → 어댑터 cef7f2f → 탐지·비교, 11개 구성 연결. Gateway 참조는 실제 Gateway asset_id로 연결됨 |
+| P0 집계 범위 | 원천 자산/관계 17/16, 어댑터 출력 20/18. 추가 정책/인증 자산 3개·APPLIES_TO 3개와 PAIRED_WITH 미생성의 차이를 보존 |
+| 식별자 | 구현은 환경+canonical key 기반 ID를 사용. 저장 입력 3회 재현성 확인. 최종 공통 ID 알고리즘·프로필/복제 범위는 미확정 |
+| 정책 관계 | APPLIES_TO·AUTHENTICATES는 현재 구현 관계. 공통 허용값·target_refs와의 집계 규칙은 미확정 |
+| 구성 출처 | S1/S2/S3/S4는 VM 저장 수집본. S1-T5/S5-T1~T3은 설정 사본이며 변경 서버의 실제 노출은 미확인 |
+| 최신 대시보드 | ba926b5: 자산 현황·자산 지도·위협과 조치 3개 화면. expected/diff/qa 출력 파일은 유지. 최신 화면·파이프라인은 QA 실행 전 |
+| QA 확인 범위 | cef7f2f 기준 저장 입력 3회, 독립 검사 179개 통과. 43개 TC는 10 Pass·3 Blocked·30 NOT_RUN. 실제 VM 재수집·화면·사용량 API·전체 0.7 계약 검증은 포함하지 않음 |
+
+현재 원천: [스캐너 #5](https://github.com/pbh0330/2026-Agent_Scope/pull/5) `0b2ff6b`, [대시보드 #13](https://github.com/pbh0330/2026-Agent_Scope/pull/13) `ba926b5`, [토큰 #3](https://github.com/pbh0330/2026-Agent_Scope/pull/3) `6e4cf5c`, [시나리오 #7](https://github.com/pbh0330/2026-Agent_Scope/pull/7) `4b0007f`, [VM 자료 #24](https://github.com/pbh0330/2026-Agent_Scope/pull/24) `444f558`. 각 PR은 조회 시점 open이며 코드 존재·저장 자료 검증·실환경 인수를 구분한다.
 
 ## 16. GroundTruth·QA·적용 순서
 
@@ -1041,11 +1048,25 @@ PR #3에는 이전 리뷰에 대한 수정 응답과 코드 변경이 있다. �
 - 기대 평가: `condition_id`, `scenario_id`, `rule_id`, `rule_version`, `asset_gt_refs:string[]`, `expected_result`(13절 result enum), `expected_alert:boolean`, `policy_refs:object[]`. 규칙·정책 버전 없는 기대 결과를 확정 정답으로 집계하지 않는다.
 - 정답 증적: `evidence_id`, `source_ref`, `observed_at`, `redaction_status`, redacted이면 `redacted_fields:string[]`. 정답 문서의 증적 ID는 스캐너 snapshot 증적과 별도 namespace다.
 
-PR #4의 `profile`은 configuration_id로, `snapshot`은 vm_snapshot_label로 변환한다. gateway 행은 identity·증적을 확인해 gateway 자산으로 매핑하고 전체 자산 수에 포함한다. resource/prompt는 subtype으로 묶고 permission_auth 정답을 실제 구성에 따라 보완한다. asset_key → asset_id 매핑은 환경·소속·원천 식별자를 확인하며 이름만으로 연결하지 않는다.
+현재 테스트베드 P0/P1/P2 원천은 공통 GroundTruth 제안과 구조가 다르다. `asset_key`, `declared_at`, `layer`, `attributes`, `relations[].type/source/target`를 사용한다. 정답에는 PAIRED_WITH·ADVERTISES, device_id, exposed_to_agent, resource의 subtype=template이 잠정 반영돼 있다. raw 응답·관계 근거의 존재를 공통 ID·증적 namespace 변환 완료와 혼동하지 않는다.
 
-PR #4는 S1~S5 파일을 기준 프로필 대비 추가·변경분으로 제안하지만 삭제·관계 병합 규칙은 아직 없다. 따라서 이번 계약은 QA 비교 전에 **완전한 full 정답**으로 물질화하는 방식을 제안한다. 차분 파일을 완전 목록으로 읽지 않는다. 차분 형식을 유지하려면 base_ground_truth_id/version과 add/modify/remove 및 종속 관계 처리 규칙을 별도로 합의한다.
+P0 summary는 Gateway 1·Node 1·Server 1·Tool 14, 관계 16을 기록한다. 이는 테스트베드 추가 자산 범위의 집계이며 Permission/Auth까지 변환한 공통 계약의 기대 총수로 고정하지 않는다. 내장 Plugin 63종·Skill 57종은 정답 범위에서 제외된다. README의 필드 표와 실제 작성본 보충을 함께 읽는다.
 
-로컬 `QA/QA_GroundTruth.md`에도 Gateway 집계와 Gateway→Server 예시가 남아 있다. 이 문서만 수정했다고 QA 원본·PR #4가 변환된 것은 아니며, 실제 인수 시 확정된 8종 기준으로 변환·검토해야 한다.
+PR #12의 `profile`은 configuration_id로, `snapshot`은 vm_snapshot_label로 변환한다. gateway 행은 identity·증적을 확인해 gateway 자산으로 매핑하고 전체 자산 수에 포함한다. resource/prompt는 subtype으로 묶고 permission_auth 정답을 실제 구성에 따라 보완한다. asset_key → asset_id 매핑은 환경·소속·원천 식별자를 확인하며 이름만으로 연결하지 않는다. exposed_to_agent도 근거와 인가 문맥을 검토한 뒤 변환하며 필터 일치만으로 공통 EXPOSED 판정을 생성하지 않는다.
+
+PR #7의 [expected-results.md](https://github.com/pbh0330/2026-Agent_Scope/blob/f3945331e1faa7505f63dbeeafe2a6aad4811bad/docs/threat-scenarios/expected-results.md)는 P2 full 정답에 추가·삭제·변경분을 적용하고 삭제 자산을 가리키는 관계도 제거하는 변환 규칙을 제안한다. 차분 파일을 완전 목록으로 읽지 않는다. base_ground_truth_id뿐 아니라 불변 기준 버전, 변경 적용 순서·충돌 처리와 실제 변환기 검증은 공통 계약에서 확정해야 한다.
+
+### 16.1.1 시나리오 기대 결과의 변환·QA 협의 사항
+
+PR #7은 catalog_version=2.1을 rule_version으로 사용하고 condition_id를 rule_id에 대응시킨다. expected_alerts는 detected/expected_alert=true, expected_unknown은 unknown/false로 변환하는 제안이다. expected_no_alert는 조건별 적용 가능성을 검토해야 한다. 경고가 없다는 사실만으로 not_detected를 만들지 않으며 stdio의 S5처럼 적용 제외면 not_applicable로 구분한다.
+
+선택적 동반 경고의 `required:false`를 확장 필드로 유지하고 탐지율 분모에서 제외하는 제안, severity/confidence를 별도 check로 비교하고 심각도 차이를 PARTIAL로 기록하는 제안이 있다. 현행 공통 계약에서 필수·허용 규칙으로 확정한 것은 아니다. 선택 경고의 오탐 처리, 조건별 분모, unknown·not_applicable 집계와 함께 QA 담당자 합의가 필요하다.
+
+### 16.1.2 준비된 정책과 탐지 입력의 연결
+
+PR #19로 병합된 [approved-servers.json](https://github.com/pbh0330/2026-Agent_Scope/blob/a91e7a12589dabd45dcdfbb6fee709c476607670/testbed/ground-truth/approved-servers.json)은 version=2026-10-31이며 name·declared_at_vm·registered_by·endpoint를 match_keys로 지정한다. #13 탐지기는 이 목록을 사용한다. 새 정책 연결을 중복 구현하기보다 기존 policy_refs·비교 결과를 확인한다. 실행 위치 runs_on과 선언 위치를 혼동하지 않는다.
+
+PR #7에는 expected-tool-policy.json과 S1~S5 기대 결과가 있다. #13에는 정적 탐지와 기대 결과 비교가 구현돼 있다. S1/S2/S3/S4는 VM 저장 수집본, S1-T5/S5-T1~T3은 설정 사본이다. 저장 자료의 탐지·비교 실행은 QA에서 확인했으며 실제 위험 VM 재수집·최신 화면 실행과 구분한다.
 
 ### 16.2 QAResult 계약 제안
 
@@ -1061,13 +1082,18 @@ checks의 evidence_refs는 평가 snapshot의 증적이며 정답 증적은 grou
 
 수집률은 같은 범위의 매핑된 고유 정답 자산 수 / 고유 정답 자산 수다. 선언 계층·광고 계층을 구분하고 위협 시나리오 S1/S2와 혼동되지 않도록 metric.name에 `declared_asset_recall`, `advertised_asset_recall`을 사용한다. 분모가 0이면 value=null과 limitations를 남긴다. Gateway 자산은 해당 수집 범위의 분모에 포함한다. 그룹 문맥·예시 TBD 행·수집 범위 밖 자산은 분모에서 제외하되 제외 범위를 명시한다. 이름 중복을 정답 일치로 계산하지 않는다.
 
-### 16.3 다음 구현과 검증 순서
+### 16.3 계약 합의와 추가 검증 범위
 
-1. **확정 범위 적용:** 8종 자산·Gateway 독립 자산화를 반영하고, ID 생성과 관계 이름, 실제 OpenClaw 버전, evidence 저장 위치를 담당자들이 확인한다.
-2. **첫 연동:** PR #5 내부 출력에 실행 메타데이터를 붙여 InventorySnapshot으로 변환한다. 선언 Server·수집 결과·증적부터 대시보드에서 읽는다.
-3. **수집 확장:** Node·MCP 목록·정책·Skill/Plugin과 sslVerify/toolFilter 값을 실제 테스트베드에서 확인한다. 문서 필드가 있다는 이유로 수집 완료 처리하지 않는다.
-4. **분석 연동:** 버전 있는 정책과 S1~S5 평가 보고서를 제공한다. 규칙별 unknown/not_applicable 및 경고 근거 연결을 검증한다.
-5. **사용량·QA:** 안전한 자산 매핑, 추정/미귀속 표시, full GroundTruth와 ID 매핑으로 비교한다.
-6. **계약 고정:** JSON Schema·참조 무결성 검사기·생산자/소비자 어댑터와 실제 예제를 같은 버전으로 확정한다. v0.5·v0.6·v0.7을 같은 형식으로 자동 수용하지 않는다.
+확정된 8종 분류와 15절의 저장 자료 검증 범위로 현재 결과를 공유할 수 있다. 아래는 전체 공통 계약 확정·실환경 인수에 필요한 후속 범위이며 현재 자료 제출의 일괄 선행 조건은 아니다.
 
-최소 인수 예제는 정상 빈 등록 영역, 영역 미선언, 파일 실패, 부분 수집/include, 가려진 등록키, 동명 Tool, 목록 페이지 실패, 권한/인증 참조, 미평가 탐지, 경고 근거, 관계·경고 Diff, 병렬/미귀속 사용량이다. 8절과 13.4절은 설명용 JSON이며 이 전체 인수 검증을 대체하지 않는다.
+| 항목 | 남은 합의·검증 |
+|---|---|
+| 계약·버전 | 실행 가능한 JSON Schema·참조 검사·공통 예제, InventorySnapshot/UsageReport 버전별 변환 또는 비호환 거부 |
+| 공통 ID | 환경·프로필·원천 키·직렬화·해시·충돌 처리와 기대 ID 벡터 |
+| 정책·페어링 | permission_auth target_refs·하위유형·집계, 구현 관계와 공통 관계의 대응, 실제 페어링 정상/실패/재페어링 증적 |
+| 소비자 검증 | 중복 ID·없는 참조·잘못된 TargetRef, 유효 partial 수용, 상태 false/null·정책 참조·매핑 모호성 |
+| 사용량 연동 | 동일 환경·프로필·자산 ID의 파일/API/화면 연결, 미귀속·모호성·페이지 집계, k 배분 경계·합계·허용 오차 |
+| 실환경·화면 | 실제 P0 재수집 및 최신 화면 확인. 선언·노출·호출과 자격증명 참조·실제 전송을 구분하고 실행 위치는 별도 근거로 표시 |
+| 시나리오 QA | S3 outputSchema 비교와 최상위 $schema 제외, 선택 경고·unknown/not_applicable·심각도 차이의 판정·분모 |
+
+최소 인수 예제는 정상 빈 등록 영역, 영역 미선언, 파일 실패, 부분 수집/include, 가려진 등록키, 동명 Tool, 목록 페이지 실패, 권한/인증 참조, 미평가 탐지, 경고 근거, 관계·경고 Diff, 병렬/미귀속 사용량이다. 설명용 JSON 예제는 인수 검증을 대신하지 않는다.
