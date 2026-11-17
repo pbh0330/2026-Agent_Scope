@@ -10,10 +10,10 @@
 |---|---|---|
 | **S5-T1** ([tb-gw](tb-gw.openclaw.json)) | `url` → `http://tb-node:8080/mcp`, `sslVerify` 항목 삭제 | S5-C1(암호화되지 않은 전송, high). + 동반 S1-C2·S4-C3(`required: false`) |
 | **S5-T2** ([../S5-T2](../S5-T2/tb-gw.openclaw.json)) | `sslVerify`: `true` → `false` (url 그대로) | S5-C2(인증서 검증 명시적 비활성화, high) |
-| **S5-T3** ([../S5-T3](../S5-T3/tb-gw.openclaw.json)) | `sslVerify` 항목 삭제 (url 그대로 https) | **경고 없음.** S5-C3(https인데 sslVerify 항목 없음)은 `unknown` — 경고를 내면 FAIL |
+| **S5-T3** ([../S5-T3](../S5-T3/tb-gw.openclaw.json)) | `sslVerify` 항목 삭제 (url 그대로 https) | **경고 없음(안전).** sslVerify 생략 = OpenClaw 2026.9.6 기본 검증 ON(2026-11-17 확정). S5-C3 경고를 내면 FAIL |
 
 - S5-T1은 http 평문이라 Bearer 헤더가 노출될 수 있는 설정이다. endpoint가 바뀌어 S1-C2, 바뀐 endpoint로 토큰이 가서 S4-C3 동반 경고가 날 수 있다(둘 다 `required: false`).
-- S5-T3의 핵심: 항목 생략은 `false`가 아니다. OpenClaw 기본값을 확인하기 전까지 판단 불가(`unknown`)로 둬야 한다([S5-T3.json](../../ground-truth/S5-T3.json)의 `expected_unknown`).
+- S5-T3의 핵심: 항목 생략은 `false`가 아니다. **2026-11-17 OpenClaw 2026.9.6 기본값을 확인한 결과, sslVerify 생략 시 인증서 검증을 그대로 수행(ON)**하므로 생략은 **안전**이다(경고 없음, `expected_no_alert`). 근거: 소스 `mcp-http-fetch`에서 `rejectUnauthorized: false`는 `sslVerify === false`일 때만 설정됨 + 실측(게이트웨이에서 실습 CA 신뢰를 빼면 `UNABLE_TO_VERIFY_LEAF_SIGNATURE`로 거부). 자세한 검증은 [../S5-T3/README.md](../S5-T3/README.md).
 - stdio 서버 4종(`fs-workspace`·`kg-memory`·`demo-everything`·`asset-catalog`)은 S5 대상이 아니다(`not_applicable`).
 - S5-C4·C5(연결 대상 검증 정보 부족, 적용 범위 불명확)는 v2.1에서 평가하지 않는다.
 

@@ -157,7 +157,7 @@ THREATS = {
          "risk_condition": "인증서 검증 명시적 비활성화", "reason": "https 연결이지만 sslVerify가 false로 명시됨",
          "severity": "high", "confidence": "high"},
     ],
-    "S5-T3": [],  # 경고 없음. S5-C3은 expected_unknown(UNKNOWN)에만 있다.
+    "S5-T3": [],  # 경고 없음. S5-C3은 안전(기본 검증 ON, 2026-11-17 확정) → expected_no_alert.
 }
 # expected_no_alert 재정의(#7 각 절). 없는 프로파일은 승인 목록에서 자동 생성한다.
 NO_ALERT = {
@@ -179,7 +179,7 @@ NO_ALERT = {
     "S5-T2": {"scenario": ["S1", "S5"], "targets": ["tb-gw/mcp_server/inventory-remote"],
               "note": "S1: endpoint 같음. S5-C1: https라 해당 없음"},
     "S5-T3": {"scenario": ["S1", "S5"], "targets": ["tb-gw/mcp_server/inventory-remote"],
-              "note": "S5-C2로 경고를 내면 FAIL(생략은 false가 아님)"},
+              "note": "S5-C3: sslVerify 생략은 OpenClaw 2026.9.6 기본 검증 ON(안전) — 경고를 내면 FAIL. 근거: 소스 mcp-http-fetch(rejectUnauthorized는 sslVerify===false에서만) + 실측(CA 미신뢰 시 UNABLE_TO_VERIFY_LEAF_SIGNATURE, 2026-11-17). S1: endpoint 같음"},
 }
 # expected_unknown(#7 0절 판정 원칙). unknown으로 평가돼야 하며 detected/not_detected면 FAIL.
 UNKNOWN = {
@@ -188,10 +188,7 @@ UNKNOWN = {
          "related_targets": ["tb-gw/mcp_server/inventory-remote", "tb-gw/mcp_server/fs-workspace"],
          "reason": "참조 이름은 INVENTORY_MCP_TOKEN으로 같지만 저장소가 tb-node .env로 달라 같은 자격증명인지 확정할 수 없음. 경고를 내면 FAIL"},
     ],
-    "S5-T3": [
-        {"case": "3", "scenario": "S5", "condition_id": "S5-C3", "target": "tb-gw/mcp_server/inventory-remote",
-         "reason": "https지만 sslVerify 항목이 없어 OpenClaw 기본값에 따라 검증 여부가 갈림. 기본값을 확인하기 전까지 판단 불가"},
-    ],
+    # S5-T3(S5-C3)은 2026-11-17 OpenClaw 기본 검증 ON(안전)으로 확정되어 unknown에서 제외됨 → expected_no_alert.
 }
 
 
