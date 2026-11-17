@@ -9,6 +9,7 @@ import { AssetMapPage } from './pages/AssetMapPage'
 import { HomePage } from './pages/HomePage'
 import { ThreatsPage } from './pages/ThreatsPage'
 import type { Manifest } from './types/contracts'
+import { type ContractError, validateBundle } from './data/validate'
 
 export type PageKey = 'home' | 'map' | 'threats'
 
@@ -32,6 +33,7 @@ export default function App() {
   const [bundle, setBundle] = useState<Bundle | null>(null)
   const [usage, setUsage] = useState<UsageBundle | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [contract, setContract] = useState<ContractError[] | null>(null)
   const [page, setPage] = useState<PageKey>('home')
   const [focus, setFocus] = useState<{ scenario?: string; alert?: string; asset?: string }>({})
 
@@ -45,8 +47,13 @@ export default function App() {
   const entry = manifest?.snapshots.find(s => s.key === key) ?? manifest?.snapshots.find(s => s.key === DEFAULT_KEY) ?? manifest?.snapshots[0]
   useEffect(() => {
     if (!entry) return
-    setBundle(null)
-    loadBundle(entry.files).then(b => { setBundle(b); setError(null) }).catch(e => setError(String(e)))
+    setBundle(null); setContract(null)
+    loadBundle(entry.files).then(b => {
+      // 형식이 틀린 입력은 화면을 그리지 않고 위치와 원인을 보여 준다.
+      const errs = validateBundle(entry.files.snapshot, b.snapshot, entry.files.detections, b.detections)
+      if (errs.length) { setContract(errs); return }
+      setBundle(b); setError(null)
+    }).catch(e => setError(String(e)))
   }, [entry?.key, entry?.snapshot_id])
   useEffect(() => { if (manifest) loadUsageBundle(manifest).then(setUsage) }, [manifest])
 
@@ -77,7 +84,15 @@ export default function App() {
       <main className="page">
         <header className="page-head"><h1>{info.title}</h1></header>
         {error && <div className="err" role="alert">{error}</div>}
-        {!model && !error && <div className="empty">불러오는 중</div>}
+        {contract && (
+          <section className="card contract" role="alert">
+            <h2>점검 결과 파일의 형식이 맞지 않아요</h2>
+            <p>잘못된 결과를 보여 주지 않도록 화면을 그리지 않았어요. 아래 위치를 고친 뒤 다시 만들어 주세요.</p>
+            <ul>{contract.map((c, i) => <li key={i}><code>{c.file} · {c.where}</code><span>{c.message}</span></li>)}</ul>
+            {contract.length >= 50 && <p className="muted">처음 50건만 보여 줘요.</p>}
+          </section>
+        )}
+        {!model && !error && !contract && <div className="empty">불러오는 중</div>}
         {model && present && (
           <>
             {page === 'home' && <HomePage model={model} present={present} usage={usage} go={go} />}

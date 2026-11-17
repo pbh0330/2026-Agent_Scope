@@ -137,7 +137,7 @@ export const UNKNOWN_REASON: Record<string, string> = {
 /** 같은 조건이라도 자산 성격에 맞게 문구를 고른다. 로컬 실행 서버는 '주소'가 아니라 '실행 설정'이 바뀐다 */
 export function copyForAsset(ruleId: string, a?: Asset): ThreatCopy {
   const c = copyFor(ruleId)
-  if (ruleId === 'S1-C2' && a?.asset_type === 'mcp_server' && (a.project.transport ?? 'stdio') === 'stdio') {
+  if (ruleId === 'S1-C2' && a?.asset_type === 'mcp_server' && a && transportOf(a) === 'local') {
     return {
       ...c,
       title: '서버 실행 설정이 바뀌었어요',
@@ -184,7 +184,15 @@ export interface Present {
   servers: Asset[]
 }
 
-const isLocal = (a: Asset) => (a.project.transport ?? 'stdio') === 'stdio'
+/** 연결 방식. 값이 없으면 설정의 url/command로 보고, 그것도 없으면 모름(null) — 로컬로 추정하지 않는다 */
+export function transportOf(a: Asset): 'local' | 'remote' | null {
+  const t = a.project?.transport as string | undefined
+  if (t) return t === 'stdio' ? 'local' : 'remote'
+  const cfg = (a.product as any)?.config ?? {}
+  if (cfg.url) return 'remote'
+  if (cfg.command) return 'local'
+  return null
+}
 
 /** 받침에 맞는 조사: 숫자로 끝나는 이름(플러그인 2)도 읽는 소리 기준으로 고른다 */
 export function josa(word: string, withFinal: string, withoutFinal: string): string {
@@ -212,8 +220,11 @@ export function makePresent(m: Model): Present {
   const declRank = (a: Asset) => a.project.declared_by === 'plugin' ? 1 : 0
   const servers = m.ofType('mcp_server').slice().sort((a, b) => hostRank(a) - hostRank(b) || declRank(a) - declRank(b))
   const names = new Map<string, string>()
-  let local = 0, remote = 0
-  for (const s of servers) names.set(s.asset_id, isLocal(s) ? `로컬 MCP 서버 ${++local}` : `원격 MCP 서버 ${++remote}`)
+  let local = 0, remote = 0, other = 0
+  for (const s of servers) {
+    const t = transportOf(s)
+    names.set(s.asset_id, t === 'local' ? `로컬 MCP 서버 ${++local}` : t === 'remote' ? `원격 MCP 서버 ${++remote}` : `MCP 서버 ${++other}`)
+  }
   const numbered = (t: AssetType, label: string) => {
     const list = m.ofType(t).slice().sort((a, b) => hostRank(a) - hostRank(b))
     list.forEach((a, i) => names.set(a.asset_id, list.length > 1 ? `${label} ${i + 1}` : label))
@@ -265,7 +276,8 @@ export function serverLead(m: Model, p: Present, a: Asset): string {
   const h = p.hostAsset(a)
   const by = p.addedBy(a)
   const route = by ? `${p.name(by)}${josa(p.name(by), '이', '가')} 추가한` : h ? `${p.name(h)} 설정에 등록된` : '설정에 등록된'
-  return `${route} ${isLocal(a) ? '같은 장치에서 실행되는' : '인터넷 주소로 연결하는'} 서버예요.`
+  const t = transportOf(a)
+  return t ? `${route} ${t === 'local' ? '같은 장치에서 실행되는' : '인터넷 주소로 연결하는'} 서버예요.` : `${route} 서버예요. 연결 방식은 확인하지 못했어요.`
 }
 
 /** 서버의 도구·리소스 수 */

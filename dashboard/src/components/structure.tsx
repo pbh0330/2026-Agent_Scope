@@ -93,7 +93,17 @@ export function StructureMap({ model, present, mode = 'all', focus, picked, onPi
               <title>{why}</title>
             </rect>
           })}
-          {nt === 0 && <text x={C3 + 6} y={cy + 4} fontSize={11.5} fill="var(--ink-3)">도구 목록 없음</text>}
+          {nt === 0 && (() => {
+            // 빈 목록과 수집 실패를 구분한다. 실패를 '도구 없음'으로 보이지 않게 한다(QA-COL-06·08).
+            const c = toolsListOf(model, s.asset_id)
+            const ok = c?.status === 'success'
+            return (
+              <text x={C3 + 6} y={cy + 4} fontSize={11.5} fill="var(--ink-3)">
+                <title>{ok ? '서버가 알려 준 도구 목록이 비어 있어요' : c?.reason ?? '도구 목록 수집 기록이 없어요'}</title>
+                {ok ? '도구 없음' : '도구 목록 확인 못 함'}
+              </text>
+            )
+          })()}
           {nt > 0 && <text x={C3 + 14 + nt * step} y={cy + 4} fontSize={12} fontWeight={700} fill="var(--ink-2)">{st.usable}/{nt}</text>}
           {st.res > 0 && (() => {
             const rx = C3 + 14 + Math.max(nt, 1) * step + 44
@@ -133,6 +143,11 @@ export function StructureMap({ model, present, mode = 'all', focus, picked, onPi
 }
 
 /** 노출 판정 사유를 사람 말로 */
+/** 서버의 도구 목록 수집 작업 */
+export function toolsListOf(model: Model, serverId: string) {
+  return model.snapshot.collection_results.find(c => c.scope === 'tools_list' && c.target_ref === serverId)
+}
+
 export function exposureReason(r?: string): string {
   if (!r) return '이유 기록 없음'
   if (r.includes('toolFilter.include')) return '도구 필터의 허용 목록에 없음'

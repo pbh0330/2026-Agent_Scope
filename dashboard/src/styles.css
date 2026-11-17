@@ -326,3 +326,21 @@ p { margin: 0; }
 .rels li em { grid-column: 1 / -1; font-style: normal; font-size: .8rem; color: var(--ink-3); overflow-wrap: anywhere; }
 @media (max-width: 1100px) { .rels ul { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 640px) { .rels { flex-direction: column; align-items: stretch; } .rels-h { border-right: 0; border-bottom: 1px solid var(--line); padding: 0 0 10px; grid-auto-flow: column; justify-content: start; align-items: baseline; gap: 8px; } .rels ul { grid-template-columns: 1fr; } }
+
+/* 자산 지도: 점검 범위 */
+.scope { margin-top: 20px; }
+.scope-l { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 10px; }
+.scope-l > li { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start; color: var(--ink-2); font-size: .94rem; }
+.scope-l > li > svg { color: #A3A6BD; margin-top: 2px; }
+.scope-l > li.ok > svg { color: var(--ok); }
+.scope-l > li > div { min-width: 0; }
+.scope-l ul { margin: 6px 0 0; padding-left: 18px; color: var(--ink-3); font-size: .86rem; display: grid; gap: 3px; overflow-wrap: anywhere; }
+.scope-note { margin: 14px 0 0; padding-top: 12px; border-top: 1px solid var(--line); color: var(--ink-3); font-size: .86rem; }
+
+/* 계약 오류 */
+.contract h2 { font-size: 1.15rem; margin: 0 0 6px; color: var(--high); }
+.contract p { margin: 0 0 14px; color: var(--ink-2); }
+.contract ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.contract li { display: grid; gap: 2px; padding: 10px 12px; border-radius: 10px; background: var(--rose-t); }
+.contract code { font-size: .8rem; color: var(--ink-2); overflow-wrap: anywhere; }
+.contract span { font-size: .92rem; }
