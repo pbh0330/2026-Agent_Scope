@@ -11,6 +11,11 @@ export const TYPE_KO: Record<AssetType, string> = {
   gateway: '게이트웨이', node: '노드', mcp_server: 'MCP 서버', tool: '도구', resource_prompt: '리소스·프롬프트',
   skill: '스킬', plugin: '플러그인', permission_auth: '권한·인증',
 }
+/** 자산 사이 관계. 화살표 방향은 저장된 관계의 source → target 그대로다. */
+export const REL_KO: Record<string, string> = {
+  ADVERTISES: '도구·리소스 제공', DECLARES: '설정에 등록', APPLIES_TO: '권한 적용', AUTHENTICATES: '접속 인증',
+  ASSOCIATED_WITH: '함께 쓰임', PAIRED_WITH: '기기 연결',
+}
 export const TYPE_DESC: Record<AssetType, string> = {
   gateway: 'AI 에이전트가 실행되는 본체', node: '게이트웨이에 연결된 장치', mcp_server: '도구를 주는 서버', tool: '에이전트가 하는 일',
   resource_prompt: '서버가 주는 자료', skill: '작업 지침', plugin: '기능 추가 묶음', permission_auth: '토큰·접근 규칙',
@@ -40,7 +45,7 @@ export const THREAT_COPY: Record<string, ThreatCopy> = {
     title: '서버 주소가 바뀌었어요',
     why: '승인할 때와 다른 주소로 연결되고 있어요. 누군가 연결 대상을 바꿨다면 에이전트가 주고받는 내용이 다른 곳으로 갈 수 있어요.',
     steps: ['바뀐 주소가 맞는지 설정을 바꾼 사람에게 확인하세요.', '의도하지 않은 변경이면 승인된 주소로 되돌리세요.', '맞는 변경이면 승인 목록의 주소를 갱신하세요.'],
-    phrase: n => `서버 ${n}개의 주소가 바뀌었어요`,
+    phrase: n => `승인된 서버 ${n}개의 연결 설정이 바뀌었어요`,
   },
   'S1-C3': {
     title: '승인하지 않은 플러그인이 서버를 추가했어요',
@@ -124,8 +129,23 @@ export const UNKNOWN_REASON: Record<string, string> = {
   'S4-C2': '토큰 값은 보안상 읽지 않아서, 이름이 같은 두 토큰이 같은 토큰인지 알 수 없어요.',
   'S4-C4': '토큰이 가진 권한 범위는 설정 파일만으로는 알 수 없어요.',
   'S5-C3': 'https 연결인데 인증서 확인 설정이 적혀 있지 않아요. 프로그램 기본값에 따라 달라져요.',
-  'S5-C4': '연결 대상이 맞는지 확인할 정보가 부족해요.',
-  'S5-C5': '보안 설정이 어디까지 적용되는지 분명하지 않아요.',
+  'S5-C4': '서버 인증서가 진짜 그 서버 것인지는 실제로 연결해 봐야 알 수 있어요.',
+  'S5-C5': '보안 설정이 어떤 연결까지 적용되는지는 실행 중인 동작을 봐야 알 수 있어요.',
+  'S4-C1': '설정에 인증 토큰이 하나도 없어서 공유 여부를 따질 대상이 없어요.',
+}
+
+/** 같은 조건이라도 자산 성격에 맞게 문구를 고른다. 로컬 실행 서버는 '주소'가 아니라 '실행 설정'이 바뀐다 */
+export function copyForAsset(ruleId: string, a?: Asset): ThreatCopy {
+  const c = copyFor(ruleId)
+  if (ruleId === 'S1-C2' && a?.asset_type === 'mcp_server' && (a.project.transport ?? 'stdio') === 'stdio') {
+    return {
+      ...c,
+      title: '서버 실행 설정이 바뀌었어요',
+      why: '승인할 때와 다른 실행 명령이나 인자로 서버가 실행되고 있어요. 다른 프로그램이 실행되거나 서버가 열어 두는 범위가 달라졌을 수 있어요.',
+      steps: ['바뀐 실행 설정이 맞는지 설정을 바꾼 사람에게 확인하세요.', '의도하지 않은 변경이면 승인된 설정으로 되돌리세요.', '맞는 변경이면 승인 목록을 갱신하세요.'],
+    }
+  }
+  return c
 }
 
 export function copyFor(ruleId: string): ThreatCopy {
@@ -220,7 +240,8 @@ export function makePresent(m: Model): Present {
       if (srv) return a.asset_subtype === 'authentication' ? `인증 토큰 · ${name(srv)}` : `도구 필터 · ${name(srv)}`
       return a.asset_subtype === 'authentication' ? '접속 인증' : '도구 정책'
     }
-    if (a.asset_type === 'tool') return '도구'
+    // 도구 이름은 사용자가 붙인 값이 아니라 서버가 정한 기능 이름이라 그대로 보여 준다(이름 겹침 위협의 핵심 정보)
+    if (a.asset_type === 'tool') return `도구 ${a.name}`
     if (a.asset_type === 'resource_prompt') return a.asset_subtype === 'prompt' ? '프롬프트' : '리소스'
     return TYPE_KO[a.asset_type]
   }

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { AreaChart } from '../components/charts'
 import { AssetPanel, MapLegend, type MapPick, StructureMap } from '../components/structure'
 import type { Model } from '../data/model'
-import { type Present, TYPES_8, TYPE_DESC, TYPE_KO, usageToolName } from '../data/present'
+import { type Present, REL_KO, TYPES_8, TYPE_DESC, TYPE_KO, usageToolName } from '../data/present'
 import type { UsageBundle } from '../data/usage'
 import type { AssetType } from '../types/contracts'
 
@@ -38,6 +38,7 @@ export function AssetMapPage({ model, present, usage, onThreat, initial }: {
           )
         })}
       </section>
+      <RelationStrip model={model} />
 
       <section className="card">
         <StructureMap model={model} present={present} picked={pick} onPick={setPick} />
@@ -47,6 +48,38 @@ export function AssetMapPage({ model, present, usage, onThreat, initial }: {
 
       <UsageSection usage={usage} />
     </>
+  )
+}
+
+/**
+ * 자산 사이 관계: 저장된 관계를 종류별로 세고 방향(어느 자산 → 어느 자산)을 함께 적는다.
+ * 지도에 보조로 그린 선은 세지 않는다. 숫자는 스냅숏의 relations 개수와 같다.
+ */
+function RelationStrip({ model }: { model: Model }) {
+  const groups = new Map<string, { n: number; from: Set<string>; to: Set<string> }>()
+  for (const r of model.relations) {
+    const g = groups.get(r.relation_type) ?? { n: 0, from: new Set<string>(), to: new Set<string>() }
+    g.n++
+    const src = model.byId.get(r.source_asset_ref)
+    const dst = r.target.asset_ref ? model.byId.get(r.target.asset_ref) : undefined
+    if (src) g.from.add(TYPE_KO[src.asset_type])
+    g.to.add(dst ? TYPE_KO[dst.asset_type] : r.target.kind)
+    groups.set(r.relation_type, g)
+  }
+  const rows = [...groups.entries()].sort((a, b) => b[1].n - a[1].n)
+  if (!rows.length) return null
+  return (
+    <section className="rels" aria-label="자산 사이 관계">
+      <div className="rels-h"><b>{model.relations.length}</b><span>자산 사이 관계</span></div>
+      <ul>
+        {rows.map(([type, g]) => (
+          <li key={type}>
+            <strong>{REL_KO[type] ?? type}</strong><b>{g.n}</b>
+            <em>{[...g.from].join(', ')} → {[...g.to].join(', ')}</em>
+          </li>
+        ))}
+      </ul>
+    </section>
   )
 }
 

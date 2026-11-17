@@ -3,7 +3,7 @@
 import { ChevronDown, ChevronRight, Network } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import type { Model } from '../data/model'
-import { type Present, SCENARIO_KO, SEVERITY_KO, TYPE_KO, bySeverity, copyFor, isOutOfScope, isUnknown, reasonFor, serverStats } from '../data/present'
+import { type Present, SCENARIO_KO, SEVERITY_KO, TYPE_KO, bySeverity, copyForAsset, isOutOfScope, isUnknown, reasonFor, serverStats } from '../data/present'
 import type { Asset, SecurityAlert } from '../types/contracts'
 
 export function ThreatsPage({ model, present, scenario, alertId, onScenario, onShowMap }: {
@@ -19,7 +19,10 @@ export function ThreatsPage({ model, present, scenario, alertId, onScenario, onS
   const outOfScope = scoped.filter(e => isOutOfScope(e.result))
   const reasons = [...new Set(unknowns.map(reasonFor))]
   const notChecked = [...new Set(outOfScope.map(reasonFor))]
-  const [showUnk, setShowUnk] = useState(false)
+  const skipped = new Set(outOfScope.map(e => e.rule_id)).size
+  // 위협이 없는 시나리오를 열면 확인 못 한·점검하지 않은 이유를 바로 펼쳐 보여 준다.
+  const [showUnk, setShowUnk] = useState(list.length === 0)
+  useEffect(() => { setShowUnk(list.length === 0) }, [scenario, model])
 
   return (
     <>
@@ -32,7 +35,9 @@ export function ThreatsPage({ model, present, scenario, alertId, onScenario, onS
       </div>
 
       {list.length === 0 ? (
-        <section className="card empty-card">{scenario ? '이 시나리오에서는 고쳐야 할 위협이 나오지 않았어요.' : '고쳐야 할 위협이 없어요.'}</section>
+        <section className="card empty-card">{skipped
+          ? `점검한 조건에서는 위협이 나오지 않았지만, 검사하지 않은 조건이 ${skipped}개 있어서 안전하다고 확정할 수 없어요. 이유는 아래에 있어요.`
+          : scenario ? '이 시나리오에서는 고쳐야 할 위협이 나오지 않았어요.' : '고쳐야 할 위협이 없어요.'}</section>
       ) : (
         <ol className="tlist">
           {list.map((a, i) => {
@@ -41,7 +46,7 @@ export function ThreatsPage({ model, present, scenario, alertId, onScenario, onS
               <li key={a.alert_id} className={isOpen ? 'open' : ''}>
                 <button className="th" onClick={() => setOpen(isOpen ? undefined : a.alert_id)} aria-expanded={isOpen}>
                   <span className="n">{i + 1}</span>
-                  <span className="who"><b>{copyFor(a.rule_id).title}</b><small>{whereLine(model, present, a)}</small></span>
+                  <span className="who"><b>{copyForAsset(a.rule_id, primaryAsset(model, a)).title}</b><small>{whereLine(model, present, a)}</small></span>
                   <span className={`sv ${a.severity}`}>{SEVERITY_KO[a.severity] ?? a.severity}</span>
                   {isOpen ? <ChevronDown size={18} className="chev" /> : <ChevronRight size={18} className="chev" />}
                 </button>
@@ -56,7 +61,7 @@ export function ThreatsPage({ model, present, scenario, alertId, onScenario, onS
         <section className="card unk">
           <button className="unk-h" onClick={() => setShowUnk(!showUnk)} aria-expanded={showUnk}>
             <span>
-              <b>{unknowns.length ? `확인 못 한 항목 ${unknowns.length}건` : '점검하지 않은 항목'}</b>
+              <b>{[unknowns.length ? `확인 못 한 항목 ${unknowns.length}건` : '', skipped ? `점검하지 않은 조건 ${skipped}개` : ''].filter(Boolean).join(' · ')}</b>
               <small>{unknowns.length ? '위협인지 판단할 정보가 부족했던 곳이에요' : '이번 버전에서는 검사하지 않는 조건이에요'}</small>
             </span>
             {showUnk ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
@@ -66,7 +71,7 @@ export function ThreatsPage({ model, present, scenario, alertId, onScenario, onS
               {reasons.length > 0 && <ul>{reasons.map(r => <li key={r}>{r}</li>)}</ul>}
               {notChecked.length > 0 && (
                 <>
-                  <p className="unk-sub">이번 버전에서 검사하지 않는 조건 (어느 환경에서나 같아요)</p>
+                  {reasons.length > 0 && <p className="unk-sub">이번 버전에서 검사하지 않는 조건 (어느 환경에서나 같아요)</p>}
                   <ul className="muted-list">{notChecked.map(r => <li key={r}>{r}</li>)}</ul>
                 </>
               )}
@@ -88,7 +93,10 @@ function mapTarget(m: Model, p: Present, a: Asset): string {
 /** 위협이 걸린 대표 자산: 서버 → 플러그인 → 권한·인증 → 그 외 순서 */
 function primaryAsset(m: Model, a: SecurityAlert): Asset | undefined {
   const assets = a.asset_ids.map(id => m.byId.get(id)).filter(Boolean) as Asset[]
-  const order = ['mcp_server', 'plugin', 'permission_auth', 'tool', 'skill', 'resource_prompt', 'node', 'gateway']
+  // 토큰 공유(S4)는 토큰이, 그 밖에는 서버가 위협의 중심이다
+  const order = a.scenario_id === 'S4'
+    ? ['permission_auth', 'mcp_server', 'plugin', 'tool', 'skill', 'resource_prompt', 'node', 'gateway']
+    : ['mcp_server', 'plugin', 'permission_auth', 'tool', 'skill', 'resource_prompt', 'node', 'gateway']
   return assets.sort((x, y) => order.indexOf(x.asset_type) - order.indexOf(y.asset_type))[0]
 }
 
@@ -96,8 +104,10 @@ function whereLine(m: Model, p: Present, a: SecurityAlert): string {
   const as = a.asset_ids.map(id => m.byId.get(id)).filter(Boolean) as Asset[]
   const main = primaryAsset(m, a)
   if (!main) return ''
-  const others = as.filter(x => x !== main && x.asset_type !== 'tool').map(x => p.name(x).split(' · ')[0])
-  return [p.name(main).split(' · ')[0], ...others.slice(0, 1)].join(' → ') + ` · ${p.where(main)}`
+  // '인증 토큰 · 원격 MCP 서버 1'처럼 대상이 붙은 이름은 '인증 토큰(원격 MCP 서버 1)'로 짧게
+  const short = (x: Asset) => { const [h, ...t] = p.name(x).split(' · '); return t.length ? `${h}(${t.join(' · ')})` : h }
+  const others = as.filter(x => x !== main && x.asset_type !== 'tool' && !(main.asset_type === 'permission_auth' && x.asset_type === 'mcp_server'))
+  return [short(main), ...others.slice(0, 1).map(short)].join(' → ') + ` · ${p.where(main)}`
 }
 
 function doesLine(m: Model, p: Present, a: Asset): string {
@@ -119,8 +129,8 @@ function doesLine(m: Model, p: Present, a: Asset): string {
 }
 
 function ThreatDetail({ model, present, alert, onShowMap }: { model: Model; present: Present; alert: SecurityAlert; onShowMap: (assetId: string) => void }) {
-  const c = copyFor(alert.rule_id)
   const main = primaryAsset(model, alert)
+  const c = copyForAsset(alert.rule_id, main)
   const related = alert.asset_ids.map(id => model.byId.get(id)).filter((a): a is Asset => !!a && a !== main)
   const [raw, setRaw] = useState(false)
   useEffect(() => setRaw(false), [alert.alert_id])
@@ -139,7 +149,7 @@ function ThreatDetail({ model, present, alert, onShowMap }: { model: Model; pres
               <dt>이름</dt><dd>{present.name(main)}</dd>
               <dt>위치</dt><dd>{present.where(main)}</dd>
               <dt>하는 일</dt><dd>{doesLine(model, present, main)}</dd>
-              {related.length > 0 && <><dt>함께 걸린 자산</dt><dd>{related.map(r => `${TYPE_KO[r.asset_type]} · ${present.name(r)}`).join(', ')}</dd></>}
+              {related.length > 0 && <><dt>함께 걸린 자산</dt><dd>{related.map(r => present.name(r).startsWith(TYPE_KO[r.asset_type]) ? present.name(r) : `${TYPE_KO[r.asset_type]} · ${present.name(r)}`).join(', ')}</dd></>}
             </dl>
             <button className="map-link" onClick={() => onShowMap(mapTarget(model, present, main))}><Network size={16} />자산 지도에서 위치 보기</button>
           </section>

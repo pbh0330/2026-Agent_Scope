@@ -3,7 +3,7 @@ import { Boxes, ChartColumn, ChevronRight, Eye, TriangleAlert } from 'lucide-rea
 import type { ReactNode } from 'react'
 import { Donut } from '../components/charts'
 import type { Model } from '../data/model'
-import { type Present, SCENARIO_KO, TYPES_8, TYPE_KO, bySeverity, copyFor, isUnknown } from '../data/present'
+import { type Present, SCENARIO_KO, TYPES_8, TYPE_KO, bySeverity, copyFor, isOutOfScope, isUnknown, reasonFor } from '../data/present'
 import type { UsageBundle } from '../data/usage'
 
 export type Go = (page: 'home' | 'map' | 'threats', opts?: { scenario?: string; alert?: string }) => void
@@ -86,10 +86,14 @@ export function HomePage({ model, present, usage, go }: { model: Model; present:
             const det = alerts.filter(a => a.scenario_id === sc.id).length
             const unk = ev.filter(e => isUnknown(e.result)).length
             const checked = ev.filter(e => e.result !== 'not_evaluated' && e.result !== 'not_applicable').length
-            const [cls, label] = det ? ['bad', `위협 ${det}`] : unk ? ['off', `확인 못 함 ${unk}`] : checked ? ['ok', '안전'] : ['off', '점검 대상 없음']
+            // 검사하지 않은 조건이 있으면 '안전'이라고 하지 않는다. 우선순위: 위협 > 확인 못 함 > 미점검 > 안전.
+            const skippedEv = ev.filter(e => isOutOfScope(e.result))
+            const skipped = new Set(skippedEv.map(e => e.rule_id)).size
+            const [cls, label] = det ? ['bad', `위협 ${det}`] : unk ? ['off', `확인 못 함 ${unk}`] : skipped ? ['off', `미점검 ${skipped}`] : checked ? ['ok', '안전'] : ['off', '점검 대상 없음']
+            const why = !det && !unk && skipped ? [...new Set(skippedEv.map(reasonFor))].join('\n') : undefined
             return (
               <li key={sc.id}>
-                <button onClick={() => go('threats', { scenario: sc.id })}>
+                <button onClick={() => go('threats', { scenario: sc.id })} title={why}>
                   <span className="av">{sc.id}</span>
                   <span className="who"><b>{sc.name}</b><small>{sc.what}</small></span>
                   <span className={`st ${cls}`}>{label}</span>

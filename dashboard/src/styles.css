@@ -312,3 +312,17 @@ p { margin: 0; }
   .ap { left: 12px; right: 12px; width: auto; top: 12px; bottom: 12px; }
 }
 @media (max-width: 480px) { .kpis { grid-template-columns: minmax(0, 1fr); } }
+
+
+/* 자산 지도: 자산 사이 관계 */
+.rels { display: flex; align-items: center; gap: 20px; background: var(--surface); border-radius: 18px; box-shadow: var(--shadow); padding: 14px 20px; margin-bottom: 20px; }
+.rels-h { display: grid; justify-items: start; flex: none; padding-right: 20px; border-right: 1px solid var(--line); }
+.rels-h b { font-size: 1.7rem; font-weight: 800; line-height: 1.1; }
+.rels-h span { font-size: .9rem; font-weight: 700; }
+.rels ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 24px; flex: 1; min-width: 0; }
+.rels li { display: grid; grid-template-columns: auto 1fr; column-gap: 8px; align-items: baseline; min-width: 0; }
+.rels li strong { font-size: .9rem; }
+.rels li b { font-size: .95rem; font-weight: 800; color: var(--indigo); }
+.rels li em { grid-column: 1 / -1; font-style: normal; font-size: .8rem; color: var(--ink-3); overflow-wrap: anywhere; }
+@media (max-width: 1100px) { .rels ul { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .rels { flex-direction: column; align-items: stretch; } .rels-h { border-right: 0; border-bottom: 1px solid var(--line); padding: 0 0 10px; grid-auto-flow: column; justify-content: start; align-items: baseline; gap: 8px; } .rels ul { grid-template-columns: 1fr; } }

@@ -4,7 +4,7 @@
 import { ChevronDown, ChevronRight, Lock, X } from 'lucide-react'
 import { useState } from 'react'
 import type { Model } from '../data/model'
-import { type Present, TYPE_DESC, TYPE_KO, copyFor, serverLead, serverStats } from '../data/present'
+import { type Present, TYPE_DESC, TYPE_KO, copyForAsset, serverLead, serverStats } from '../data/present'
 import type { UsageBundle } from '../data/usage'
 import { usageForAsset } from '../data/usage'
 import type { Asset, AssetType } from '../types/contracts'
@@ -179,7 +179,7 @@ export function AssetPanel({ model, present, pick, usage, onClose, onThreat, onP
               <li key={a.asset_id} className={al.length ? 'bad' : ''}>
                 <div className="t"><b>{present.name(a)}</b>{al.length > 0 && <span className="pill bad">위협 {al.length}</span>}</div>
                 <p>{groupItemLine(model, present, a)}</p>
-                {al.map(x => <button key={x.alert_id} className="thr" onClick={() => onThreat(x.alert_id)}><b>{copyFor(x.rule_id).title}</b>{copyFor(x.rule_id).steps[0]}</button>)}
+                {al.map(x => { const c = copyForAsset(x.rule_id, a); return <button key={x.alert_id} className="thr" onClick={() => onThreat(x.alert_id)}><b>{c.title}</b>{c.steps[0]}</button> })}
                 <Details rows={rawRows(model, a)} />
               </li>
             )
@@ -203,7 +203,7 @@ export function AssetPanel({ model, present, pick, usage, onClose, onThreat, onP
       {alerts.length > 0 && (
         <section className="ap-sec">
           <h4>위협</h4>
-          {alerts.map(x => <button key={x.alert_id} className="thr" onClick={() => onThreat(x.alert_id)}><b>{copyFor(x.rule_id).title}</b>{copyFor(x.rule_id).steps[0]}</button>)}
+          {alerts.map(x => { const c = copyForAsset(x.rule_id, a); return <button key={x.alert_id} className="thr" onClick={() => onThreat(x.alert_id)}><b>{c.title}</b>{c.steps[0]}</button> })}
         </section>
       )}
       {st && (
