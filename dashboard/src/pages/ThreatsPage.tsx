@@ -170,7 +170,18 @@ function ThreatDetail({ model, present, alert, onShowMap }: { model: Model; pres
                   {a!.product?.config_path && <dd>설정 위치 <code>{a!.product.config_path}</code></dd>}
                 </dl>
               ))}
-              <p className="muted tiny">판정 조건 {alert.rule_id} · 근거 {alert.evidence_refs.length}건</p>
+              {(() => {
+                // 확실성(confidence)은 근거가 얼마나 분명한지이며 공격 성공 확률이 아니다.
+                const ev = model.detections.evaluations.find(e => e.evaluation_id === alert.evaluation_id)
+                const pol = (ev?.policy_refs ?? []).map(p => `${p.id} ${p.version}`)
+                const conf: Record<string, string> = { high: '높음', medium: '보통', low: '낮음' }
+                return (
+                  <p className="muted tiny">
+                    판정 조건 {alert.rule_id} · 근거의 확실성 {conf[alert.confidence] ?? alert.confidence} · 근거 {alert.evidence_refs.length}건
+                    {pol.length > 0 && <> · 기준 {pol.join(', ')}</>}
+                  </p>
+                )
+              })()}
             </div>
           )}
         </section>
