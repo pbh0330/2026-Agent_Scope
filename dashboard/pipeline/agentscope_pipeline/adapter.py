@@ -1,4 +1,4 @@
-"""스캐너 출력 + 테스트베드 원본 → InventorySnapshot(스키마 v0.6.0-draft, 8종 자산).
+"""스캐너 출력 + 테스트베드 원본 → InventorySnapshot(스키마 0.7.0-draft, 8종 자산).
 
 입력
   - 자산 스캐너(feature/scanner-config) `agent-scope.scanner.openclaw-mcp-config` 결과
@@ -93,6 +93,8 @@ class SnapshotBuilder:
         self.relations: list[dict] = []
         self.evidence: list[dict] = []
         self.collections: list[dict] = []
+        # 자산보다 먼저 기록한 수집 작업의 대상 자산(0.7: 대상이 확인되면 target_ref에 asset_id)
+        self._col_targets: dict[str, str] = {}
         self._ids: set[str] = set()
         self.by_key: dict[str, dict] = {}
         self.gw_cfg = load(inp.gw_config)
@@ -249,6 +251,7 @@ class SnapshotBuilder:
         )
         # QA-INT-01: gateway_ref는 같은 스냅샷의 Gateway asset_id를 그대로 가리킨다(별도 문맥 ID를 만들지 않음).
         self.gateway_ref = gw["asset_id"]
+        self._col_targets["col-gateway-identity"] = gw["asset_id"]
         gw["context"]["gateway_ref"] = gw["asset_id"]
         self.gw = gw
         # Gateway 인증 — 값은 설정에 평문으로 있으므로 저장하지 않고 존재만 기록
@@ -309,6 +312,8 @@ class SnapshotBuilder:
                 host="tb-node",
             )
             self.node = node
+            self._col_targets["col-node-identity"] = node["asset_id"]
+            self._col_targets["col-gw-devices"] = self.gateway_ref
             devices = self.raw("tb-gw.devices-list.json")
             if devices and any(d.get("deviceId") == nid["deviceId"] for d in devices.get("paired", [])):
                 self.collect("col-gw-devices", "gateway_pairing", "tb-gw:openclaw devices list --json", "imported_catalog", "success", None)
@@ -452,6 +457,8 @@ class SnapshotBuilder:
                 host="tb-gw",
             )
             self.rel("DECLARES", self.gw, plg, [ev_c], "confirmed")
+            self._col_targets[col] = plg["asset_id"]
+            self._col_targets[f"col-plugin-manifest-scan-{pid}"] = plg["asset_id"]
             pscan = self.inp.plugin_scans.get(pid)
             by_key = {s["registration_key"]: s for s in (pscan or {}).get("servers", [])}
             if pscan:
@@ -630,6 +637,11 @@ class SnapshotBuilder:
 
     # -- 마무리 ------------------------------------------------------------
     def _finish(self) -> dict:
+        for c in self.collections:
+            if c["target_ref"] is None and c["collection_id"] in self._col_targets:
+                c["target_ref"] = self._col_targets[c["collection_id"]]
+            elif c["target_ref"] is None and not c.get("reason"):
+                c["reason"] = "대상이 특정 자산 하나가 아닌 수집 작업"
         statuses = [c["status"] for c in self.collections]
         if all(s == "success" for s in statuses):
             scan_status = "success"

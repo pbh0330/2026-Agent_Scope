@@ -345,7 +345,7 @@ def main() -> None:
         "scanner": "feature/scanner-config(11/13) · asset_scanner 설정 수집·tools_catalog·--plugin-manifest",
         "testbed": "develop + PR #24 feature/testbed-threat-vm-capture · profiles P0~P2·S1~S5, ground-truth/raw(VM 수집), approved-servers.json",
         "threat_rules": f"docs/threat-scenarios v{policies['catalog']['catalog_version']} · scenario-catalog.json, 부록 A",
-        "schema": "docs/mcp-attack-surface-definition · schema-design-draft v0.6",
+        "schema": "docs/schema-design-draft.md v0.7.7 (데이터 계약 0.7.0-draft)",
         "usage": "feature/token-collector · backend/usageapi" if args.usage_api else ("feature/token-collector · usagereport" if args.usage else None),
     }
     dump(out / "manifest.json", manifest)

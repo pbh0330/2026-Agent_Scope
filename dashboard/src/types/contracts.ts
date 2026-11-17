@@ -1,4 +1,4 @@
-// 공통 스키마 v0.6.0-draft (docs/mcp-attack-surface-definition/schema-design-draft.md) 중
+// 공통 스키마 0.7.0-draft (docs/schema-design-draft.md v0.7.7) 중
 // 대시보드가 읽는 필드만 옮긴 타입. 생산자가 필드를 추가해도 깨지지 않도록 선택 필드를 넉넉히 둔다.
 
 export type AssetType =

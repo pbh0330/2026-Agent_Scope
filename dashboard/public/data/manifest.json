@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-14T17:32:42Z",
+  "generated_at": "2026-11-17T10:18:36Z",
   "environment_id": "agentscope-testbed",
   "sources": {
     "scanner": "feature/scanner-config(11/13) · asset_scanner 설정 수집·tools_catalog·--plugin-manifest",
     "testbed": "develop + PR #24 feature/testbed-threat-vm-capture · profiles P0~P2·S1~S5, ground-truth/raw(VM 수집), approved-servers.json",
     "threat_rules": "docs/threat-scenarios v2.1 · scenario-catalog.json, 부록 A",
-    "schema": "docs/mcp-attack-surface-definition · schema-design-draft v0.6",
+    "schema": "docs/schema-design-draft.md v0.7.7 (데이터 계약 0.7.0-draft)",
     "usage": "feature/token-collector · backend/usageapi"
   },
   "snapshots": [
@@ -17,7 +17,7 @@
       "synthetic": false,
       "vm_label": "SNAP-2-P0",
       "test_case_ids": [],
-      "snapshot_id": "snap-p0-20261114T173243Z",
+      "snapshot_id": "snap-p0-20261117T101836Z",
       "files": {
         "snapshot": "snapshots/P0/snapshot.json",
         "detections": "snapshots/P0/detections.json",
@@ -37,7 +37,7 @@
       "synthetic": false,
       "vm_label": "SNAP-2-P1",
       "test_case_ids": [],
-      "snapshot_id": "snap-p1-20261114T173243Z",
+      "snapshot_id": "snap-p1-20261117T101837Z",
       "files": {
         "snapshot": "snapshots/P1/snapshot.json",
         "detections": "snapshots/P1/detections.json",
@@ -57,7 +57,7 @@
       "synthetic": false,
       "vm_label": "SNAP-2-P2",
       "test_case_ids": [],
-      "snapshot_id": "snap-p2-20261114T173243Z",
+      "snapshot_id": "snap-p2-20261117T101837Z",
       "files": {
         "snapshot": "snapshots/P2/snapshot.json",
         "detections": "snapshots/P2/detections.json",
@@ -94,7 +94,7 @@
         "S1-T3",
         "S1-T4"
       ],
-      "snapshot_id": "snap-s1-20261114T173243Z",
+      "snapshot_id": "snap-s1-20261117T101837Z",
       "files": {
         "snapshot": "snapshots/S1/snapshot.json",
         "detections": "snapshots/S1/detections.json",
@@ -128,7 +128,7 @@
       "test_case_ids": [
         "S1-T5"
       ],
-      "snapshot_id": "snap-s1-t5-20261114T173244Z",
+      "snapshot_id": "snap-s1-t5-20261117T101837Z",
       "files": {
         "snapshot": "snapshots/S1-T5/snapshot.json",
         "detections": "snapshots/S1-T5/detections.json",
@@ -163,7 +163,7 @@
         "S2-T1",
         "S2-T2"
       ],
-      "snapshot_id": "snap-s2-20261114T173244Z",
+      "snapshot_id": "snap-s2-20261117T101838Z",
       "files": {
         "snapshot": "snapshots/S2/snapshot.json",
         "detections": "snapshots/S2/detections.json",
@@ -198,7 +198,7 @@
         "S4-T1",
         "S4-T2"
       ],
-      "snapshot_id": "snap-s4-20261114T173244Z",
+      "snapshot_id": "snap-s4-20261117T101838Z",
       "files": {
         "snapshot": "snapshots/S4/snapshot.json",
         "detections": "snapshots/S4/detections.json",
@@ -233,7 +233,7 @@
         "S3-T1",
         "S3-T2"
       ],
-      "snapshot_id": "snap-s3-20261114T173244Z",
+      "snapshot_id": "snap-s3-20261117T101838Z",
       "files": {
         "snapshot": "snapshots/S3/snapshot.json",
         "detections": "snapshots/S3/detections.json",
@@ -267,7 +267,7 @@
       "test_case_ids": [
         "S5-T1"
       ],
-      "snapshot_id": "snap-s5-t1-20261114T173245Z",
+      "snapshot_id": "snap-s5-t1-20261117T101838Z",
       "files": {
         "snapshot": "snapshots/S5-T1/snapshot.json",
         "detections": "snapshots/S5-T1/detections.json",
@@ -301,7 +301,7 @@
       "test_case_ids": [
         "S5-T2"
       ],
-      "snapshot_id": "snap-s5-t2-20261114T173245Z",
+      "snapshot_id": "snap-s5-t2-20261117T101839Z",
       "files": {
         "snapshot": "snapshots/S5-T2/snapshot.json",
         "detections": "snapshots/S5-T2/detections.json",
@@ -335,7 +335,7 @@
       "test_case_ids": [
         "S5-T3"
       ],
-      "snapshot_id": "snap-s5-t3-20261114T173245Z",
+      "snapshot_id": "snap-s5-t3-20261117T101839Z",
       "files": {
         "snapshot": "snapshots/S5-T3/snapshot.json",
         "detections": "snapshots/S5-T3/detections.json",

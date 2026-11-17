@@ -1,14 +1,14 @@
 {
-  "schema_version": "0.6.0-draft",
-  "qa_run_id": "exp-snap-s2-20261114T173244Z",
+  "schema_version": "0.7.0-draft",
+  "qa_run_id": "exp-snap-s2-20261117T101838Z",
   "environment_id": "agentscope-testbed",
   "profile_id": "tb-openclaw",
-  "snapshot_id": "snap-s2-20261114T173244Z",
+  "snapshot_id": "snap-s2-20261117T101838Z",
   "expected_profile": "S2",
   "expected_source": "testbed/ground-truth/S2.json",
   "expected_version": "2.1",
-  "generated_at": "2026-11-14T17:32:44Z",
-  "detection_report_id": "det-snap-s2-20261114T173244Z",
+  "generated_at": "2026-11-17T10:18:38Z",
+  "detection_report_id": "det-snap-s2-20261117T101838Z",
   "verdict": "PASS",
   "checks": [
     {

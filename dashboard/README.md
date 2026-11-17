@@ -1,13 +1,13 @@
 # AgentScope Dashboard
 
 AI 에이전트 환경(OpenClaw + MCP)의 자산을 식별·가시화하는 대시보드입니다.
-팀 브랜치의 산출물을 공통 스키마 v0.6.0-draft 형식으로 묶어 한 화면에서 봅니다.
+팀 브랜치의 산출물을 공통 스키마 0.7.0-draft(스키마 문서 v0.7.7) 형식으로 묶어 한 화면에서 봅니다.
 
 ```text
 feature/scanner-config      자산 스캐너 ──┐
 develop + PR #24           테스트베드 P0~P2·S1~S5 구성·VM 수집본·정답·승인 목록 ─┤
 docs/threat-scenarios       S1~S5 규칙 v2.1 (카탈로그·S2 정책) ─┼─▶ pipeline/build_data.py ─▶ public/data/*.json ─▶ 대시보드
-docs/mcp-attack-surface     공통 스키마 v0.6 ─┤
+docs/schema-design-draft    공통 스키마 0.7.0-draft ─┤
 feature/token-collector     사용 현황 API(usageapi) ──┘
 ```
 
@@ -136,6 +136,7 @@ cd dashboard
 ## 어댑터가 한 일과 남은 차이
 
 - **자산 ID**: ID 규칙 협의안 B안(canonical key + SHA-256 앞 16자리). canonical key는 정답 목록의 `asset_key` 형식(`tb-gw/mcp_server/fs-workspace`)을 그대로 써서 QA 매핑이 이름이 아닌 키로 됩니다. 규칙 확정 시 `pipeline/agentscope_pipeline/ids.py`만 바꾸면 됩니다.
+- **스키마 버전**: snapshot·detections·diffs·expected·qa의 `schema_version`은 `0.7.0-draft`입니다(스키마 문서 v0.7.7). 출력이 문서 2~7·12.5·12.9·13절의 필수 필드·자료형·열거값·참조 규칙을 지키는지 `pipeline/check_schema.py`로 확인합니다(`python pipeline/check_schema.py public/data`). 남은 차이는 수집 작업 `scope` 4개(`gateway_identity`, `node_identity`, `gateway_pairing`, `agent_exposure`)입니다. 문서의 scope 후보 목록에 없는 작업이라 같은 이름으로 두었고, 후보 목록에 넣을지 다른 이름으로 바꿀지는 스키마 협의 대상입니다. 대상 자산이 있는 수집 작업은 `target_ref`에 그 자산 ID를 적고, 대상이 자산 하나가 아니면 `null`과 `reason`을 남깁니다.
 - **8종 분류**: 8종 협의안에 따라 Gateway를 자산으로 두고, 모든 자산의 `context.gateway_ref`는 같은 스냅샷의 Gateway `asset_id`를 가리킵니다(QA-INT-01).
 - **스캐너 값 우선**: 최신 스캐너(11/13)가 `sslVerify`·`toolFilter` 선언값을 직접 수집하므로 그 값을 그대로 씁니다. 예전 스캐너처럼 키 이름만 있을 때에만 어댑터가 설정에서 보강하고 `adapter_supplement`로 기록합니다. 최신 수집값을 덮어쓰지 않습니다(QA-INT-02). 플러그인이 등록한 서버도 스캐너 `--plugin-manifest` 결과(비밀값 가림 적용)를 우선 씁니다.
 - **MCP 버전**: 스캐너 tools_catalog가 `2025-11-25`·`2026-07-28`을 모두 지원하게 되어, 저장된 `*.advertised.json`을 스캐너가 읽은 결과로 Tool 자산을 만듭니다(수집 작업 `details.parsed_by`). 스캐너가 읽지 못한 경우에만 원본을 직접 읽고 사유를 남깁니다.

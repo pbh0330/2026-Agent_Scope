@@ -1,13 +1,13 @@
 {
-  "schema_version": "0.6.0-draft",
-  "qa_run_id": "qa-snap-p1-20261114T173243Z",
+  "schema_version": "0.7.0-draft",
+  "qa_run_id": "qa-snap-p1-20261117T101837Z",
   "environment_id": "agentscope-testbed",
   "profile_id": "tb-openclaw",
-  "snapshot_id": "snap-p1-20261114T173243Z",
+  "snapshot_id": "snap-p1-20261117T101837Z",
   "ground_truth_id": "testbed-gt-P1",
   "ground_truth_version": "SNAP-2-P1",
-  "generated_at": "2026-11-14T17:32:43Z",
-  "detection_report_id": "det-snap-p1-20261114T173243Z",
+  "generated_at": "2026-11-17T10:18:37Z",
+  "detection_report_id": "det-snap-p1-20261117T101837Z",
   "id_mappings": [
     {
       "gt_asset_id": "tb-gw/gateway",

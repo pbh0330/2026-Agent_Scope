@@ -1,6 +1,6 @@
 {
-  "schema_version": "0.6.0-draft",
-  "snapshot_id": "snap-p1-20261114T173243Z",
+  "schema_version": "0.7.0-draft",
+  "snapshot_id": "snap-p1-20261117T101837Z",
   "environment_id": "agentscope-testbed",
   "profile_id": "tb-openclaw",
   "context": {
@@ -24,10 +24,10 @@
       }
     ]
   },
-  "generated_at": "2026-11-14T17:32:43Z",
+  "generated_at": "2026-11-17T10:18:37Z",
   "scan": {
-    "started_at": "2026-11-14T17:32:43Z",
-    "finished_at": "2026-11-14T17:32:43Z",
+    "started_at": "2026-11-17T10:18:36Z",
+    "finished_at": "2026-11-17T10:18:36Z",
     "status": "success"
   },
   "testbed_context": {
@@ -6408,7 +6408,7 @@
       "evidence_id": "ev-gw-config",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-11-14T17:32:43Z",
+      "observed_at": "2026-11-17T10:18:36Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "redacted",
       "field_path": "gateway",
@@ -6428,7 +6428,7 @@
       "evidence_id": "ev-gw-auth",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-11-14T17:32:43Z",
+      "observed_at": "2026-11-17T10:18:36Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "redacted",
       "field_path": "gateway.auth",
@@ -6440,7 +6440,7 @@
       "evidence_id": "ev-gw-tools-profile",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-11-14T17:32:43Z",
+      "observed_at": "2026-11-17T10:18:36Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "not_needed",
       "field_path": "tools.profile"
@@ -6466,7 +6466,7 @@
       "evidence_id": "ev-decl-tb-gw-fs-workspace",
       "evidence_type": "config",
       "source_ref": "tb-gw:~/.openclaw/openclaw.json",
-      "observed_at": "2026-11-14T17:32:43Z",
+      "observed_at": "2026-11-17T10:18:36Z",
       "collection_ref": "col-gw-config",
       "redaction_status": "not_needed",
       "field_path": "mcp.servers.fs-workspace"
@@ -6475,7 +6475,7 @@
       "evidence_id": "ev-decl-tb-node-kg-memory",
       "evidence_type": "config",
       "source_ref": "tb-node:~/.openclaw/openclaw.json",
-      "observed_at": "2026-11-14T17:32:43Z",
+      "observed_at": "2026-11-17T10:18:36Z",
       "collection_ref": "col-node-config",
       "redaction_status": "redacted",
       "field_path": "nodeHost.mcp.servers.kg-memory",
@@ -6487,7 +6487,7 @@
       "evidence_id": "ev-decl-tb-node-demo-everything",
       "evidence_type": "config",
       "source_ref": "tb-node:~/.openclaw/openclaw.json",
-      "observed_at": "2026-11-14T17:32:43Z",
+      "observed_at": "2026-11-17T10:18:36Z",
       "collection_ref": "col-node-config",
       "redaction_status": "not_needed",
       "field_path": "nodeHost.mcp.servers.demo-everything"
@@ -6565,7 +6565,7 @@
       "collection_id": "col-gateway-identity",
       "source_ref": "tb-gw:openclaw gateway call gateway.identity.get --json",
       "scope": "gateway_identity",
-      "target_ref": null,
+      "target_ref": "gw_4261ac71d127a248",
       "mode": "imported_catalog",
       "status": "success",
       "collected_at": "2026-10-04T06:41:49Z"
@@ -6574,7 +6574,7 @@
       "collection_id": "col-node-identity",
       "source_ref": "tb-node:openclaw node identity --json",
       "scope": "node_identity",
-      "target_ref": null,
+      "target_ref": "node_1ca37e363256f7fb",
       "mode": "imported_catalog",
       "status": "success",
       "collected_at": "2026-10-04T06:41:49Z"
@@ -6583,7 +6583,7 @@
       "collection_id": "col-gw-devices",
       "source_ref": "tb-gw:openclaw devices list --json",
       "scope": "gateway_pairing",
-      "target_ref": null,
+      "target_ref": "gw_4261ac71d127a248",
       "mode": "imported_catalog",
       "status": "success",
       "collected_at": "2026-10-04T06:41:49Z"
@@ -6595,7 +6595,7 @@
       "target_ref": null,
       "mode": "local_file",
       "status": "success",
-      "collected_at": "2026-11-14T17:32:43Z",
+      "collected_at": "2026-11-17T10:18:36Z",
       "reason": "profile-scoped configuration collection",
       "details": {
         "outcome": "servers_found",
@@ -6625,7 +6625,7 @@
       "target_ref": null,
       "mode": "local_file",
       "status": "success",
-      "collected_at": "2026-11-14T17:32:43Z",
+      "collected_at": "2026-11-17T10:18:36Z",
       "reason": "profile-scoped configuration collection",
       "details": {
         "outcome": "servers_found",

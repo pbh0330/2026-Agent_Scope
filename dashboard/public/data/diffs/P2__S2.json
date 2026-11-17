@@ -1,13 +1,13 @@
 {
-  "schema_version": "0.6.0-draft",
-  "diff_id": "diff-snap-p2-20261114T173243Z--snap-s2-20261114T173244Z",
+  "schema_version": "0.7.0-draft",
+  "diff_id": "diff-snap-p2-20261117T101837Z--snap-s2-20261117T101838Z",
   "environment_id": "agentscope-testbed",
   "profile_id": "tb-openclaw",
-  "previous_snapshot_id": "snap-p2-20261114T173243Z",
-  "current_snapshot_id": "snap-s2-20261114T173244Z",
-  "previous_report_id": "det-snap-p2-20261114T173243Z",
-  "current_report_id": "det-snap-s2-20261114T173244Z",
-  "generated_at": "2026-11-14T17:32:45Z",
+  "previous_snapshot_id": "snap-p2-20261117T101837Z",
+  "current_snapshot_id": "snap-s2-20261117T101838Z",
+  "previous_report_id": "det-snap-p2-20261117T101837Z",
+  "current_report_id": "det-snap-s2-20261117T101838Z",
+  "generated_at": "2026-11-17T10:18:39Z",
   "comparison_status": "complete",
   "changes": [
     {
@@ -16,7 +16,7 @@
       "changed_fields": [
         "/product/config"
       ],
-      "detected_at": "2026-11-14T17:32:44Z",
+      "detected_at": "2026-11-17T10:18:38Z",
       "evidence_refs": [
         "ev-decl-tb-gw-fs-workspace"
       ],
@@ -28,7 +28,7 @@
       "changed_fields": [
         "/product/config"
       ],
-      "detected_at": "2026-11-14T17:32:44Z",
+      "detected_at": "2026-11-17T10:18:38Z",
       "evidence_refs": [
         "ev-decl-tb-node-demo-everything"
       ],
@@ -40,7 +40,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-14T17:32:44Z",
+      "detected_at": "2026-11-17T10:18:38Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -52,7 +52,7 @@
       "changed_fields": [
         "/project/state_assessments"
       ],
-      "detected_at": "2026-11-14T17:32:44Z",
+      "detected_at": "2026-11-17T10:18:38Z",
       "evidence_refs": [
         "ev-cap-demo-everything"
       ],
@@ -62,7 +62,7 @@
       "asset_id": "pa_087042e2e785a2d2",
       "change_type": "removed_from_scope",
       "changed_fields": [],
-      "detected_at": "2026-11-14T17:32:44Z",
+      "detected_at": "2026-11-17T10:18:38Z",
       "evidence_refs": [],
       "reason": "같은 범위를 끝까지 조회했지만 이번 결과에 없음(설치 삭제를 뜻하지 않음)",
       "previous": {
