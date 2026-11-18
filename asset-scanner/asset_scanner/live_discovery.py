@@ -1036,7 +1036,7 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--bearer-env", help="Authorization: Bearer 토큰을 읽을 환경변수 이름 (값은 기록하지 않음)")
     p.add_argument("--auth-header-env", action="append", default=[], metavar="헤더이름=환경변수이름",
                    help="인증 헤더(예: X-Api-Key=MY_KEY_VAR)의 값을 읽을 환경변수 이름 (여러 번 가능, 값은 기록하지 않음)")
-    p.add_argument("--resolve-includes", action="store_true", help="설정의 $include를 읽기 전용으로 펼친 뒤 --server의 선언을 찾습니다(최상위 설정 폴더 안만). 해석하지 못한 include가 남으면 거부합니다.")
+    p.add_argument("--resolve-includes", action="store_true", help="설정의 $include를 읽기 전용으로 펼친 뒤 --server의 선언을 찾습니다(설정 폴더·추가 허용 경계 안). 해석하지 못한 include가 남으면 거부합니다.")
     p.add_argument("--ca-bundle", type=Path, help="https 대상이 쓰는 사설 CA 인증서 PEM을 신뢰 저장소에 **추가**로 신뢰 (인증서·호스트 이름 검증은 그대로 켜짐)")
     p.add_argument("--config-scan-ref", help="결과의 config_link.config_scan_ref (linking에서 설정 수집 결과 라벨과 맞출 때)")
     p.add_argument("--scenario", choices=SCENARIOS, default="full", help="내장 시험 서버의 동작")

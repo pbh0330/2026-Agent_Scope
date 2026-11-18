@@ -165,6 +165,28 @@ SPEC += [
     (("security", "installPolicy", "exec", "env"), "keys", "install_policy", D_SKILLS),
     (("security", "installPolicy", "exec", "trustedDirs"), "list", "install_policy", D_SKILLS),
 ]
+# 공식 Zod 스키마에서 확인한 원천. defaults/entries 모두 AgentSandboxSchema를 쓴다.
+D_SCHEMA = "openclaw/openclaw eb377ac59e6c9fd6c7705028034812becf00271b src/config/zod-schema.agent-runtime.ts (AgentSandboxSchema, AgentToolsSchema, ToolExecApplyPatchSchema)"
+D_MODEL_NETWORK = "openclaw/openclaw eb377ac59e6c9fd6c7705028034812becf00271b src/config/types.models.ts, src/config/types.provider-request.ts"
+D_TLON_NETWORK = "openclaw/openclaw eb377ac59e6c9fd6c7705028034812becf00271b docs/channels/tlon.md (network.dangerouslyAllowPrivateNetwork)"
+_existing_patterns = {p for p, *_ in SPEC}
+for _p, _t, _category, _doc in list(SPEC):
+    if _p[:3] == ("agents", "defaults", "sandbox"):
+        _agent_p = ("agents", "entries", "*", "sandbox") + _p[3:]
+    elif _p[:2] == ("tools", "exec"):
+        _agent_p = ("agents", "entries", "*", "tools", "exec") + _p[2:]
+    else:
+        continue
+    if _agent_p not in _existing_patterns:
+        SPEC.append((_agent_p, _t, _category, D_SCHEMA))
+        _existing_patterns.add(_agent_p)
+SPEC += [
+    (("tools", "exec", "applyPatch", "workspaceOnly"), "bool", "file_policy", D_SCHEMA),
+    (("agents", "entries", "*", "tools", "exec", "applyPatch", "workspaceOnly"), "bool", "file_policy", D_SCHEMA),
+    (("channels", "tlon", "network", "dangerouslyAllowPrivateNetwork"), "bool", "network_policy", D_TLON_NETWORK),
+    (("models", "providers", "*", "request", "allowPrivateNetwork"), "bool", "network_policy", D_MODEL_NETWORK),
+]
+
 # MCP 서버 항목의 인증 관련 필드. 등록 영역(mcp.servers·nodeHost.mcp.servers)마다 같은 형식으로 읽는다.
 MCP_AUTH_SPEC: list[tuple[tuple[str, ...], str]] = [
     (("auth",), "str"), (("oauth", "identity"), "str:shared,per-requester"), (("oauth", "scope"), "str"), (("oauth", "authProfileId"), "str"),
@@ -180,9 +202,6 @@ NOT_COLLECTED = [
     "exec_approvals_effective_result",       # `openclaw approvals get`의 병합된 유효 정책(요청 정책+호스트 문서) 계산
     "exec_approvals_allowlist_arguments_and_history",   # argPattern 해시·마지막 사용 명령·경로·시각 등 사용 이력
     "standing_grants",                       # 자동화 승인으로 생긴 상시 허용 기록(런타임 상태)
-    "sandbox_per_agent_docker_ssh_browser",  # 에이전트별 sandbox.docker/ssh/browser 재정의(문서에 예시 없음)
-    "channel_and_provider_network_policies",  # channels.*.network.dangerouslyAllowPrivateNetwork, 모델 제공자 request.allowPrivateNetwork 등 채널·제공자별 범위
-    "tools_exec_applyPatch_workspaceOnly_type_not_stated",  # 문서가 키 이름만 밝히고 자료형·예시를 주지 않아 추측하지 않음
 ]
 
 
@@ -229,6 +248,10 @@ def _applies_to(category: str, real: tuple, pattern: tuple[str, ...]) -> dict:
         return {"scope": "agent", "agent_key": real[2]}
     if real[:2] == ("agents", "defaults"):
         return {"scope": "agent_defaults"}
+    if real[:1] == ("channels",):
+        return {"scope": "channel", "channel": real[1]}
+    if real[:2] == ("models", "providers"):
+        return {"scope": "model_provider", "provider": real[2]}
     if real[:1] == ("update",):
         return {"scope": "gateway_update"}
     if real[:1] == ("browser",):
@@ -554,7 +577,7 @@ def _parser() -> argparse.ArgumentParser:
                                 description="OpenClaw 설정에서 Permission/Auth 선언을 원천 항목 단위로 수집합니다 (읽기 전용, 내부 개발용 초안).")
     p.add_argument("--config", required=True, type=Path, help="OpenClaw 설정 파일(JSON5)")
     p.add_argument("--resolve-includes", action="store_true",
-                   help="$include를 읽기 전용으로 펼칩니다(최상위 설정 폴더 안, OpenClaw 2026.9.6 문서 규칙). 기본은 읽지 않고 unresolved로 기록합니다.")
+                   help="$include를 읽기 전용으로 펼칩니다(설정 폴더·추가 허용 경계 안, OpenClaw 2026.9.6 문서 규칙). 기본은 읽지 않고 unresolved로 기록합니다.")
     p.add_argument("--exec-approvals-file", type=Path,
                    help="호스트 exec 승인 문서(JSON, docs/tools/exec-approvals.md 스키마) 경로. 자동 탐색하지 않으며 읽기만 합니다(쓰기·정책 변경·유효 정책 계산 없음).")
     p.add_argument("--output", required=True, type=Path, help="결과 JSON을 저장할 경로")

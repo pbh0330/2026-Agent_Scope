@@ -95,8 +95,19 @@ def test_each_allowed_query_runs_exactly_its_argument_array(fake):
     assert not any(a.startswith("-") and a not in ("--version", "--json", "--timeout", "--expect-url") for a in flat)
 
 
+def test_devices_list_query_runs_the_read_only_method_and_parses_the_response(fake):
+    from asset_scanner.device_inventory import collect_devices
+    result = run_query(fake.cfg(expect_gateway_url=GW_URL), "devices")
+    assert result.failure is None
+    call = fake.calls()[0]["argv"]
+    assert call[:3] == ["devices", "list", "--json"] and call[-2:] == ["--url", GW_URL]
+    rep = collect_devices(result)
+    assert rep["devices"][0]["client"]["clientId"]["original_value"] == "node-host"
+    assert rep["observation"]["gateway_target"]["gateway_method"] == "device.pair.list"
+
+
 def test_gateway_call_is_pinned_to_one_method_and_the_query_table_is_closed():
-    assert set(QUERIES) == {"version", "plugins", "node-identity", "gateway-identity", "skills"}
+    assert set(QUERIES) == {"version", "plugins", "node-identity", "gateway-identity", "skills", "devices"}
     gateway_argvs = [q.argv for q in QUERIES.values() if q.argv[:2] == ("gateway", "call")]
     assert gateway_argvs == [("gateway", "call", "gateway.identity.get", "--json")]          # gateway call 전체가 아니라 이 메서드 하나
     cfg = DirectConfig(openclaw_bin=Path(sys.executable))

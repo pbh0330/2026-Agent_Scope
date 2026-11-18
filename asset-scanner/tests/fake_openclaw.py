@@ -64,6 +64,8 @@ if rest[:2] == ["plugins", "list"] and "--json" in rest:
     payload = PLUGINS
 elif rest[:2] == ["skills", "list"] and "--json" in rest:
     payload = SKILLS
+elif rest[:2] == ["devices", "list"] and "--json" in rest:
+    payload = {"pending": [], "paired": [{**IDENT, "clientId": "node-host", "clientMode": "node", "roles": ["node"], "connected": True}]}
 elif rest[:2] == ["node", "identity"] and "--json" in rest:
     payload = IDENT
 elif rest[:3] == ["gateway", "call", "gateway.identity.get"] and "--json" in rest:

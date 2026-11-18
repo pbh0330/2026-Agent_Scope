@@ -231,7 +231,8 @@ def test_scope_keys_with_wrong_types_are_reported_and_absent_ones_are_not_invent
     assert run(tmp_path, {"tools": {"fs": {}}, "browser": {"ssrfPolicy": {}}, "cron": {}})["items"] == []
 
 
-def test_out_of_scope_network_declarations_are_listed_as_not_collected_with_the_real_reason(tmp_path):
+def test_source_backed_network_and_workspace_declarations_are_no_longer_listed_as_missing(tmp_path):
     nc = run(tmp_path, {"tools": {"profile": "full"}})["scope"]["not_collected"]
-    assert "channel_and_provider_network_policies" in nc and "tools_exec_applyPatch_workspaceOnly_type_not_stated" in nc
+    assert "channel_and_provider_network_policies" not in nc and "tools_exec_applyPatch_workspaceOnly_type_not_stated" not in nc
+    assert "effective_policy" in nc
     assert "file_and_network_allowlists_not_documented" not in nc                 # 잘못된 사유(문서에 키가 있음)라 제거했다

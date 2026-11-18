@@ -11,10 +11,11 @@
 - 병합: 둘 다 배열이면 **연결**(순서·중복 원소 그대로, 중복 제거 없음). 둘 다 객체면 키별 재귀 병합(기존 키는 병합, 새 키는 복사).
   그 밖(자료형이 다르거나 스칼라)은 뒤의 값이 앞의 값을 대체한다(null 포함). 객체 병합에서 `__proto__`·`prototype`·`constructor` 키는 버린다.
 - 중첩 include 최대 10단계, 경로 널 문자 금지·해석 전후 4096자 미만, 파일 2MB 이하, 일반 파일·하드링크 아님, 순환 금지.
-- 경로는 포함한 파일 기준으로 해석하되 **최상위 설정 파일의 폴더 안**(실제 경로 기준)이어야 한다.
+- 경로는 포함한 파일 기준으로 해석하되 **최상위 설정 파일 폴더 또는 명시적으로 추가 허용한 경계 안**(해석 전·실제 경로 모두)이어야 한다.
 
 스캐너가 더한 것(공식에 없음): 읽는 파일 수 상한 64개, 값마다 출처(파일·include 사슬) 추적, 비밀처럼 보이는 키의 자리표시자 충돌 표시.
-구현하지 않는 것(지원 한계): `OPENCLAW_INCLUDE_ROOTS`(추가 허용 경계; 읽지 않으며 경계 밖은 오류), 환경변수·SecretRef 해석, 쓰기 연동.
+`OPENCLAW_INCLUDE_ROOTS`는 플랫폼 구분자(POSIX `:`, Windows `;`)로 나눈 추가 경계입니다. 절대 경로(또는 `~` 경로)만 받습니다.
+구현하지 않는 것(지원 한계): 설정 안의 환경변수·SecretRef 해석, 쓰기 연동.
 
 공식은 오류가 나면 설정 로드를 중단한다. 이 모듈은 중단하지 않고 사유를 `issues`에 기록하며, 해석하지 못한 `$include` 선언을 결과에 남겨
 수집기·조회 기능이 불완전함을 알 수 있게 한다. 정상적으로 해석된 배열 병합은 이슈로 만들지 않는다.
@@ -24,6 +25,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import os
 from pathlib import Path
 from typing import Any
 
@@ -91,18 +93,54 @@ def _copy_attrs(dst: _Obj, src: Any) -> None:
 
 
 class _Resolver:
-    def __init__(self, config_path: Path):
+    def __init__(self, config_path: Path, allowed_roots: list[Path] | None = None):
         self.config_real = config_path.resolve()
         self.config_dir = self.config_real.parent
         self.ctx = IncludeContext(root=None)
         self.red = Redactor()
+        self.boundaries = [(self.config_dir, self.config_dir)]
+        roots = allowed_roots
+        if roots is None:
+            roots = [Path(x.strip()) for x in os.environ.get("OPENCLAW_INCLUDE_ROOTS", "").split(os.pathsep) if x.strip()]
+        if len(roots) > MAX_FILES:
+            self.ctx.issues.append(_issue("include_root_limit_exceeded", "추가 경계가 64개를 넘어 나머지는 허용하지 않았습니다."))
+        for n, root in enumerate(roots[:MAX_FILES]):
+            try:
+                lexical = Path(root).expanduser()
+                if not lexical.is_absolute() or "\x00" in str(lexical) or len(str(lexical)) >= MAX_PATH_CHARS:
+                    raise ValueError("invalid root")
+                real = lexical.resolve()
+                if not real.is_dir():
+                    raise ValueError("root not directory")
+                pair = (Path(os.path.abspath(lexical)), real)
+                if pair not in self.boundaries:
+                    self.boundaries.append(pair)
+            except (OSError, ValueError, RuntimeError):
+                self.ctx.issues.append(_issue("include_root_invalid", "추가 허용 경계는 존재하는 절대 디렉터리여야 합니다. 값은 기록하지 않았습니다.", root_index=n))
+        if len(self.boundaries) > 1:
+            self.ctx.notes.append({"code": "additional_include_roots", "count": len(self.boundaries) - 1,
+                                   "source": "OPENCLAW_INCLUDE_ROOTS" if allowed_roots is None else "caller_allowed_roots"})
 
     # ---- 경로·읽기 ------------------------------------------------------------------------------
     def _label(self, p: Path) -> str:
         try:
             return p.relative_to(self.config_dir).as_posix()
         except ValueError:
+            for n, (_, root) in enumerate(self.boundaries[1:]):
+                try:
+                    return f"include-root[{n}]/" + p.relative_to(root).as_posix()
+                except ValueError:
+                    continue
             return "(outside)"
+
+    def _inside_any(self, p: Path, which: int) -> bool:
+        for pair in self.boundaries:
+            try:
+                p.relative_to(pair[which])
+                return True
+            except ValueError:
+                pass
+        return False
 
     def _locate(self, target: str, including: Path, where: str) -> Path | None:
         shown = self.red.sanitize_string(target, where)
@@ -114,20 +152,19 @@ class _Resolver:
             return None
         try:
             cand = Path(target)
-            full = (cand if cand.is_absolute() else including.parent / cand).resolve()
+            lexical = Path(os.path.abspath(cand if cand.is_absolute() else including.parent / cand))
+            if not self._inside_any(lexical, 0):
+                self.ctx.issues.append(_issue("include_path_outside_root", "허용한 경계 밖의 경로라 읽지 않았습니다.", field_path=where, target=shown))
+                return None
+            full = lexical.resolve()
         except (OSError, ValueError, RuntimeError):
             self.ctx.issues.append(_issue("include_path_invalid", "경로를 해석하지 못했습니다.", field_path=where, target=shown))
             return None
         if len(str(full)) >= MAX_PATH_CHARS:
             self.ctx.issues.append(_issue("include_path_too_long", "해석된 경로가 4096자 이상이라 읽지 않았습니다.", field_path=where))
             return None
-        try:
-            full.relative_to(self.config_dir)
-        except ValueError:
-            self.ctx.issues.append(_issue(
-                "include_path_outside_root",
-                "최상위 설정 폴더 밖을 가리켜 읽지 않았습니다(OPENCLAW_INCLUDE_ROOTS는 읽지 않으므로 추가 경계를 지원하지 않음).",
-                field_path=where, target=shown))
+        if not self._inside_any(full, 1):
+            self.ctx.issues.append(_issue("include_path_outside_root", "실제 파일 경로가 허용한 경계를 벗어나 읽지 않았습니다.", field_path=where, target=shown))
             return None
         return full
 
@@ -310,9 +347,9 @@ class _Resolver:
                     self.flatten(val, p.kids[i], ptr + (i,), origin)
 
 
-def resolve_includes(config_path: Path, root: Any) -> IncludeContext:
+def resolve_includes(config_path: Path, root: Any, allowed_roots: list[Path] | None = None) -> IncludeContext:
     """이미 파싱한 최상위 설정 `root`의 `$include`를 펼친다. 실패한 include는 선언을 남기고 `issues`에 사유를 기록한다."""
-    r = _Resolver(config_path)
+    r = _Resolver(config_path, allowed_roots)
     value, prov = r.expand(root, r.config_real, MAIN_LABEL, (), 0, (), ())
     r.ctx.root = value
     r.flatten(value, prov, (), _MAIN)

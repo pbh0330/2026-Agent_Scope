@@ -219,7 +219,7 @@ def test_no_declared_items_is_not_reported_as_having_no_policy(tmp_path):
 
 
 def test_duplicate_keys_and_includes_only_matter_in_the_areas_this_module_reads(tmp_path):
-    rep = run(tmp_path, '{ tools: { deny: ["a"], deny: ["b"] }, channels: { x: 1, x: 2, "$include": "other.json5" } }')
+    rep = run(tmp_path, '{ tools: { deny: ["a"], deny: ["b"] }, unread_area: { x: 1, x: 2, "$include": "other.json5" } }')
     assert [i["field_path"] for i in rep["issues"] if i["code"] == "duplicate_key"] == ["tools.deny"]
     assert item(rep, "tools.deny")["value"] == ["b"] and rep["unresolved"] == [] and rep["collection"]["status"] == "partial"
     rep = run(tmp_path, '{ tools: { "$include": "tools-policy.json5" } }')

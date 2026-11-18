@@ -529,7 +529,7 @@ def collect_server(key: str, entry: Any, source_path: str, key_masked: bool = Fa
 def collect(config_path: Path, registry_path: tuple = DEFAULT_REGISTRY_PATH, resolve_includes: bool = False) -> dict:
     """설정 파일 하나에서 선택한 등록 영역을 수집해 `collection`과 `servers`를 돌려준다.
 
-    `resolve_includes=True`이면 최상위 설정 폴더 안의 `$include`를 읽기 전용으로 펼친다(`config_includes.py`).
+    `resolve_includes=True`이면 설정 폴더·추가 허용 경계 안의 `$include`를 읽기 전용으로 펼친다(`config_includes.py`).
     기본값(False)은 기존 동작과 같다: `$include` 파일을 읽지 않고 unresolved로 기록한다.
     """
     if tuple(registry_path) not in SUPPORTED_REGISTRY_PATHS.values():
@@ -583,9 +583,9 @@ def _include_info(ctx: Any) -> dict:
     from .config_includes import OFFICIAL_SOURCE   # 순환 import 방지
     return {"resolved": True, "files_read": ctx.files_read, "edges": ctx.edges, "issues": ctx.issues, "notes": ctx.notes,
             "basis": OFFICIAL_SOURCE + " (+ docs/gateway/config-secrets-env.md)",
-            "limits": {"max_depth": 10, "max_file_bytes": 2 * 1024 * 1024, "max_files": 64, "boundary": "최상위 설정 파일의 폴더",
+            "limits": {"max_depth": 10, "max_file_bytes": 2 * 1024 * 1024, "max_files": 64, "boundary": "최상위 설정 파일의 폴더와 OPENCLAW_INCLUDE_ROOTS 추가 허용 경계",
                        "max_files_is_scanner_limit": True},
-            "not_supported": ["OPENCLAW_INCLUDE_ROOTS(추가 경계)", "환경변수·SecretRef 해석", "쓰기 연동"]}
+            "not_supported": ["설정 값의 환경변수·SecretRef 해석", "쓰기 연동"]}
 
 
 def _collect_from_root(root: Any, source_path: str, registry_path: tuple = DEFAULT_REGISTRY_PATH,

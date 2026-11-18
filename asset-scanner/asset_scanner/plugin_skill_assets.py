@@ -851,6 +851,80 @@ def read_plugins_list_json(path: Path) -> dict:
     return _plugins_list_from(data, obs)
 
 
+def read_plugin_inspect_json(path: Path) -> dict:
+    """저장된 plugin inspect의 설치 원천. SQLite를 열거나 원문/해시/비밀값을 복사하지 않는다.
+
+    원천: testbed/ground-truth/raw/P2/tb-gw.plugin-inspect.agentscope-asset-catalog.json
+    (팀 444f558893315e6c3a02e0a29d3d1dfe5f5a7bdb), 공식 eb377ac의 zod-schema.installs.ts.
+    installedAt/acceptedSurfaceAt을 last_updated 또는 modified로 대체하지 않는다.
+    """
+    from .tools_catalog import _read_capture
+    data, err = _read_capture(path)
+    obs = _observation(path, "openclaw plugins inspect <selected-id> --json (stored export)")
+    if err:
+        return _failed_list(obs, _issue("error", err["code"], err["message"]))
+    if not isinstance(data, dict) or not isinstance(data.get("plugin"), dict):
+        return _failed_list(obs, _issue("error", "inspect_structure_invalid", "plugin 객체를 찾지 못했습니다."))
+    out = _plugins_list_from({"plugins": [data["plugin"]]}, obs)
+    from .tools_catalog import _find_duplicates
+    duplicates: list = []
+    _find_duplicates(data, "", duplicates)
+    for parent, keys in duplicates:
+        for key in keys:
+            out["issues"].append(_issue("error", "duplicate_key", "같은 키의 마지막 선언만 읽었습니다.", field_path=_safe_short(Redactor(), parent + "." + key, "diagnostic_field_path")))
+        out["status"] = "partial"
+    if not out["records"] or out["records"][0]["identity"]["id"]["status"] != "as_reported":
+        out["issues"].append(_issue("error", "plugin_id_unavailable", "가려지지 않은 plugin id를 확인하지 못했습니다."))
+        out["status"] = "partial"
+    install = data.get("install")
+    if install is None:
+        out["install"] = {"status": "not_reported", "verified_by_scanner": False}
+        return out
+    if not isinstance(install, dict):
+        out["install"] = {"status": "invalid_type", "verified_by_scanner": False}
+        out["issues"].append(_issue("error", "install_type_invalid", "install이 객체가 아닙니다. 값은 저장하지 않았습니다."))
+        out["status"] = "partial"
+        return out
+    red = Redactor()
+    record: dict[str, Any] = {"status": "recorded", "verified_by_scanner": False, "declared": {}, "digest_metadata": {},
+                              "time_semantics": "installedAt은 설치 기록 시각, acceptedSurfaceAt은 수락 시각입니다. last_updated·modified가 아닙니다."}
+    strings = ("source", "spec", "sourcePath", "installPath", "version", "resolvedName", "resolvedVersion", "resolvedSpec", "resolvedAt", "installedAt",
+               "clawhubUrl", "clawhubPackage", "clawhubFamily", "clawhubChannel", "clawhubTrustDisposition", "artifactKind", "artifactFormat",
+               "gitUrl", "gitRef", "gitCommit", "acceptedSurfaceAt")
+    for key in strings:
+        if key not in install:
+            continue
+        if isinstance(install[key], str):
+            record["declared"][key] = _sanitize(install[key], "install." + key, red)
+        else:
+            out["issues"].append(_issue("error", "field_type_invalid", "설치 기록의 문자열 필드 자료형이 다릅니다. 값은 저장하지 않았습니다.", field_path="install." + key))
+            out["status"] = "partial"
+    for key in ("integrity", "shasum", "npmIntegrity", "npmShasum", "clawpackSha256", "clawpackManifestSha256", "acceptedSurfaceHash", "acceptedSurfaceIntegrity"):
+        if key in install:
+            valid = isinstance(install[key], str) and bool(install[key].strip())
+            record["digest_metadata"][key] = {"declared": True, "value_state": "nonempty_string" if valid else "invalid_type_or_empty", "verification": "not_performed"}
+            if not valid:
+                out["issues"].append(_issue("error", "digest_metadata_invalid", "무결성 선언의 자료형 또는 빈 값 문제입니다. 원문은 저장하지 않았습니다.", field_path="install." + key))
+                out["status"] = "partial"
+    if "acceptedSurface" in install:
+        surface = install["acceptedSurface"]
+        record["accepted_surface"] = {}
+        if not isinstance(surface, dict):
+            out["status"] = "partial"
+            out["issues"].append(_issue("error", "accepted_surface_invalid", "acceptedSurface가 객체가 아닙니다."))
+        else:
+            for key in ("channels", "providers", "tools", "contracts", "hooks", "mcpServers", "cliCommands", "cliBackends", "skills", "dangerousConfigFlags"):
+                if key in surface:
+                    value = _str_list(surface[key], "install.acceptedSurface." + key, out["issues"], red)
+                    if value is not None:
+                        record["accepted_surface"][key] = value
+                    else:
+                        out["status"] = "partial"
+    record["redactions"] = red.redactions
+    out["install"] = record
+    return out
+
+
 def read_plugins_list_direct(result: DirectResult) -> dict:
     """`openclaw_direct`로 직접 조회한 `plugins list --json` 결과를 같은 파서로 읽는다."""
     if result.failure is not None:
@@ -911,7 +985,8 @@ def _norm(p: str | None) -> str | None:
 # ---- 전체 -------------------------------------------------------------------------------
 
 def collect_assets(plugin_dirs: list[Path], skills_dirs: list[Path], config: Path | None,
-                   plugins_list: Path | dict | None, skills_list: Path | dict | None, resolve_includes: bool = False) -> dict:
+                   plugins_list: Path | dict | None, skills_list: Path | dict | None, resolve_includes: bool = False,
+                   plugin_inspects: list[Path] | None = None) -> dict:
     settings = read_activation_settings(config, resolve_includes) if config else None
     plugin_items: list[dict] = []
     skill_items: list[dict] = []
@@ -980,15 +1055,33 @@ def collect_assets(plugin_dirs: list[Path], skills_dirs: list[Path], config: Pat
         if lst:
             for r in lst["records"]:
                 r.pop("raw_root_dir", None); r.pop("raw_file_path", None)
+    inspect_outputs = [read_plugin_inspect_json(p) for p in (plugin_inspects or [])]
+    for p in plugin_items:
+        p["installation_observations"] = []
+        pid = p.get("identity", {}).get("id", {}).get("original_value")
+        my_root = _norm(p.get("root_dir", {}).get("value"))
+        if pid is None or p.get("root_dir", {}).get("path_redacted"):
+            continue
+        for n, inspected in enumerate(inspect_outputs):
+            for record in inspected["records"]:
+                same_id = record["identity"]["id"]["original_value"] == pid
+                raw_root = record.get("raw_root_dir")
+                if same_id and raw_root and _norm(str(Path(raw_root).resolve())) == my_root:
+                    p["installation_observations"].append({"inspect_output_index": n, "link_basis": "id_and_root_dir_match",
+                                                          "install": inspected.get("install"), "observation": inspected["observation"]})
+    for inspected in inspect_outputs:
+        for record in inspected["records"]:
+            record.pop("raw_root_dir", None)
     return {"plugins": plugin_items, "skills": skill_items, "runtime_only": {"plugins": unmatched_plugins, "skills": unmatched_skills},
             "activation_settings": settings, "stored_outputs": {"plugins_list": plist and {k: plist[k] for k in ("observation", "status", "issues")},
                                                                 "skills_list": slist and {k: slist[k] for k in ("observation", "status", "issues")}},
-            "issues": top_issues}
+            "issues": top_issues, "plugin_inspect_outputs": inspect_outputs}
 
 
 def summarize(collected: dict, inputs_given: bool) -> dict:
     items = collected["plugins"] + collected["skills"]
     stored = [v for v in (collected["stored_outputs"].get("plugins_list"), collected["stored_outputs"].get("skills_list")) if v]
+    stored += collected.get("plugin_inspect_outputs", [])
     settings = collected["activation_settings"]
     statuses = [i["collection_status"] for i in items] + [s["status"] for s in stored] + ([settings["status"]] if settings else [])
     n_runtime = len(collected["runtime_only"]["plugins"]) + len(collected["runtime_only"]["skills"])
@@ -1027,7 +1120,7 @@ def build_report(collected: dict, inputs_given: bool = True) -> dict:
         "collection": summarize(collected, inputs_given),
         "plugins": collected["plugins"], "skills": collected["skills"], "runtime_only": collected["runtime_only"],
         "activation_settings": collected["activation_settings"], "stored_outputs": collected["stored_outputs"],
-        "issues": collected["issues"],
+        "issues": collected["issues"], "plugin_inspect_outputs": collected.get("plugin_inspect_outputs", []),
     }
 
 
@@ -1038,8 +1131,9 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--skills-dir", action="append", default=[], type=Path, help="SKILL.md가 있는 skill 폴더, 또는 그런 폴더들의 부모 디렉터리 (여러 번 가능)")
     p.add_argument("--config", type=Path, help="plugins.*·skills.* 활성화 선언을 읽을 OpenClaw 설정 파일(JSON5)")
     p.add_argument("--resolve-includes", action="store_true",
-                   help="--config의 $include를 읽기 전용으로 펼칩니다(공식 병합 규칙, 최상위 설정 폴더 안만). 활성화·허용·차단 선언마다 원본 파일과 키 경로를 기록합니다. 생략하면 읽지 않습니다.")
+                   help="--config의 $include를 읽기 전용으로 펼칩니다(공식 병합 규칙, 설정 폴더·추가 허용 경계 안). 활성화·허용·차단 선언마다 원본 파일과 키 경로를 기록합니다. 생략하면 읽지 않습니다.")
     p.add_argument("--plugins-list-json", type=Path, help="저장해 둔 `openclaw plugins list --json` 출력 파일")
+    p.add_argument("--plugin-inspect-json", action="append", default=[], type=Path, help="저장된 plugin inspect JSON (복수 설치는 id와 rootDir가 모두 맞을 때만 연결)")
     p.add_argument("--skills-list-json", type=Path, help="저장해 둔 `openclaw skills list --json` 출력 파일")
     p.add_argument("--openclaw-query", action="append", default=[], choices=("plugins", "skills"),
                    help="저장된 출력 대신 OpenClaw에 직접 조회 (--openclaw-bin 필요). skills는 기본 거부이며 --accept-skills-list-gateway-rpc가 있어야 합니다")
@@ -1055,7 +1149,7 @@ def main(argv: list[str] | None = None) -> int:
     queries = list(dict.fromkeys(args.openclaw_query))
     if args.resolve_includes and not args.config:
         parser.error("--resolve-includes는 --config와 함께만 쓸 수 있습니다.")
-    given = bool(args.plugin_dir or args.skills_dir or args.config or args.plugins_list_json or args.skills_list_json or queries)
+    given = bool(args.plugin_dir or args.skills_dir or args.config or args.plugins_list_json or args.skills_list_json or args.plugin_inspect_json or queries)
     if not given:
         parser.error("입력이 없습니다. --plugin-dir, --skills-dir, --config, --plugins-list-json, --skills-list-json, --openclaw-query 중 하나 이상을 지정하세요.")
     if queries:
@@ -1074,11 +1168,11 @@ def main(argv: list[str] | None = None) -> int:
             plugins_src = read_plugins_list_direct(results["plugins"])
         if "skills" in results:
             skills_src = read_skills_list_direct(results["skills"])
-    for inp in [*args.plugin_dir, *args.skills_dir, *(x for x in (args.config, args.plugins_list_json, args.skills_list_json) if x)]:
+    for inp in [*args.plugin_dir, *args.skills_dir, *args.plugin_inspect_json, *(x for x in (args.config, args.plugins_list_json, args.skills_list_json) if x)]:
         if _same_file(inp, args.output):
             print("오류: --output이 입력과 같은 경로입니다. 입력을 덮어쓰지 않습니다.", file=sys.stderr)
             return EXIT_OUTPUT_ERROR
-    report = build_report(collect_assets(args.plugin_dir, args.skills_dir, args.config, plugins_src, skills_src, args.resolve_includes), given)
+    report = build_report(collect_assets(args.plugin_dir, args.skills_dir, args.config, plugins_src, skills_src, args.resolve_includes, args.plugin_inspect_json), given)
     report, normalized = normalize_for_output(report)
     if normalized:
         report["collection"]["output_text_normalizations"] = normalized

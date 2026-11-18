@@ -108,7 +108,7 @@ OpenClaw 설정이 `$include`로 나뉘어 있으면 옵션을 붙여 읽기 전
 - 규칙은 OpenClaw 공식 구현(`openclaw/openclaw` `eb377ac`의 `includes.ts`·`deep-merge.ts`)을 따릅니다: 문자열 하나는 포함한 객체를 대체, 배열은 순서대로 병합, **같은 위치의 배열은 연결**(순서·중복 보존), 빈 배열은 `{}`, 형제 키는 같은 병합으로 뒤에 합쳐짐, 객체는 재귀 병합, 자료형이 다르면 뒤의 값. 중첩 10단계, 파일 2MB, 경로 4096자 미만, 순환·하드링크 거부, **최상위 설정 파일의 폴더 안만** 읽습니다. 스캐너 상한으로 파일 64개까지 읽습니다.
 - 결과에는 원본 파일의 상대 경로(물리 경로 아님)·include 사슬·논리 키 경로가 기록됩니다: 서버 `include_origin`, Permission/Auth 항목 `include_origin`, Plugin/Skill 선언 `origins`(배열은 원소별).
 - 해석에 실패하면(파일 누락·구문 오류·경로 이탈 등) 수집 결과는 `partial`이 되고 사유가 `collection.includes.issues`에 남습니다. `live_discovery`는 그 실패가 **선택한 서버의 선언에 영향을 줄 수 있으면** 실행·접속을 거부(`include_unresolved`)하고, 다른 서버의 문제는 막지 않습니다.
-- 지원하지 않는 것: `OPENCLAW_INCLUDE_ROOTS`(추가 경계, 경계 밖은 오류), 환경변수·SecretRef 해석. 가상 설정과 공식 소스 기준으로만 검증했고 실제 OpenClaw의 사례는 미확인입니다.
+- 추가 경계 `OPENCLAW_INCLUDE_ROOTS`를 지원하며, 범위 밖 경로는 계속 오류입니다. 설정 값의 환경변수·SecretRef는 해석하지 않습니다. 가상 설정과 공식 소스 기준으로만 검증했고 실제 OpenClaw의 사례는 미확인입니다.
 
 ### Permission/Auth 확대와 호스트 승인 문서: `--exec-approvals-file`
 
@@ -644,3 +644,8 @@ SDK `mcp`는 2026-07-28 규격을 지원하는 정식 2.x 중 **2.3.0**으로 �
 | 테스트베드 사양 정정본 | 담당자의 수정본 대기 | **대기 중**. 수정본의 버전·구성은 확인하지 못했고, 받기 전까지 테스트베드 대조·수집률 계산은 보류 |
 
 실제 설치 버전은 테스트베드 담당이 확인할 항목이며, 이 저장소의 계획값·문서 기록을 "관측된 환경 버전"으로 쓰지 않습니다.
+
+
+## 809775e 이후 원천 수집 보완
+
+[원천 → 수집 코드 → 출력 필드 → 검증 대응표](docs/source-collection-closure-20261118.md)에 추가 입력과 정확한 한계를 기록했습니다. `device_inventory`(장치·클라이언트 라벨), `service_identity`(지정 systemd 파일의 실행 계정 선언), `plugin_skill_assets --plugin-inspect-json`(설치 기록)을 추가했습니다. Agent별 샌드박스·exec 선언, Tlon/모델 제공자 네트워크 정책, `applyPatch.workspaceOnly`, 추가 include 경계도 읽습니다. 실제 OpenClaw/OVA 검증과 전체 요구사항 충족 승인은 별개입니다.

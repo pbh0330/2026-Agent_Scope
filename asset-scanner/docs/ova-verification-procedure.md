@@ -98,7 +98,7 @@
 
 | # | 확인 | 명령·방법 | 기록할 값 | 저장 자료 기대값(참고) |
 |---|---|---|---|---|
-| 4-1 | 설정 선언 수집 | VM의 `openclaw.json`을 **복사해** `python -m asset_scanner --config <복사본> --output …`; tb-node는 `--registry-path nodeHost.mcp.servers`. 복사 전 파일은 변경하지 않음. **`$include`를 쓰는지 먼저 확인**(`grep -c '\$include'`)하고 쓰면 포함 파일도 **같은 상대 구조로** 함께 복사해 `--resolve-includes`를 추가(최상위 설정 폴더 밖 파일은 읽지 않음). 쓰지 않으면 옵션 불필요 | ⟦등록 키·`declaration_pointer`⟧ | gw: fs-workspace·inventory-remote, node: kg-memory·demo-everything |
+| 4-1 | 설정 선언 수집 | VM의 `openclaw.json`을 **복사해** `python -m asset_scanner --config <복사본> --output …`; tb-node는 `--registry-path nodeHost.mcp.servers`. 복사 전 파일은 변경하지 않음. **`$include`를 쓰는지 먼저 확인**(`grep -c '\$include'`)하고 쓰면 포함 파일도 **같은 상대 구조로** 함께 복사해 `--resolve-includes`를 추가(기본은 최상위 설정 폴더 안만, 추가 경계는 OPENCLAW_INCLUDE_ROOTS로 명시). 쓰지 않으면 옵션 불필요 | ⟦등록 키·`declaration_pointer`⟧ | gw: fs-workspace·inventory-remote, node: kg-memory·demo-everything |
 | 4-2 | 환경변수 참조 | 설정의 `${…}`는 **해석하지 않고** `unresolved`로 남아 `partial`(종료 코드 1)이 되는 것이 정상. 단 4-5의 실제 조회에서는 같은 헤더의 값을 환경변수 옵션으로 제공하면 선언 참조를 대체함(아래) | ⟦`unresolved` 이름 목록⟧ | `INVENTORY_MCP_TOKEN`, `EVERYTHING_DEMO_KEY` |
 | 4-3 | Plugin 선언 서버 | 3-2의 manifest로 `--plugin-manifest <복사본>` | ⟦`mcpServers` 키⟧ | asset-catalog (stdio, `node ./mcp-server.mjs`) |
 | 4-4 | CLI 대조(수동 저장만) | `openclaw mcp list`(OpenClaw 관리 서버만 표시), `openclaw mcp probe --json`(투영 이름 포함). **`mcp show`는 환경변수를 풀어 출력한다는 보고가 있어 실행하지 않음** | ⟦서버 수·투영 Tool 이름⟧ | `fs-workspace__list_directory` 등 |
@@ -164,11 +164,11 @@ GitHub 고정 커밋의 **사본**을 검증한 것이며 **VM에 설치된 파�
 | 구분 | 항목 |
 |---|---|
 | **완료**(코드·테스트·가상 또는 저장 자료로 확인) | URL 원문 보존·`alteration` 기록 / 인증 헤더 `${VAR}` 대체 / `$include` 읽기 전용 해석(문서화된 규칙)과 실패 시 실행 거부 / Plugin 진입점·의존성·설치 힌트 / MCP `declared_extra` / `update_policy` / 요구사항 대응표 |
-| **부분 지원** | Node 페어링(`devices list`)·SQLite 설정 / Skill·Plugin 설치 경로·출처 / Permission/Auth(선언만, 실효 권한 계산 없음) / `$include`(공식 구현 기준 병합·빈 배열·배열 원소별 출처 지원, `collector`·`permission_auth`·`plugin_skill_assets --config`·`live_discovery` 모두 연동. 추가 경계 `OPENCLAW_INCLUDE_ROOTS`만 미지원) / 환경·프로필(사용자 입력과 관측값은 분리 보존하나 `environment_id`·`profile_id` 출력 필드 없음) |
+| **부분 지원** | `devices list` 출력과 Plugin inspect 설치 기록은 후속 파서 지원(현재 범위는 [보완표](source-collection-closure-20261118.md)); SQLite 자동 탐색은 미지원 / Skill·Plugin의 전체 설치 탐색 / Permission/Auth(선언만, 실효 권한 계산 없음) / `$include`(공식 구현 기준 병합·빈 배열·배열 원소별 출처 지원, `collector`·`permission_auth`·`plugin_skill_assets --config`·`live_discovery` 모두 연동. 추가 경계 `OPENCLAW_INCLUDE_ROOTS`도 지원) / 환경·프로필(사용자 입력과 관측값은 분리 보존하나 `environment_id`·`profile_id` 출력 필드 없음) |
 | **합의 대기**(구현하지 않음) | 공통 자산 ID / 서명·무결성 **검증**(신뢰 기준) / 실효 권한·exposed·potentially_callable 판정 / Permission/Auth 집계 단위 / `host_id`·`client_id`·`environment_id`·`profile_id` / 실행 위치 증적 / catalog·capability hash / 어댑터의 신규 필드 매핑(대응표 6절) |
 | **OVA 검증 대기** | 실제 버전·프로필·설정 위치 / identity 유지(복제·재시작) / 설치본 Plugin manifest와 GitHub 사본의 `description` 차이 / `plugins list --json`·`devices list --json` 실제 출력 / 실제 `$include` 사용 여부와 병합 결과 / `inventory-remote` 실제 HTTPS 조회와 `--bearer-env` 인증 대체 / 심볼릭 링크 경계 이탈(권한 있는 환경) |
 
-**OVA에서 추가로 확인할 `$include` 항목**: ⟦실제 설정의 `$include` 사용 여부·포함 파일 구조⟧ / 배열이 여러 파일에 걸쳐 있을 때 스캐너의 연결 순서·원소별 출처가 실제 OpenClaw가 해석한 결과(예: `openclaw config` 계열의 출력, 확인 명령은 OVA에서 정함)와 같은지 / 심볼릭 링크·하드링크 경계 이탈 거부(이 PC에서는 권한·OS 때문에 미확인) / `OPENCLAW_INCLUDE_ROOTS` 설정 여부(설정돼 있으면 스캐너는 해당 파일을 읽지 못함).
+**OVA에서 추가로 확인할 `$include` 항목**: ⟦실제 설정의 `$include` 사용 여부·포함 파일 구조⟧ / 배열이 여러 파일에 걸쳐 있을 때 스캐너의 연결 순서·원소별 출처가 실제 OpenClaw가 해석한 결과(예: `openclaw config` 계열의 출력, 확인 명령은 OVA에서 정함)와 같은지 / 심볼릭 링크·하드링크 경계 이탈 거부(이 PC에서는 권한·OS 때문에 미확인) / `OPENCLAW_INCLUDE_ROOTS` 설정 여부(명시 경계와 include-origin을 기록해 실제 해석 결과와 대조).
 
 **OVA에서 추가로 확인할 항목(2026-11-18 후속 보완 반영)**
 

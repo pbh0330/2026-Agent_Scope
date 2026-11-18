@@ -82,6 +82,9 @@ QUERIES: dict[str, Query] = {
     "gateway-identity": Query("gateway-identity", ("gateway", "call", "gateway.identity.get", "--json"), "json",
                               "gateway call → callGatewayReadOnlyCli(sharedStateMode: read-only): 장치 신원을 만들지 않는다. 호출 메서드는 "
                               "gateway.identity.get(범위 operator.read, 신원만 반환) 하나로 고정", uses_gateway=True),
+    "devices": Query("devices", ("devices", "list", "--json"), "json",
+                     "src/cli/devices-cli.runtime.ts runDevicesListCommand → device.pair.list, sharedStateMode: read-only; 실패 시 기존 로컬 pairing 상태만 읽을 수 있음",
+                     uses_gateway=True),
     "skills": Query("skills", ("skills", "list", "--json"), "json",
                     "loadSkillsStatusReport → callGateway(skills.status): 비읽기 모드라 loopback+공유 비밀 인증이 아니면 로컬 장치 신원을 새로 만들 수 있다. "
                     "사용자가 명시적으로 동의한 경우에만 실행", needs_ack="skills_gateway_rpc", uses_gateway=True),
@@ -150,8 +153,8 @@ def validate_config(cfg: DirectConfig, queries: list[str]) -> list[str]:
         if spec is None:
             problems.append(f"허용하지 않는 조회: {q}")
             continue
-        if q == "gateway-identity" and not (cfg.expect_gateway_url or cfg.accept_configured_gateway):
-            problems.append("gateway-identity: 접속 대상은 OpenClaw 설정이 정합니다. --expect-gateway-url로 대상을 고정하거나, "
+        if q in ("gateway-identity", "devices") and not (cfg.expect_gateway_url or cfg.accept_configured_gateway):
+            problems.append(f"{q}: 접속 대상은 OpenClaw 설정이 정합니다. --expect-gateway-url로 대상을 고정하거나, "
                             "--accept-configured-gateway로 설정이 가리키는 Gateway에 접속함을 확인하세요")
         if spec.needs_ack == "skills_gateway_rpc" and not cfg.accept_skills_gateway_rpc:
             problems.append("skills: `skills list`는 설정이 가리키는 Gateway에 RPC를 보내고 장치 신원을 새로 만들 수 있어 기본 거부입니다. "
@@ -202,6 +205,10 @@ def build_argv(cfg: DirectConfig, key: str) -> list[str]:
         argv += ["--timeout", str(max(1000, int(cfg.timeout_s * 1000 * 0.8)))]     # OpenClaw 쪽 제한이 우리 제한보다 먼저 끝나도록
         if cfg.expect_gateway_url:
             argv += ["--expect-url", cfg.expect_gateway_url]
+    if key == "devices":
+        argv += ["--timeout", str(max(1000, int(cfg.timeout_s * 1000 * 0.8)))]
+        if cfg.expect_gateway_url:
+            argv += ["--url", cfg.expect_gateway_url]   # devices는 --expect-url 대신 명시적 --url을 지원한다
     if key == "skills" and cfg.agent:
         argv += ["--agent", cfg.agent]
     return argv
@@ -362,6 +369,10 @@ def run_query(cfg: DirectConfig, key: str, version_info: dict | None = None) -> 
         obs["gateway_target"] = {"basis": "expect_url" if cfg.expect_gateway_url else "configured_by_openclaw_unverified",
                                  "expect_url": red.sanitize_url(cfg.expect_gateway_url, "expect_url") if cfg.expect_gateway_url else None,
                                  "gateway_method": "gateway.identity.get", "params": "none"}
+    if key == "devices":
+        obs["gateway_target"] = {"basis": "explicit_url" if cfg.expect_gateway_url else "configured_by_openclaw_unverified",
+                                 "url": red.sanitize_url(cfg.expect_gateway_url, "gateway_url") if cfg.expect_gateway_url else None,
+                                 "gateway_method": "device.pair.list", "local_pairing_fallback_possible": cfg.expect_gateway_url is None}
     if key == "skills":
         obs["acknowledged_risk"] = "skills_list_gateway_rpc"
         obs["agent"] = cfg.agent
@@ -447,8 +458,8 @@ def add_direct_arguments(p: argparse.ArgumentParser) -> None:
     g.add_argument("--pass-env", action="append", default=[], metavar="NAME", help="자식 프로세스에 전달할 환경변수 이름 (예: OPENCLAW_GATEWAY_TOKEN). 값은 기록하지 않습니다")
     g.add_argument("--openclaw-timeout", type=float, default=DEFAULT_TIMEOUT_S, help="조회 하나의 제한 시간(초, 기본 30)")
     g.add_argument("--max-output-bytes", type=int, default=DEFAULT_MAX_STDOUT, help="stdout 최대 바이트(기본 8MiB). 넘으면 프로세스 트리를 종료합니다")
-    g.add_argument("--expect-gateway-url", help="gateway-identity 조회가 접속해야 하는 ws(s):// 주소 (OpenClaw의 --expect-url로 대상을 고정)")
-    g.add_argument("--accept-configured-gateway", action="store_true", help="gateway-identity가 OpenClaw 설정이 가리키는 Gateway에 접속함을 확인")
+    g.add_argument("--expect-gateway-url", help="gateway-identity/devices 조회 대상 ws(s):// 주소 (각각 --expect-url/--url 사용)")
+    g.add_argument("--accept-configured-gateway", action="store_true", help="gateway-identity/devices가 설정의 Gateway에 접속함을 확인")
     g.add_argument("--accept-skills-list-gateway-rpc", action="store_true",
                    help="`skills list`가 Gateway RPC를 보내고 장치 신원을 새로 만들 수 있음을 이해하고 실행을 허용 (기본 거부)")
     g.add_argument("--openclaw-agent", help="skills 조회의 --agent")
