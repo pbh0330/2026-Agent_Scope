@@ -186,7 +186,10 @@ def test_declared_capabilities_explain_not_performed_but_do_not_create_unsupport
     assert s["declared_capabilities"] == {"resources": "declared", "prompts": "not_declared", "source": "stored_in_input_not_verified"}
     assert lst(rep, "prompts")["outcome"] == "capability_not_declared" and lst(rep, "prompts")["collection_status"] == "not_performed"
     assert lst(rep, "resource_templates")["declared_capability"] == "declared"   # resources 능력이 템플릿 목록도 포괄
-    assert "FAKE-CAP" not in json.dumps(rep)                                       # 능력 내용은 옮기지 않는다
+    # 계약 변경(2026-11-18, 공격표면 11.1 server capabilities·extensions): 요약(declared_capabilities)은 그대로 두고, 입력에 제공된 내용은 가린 뒤
+    # 별도 필드(capabilities_as_provided)에 보존한다. 요약 필드에는 내용이 섞이지 않고 목록 판정에도 영향이 없다.
+    assert "FAKE-CAP" not in json.dumps(s["declared_capabilities"])
+    assert s["capabilities_as_provided"]["value"]["resources"]["x-extra"] == "FAKE-CAP" and s["capabilities_as_provided"]["verified_by_scanner"] is False
 
 
 def test_list_present_without_declared_capability_is_still_read_with_a_note(run):

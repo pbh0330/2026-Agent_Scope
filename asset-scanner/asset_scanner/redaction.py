@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 from dataclasses import dataclass, field
 from urllib.parse import parse_qsl, urlsplit, urlunsplit
@@ -82,6 +83,21 @@ def _pure_ref_without_fallback(value: str) -> bool:
 def is_env_ref_only(value: str) -> bool:
     """값 전체가 기본값 없는 환경변수 참조(`${VAR}`)인가. 값 없이 이름만 가리키므로 가리지 않는다."""
     return _pure_ref_without_fallback(value)
+
+
+def describe_alteration(original: object, definition: object, redactions: list[dict]) -> dict:
+    """서버가 보낸 원본 정의와 결과 정의의 차이를 기록한다.
+
+    `altered`: 가림·정규화가 기록됐거나 실제 내용이 원본과 다르면 true. `reasons`: 기록된 사유 코드(중복 제거).
+    `difference_without_recorded_reason`: 내용은 달라졌는데 사유가 기록되지 않은 경우(기록 누락을 숨기지 않기 위한 표시).
+    """
+    def canon(x: object) -> str:
+        return json.dumps(x, sort_keys=True, ensure_ascii=False, default=str)
+
+    differs = canon(original) != canon(definition)
+    reasons = sorted({r["reason"] for r in redactions})
+    return {"altered": bool(redactions) or differs, "reasons": reasons,
+            "difference_without_recorded_reason": differs and not redactions}
 
 
 @dataclass
@@ -170,7 +186,14 @@ class Redactor:
                 self._note(field_path, "url_path_token")
             else:
                 path_segments.append(seg)
-        return urlunsplit((parts.scheme, netloc, "/".join(path_segments), query, fragment))
+        if (netloc, query, fragment, "/".join(path_segments)) == (parts.netloc, parts.query, parts.fragment, parts.path):
+            # 가릴 것이 없으면 원문을 그대로 돌려준다. 재조립하면 끝의 빈 `#`·`?` 같은 표식이 조용히 사라진다.
+            return value
+        rebuilt = urlunsplit((parts.scheme, netloc, "/".join(path_segments), query, fragment))
+        if value.endswith(("#", "?")) and not rebuilt.endswith(("#", "?")):
+            # 비밀값을 가리면서 빈 표식이 함께 사라진 경우도 숨기지 않고 기록한다.
+            self._note(field_path, "url_empty_marker_dropped")
+        return rebuilt
 
     def _compound_has_secret(self, value: str, field_path: str) -> bool:
         """공백으로 나뉜 여러 단어가 든 문자열을 단어 단위로 검사한다 (해석·실행하지 않음)."""

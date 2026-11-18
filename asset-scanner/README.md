@@ -5,7 +5,7 @@ OpenClaw 설정 파일(JSON/JSON5)을 **읽기만 해서** 선택한 등록 영�
 플러그인 manifest의 `mcpServers`도 `--plugin-manifest`로 명시해 읽을 수 있습니다. 등록 선언만 수집하며 플러그인의 설치·활성화·서버 실행 여부는 판정하지 않습니다.
 
 - 출력은 **스캐너 내부 협의용 초안**입니다. 팀 공통 스키마가 아닙니다. → [필드 매핑과 근거](docs/field-mapping.md)
-- 설정 속 명령 실행, 서버 접속, 도구 조회, 환경변수 값 해석, `$include` 파일 읽기, 설정 수정을 **하지 않습니다.**
+- 정적 설정 수집은 설정 속 명령 실행·서버 접속·도구 조회·환경변수 값 해석·설정 수정을 하지 않습니다. `$include` 파일은 **`--resolve-includes`를 명시한 경우에만** 정해진 경계 안에서 읽습니다.
 - 실제 연결 여부·도구 목록·capabilities·protocol_version·노출/호출 가능 상태는 채우지 않습니다.
 - 이 설정 수집기는 Tool 정의를 읽지 않습니다. 저장된 `tools/list` 응답을 읽는 별도 모듈은 아래 [Tool 카탈로그 1단계](#tool-카탈로그-1단계-저장된-toolslist-응답-읽기)를 보세요.
 - 위 약속은 **이 정적 설정 수집기와 저장된 파일을 읽는 모듈**(Tool 카탈로그, `resources_prompts`, `linking`, `plugin_skill_assets`, `node_gateway_identity`, `permission_auth`)에 해당합니다. 서버를 실행하거나 접속하는 모듈은 `live_tools`(개발용 서버 stdio)와 `live_discovery`(명시적으로 고른 서버 하나, [아래 절](#실제-mcp-서버-목록-조회-live_discovery--서버-프로세스를-실행하거나-접속합니다))뿐입니다. 개발용 MCP 서버를 실제로 실행해 조회하는 별도 모듈은 [실제 stdio 조회](#실제-stdio-조회-개발용-mcp-서버-1개--서버-프로세스를-실행합니다)에 있으며, **그 명령만 서버 프로세스를 실행**하고 팀 테스트베드 검증이 아닙니다.
@@ -39,7 +39,7 @@ asset-scanner/
 
 ## 설치 (Windows PowerShell)
 
-현재 검증 상태(Windows 10, Python 3.14.4, 프로젝트 `.venv`): 수집된 테스트는 712개입니다. **한 번의 전체 실행이 종료 코드 0으로 끝난 기록은 없습니다.** 이 PC(RAM 8GB)에서 전체 실행이 메모리 부족으로 중단된 적이 있어 파일 단위로 나눠 순차 실행하고 각 실행의 pytest 종료 코드를 따로 기록했습니다. 기존 494개는 중단된 전체 실행에서 통과로 기록된 458개와 나머지 36개의 분할 실행(종료 코드 모두 0)을 합쳐 각각 한 번 이상 통과했음을 확인했고(중복·누락·실패 없음, [필드 매핑 10-8](docs/field-mapping.md)), 그 뒤에 더한 141개(Plugin·Skill 30, Gateway·Node identity 33, Permission/Auth 18, 실제 목록 조회 60)는 파일 단위 실행에서 종료 코드 0으로 통과했습니다([자산 수집 6장](docs/asset-collection.md), [실제 목록 조회 9장](docs/live-discovery.md)). OpenClaw 직접 조회 45개(가짜 CLI)와 원격 HTTPS 32개(로컬 HTTPS 시험 서버·테스트용 CA)는 파일 단위로 통과했습니다([직접 조회 6장](docs/openclaw-direct.md), [실제 목록 조회 11장](docs/live-discovery.md)). 직접 조회 때 수정한 기존 모듈의 기존 테스트 146개는 다시 실행해 통과했고, HTTPS 작업으로 `live_discovery`를 바꾼 뒤 기존 `test_live_discovery.py`는 59개 통과·1개 실패(변경 전 HEAD에서도 같은 조건에서 실패하는 타이밍 의존 테스트)였으며 그 테스트를 안정화해 단독 통과를 확인했으나 파일 전체를 다시 돌린 기록은 없습니다. 실제 OpenClaw 실행과 실제 원격 서버 검증은 없습니다. 로그는 `output/`(Git 제외)에 있습니다. 2026-10-31 별도 Linux Python 3.12 환경에서의 검증 기록(301개)은 과거 기록이며 현재 검증 결과가 아닙니다.
+현재 검증 상태(2026-11-18 업로드본 후속 수정): **Linux Python 3.12.14에서 전체 935개 통과·실패/skip 0개·pytest 종료 코드 0**입니다. json5 0.15.0, mcp/mcp-types 2.3.0, pytest 9.1.1을 사용했습니다. Windows 최신 변경본과 실제 OpenClaw·OVA·실제 원격 서버 검증은 별도 대기입니다. 이전 Windows 분할 실행·RAM 부족 중단 기록과 이번 전체 실행은 구분합니다. [검증 기준·수정·실행 기록](docs/verification-20261118.md), [가상 입력 조건과 실제 출력](docs/virtual-samples-and-outputs.md)을 참고하세요.
 
 ```powershell
 cd asset-scanner
@@ -93,6 +93,45 @@ python -m venv .venv
 | 2 | 인자 오류 |
 | 3 | 수집 실패 (`failed`) — 파일 없음·읽기 실패·JSON5 오류·잘못된 구조 |
 | 4 | 결과 파일 저장 실패(직렬화·인코딩·교체 실패 포함) 또는 `--output`이 입력 설정·manifest와 같은 파일. 이 경우 기존 결과 파일은 바뀌지 않음 |
+
+### 설정 분할(`$include`) 읽기: `--resolve-includes` (선택)
+
+OpenClaw 설정이 `$include`로 나뉘어 있으면 옵션을 붙여 읽기 전용으로 펼칩니다. 옵션을 생략하면 기존처럼 파일을 읽지 않고 `unresolved`로 기록합니다.
+
+```powershell
+.\.venv\Scripts\python.exe -m asset_scanner --config C:\path\openclaw.json --resolve-includes --output output\scan.json
+.\.venv\Scripts\python.exe -m asset_scanner.permission_auth --config C:\path\openclaw.json --resolve-includes --output output\perm.json
+.\.venv\Scripts\python.exe -m asset_scanner.plugin_skill_assets --config C:\path\openclaw.json --resolve-includes --plugin-dir C:\path\plugin --output output\ps.json
+.\.venv\Scripts\python.exe -m asset_scanner.live_discovery --config C:\path\openclaw.json --server my-server --resolve-includes --allow-connect --output output\live.json
+```
+
+- 규칙은 OpenClaw 공식 구현(`openclaw/openclaw` `eb377ac`의 `includes.ts`·`deep-merge.ts`)을 따릅니다: 문자열 하나는 포함한 객체를 대체, 배열은 순서대로 병합, **같은 위치의 배열은 연결**(순서·중복 보존), 빈 배열은 `{}`, 형제 키는 같은 병합으로 뒤에 합쳐짐, 객체는 재귀 병합, 자료형이 다르면 뒤의 값. 중첩 10단계, 파일 2MB, 경로 4096자 미만, 순환·하드링크 거부, **최상위 설정 파일의 폴더 안만** 읽습니다. 스캐너 상한으로 파일 64개까지 읽습니다.
+- 결과에는 원본 파일의 상대 경로(물리 경로 아님)·include 사슬·논리 키 경로가 기록됩니다: 서버 `include_origin`, Permission/Auth 항목 `include_origin`, Plugin/Skill 선언 `origins`(배열은 원소별).
+- 해석에 실패하면(파일 누락·구문 오류·경로 이탈 등) 수집 결과는 `partial`이 되고 사유가 `collection.includes.issues`에 남습니다. `live_discovery`는 그 실패가 **선택한 서버의 선언에 영향을 줄 수 있으면** 실행·접속을 거부(`include_unresolved`)하고, 다른 서버의 문제는 막지 않습니다.
+- 지원하지 않는 것: `OPENCLAW_INCLUDE_ROOTS`(추가 경계, 경계 밖은 오류), 환경변수·SecretRef 해석. 가상 설정과 공식 소스 기준으로만 검증했고 실제 OpenClaw의 사례는 미확인입니다.
+
+### Permission/Auth 확대와 호스트 승인 문서: `--exec-approvals-file`
+
+`permission_auth`는 설정의 정책·인증 선언을 원천 항목 그대로 수집합니다(실효 권한은 계산하지 않음). 2026-11-18부터 고정 패키지 문서에 근거가 있는 범위를 더했습니다: sandbox(`agents.defaults.sandbox.*`·에이전트별 `mode/scope/workspaceAccess`·`tools.sandbox.tools.*`), 명령 권한(`tools.exec.*`), 파일 범위(`tools.fs.workspaceOnly`), 네트워크 범위(`browser.ssrfPolicy.*`·`cron.webhookSsrfPolicy.*`·`tools.web.*.enabled`), `cron.webhookToken`(값 비저장).
+
+```powershell
+.\.venv\Scripts\python.exe -m asset_scanner.permission_auth --config C:\path\openclaw.json `
+  --exec-approvals-file C:\path\exec-approvals.json --output output\perm.json
+```
+
+- 호스트 승인 문서(`docs/tools/exec-approvals.md`의 `version`·`socket`·`defaults`·`agents.<id>.{security,ask,askFallback,autoAllowSkills,allowlist,mcpTools}`)는 **사용자가 경로를 명시한 경우에만** 읽습니다(자동 탐색·쓰기·정책 변경 없음, 2MB 한도). 실제 승인은 호스트의 SQLite(`state/openclaw.sqlite#exec_approvals_config`)에 있고 이전 버전은 `exec-approvals.json` 파일이었으므로, 같은 JSON 문서를 직접 지정해야 합니다(내보내는 방법은 OVA에서 확인할 항목).
+- 허용 목록 항목은 `pattern`·`source`·`arg_pattern_declared`(여부만)만 남깁니다. `argPattern` 해시·`lastUsedCommand`·`lastResolvedPath`·시각·항목 id·`socket.token`은 저장하지 않습니다. 항목에는 `origin: operator_provided_file`이 붙습니다.
+- `--output`이 승인 문서와 같은 파일이면 종료 코드 4로 거부합니다. SecretRef가 있으면 `unresolved`로 남아 종료 코드 1(partial)일 수 있습니다.
+
+### Skill frontmatter·설치 명세·설치 기록
+
+- frontmatter는 YAML **부분집합** 해석기로 읽습니다. 블록 스칼라·중첩 목록-매핑·따옴표 밖 주석·문단 접기를 지원합니다. 앵커·별칭·태그·복합 키·탭 들여쓰기와 JSON 비호환 큰따옴표 escape는 해석하지 않습니다. 흐름 값·metadata JSON5 폴백에도 깊이·노드·문자열 제한과 중복 키 검사를 적용합니다. 미지원 값은 `frontmatter_unparsed_keys`에 남깁니다.
+- `metadata.openclaw.install[]`은 `install_specs`로, `.clawhub/origin.json`은 `install_origin`(기록값, `verified_by_scanner: false`)으로 수집합니다. 설치 명세 `sha256`은 값을 저장하지 않고 `sha256_declared`(선언 여부)와 `sha256_state`(값 유효성)를 분리해 기록합니다.
+
+### 서버 능력과 client capabilities
+
+- 저장 캡처(`tools_catalog`·`resources_prompts`)는 서버 항목에 제공된 `server_capabilities`·`server_info`·`requested_protocol_version`을 `*_as_provided`에, `client_capabilities`·`client_info`(+`client_sender`)를 `client_*_as_provided`에 가림 후 보존합니다. 입력에 없으면 만들지 않고, 검증하지 않습니다.
+- 직접 조회(`live_discovery`)는 SDK 쓰기 스트림이 **전송을 받아들인 뒤** initialize(또는 요청별 `_meta`)를 `client_capabilities_sent`로 기록합니다. send 실패 시 전송됨으로 기록하지 않습니다. 서버 수신 확인이나 OpenClaw 클라이언트의 값은 아닙니다(`is_openclaw_client: false`).
 
 ### 결과 파일 저장 방식 (설정 수집 CLI와 Tool 카탈로그 CLI 공통, `asset_scanner/output.py`)
 

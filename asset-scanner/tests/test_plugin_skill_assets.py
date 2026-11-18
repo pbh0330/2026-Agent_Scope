@@ -156,6 +156,23 @@ def test_absolute_skills_path_is_not_read(tmp_path):
     assert rep["skills"] == [] and rep["plugins"][0]["skills_declared"][0]["status"] == "outside_plugin_root_not_read"
 
 
+@pytest.mark.parametrize("rel", [r"C:\outside", r"C:outside", r"\outside", r"\\server\share\skills", r"sub\..\..\outside"])
+def test_windows_manifest_paths_cannot_escape_on_any_platform(tmp_path, rel):
+    plugin = make_plugin(tmp_path, {**BASE_MANIFEST, "skills": [rel]})
+    rep = run([plugin])
+    assert rep["skills"] == []
+    assert rep["plugins"][0]["skills_declared"][0]["status"] == "outside_plugin_root_not_read"
+    assert any(i["code"] == "skills_path_outside_plugin_root" for i in rep["plugins"][0]["issues"])
+
+
+def test_backslash_manifest_path_inside_the_plugin_is_read(tmp_path):
+    plugin = make_plugin(tmp_path, {**BASE_MANIFEST, "skills": [r"skills\lab"]},
+                         files={"skills/lab/SKILL.md": SKILL_OK})
+    rep = run([plugin])
+    assert rep["plugins"][0]["skills_declared"][0]["status"] == "read"
+    assert rep["skills"][0]["identity"]["name"]["original_value"] == "image-lab"
+
+
 def test_plugin_code_is_never_executed(tmp_path):
     marker = tmp_path / "EXECUTED.txt"
     code = f"require('fs').writeFileSync({json.dumps(str(marker))}, 'ran')"
@@ -189,14 +206,16 @@ def test_skill_metadata_openclaw_and_skill_key(tmp_path):
     assert s["config_key"] == {"value": "peekaboo", "basis": "metadata.openclaw.skillKey"}
 
 
-def test_multiline_metadata_block_is_reinterpreted_and_block_scalars_are_not_guessed(tmp_path):
-    text = "---\nname: n\ndescription: >\n  long folded\n  text\nmetadata:\n  openclaw:\n    emoji: \"e\"\n    always: true\n---\nb"
+def test_multiline_metadata_block_is_reinterpreted_and_block_scalars_are_read_but_unsupported_yaml_is_not_guessed(tmp_path):
+    # 이전에는 `description: >`를 해석하지 못해 키 이름만 남겼다(누락). 이제 YAML 블록 스칼라를 읽고, 앵커 같은 미지원 문법만 추정하지 않는다.
+    text = "---\nname: n\ndescription: >\n  long folded\n  text\nalias: &a x\nmetadata:\n  openclaw:\n    emoji: \"e\"\n    always: true\n---\nb"
     fm, unparsed, problem = parse_frontmatter(text)
-    assert problem is None and fm["metadata"] == {"openclaw": {"emoji": "e", "always": True}} and "description" in unparsed
+    assert problem is None and fm["metadata"] == {"openclaw": {"emoji": "e", "always": True}}
+    assert fm["description"] == "long folded text\n" and unparsed == ["alias"]
     s = run(skills_dirs=[make_skill(tmp_path, "n", text)])["skills"][0]
-    assert "description" not in s["frontmatter"] and s["frontmatter_unparsed_keys"] == ["description"]
+    assert s["frontmatter"]["description"] == "long folded text\n" and s["frontmatter_unparsed_keys"] == ["alias"]
     assert s["metadata_openclaw"]["always"] is True
-    assert any(i["code"] == "required_field_missing" for i in s["issues"])        # description을 읽지 못해 필수 필드 누락으로 표시
+    assert not any(i["code"] == "required_field_missing" for i in s["issues"])        # description을 읽었으므로 필수 필드 누락이 아니다
 
 
 @pytest.mark.parametrize("text, code", [("no frontmatter", "frontmatter_missing"), ("---\nname: x\n", "frontmatter_unterminated")])

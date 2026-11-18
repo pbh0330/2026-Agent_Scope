@@ -164,6 +164,7 @@ class _State:
     requests_by_method: dict[str, int] = field(default_factory=dict)
     teardown_error_types: list[str] = field(default_factory=list)
     finished_listing: bool = False
+    client_sent: dict | None = None                            # 실제로 보낸 initialize(또는 요청별 _meta)에서 관찰한 값
 
 
 # ---- 대상 ---------------------------------------------------------------------------------
@@ -184,8 +185,9 @@ class Target:
     ssl_context: ssl.SSLContext | None = None   # https 대상: 인증서 체인·호스트 이름 검증이 켜진 컨텍스트 (메모리에만 존재)
 
 
-def _refuse(kind: str, code: str, message: str, description: dict | None = None, declaration: dict | None = None, followup: str | None = None) -> Target:
-    refused = {"code": code, "message": message}
+def _refuse(kind: str, code: str, message: str, description: dict | None = None, declaration: dict | None = None, followup: str | None = None,
+            **extra: Any) -> Target:
+    refused = {"code": code, "message": message, **extra}
     if followup:
         refused["followup"] = followup      # 지원하지 않는 기능: 별도 후속 작업으로 남아 있음
     return Target(kind=kind, transport="unknown", description=description or {}, refused=refused, declaration=declaration)
@@ -229,6 +231,44 @@ def build_demo_target(http: bool, scenario: str, auth: str, request_log: Path | 
     return Target("demo_http", "streamable-http", desc, headers=headers, child_cmd=cmd, child_env=env)
 
 
+def _include_issue_affects(field_path: Any, entry_path: str) -> bool:
+    """`$include` 해석 문제의 위치가 선택한 서버 선언에 영향을 줄 수 있는가: 같은 위치이거나 조상(포함 관계)이거나 하위인 경우.
+
+    문제가 있는 위치를 알 수 없으면(`field_path` 없음) 안전한 쪽으로 영향이 있다고 본다. 위치 비교는 같은 `dotted_path` 표기끼리의 접두 비교다.
+    """
+    if not isinstance(field_path, str) or field_path in ("", "(root)"):
+        return True
+    if entry_path == field_path:
+        return True
+    return any(entry_path.startswith(field_path + sep) or field_path.startswith(entry_path + sep) for sep in (".", "["))
+
+
+def _provided_auth_headers(bearer_env: str | None, auth_header_env: list[str] | None) -> dict[str, str | None]:
+    """사용자가 옵션으로 값을 제공하겠다고 한 헤더 이름(소문자) 집합. 형식이 틀린 옵션은 여기서 거르지 않고(None 표시 아님) 건너뛴다.
+    값 자체는 읽지 않는다. 형식·환경변수 검사는 기존 순서대로 뒤에서 한다."""
+    out: dict[str, str | None] = {}
+    if bearer_env:
+        out["authorization"] = bearer_env
+    for spec_text in auth_header_env or []:
+        hname, sep, ename = spec_text.partition("=")
+        if sep and _HEADER_NAME_RE.match(hname) and _ENV_NAME_RE.match(ename) and hname.lower() not in FORBIDDEN_HEADER_NAMES:
+            out.setdefault(hname.lower(), ename)
+    return out
+
+
+def _record_replacement(records: list[dict], replaced_decl: dict[str, str], header: str, option: str, env_name: str) -> None:
+    """설정에 `${VAR}`로 선언돼 있던 헤더를 옵션 값이 대체했다는 기록. 선언값·옵션 값은 저장하지 않고 이름만 남긴다."""
+    for decl_name, decl_value in replaced_decl.items():
+        if decl_name.lower() != header.lower():
+            continue
+        red = Redactor()
+        red.collect_env_refs(decl_value, f"headers.{decl_name}")
+        names = [r["name"] for r in red.env_refs]
+        records.append({"header": header, "declared_value_kind": "env_ref", "ref_names": names, "provided_by": option,
+                        "provided_env_name": env_name, "ref_name_matches_provided_env": names == [env_name],
+                        "declared_value_used": False})
+
+
 def _has_ref(value: Any) -> bool:
     """문자열의 `${...}`, SecretRef 모양 객체, `$include`가 있으면 True (해석하지 않으므로 실행·접속에 쓸 수 없다)."""
     if isinstance(value, str):
@@ -245,13 +285,23 @@ def _has_ref(value: Any) -> bool:
 
 def build_config_target(config: Path, key: str, registry_label: str, allow_launch: bool, allow_connect: bool,
                         allow_hosts: list[str], bearer_env: str | None, ca_bundle: Path | None = None,
-                        auth_header_env: list[str] | None = None) -> Target:
+                        auth_header_env: list[str] | None = None, resolve_includes: bool = False) -> Target:
     """설정에서 **지정한 키 하나**의 선언을 읽어 대상을 만든다. 해석할 수 없는 참조나 허용하지 않은 동작이면 거부한다(실행·접속 없음)."""
     reg = SUPPORTED_REGISTRY_PATHS[registry_label]
     try:
         root = parse_config(read_config(config))
     except CollectionFailure as fail:
         return _refuse("config", f"config_{fail.reason['code']}", fail.reason["message"])
+    include_origin = None
+    include_issues: list[dict] = []
+    if resolve_includes and isinstance(root, dict):
+        # 읽기 전용 $include 해석(config_includes.py). 해석하지 못한 include는 선언으로 남아 아래 unresolved_reference로 거부된다.
+        from .config_includes import resolve_includes as _resolve
+        ctx = _resolve(config, root)
+        root = ctx.root
+        label, chain = ctx.origin_of(reg + (key,))
+        include_origin = {"file": label, "include_chain": list(chain), "issues": [i["code"] for i in ctx.issues]}
+        include_issues = list(ctx.issues)
     node: Any = root
     for p in reg:
         node = node.get(p) if isinstance(node, dict) else None
@@ -261,9 +311,33 @@ def build_config_target(config: Path, key: str, registry_label: str, allow_launc
                    "declaration_path": decl_path, "declaration_pointer": json_pointer(reg + (key,)),
                    "source_path": str(config), "name_matching_used": False,
                    "note": "사용자가 지정한 키의 선언이다. 이름이 같다는 이유로 다른 선언과 합치지 않았다."}
+    if include_origin is not None:
+        declaration["include_origin"] = include_origin
+    # 실행·접속 허용은 수집 결과의 partial 여부와 별개다. $include 해석이 실패했거나(없는 파일·경계 이탈·순환·크기·깊이 등) 규칙이
+    # 확정되지 않은 병합(같은 위치 배열 충돌, 비밀처럼 보이는 키의 가림 충돌)이 이 서버의 선언 위치와 겹치면 command·args·URL이
+    # 실제와 다를 수 있으므로 거부한다. 다른 서버에 대한 문제는 기록만 하고 이 서버의 조회는 막지 않는다.
+    affecting = [i for i in include_issues if _include_issue_affects(i.get("field_path"), decl_path)]
+    if affecting:
+        return _refuse("config", "include_unresolved",
+                       "이 서버의 선언에 영향을 줄 수 있는 $include를 끝까지·확정적으로 해석하지 못해 실행·접속하지 않았습니다.",
+                       declaration=declaration, include_issue_codes=sorted({str(i.get("code")) for i in affecting}))
     if not isinstance(entry, dict):
         return _refuse("config", "declaration_not_found", "지정한 키의 서버 선언을 설정에서 찾지 못했습니다.", declaration=declaration)
-    if _has_ref(entry):
+    # 사용자가 같은 헤더의 값을 --bearer-env / --auth-header-env로 명시적으로 제공한 경우에 한해, 그 헤더 하나의 `${VAR}` 선언은
+    # 해석 대상이 아니라 "옵션 값으로 대체될 선언"이다(선언 값은 쓰지 않는다). 다른 필드·다른 헤더의 참조와 SecretRef는 그대로 거부한다.
+    provided = _provided_auth_headers(bearer_env, auth_header_env)
+    replaced_decl: dict[str, str] = {}
+    entry_to_check = entry
+    cfg_headers_raw = entry.get("headers")
+    if provided and isinstance(cfg_headers_raw, dict):
+        kept = {}
+        for hk, hv in cfg_headers_raw.items():
+            if isinstance(hk, str) and hk.lower() in provided and provided[hk.lower()] is not None and isinstance(hv, str) and "${" in hv:
+                replaced_decl[hk] = hv
+            else:
+                kept[hk] = hv
+        entry_to_check = {**entry, "headers": kept}
+    if _has_ref(entry_to_check):
         return _refuse("config", "unresolved_reference",
                        "선언에 해석하지 않는 참조(${VAR}, SecretRef, $include)가 있어 실행·접속에 쓸 수 없습니다. 참조를 해석하지 않으므로 거부합니다.",
                        declaration=declaration)
@@ -325,12 +399,14 @@ def build_config_target(config: Path, key: str, registry_label: str, allow_launc
     cfg_headers = entry.get("headers", {})
     if not (isinstance(cfg_headers, dict) and all(isinstance(v, str) for v in cfg_headers.values())):
         return _refuse("config_http", "declaration_type_invalid", "headers는 문자열 값의 객체여야 합니다.", declaration=declaration)
-    headers.update(cfg_headers)
+    headers.update({k: v for k, v in cfg_headers.items() if k not in replaced_decl})
+    replacements: list[dict] = []
     if bearer_env:
         token = os.environ.get(bearer_env)
         if not token:
             return _refuse("config_http", "bearer_env_not_set", "--bearer-env가 가리키는 환경변수가 비어 있어 접속하지 않았습니다.", declaration=declaration)
         _set_header(headers, "Authorization", f"Bearer {token}")
+        _record_replacement(replacements, replaced_decl, "Authorization", "--bearer-env", bearer_env)
     env_headers: list[dict] = []
     for spec_text in auth_header_env or []:
         hname, sep, ename = spec_text.partition("=")
@@ -345,8 +421,11 @@ def build_config_target(config: Path, key: str, registry_label: str, allow_launc
             return _refuse("config_http", "auth_header_env_not_set", "--auth-header-env가 가리키는 환경변수가 비어 있어 접속하지 않았습니다.", declaration=declaration)
         headers[hname] = value
         env_headers.append({"header": hname, "env": ename})      # 이름만 기록한다
+        _record_replacement(replacements, replaced_decl, hname, "--auth-header-env", ename)
     auth_kinds = [k for k, on in (("bearer_from_env_var", bool(bearer_env)), ("header_from_env_var", bool(env_headers)),
-                                  ("declared_headers", bool(cfg_headers))) if on]
+                                  ("declared_headers", bool(set(cfg_headers) - set(replaced_decl)))) if on]
+    if replacements:
+        declaration = {**declaration, "declared_header_replacements": replacements}
     desc = {"kind": "config_declared_http", "host": host, "scheme": parts.scheme, "port": parts.port,
             "url": red.sanitize_url(entry["url"], "url"), "header_names": sorted(headers), "auth": "+".join(auth_kinds) or "none",
             "bearer_env_name": bearer_env, "auth_header_env": env_headers, "allowed_by": "loopback" if loopback else "--allow-host",
@@ -468,6 +547,92 @@ class _RecordingTransport(httpx2.AsyncHTTPTransport):
             raise
 
 
+try:    # SDK가 요청에 싣는 메타 키 이름(고정 상수)
+    from mcp_types import CLIENT_CAPABILITIES_META_KEY, CLIENT_INFO_META_KEY, PROTOCOL_VERSION_META_KEY
+except ImportError:   # pragma: no cover - 다른 SDK 버전
+    CLIENT_CAPABILITIES_META_KEY = CLIENT_INFO_META_KEY = PROTOCOL_VERSION_META_KEY = None
+
+
+def _outgoing_dict(item: Any) -> dict | None:
+    msg = getattr(item, "message", item)
+    if isinstance(msg, dict):
+        return msg
+    root = getattr(msg, "root", None)
+    if isinstance(root, dict):
+        return root
+    dump = getattr(msg, "model_dump", None)
+    if callable(dump):
+        try:
+            return dump(by_alias=True, mode="json", exclude_none=True)
+        except Exception:   # noqa: BLE001
+            return None
+    return None
+
+
+class _TapWriteStream:
+    """SDK가 서버로 보내는 메시지를 **관찰만** 한다(내용·순서·전달을 바꾸지 않는다). 처음 보낸 initialize 요청, 또는 요청마다 붙는
+    `_meta`의 client capabilities를 기록해 "스캐너 클라이언트가 실제로 보낸 값"을 남긴다."""
+
+    def __init__(self, inner: Any, state: _State):
+        self._inner, self._state = inner, state
+
+    def _observe(self, item: Any) -> None:
+        if self._state.client_sent is not None:
+            return
+        try:
+            d = _outgoing_dict(item)
+            params = d.get("params") if d else None
+            if not isinstance(params, dict):
+                return
+            if d.get("method") == "initialize":
+                self._state.client_sent = {"mode": "initialize_request", "observed_on_method": "initialize", "protocol_version": params.get("protocolVersion"),
+                                           "capabilities": params.get("capabilities"), "client_info": params.get("clientInfo")}
+                return
+            meta = params.get("_meta")
+            if CLIENT_CAPABILITIES_META_KEY and isinstance(meta, dict) and CLIENT_CAPABILITIES_META_KEY in meta:
+                self._state.client_sent = {"mode": "per_request_meta", "observed_on_method": d.get("method"), "protocol_version": meta.get(PROTOCOL_VERSION_META_KEY),
+                                           "capabilities": meta.get(CLIENT_CAPABILITIES_META_KEY), "client_info": meta.get(CLIENT_INFO_META_KEY)}
+        except Exception:   # noqa: BLE001 - 관찰 실패가 조회를 막지 않는다
+            return
+
+    async def send(self, item: Any, /) -> None:
+        await self._inner.send(item)
+        self._observe(item)
+
+    async def aclose(self) -> None:
+        await self._inner.aclose()
+
+    async def __aenter__(self) -> "_TapWriteStream":
+        await self._inner.__aenter__()
+        return self
+
+    async def __aexit__(self, *exc: Any) -> Any:
+        return await self._inner.__aexit__(*exc)
+
+
+class _TapTransport:
+    def __init__(self, inner: Any, state: _State):
+        self._inner, self._state = inner, state
+
+    async def __aenter__(self) -> Any:
+        streams = await self._inner.__aenter__()
+        read, write, *rest = streams
+        return (read, _TapWriteStream(write, self._state), *rest)
+
+    async def __aexit__(self, *exc: Any) -> Any:
+        return await self._inner.__aexit__(*exc)
+
+
+def _client_sent_report(state: _State, red: Redactor) -> dict:
+    base = {"sender": "asset_scanner live_discovery (MCP Python SDK client)", "is_openclaw_client": False, "origin": "observed_outgoing_message",
+            "note": "이 스캐너의 클라이언트가 서버로 실제 보낸 값이다. OpenClaw(Gateway·Node)가 서버에 보내는 client capabilities가 아니다."}
+    cs = state.client_sent
+    if cs is None:
+        return {**base, "status": "not_observed"}
+    return {**base, "status": "observed", "mode": cs["mode"], "observed_on_method": cs["observed_on_method"], "protocol_version": cs["protocol_version"],
+            "capabilities": _sanitize(cs["capabilities"], "live.client_capabilities", red), "client_info": _sanitize(cs["client_info"], "live.client_info", red)}
+
+
 def _wait_closed(port: int, timeout: float) -> bool:
     """포트가 닫힐 때까지 기다린다. 닫혔으면 True."""
     deadline = time.monotonic() + timeout
@@ -574,6 +739,7 @@ async def _run_session(target: Target, limits: DiscoveryLimits, client_mode: str
                             headers=target.headers, timeout=limits.request_timeout_s, transport=rec_transport, follow_redirects=False, trust_env=False,
                             event_hooks={"request": [guard_origin], "response": [record_status]}))
                         transport = streamable_http_client(url, http_client=hc)
+                    transport = _TapTransport(transport, state)
                     client = await stack.enter_async_context(
                         Client(transport, cache=None, mode=client_mode, read_timeout_seconds=limits.request_timeout_s))  # type: ignore[arg-type]
                     state.negotiated = client.protocol_version
@@ -742,6 +908,7 @@ def assemble(target: Target, limits: DiscoveryLimits, state: _State, client_mode
         },
         "server_info_from_wire": _wire_dump(state.server_info, "live.server_info", red),
         "capabilities_from_wire": caps_wire,
+        "client_capabilities_sent": _client_sent_report(state, red),
         "lists": lists,
         "collection": {"status": status, "outcome": outcome, "reasons": reasons,
                        "item_counts": {k: v["item_count"] for k, v in lists.items()}},
@@ -869,6 +1036,7 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--bearer-env", help="Authorization: Bearer 토큰을 읽을 환경변수 이름 (값은 기록하지 않음)")
     p.add_argument("--auth-header-env", action="append", default=[], metavar="헤더이름=환경변수이름",
                    help="인증 헤더(예: X-Api-Key=MY_KEY_VAR)의 값을 읽을 환경변수 이름 (여러 번 가능, 값은 기록하지 않음)")
+    p.add_argument("--resolve-includes", action="store_true", help="설정의 $include를 읽기 전용으로 펼친 뒤 --server의 선언을 찾습니다(최상위 설정 폴더 안만). 해석하지 못한 include가 남으면 거부합니다.")
     p.add_argument("--ca-bundle", type=Path, help="https 대상이 쓰는 사설 CA 인증서 PEM을 신뢰 저장소에 **추가**로 신뢰 (인증서·호스트 이름 검증은 그대로 켜짐)")
     p.add_argument("--config-scan-ref", help="결과의 config_link.config_scan_ref (linking에서 설정 수집 결과 라벨과 맞출 때)")
     p.add_argument("--scenario", choices=SCENARIOS, default="full", help="내장 시험 서버의 동작")
@@ -892,7 +1060,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.config and not args.server:
         parser.error("--config에는 --server(등록키 하나)가 필요합니다. 설정의 서버를 모두 조회하지 않습니다.")
-    if not args.config and (args.server or args.allow_launch or args.allow_connect or args.allow_host or args.bearer_env or args.ca_bundle or args.auth_header_env):
+    if not args.config and (args.server or args.allow_launch or args.allow_connect or args.allow_host or args.bearer_env or args.ca_bundle or args.auth_header_env or args.resolve_includes):
         parser.error("--server, --allow-*, --bearer-env, --auth-header-env, --ca-bundle은 --config와 함께만 쓸 수 있습니다.")
     limits = DiscoveryLimits(args.timeout, args.request_timeout, args.connect_timeout, args.max_pages, args.max_items)
     problems = validate_limits(limits)
@@ -902,7 +1070,7 @@ def main(argv: list[str] | None = None) -> int:
         target = build_demo_target(bool(args.demo_http), args.scenario, args.demo_auth, args.demo_request_log)
     else:
         target = build_config_target(args.config, args.server, args.registry_path, args.allow_launch, args.allow_connect, args.allow_host, args.bearer_env,
-                                     args.ca_bundle, args.auth_header_env)
+                                     args.ca_bundle, args.auth_header_env, args.resolve_includes)
     if target.refused is None:
         print(f"서버에 연결합니다: {target.description.get('kind')} ({target.transport}) — 목록 요청만 보냅니다 (tools/call·resources/read·prompts/get 없음)")
     result = discover(target, limits, client_mode=args.client_mode, request_undeclared=args.request_undeclared, config_scan_ref=args.config_scan_ref)

@@ -113,6 +113,10 @@ def json_pointer(parts: tuple[str | int, ...]) -> str:
     return "".join("/" + str(p).replace("~", "~0").replace("/", "~1") for p in parts)
 
 
+def _seg_key(k: Any) -> str:
+    return str(k)
+
+
 def _type_name(value: Any) -> str:
     if value is None:
         return "null"
@@ -396,6 +400,8 @@ def collect_server(key: str, entry: Any, source_path: str, key_masked: bool = Fa
     declared: dict[str, Any] = {}
     credentials: dict[str, Any] = {}
     other_keys: list[str] = []
+    # 문서화됐지만 기존 `declared` 계약에는 없던 선언 값. `declared`·`other_declared_keys`의 기존 내용을 바꾸지 않으려고 따로 둔다.
+    declared_extra: dict[str, Any] = {}
 
     # 항목 자신과 그 하위 객체(env, headers, auth 등)의 중복 키. 마지막 값만 남으므로 앞의 값을 읽지 못했다.
     for dup_path in _find_duplicate_keys(entry, parts):
@@ -427,6 +433,43 @@ def collect_server(key: str, entry: Any, source_path: str, key_masked: bool = Fa
             else:
                 issues.append({"code": "field_type_invalid", "field_path": fpath, "expected": "boolean",
                                "actual": _type_name(value), "message": "sslVerify 값이 true/false가 아닙니다."})
+        elif field_name in ("requestTimeoutMs", "connectionTimeoutMs"):
+            # 문서: 서버별 타임아웃(밀리초). 적힌 숫자만 기록하고 기본값을 채우지 않는다.
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                declared_extra[field_name] = value; other_keys.append(field_name)
+            else:
+                issues.append({"code": "field_type_invalid", "field_path": fpath, "expected": "number",
+                               "actual": _type_name(value), "message": f"{field_name} 값이 숫자가 아닙니다."})
+        elif field_name == "supportsParallelToolCalls":
+            # 문서: 동시 호출 가능 여부에 대한 힌트. 실행 사실로 해석하지 않는다.
+            if isinstance(value, bool):
+                declared_extra[field_name] = value; other_keys.append(field_name)
+            else:
+                issues.append({"code": "field_type_invalid", "field_path": fpath, "expected": "boolean",
+                               "actual": _type_name(value), "message": "supportsParallelToolCalls 값이 true/false가 아닙니다."})
+        elif field_name == "codex":
+            # 문서: Codex app-server 투영에만 적용되는 OpenClaw 메타데이터. agents(목록)와 defaultToolsApprovalMode(문자열)만 값을 기록한다.
+            if isinstance(value, dict):
+                cx: dict[str, Any] = {}
+                ag = value.get("agents")
+                if isinstance(ag, list) and all(isinstance(a, str) for a in ag):
+                    cx["agents"] = [redactor.sanitize_string(a, fpath + ".agents") for a in ag]
+                elif "agents" in value:
+                    issues.append({"code": "field_type_invalid", "field_path": fpath + ".agents", "expected": "string[]",
+                                   "actual": _type_name(ag), "message": "codex.agents가 문자열 배열이 아닙니다."})
+                mode = value.get("defaultToolsApprovalMode")
+                if isinstance(mode, str):
+                    cx["defaultToolsApprovalMode"] = redactor.sanitize_string(mode, fpath + ".defaultToolsApprovalMode")
+                    cx["defaultToolsApprovalMode_documented_value"] = mode in ("auto", "prompt", "approve")
+                elif "defaultToolsApprovalMode" in value:
+                    issues.append({"code": "field_type_invalid", "field_path": fpath + ".defaultToolsApprovalMode", "expected": "string",
+                                   "actual": _type_name(mode), "message": "codex.defaultToolsApprovalMode가 문자열이 아닙니다."})
+                cx["other_keys"] = sorted(_seg_key(k) for k in value if k not in ("agents", "defaultToolsApprovalMode"))
+                cx["scope_note"] = "문서: Codex app-server 스레드에만 적용되는 OpenClaw 메타데이터이며 다른 런타임에는 영향이 없다. 값은 선언일 뿐 실제 승인 동작이 아니다."
+                declared_extra["codex"] = cx; other_keys.append(field_name)
+            else:
+                issues.append({"code": "field_type_invalid", "field_path": fpath, "expected": "object",
+                               "actual": _type_name(value), "message": "codex 값이 객체가 아닙니다."})
         elif field_name == "toolFilter":
             _collect_tool_filter(value, parts + (field_name,), declared, issues, redactor)
         elif field_name == "args":
@@ -473,6 +516,7 @@ def collect_server(key: str, entry: Any, source_path: str, key_masked: bool = Fa
         "declared_keys": list(entry.keys()),
         "credentials": credentials,
         "other_declared_keys": other_keys,
+        **({"declared_extra": declared_extra} if declared_extra else {}),
         "unresolved": unresolved,
         "redactions": redactor.redactions,
         "issues": issues,
@@ -482,11 +526,15 @@ def collect_server(key: str, entry: Any, source_path: str, key_masked: bool = Fa
 
 # ---- 설정 파일 전체 ------------------------------------------------------------
 
-def collect(config_path: Path, registry_path: tuple = DEFAULT_REGISTRY_PATH) -> dict:
-    """설정 파일 하나에서 선택한 등록 영역을 수집해 `collection`과 `servers`를 돌려준다."""
+def collect(config_path: Path, registry_path: tuple = DEFAULT_REGISTRY_PATH, resolve_includes: bool = False) -> dict:
+    """설정 파일 하나에서 선택한 등록 영역을 수집해 `collection`과 `servers`를 돌려준다.
+
+    `resolve_includes=True`이면 최상위 설정 폴더 안의 `$include`를 읽기 전용으로 펼친다(`config_includes.py`).
+    기본값(False)은 기존 동작과 같다: `$include` 파일을 읽지 않고 unresolved로 기록한다.
+    """
     if tuple(registry_path) not in SUPPORTED_REGISTRY_PATHS.values():
         raise ValueError("지원하지 않는 등록 영역입니다.")
-    return _collect_registry_file(config_path, tuple(registry_path))
+    return _collect_registry_file(config_path, tuple(registry_path), resolve_includes=resolve_includes)
 
 
 def collect_plugin_manifest(manifest_path: Path) -> dict:
@@ -500,14 +548,19 @@ def collect_plugin_manifest(manifest_path: Path) -> dict:
     return result
 
 
-def _collect_registry_file(config_path: Path, registry_path: tuple) -> dict:
+def _collect_registry_file(config_path: Path, registry_path: tuple, resolve_includes: bool = False) -> dict:
     """설정/manifest 공통 읽기. 중복 키·가림·참조·항목 격리는 같은 경로를 사용한다."""
     registry_path = tuple(registry_path)
     source_path, source_path_redacted = _safe_source_path(config_path)
     try:
         text = read_config(config_path)
         root = parse_config(text)
-        result = _collect_from_root(root, source_path, registry_path)
+        include_ctx = None
+        if resolve_includes:
+            from .config_includes import resolve_includes as _resolve   # 순환 import 방지
+            include_ctx = _resolve(config_path, root)
+            root = include_ctx.root
+        result = _collect_from_root(root, source_path, registry_path, include_ctx)
         result["source_path_redacted"] = source_path_redacted
         return result
     except CollectionFailure as failure:
@@ -526,7 +579,17 @@ def _collect_registry_file(config_path: Path, registry_path: tuple) -> dict:
         }
 
 
-def _collect_from_root(root: Any, source_path: str, registry_path: tuple = DEFAULT_REGISTRY_PATH) -> dict:
+def _include_info(ctx: Any) -> dict:
+    from .config_includes import OFFICIAL_SOURCE   # 순환 import 방지
+    return {"resolved": True, "files_read": ctx.files_read, "edges": ctx.edges, "issues": ctx.issues, "notes": ctx.notes,
+            "basis": OFFICIAL_SOURCE + " (+ docs/gateway/config-secrets-env.md)",
+            "limits": {"max_depth": 10, "max_file_bytes": 2 * 1024 * 1024, "max_files": 64, "boundary": "최상위 설정 파일의 폴더",
+                       "max_files_is_scanner_limit": True},
+            "not_supported": ["OPENCLAW_INCLUDE_ROOTS(추가 경계)", "환경변수·SecretRef 해석", "쓰기 연동"]}
+
+
+def _collect_from_root(root: Any, source_path: str, registry_path: tuple = DEFAULT_REGISTRY_PATH,
+                       include_ctx: Any = None) -> dict:
     reasons: list[dict] = []
     unresolved: list[dict] = []
     registry_label = dotted_path(registry_path)
@@ -538,7 +601,11 @@ def _collect_from_root(root: Any, source_path: str, registry_path: tuple = DEFAU
     for container, value in _find_includes(root):
         if _affects_registry(container, registry_path) and len(container) <= len(registry_path):
             unresolved.append(_include_record(
-                container, value, "등록 영역에 영향을 줄 수 있는 $include를 해석하지 않았습니다."))
+                container, value, "등록 영역에 영향을 줄 수 있는 $include를 해석하지 않았습니다." if include_ctx is None
+                else "$include를 끝까지 해석하지 못했습니다(사유: collection.includes.issues)."))
+    if include_ctx is not None and include_ctx.issues:
+        reasons.append({"code": "include_resolution_incomplete",
+                        "message": "$include를 해석하는 중 문제가 있어 등록 항목이 더 있거나 다를 수 있습니다. collection.includes.issues를 확인하세요."})
 
     # 선택한 경로를 따라 내려가며 각 단계의 중복 키를 기록한다. 고르지 않은 영역은 보고하지 않는다.
     node: Any = root
@@ -556,7 +623,7 @@ def _collect_from_root(root: Any, source_path: str, registry_path: tuple = DEFAU
         here = registry_path[:i + 1]
         if key not in node:
             return _result_without_registry(source_path, registry_label, dotted_path(here),
-                                            reasons, unresolved)
+                                            reasons, unresolved, include_ctx)
         node = node[key]
         if not isinstance(node, dict):
             raise CollectionFailure("invalid_structure", f"{key}_not_object",
@@ -571,6 +638,14 @@ def _collect_from_root(root: Any, source_path: str, registry_path: tuple = DEFAU
     masked_keys = set(getattr(servers, "masked_keys", []))
     records = [_collect_server_safely(k, v, source_path, k in masked_keys, registry_path)
                for k, v in servers.items() if k != "$include"]
+    if include_ctx is not None:
+        for rec in records:
+            label, chain = include_ctx.origin_of(registry_path + (rec["registration_key"],))
+            rec["include_origin"] = {"file": label, "include_chain": list(chain),
+                                     "basis": "include_resolution (논리 경로는 declaration_path, 파일은 최상위 설정 폴더 기준 상대 경로)"}
+            overrides = include_ctx.field_origin_overrides(registry_path + (rec["registration_key"],))
+            if overrides:
+                rec["include_origin"]["field_origin_overrides"] = overrides
 
     if any(r["collection_status"] != "complete" for r in records):
         reasons.append({"code": "server_entries_incomplete",
@@ -582,7 +657,7 @@ def _collect_from_root(root: Any, source_path: str, registry_path: tuple = DEFAU
                         "message": "해석하지 않은 $include가 있어 등록 항목이 더 있거나 다를 수 있습니다."})
 
     status = "partial" if reasons else "complete"
-    return {
+    result = {
         "source_path": source_path,
         "registry_path": registry_label,
         "collection": {
@@ -596,6 +671,9 @@ def _collect_from_root(root: Any, source_path: str, registry_path: tuple = DEFAU
         },
         "servers": records,
     }
+    if include_ctx is not None:
+        result["collection"]["includes"] = _include_info(include_ctx)
+    return result
 
 
 def _collect_server_safely(key: str, entry: Any, source_path: str, key_masked: bool,
@@ -618,16 +696,16 @@ def _collect_server_safely(key: str, entry: Any, source_path: str, key_masked: b
 
 
 def _result_without_registry(source_path: str, registry_label: str, missing: str,
-                             reasons: list, unresolved: list) -> dict:
+                             reasons: list, unresolved: list, include_ctx: Any = None) -> dict:
     # 앞서 기록된 중복 키 등은 수집을 불완전하게 만든다. `registry_absent` 안내 자체는 불완전 사유가 아니다.
-    incomplete = bool(unresolved) or any(r["code"] in INCOMPLETE_REASON_CODES for r in reasons)
+    incomplete = bool(unresolved) or any(r["code"] in INCOMPLETE_REASON_CODES or r["code"] == "include_resolution_incomplete" for r in reasons)
     reasons = list(reasons)
     reasons.insert(0, {"code": "registry_absent", "field_path": missing,
                        "message": f"설정에 {missing} 영역이 없습니다. 등록 항목이 0개라는 뜻과는 다릅니다."})
     if unresolved:
         reasons.append({"code": "unresolved_include",
                         "message": "해석하지 않은 $include에 등록 영역이 있을 수 있습니다."})
-    return {
+    result = {
         "source_path": source_path,
         "registry_path": registry_label,
         "collection": {
@@ -641,3 +719,6 @@ def _result_without_registry(source_path: str, registry_label: str, missing: str
         },
         "servers": [],
     }
+    if include_ctx is not None:
+        result["collection"]["includes"] = _include_info(include_ctx)
+    return result

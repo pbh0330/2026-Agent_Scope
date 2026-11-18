@@ -178,11 +178,18 @@ def test_negotiated_version_server_info_and_capabilities_are_what_the_server_sen
 
 
 def test_ground_truth_and_example_inputs_are_not_modified_by_any_live_run(live):
-    files = sorted(EXAMPLES.iterdir())
-    before = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in files}
+    def snapshot():
+        # examples 아래에는 plugin-sample 같은 디렉터리도 있다. 디렉터리는 건너뛰지 않고
+        # 하위 파일까지 재귀로 해시하며, 디렉터리 자체의 존재도 기록해 추가·삭제도 검출한다.
+        out = {}
+        for p in sorted(EXAMPLES.rglob("*")):
+            rel = p.relative_to(EXAMPLES).as_posix()
+            out[rel] = "<dir>" if p.is_dir() else hashlib.sha256(p.read_bytes()).hexdigest()
+        return out
+    before = snapshot()
+    assert before   # 비어 있는 입력으로 통과하는 것을 막는다
     live("empty")
-    after = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(EXAMPLES.iterdir())}
-    assert before == after
+    assert before == snapshot()
 
 
 # ---- 빈 목록 · 서버 오류 · 페이지네이션 ------------------------------------------------

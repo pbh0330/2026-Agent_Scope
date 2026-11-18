@@ -65,7 +65,7 @@
 
 ### 한계
 
-- frontmatter 해석기는 YAML 라이브러리 없이 한 줄 `key: value`, JSON5 값, 들여쓰기 중첩 매핑·목록, 흐름 목록만 읽습니다. 블록 스칼라(`>`/`|`)·앵커 등은 값을 추정하지 않고 `frontmatter_unparsed_keys`에 키 이름만 남깁니다(그 키가 필수 필드이면 `required_field_missing` 표시).
+- frontmatter는 외부 라이브러리 없는 안전한 YAML 부분 해석기(`skill_frontmatter.py`)로 읽습니다: 중첩 매핑·목록(목록 안 매핑 포함), **블록 스칼라(`|`·`>`, chomping `-`/`+`, 들여쓰기 지시자)**, 여러 줄 평문·따옴표 값, 흐름 값(JSON5), 주석. 앵커·별칭·태그·복합 키·탭 들여쓰기는 **확장·추정하지 않고** `frontmatter_unparsed_keys`에 키 이름만 남깁니다(필수 필드이면 `required_field_missing`). 한도(깊이 20·노드 2000·문자열 64KiB)와 중복 키 오류(`duplicate_key`)를 적용하고 값은 비밀값 가림을 거칩니다(2026-11-18 보완, [virtual-samples-and-outputs.md](virtual-samples-and-outputs.md)).
 - 설치 경로·설치 출처(플러그인 인덱스), 실제 로딩 여부, 등록된 Tool·훅 목록(저장된 출력에 적힌 이름만 옮김), skill의 의존 바이너리·환경변수 충족 여부는 확인하지 않았습니다.
 - 번들 플러그인 63개 등 실제 패키지 전체를 스캔한 결과가 아닙니다. 가상 예제(`examples/plugin-sample/`)와 테스트용 임시 폴더로만 검증했습니다.
 
@@ -131,7 +131,7 @@
 
 ### 한계
 
-- 수집 경로는 1장에서 문서로 확인한 것만입니다. 채널별 접근 제어(`allowFrom` 등), 샌드박스 설정, 실행 승인 파일, 런타임 승인·페어링 상태는 수집하지 않습니다.
+- 수집 경로는 1장에서 문서로 확인한 것만입니다. 채널별 접근 제어(`allowFrom` 등)와 런타임 승인·페어링 상태는 수집하지 않습니다. sandbox·exec 정책 선언과 사용자가 경로를 지정한 호스트 승인 문서는 2026-11-18부터 수집합니다(`sandbox_policy`·`exec_policy`·`network_policy`·`exec_approvals`, 선언만이며 실효 결과 계산 없음).
 - 중복 키와 `$include`는 이 모듈이 읽는 최상위 영역(`tools`·`agents`·`gateway`·`nodeHost`·`plugins`·`skills`·`security`·`mcp`)에서만 문제로 봅니다.
 - `gateway.nodes.*` 중 문서에 나오지 않는 키는 읽지 않습니다(스키마로 허용 범위를 확인하지 못함).
 

@@ -40,6 +40,9 @@ def _parser() -> argparse.ArgumentParser:
     source.add_argument("--config", type=Path, help="읽을 OpenClaw 설정 파일 (JSON/JSON5)")
     source.add_argument("--plugin-manifest", type=Path,
                         help="플러그인 manifest의 mcpServers 선언을 읽습니다 (실행·설치·활성화 확인 없음)")
+    p.add_argument("--resolve-includes", action="store_true",
+                   help="설정의 $include를 읽기 전용으로 펼칩니다(OpenClaw 2026.9.6 문서의 병합·경계·깊이·크기 규칙). "
+                        "최상위 설정 파일의 폴더 안만 읽고 원본 파일 상대 경로를 기록합니다. 기본은 읽지 않고 unresolved로 기록합니다.")
     p.add_argument("--output", required=True, type=Path, help="결과 JSON을 저장할 경로")
     return p
 
@@ -69,6 +72,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.plugin_manifest is not None and args.registry_path != DEFAULT_REGISTRY:
         parser.error("--plugin-manifest는 manifest의 mcpServers만 읽습니다. --registry-path는 설정 파일용입니다.")
+    if args.plugin_manifest is not None and args.resolve_includes:
+        parser.error("--resolve-includes는 --config(설정 파일)에만 쓸 수 있습니다.")
     input_path = args.plugin_manifest if args.plugin_manifest is not None else args.config
 
     if _same_file(input_path, args.output):
@@ -76,7 +81,7 @@ def main(argv: list[str] | None = None) -> int:
         return EXIT_OUTPUT_ERROR
 
     collected = (collect_plugin_manifest(input_path) if args.plugin_manifest is not None
-                 else collect(input_path, SUPPORTED_REGISTRY_PATHS[args.registry_path]))
+                 else collect(input_path, SUPPORTED_REGISTRY_PATHS[args.registry_path], resolve_includes=args.resolve_includes))
     report = build_report(collected)
 
     # 저장 전에 직렬화할 수 없는 문자(고립된 surrogate)를 정리하고, 임시 파일에 완전히 쓴 뒤 교체한다.

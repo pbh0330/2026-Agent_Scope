@@ -29,13 +29,14 @@ import os
 import re
 import sys
 from datetime import datetime, timezone
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Any
 
 import json5
 
 from . import __version__
 from .cli import _make_console_output_safe, _same_file
+from .skill_frontmatter import parse_frontmatter_lines
 from .collector import (CollectionFailure, _find_duplicate_keys, collect_plugin_manifest, dotted_path, parse_config,
                         read_config, _type_name)
 from .openclaw_direct import (DirectResult, add_direct_arguments, config_from_args, run_queries, validate_config)
@@ -118,162 +119,106 @@ def _read_text_limited(path: Path, limit: int) -> tuple[str | None, dict | None]
 
 # ---- SKILL.md frontmatter ------------------------------------------------------------
 
-_KV_RE = re.compile(r"^([A-Za-z0-9_.-]+):(?:\s+(.*))?$")
+def parse_frontmatter_ex(text: str) -> tuple[dict | None, dict, str | None]:
+    """`---`로 둘러싸인 frontmatter를 `skill_frontmatter`의 안전한 YAML 부분 해석기로 읽는다.
 
-
-def _scalar(text: str) -> Any:
-    t = text.strip()
-    if t == "":
-        return ""
-    if t[0] in "\"'" and len(t) >= 2 and t[-1] == t[0]:
-        return t[1:-1]
-    low = t.lower()
-    if low in ("true", "false"):
-        return low == "true"
-    if low in ("null", "~"):
-        return None
-    if re.fullmatch(r"[-+]?\d+", t):
-        return int(t)
-    if re.fullmatch(r"[-+]?(\d+\.\d*|\.\d+)([eE][-+]?\d+)?", t):
-        return float(t)
-    if t[0] in "{[":
-        try:
-            return json5.loads(t)
-        except ValueError:
-            pass
-        if t[0] == "[" and t[-1] == "]" and "{" not in t and "[" not in t[1:]:
-            # YAML 흐름 목록 `[a, b]`: 따옴표 없는 문자열 항목도 허용한다
-            inner = t[1:-1].strip()
-            return [] if not inner else [_scalar(x) for x in inner.split(",")]
-        return _Unparsed()
-    return t
-
-
-class _Unparsed(Exception):
-    """YAML의 블록 스칼라·앵커·복잡한 구조처럼 이 단순 파서가 해석하지 않는 값의 표식."""
-
-
-def _parse_block(lines: list[str]) -> Any:
-    """들여쓰기로 표현한 중첩 매핑(`key:`/`key: 값`)과 목록(`- 값`)만 읽는다. 그 밖의 문법이면 _Unparsed를 던진다."""
-    rows: list[tuple[int, str]] = []
-    for ln in lines:
-        if "\t" in ln[: len(ln) - len(ln.lstrip())]:
-            raise _Unparsed()
-        if ln.strip() == "" or ln.lstrip().startswith("#"):
-            continue
-        rows.append((len(ln) - len(ln.lstrip(" ")), ln.strip()))
-    pos = 0
-
-    def parse(indent: int) -> Any:
-        nonlocal pos
-        if pos >= len(rows):
-            raise _Unparsed()
-        if rows[pos][1].startswith("- "):
-            seq = []
-            while pos < len(rows) and rows[pos][0] == indent and rows[pos][1].startswith("- "):
-                val = _scalar(rows[pos][1][2:])
-                if isinstance(val, _Unparsed) or (isinstance(val, str) and _KV_RE.match(val)):
-                    raise _Unparsed()
-                seq.append(val)
-                pos += 1
-            return seq
-        mapping: dict[str, Any] = {}
-        while pos < len(rows) and rows[pos][0] == indent:
-            m = _KV_RE.match(rows[pos][1])
-            if not m or rows[pos][1].startswith("- ") or m.group(1) in mapping:
-                raise _Unparsed()
-            key, rest = m.group(1), m.group(2)
-            pos += 1
-            if rest is None or rest.strip() == "":
-                if pos < len(rows) and rows[pos][0] > indent:
-                    mapping[key] = parse(rows[pos][0])
-                else:
-                    mapping[key] = None
-            else:
-                if rest.strip() in (">", "|", ">-", "|-", "&", "*") or rest.strip()[0] in "&*!":
-                    raise _Unparsed()
-                v = _scalar(rest)
-                if isinstance(v, _Unparsed):
-                    raise _Unparsed()
-                mapping[key] = v
-        if pos < len(rows) and rows[pos][0] > indent:
-            raise _Unparsed()
-        return mapping
-
-    result = parse(rows[0][0]) if rows else None
-    if pos != len(rows):
-        raise _Unparsed()
-    return result
-
-
-def parse_frontmatter(text: str) -> tuple[dict | None, list[str], str | None]:
-    """`---`로 둘러싸인 frontmatter를 보수적으로 해석한다. (값, 해석하지 못한 키, 문제 코드)
-
-    문서는 YAML을 먼저 쓰고 실패하면 한 줄 파서를 쓴다고 밝힌다. 여기서는 YAML 라이브러리 없이 한 줄 `key: value`와
-    JSON5 한 줄 값, `metadata:` 아래 들여쓴 블록(JSON5로 재해석)만 읽고 나머지는 추정하지 않고 키 이름만 남긴다.
+    반환: (값, 부가 정보{unparsed, duplicate_keys, limit_hits, alias_keys}, 문제 코드). 임의 코드 실행·별칭 확장이 없고 한도를 둔다.
     """
     lines = text.splitlines()
     if not lines or lines[0].strip() != "---":
-        return None, [], "frontmatter_missing"
+        return None, {}, "frontmatter_missing"
     end = next((i for i in range(1, len(lines)) if lines[i].strip() == "---"), None)
     if end is None:
-        return None, [], "frontmatter_unterminated"
+        return None, {}, "frontmatter_unterminated"
+    res = parse_frontmatter_lines(lines[1:end])
+    return res["value"], res, None
+
+
+def parse_frontmatter(text: str) -> tuple[dict | None, list[str], str | None]:
+    """기존 시그니처 유지: (값, 해석하지 못한 키, 문제 코드)."""
+    value, extra, problem = parse_frontmatter_ex(text)
+    return value, list(extra.get("unparsed", [])), problem
+
+
+MAX_INSTALL_SPECS = 20
+_INSTALL_KINDS = ("brew", "node", "go", "uv", "download")
+_INSTALL_KNOWN = {"id", "kind", "formula", "bins", "label", "os", "url", "sha256", "archive", "extract", "stripComponents", "targetDir"}
+
+
+_HEX64_RE = re.compile(r"[0-9a-fA-F]{64}")
+
+
+def _sha256_state(v: Any) -> str:
+    """`valid_format`(64자리 16진 문자열) | `empty` | `invalid_format`(문자열이지만 모양이 다름) | `null` | `invalid_type`(숫자·불리언·목록·객체)."""
+    if v is None:
+        return "null"
+    if isinstance(v, str):
+        return "empty" if v == "" else ("valid_format" if _HEX64_RE.fullmatch(v) else "invalid_format")
+    return "invalid_type"
+
+
+def _install_spec(spec: Any) -> dict:
+    """`metadata.openclaw.install[]` 한 항목에서 문서(`docs/tools/skills.md` Installer specs)에 있는 키만 옮긴다.
+
+    다운로드·설치·검증은 하지 않는다. `sha256` 값(산출물 다이제스트)은 저장하지 않고 선언 여부만 남기며 검증 결과를 만들지 않는다.
+    """
+    if not isinstance(spec, dict):
+        return {"value_kind": "invalid_type", "type": _type_name(spec)}
     out: dict[str, Any] = {}
-    unparsed: list[str] = []
-    current: str | None = None
-    block: list[str] = []
+    for k in ("id", "kind", "formula", "label", "archive", "targetDir", "url"):
+        if isinstance(spec.get(k), str):
+            out[k] = spec[k]
+    if "kind" in out:
+        out["kind_documented"] = out["kind"] in _INSTALL_KINDS
+    for k in ("bins", "os"):
+        if isinstance(spec.get(k), list):
+            out[k] = [x for x in spec[k] if isinstance(x, str)][:MAX_NAMES]
+    if isinstance(spec.get("extract"), bool):
+        out["extract"] = spec["extract"]
+    sc = spec.get("stripComponents")
+    if isinstance(sc, int) and not isinstance(sc, bool):
+        out["stripComponents"] = sc
+    if out.get("kind") == "download" or "sha256" in spec:
+        # 선언 여부(키 존재)와 값의 유효성을 분리한다. 숫자·null·잘못된 형식도 "선언은 했다"로 기록하고 문제는 sha256_state로 남긴다.
+        # 값은 저장하지 않으며 숫자를 문자열로 바꿔 유효한 해시로 인정하지 않는다(형식 유효성은 검증이 아니라 모양 검사다).
+        out["sha256_declared"] = "sha256" in spec
+        out["sha256_state"] = _sha256_state(spec["sha256"]) if "sha256" in spec else "absent"
+    out["other_keys"] = sorted(_seg(k) for k in spec if k not in _INSTALL_KNOWN)
+    return out
 
-    def flush() -> None:
-        nonlocal block
-        if current is None:
-            block = []
-            return
-        if block:
-            try:
-                out[current] = _parse_block(block)
-            except _Unparsed:
-                if current == "metadata":
-                    # 문서: 중첩 metadata는 JSON 문자열로 펴서 JSON5로 다시 읽는다. 들여쓴 블록이 JSON5 한 덩어리이면 그렇게도 읽는다.
-                    try:
-                        out[current] = json5.loads(" ".join(s.strip() for s in block))
-                        block = []
-                        return
-                    except ValueError:
-                        pass
-                out.pop(current, None)
-                unparsed.append(current)
-        block = []
 
-    for line in lines[1:end]:
-        if line.strip() == "" or line.lstrip().startswith("#"):
-            continue
-        if line[0] in " \t":
-            block.append(line)
-            continue
-        flush()
-        m = _KV_RE.match(line)
-        if not m:
-            current = None
-            continue
-        current = m.group(1)
-        rest = m.group(2)
-        if rest is None or rest.strip() == "" or rest.strip() in (">", "|", ">-", "|-"):
-            out[current] = None
-            if rest and rest.strip() in (">", "|", ">-", "|-"):
-                unparsed.append(current)
-                current = None
-            continue
-        val = _scalar(rest)
-        if isinstance(val, _Unparsed):
-            unparsed.append(current)
-            out.pop(current, None)
-        else:
-            out[current] = val
-    flush()
-    for k in unparsed:
-        if k in out and out[k] is None:
-            out.pop(k, None)
-    return out, sorted(set(unparsed)), None
+MAX_ORIGIN_BYTES = 64 * 1024
+
+
+def _read_install_origin(skill_dir: Path, red: Redactor, issues: list[dict]) -> dict | None:
+    """`<skill 폴더>/.clawhub/origin.json`(ClawHub 설치 기록)을 읽는다. 없으면 None(원천 미제공: 로컬·Git 설치 등).
+
+    필드는 고정 패키지(2026.9.6)의 `normalizeClawHubSkillOrigin`이 요구하는 것만 해석한다. 기록된 값을 옮길 뿐 검증하지 않으며
+    레지스트리에 접속하지 않는다.
+    """
+    f = skill_dir / ".clawhub" / "origin.json"
+    try:
+        if not f.is_file():
+            return None
+        if f.stat().st_size > MAX_ORIGIN_BYTES:
+            raise ValueError("too_large")
+        raw = json5.loads(f.read_bytes().decode("utf-8-sig"))
+    except (OSError, ValueError, UnicodeDecodeError, RecursionError):
+        raw = None
+    base: dict[str, Any] = {"source": "clawhub_origin_json", "file": ".clawhub/origin.json", "verified_by_scanner": False, "verification": "not_performed",
+                            "basis": "OpenClaw 2026.9.6 docs/tools/skills.md, normalizeClawHubSkillOrigin"}
+    ok = (isinstance(raw, dict) and raw.get("version") == 1 and all(isinstance(raw.get(k), str) and raw.get(k) for k in ("registry", "slug", "installedVersion"))
+          and isinstance(raw.get("installedAt"), (int, float)) and not isinstance(raw.get("installedAt"), bool))
+    if not ok:
+        issues.append(_issue("warning", "skill_origin_malformed", "설치 기록(.clawhub/origin.json)이 예상 형식(version 1, registry, slug, installedVersion, installedAt)이 아닙니다. 값을 읽지 않았습니다."))
+        return {**base, "status": "malformed"}
+    rec = {**base, "status": "recorded", "version": 1, "installed_at_ms": raw["installedAt"]}
+    for src, dst in (("registry", "registry"), ("slug", "slug"), ("installedVersion", "installed_version"), ("sourceUrl", "source_url"),
+                     ("ownerHandle", "owner_handle"), ("requestedReference", "requested_reference"), ("trustState", "trust_state")):
+        if isinstance(raw.get(src), str):
+            rec[dst] = _sanitize(raw[src], f"install_origin.{dst}", red)
+    rec["unknown_keys"] = sorted(_seg(k) for k in raw if k not in {"version", "registry", "slug", "installedVersion", "installedAt", "sourceUrl", "ownerHandle", "requestedReference", "trustState"})
+    return rec
 
 
 def _skill_metadata(fm_meta: Any) -> dict:
@@ -297,6 +242,7 @@ def _skill_metadata(fm_meta: Any) -> dict:
                            for k in ("bins", "anyBins", "env", "config") if isinstance(req.get(k), list)}
     if isinstance(oc.get("install"), list):
         out["install_spec_count"] = len(oc["install"])
+        out["install_specs"] = [_install_spec(x) for x in oc["install"][:MAX_INSTALL_SPECS]]
     out["other_keys"] = sorted(_seg(k) for k in oc if k not in {"skillKey", "primaryEnv", "homepage", "emoji", "always", "os", "requires", "install"})
     return out
 
@@ -318,7 +264,8 @@ def read_skill(skill_md: Path, base_label: str) -> dict:
     except OSError:
         size = None
     item["body_size_bytes"] = size   # 본문 내용은 서버·작성자가 제공한 비신뢰 데이터이므로 저장하지 않는다
-    fm, unparsed, problem = parse_frontmatter(text or "")
+    fm, extra, problem = parse_frontmatter_ex(text or "")
+    unparsed = list(extra.get("unparsed", []))
     folder = skill_md.parent.name
     if fm is None:
         issues.append(_issue("error", problem or "frontmatter_missing", "frontmatter를 읽지 못했습니다."))
@@ -339,6 +286,12 @@ def read_skill(skill_md: Path, base_label: str) -> dict:
             else:
                 issues.append(_issue("warning", "field_type_invalid", f"{k}가 불리언이 아닙니다.", field_path=k, actual=_type_name(fm[k])))
     meta = _skill_metadata(fm.get("metadata"))
+    bad_digest = [(i, sp["sha256_state"]) for i, sp in enumerate(meta.get("install_specs") or [])
+                  if isinstance(sp, dict) and sp.get("sha256_state") not in (None, "absent", "valid_format")]
+    if bad_digest:
+        issues.append(_issue("warning", "skill_install_sha256_invalid",
+                             "설치 명세의 sha256이 선언돼 있지만 64자리 16진 문자열이 아닙니다(숫자로 해석되는 값은 따옴표가 필요할 수 있음). 값은 저장하지 않았고 유효한 해시로 인정하지 않았습니다.",
+                             specs=[{"index": i, "state": st} for i, st in bad_digest]))
     meta_shown = _sanitize(meta, "metadata.openclaw", red) if meta else {}
     name_raw = fm.get("name") if isinstance(fm.get("name"), str) else None
     item["identity"] = {"name": _identity(name_raw, shown.get("name"))}
@@ -349,11 +302,22 @@ def read_skill(skill_md: Path, base_label: str) -> dict:
     item["name_matches_folder"] = (name_raw == folder) if name_raw is not None else None
     item["frontmatter"] = shown
     item["metadata_openclaw"] = meta_shown
+    origin_rec = _read_install_origin(skill_md.parent, red, issues)
+    if origin_rec is not None:
+        item["install_origin"] = origin_rec
     item["frontmatter_keys"] = sorted(_seg(k) for k in fm)
     if unparsed:
         item["frontmatter_unparsed_keys"] = [_seg(k) for k in unparsed]
-        issues.append(_issue("warning", "frontmatter_value_not_parsed", "YAML 블록 스칼라·중첩 값은 이 단순 파서가 해석하지 않아 키 이름만 남깁니다.",
+        issues.append(_issue("warning", "frontmatter_value_not_parsed",
+                             "이 해석기가 지원하지 않는 YAML(앵커·별칭·태그·복합 키·탭 들여쓰기·한도 초과)이라 값을 읽지 않고 키 이름만 남깁니다.",
                              keys=[_seg(k) for k in unparsed]))
+    if extra.get("alias_keys"):
+        issues.append(_issue("warning", "frontmatter_alias_not_expanded", "앵커·별칭·태그는 확장하거나 실행하지 않았습니다.", keys=[_seg(k) for k in extra["alias_keys"]]))
+    if extra.get("limit_hits"):
+        issues.append(_issue("warning", "frontmatter_limit_exceeded", "중첩 깊이·노드 수·문자열 길이 한도를 넘어 해당 키를 읽지 않았습니다.",
+                             hits=[{"key": _seg(h["key"]), "limit": h["what"]} for h in extra["limit_hits"]]))
+    if extra.get("duplicate_keys"):
+        issues.append(_issue("error", "duplicate_key", "frontmatter에 같은 키가 여러 번 선언되어 마지막 값만 읽었습니다.", keys=[_seg(k) for k in extra["duplicate_keys"]]))
     skill_key = meta.get("skillKey") if isinstance(meta.get("skillKey"), str) else name_raw
     item["config_key"] = {"value": skill_key if skill_key and not looks_like_secret_value(skill_key) else None,
                           "basis": "metadata.openclaw.skillKey" if isinstance(meta.get("skillKey"), str) else "name"}
@@ -459,6 +423,17 @@ def read_plugin(plugin_dir: Path, index: int) -> tuple[dict, list[dict]]:
             v = _str_list(root[key], key, issues, red)
             if v is not None:
                 declared[key] = v
+    # 문서화된 객체 필드는 키 이름과(문자열 목록인 경우) 목록만 옮긴다. 값 전체를 복사하거나 해석하지 않는다.
+    if isinstance(root.get("activation"), dict):
+        declared["activation_keys"] = [_seg(k) for k in root["activation"]][:30]
+    if isinstance(root.get("contracts"), dict):
+        contracts = {}
+        for ck, cv in list(root["contracts"].items())[:30]:
+            if isinstance(cv, list) and all(isinstance(x, str) for x in cv):
+                contracts[_seg(ck)] = _sanitize(cv[:100], f"contracts.{ck}", red)
+            else:
+                contracts[_seg(ck)] = {"type": _type_name(cv)}
+        declared["contracts"] = contracts
     item["manifest"] = {"declared": declared, "declared_keys": [_seg(k) for k in root],
                         "activation_note": "enabledByDefault는 번들 플러그인의 매니페스트 선언이며 실제 활성 상태가 아닙니다."}
     item["identity"] = {"id": _identity(root.get("id"), declared.get("id")), "name": _identity(root.get("name"), declared.get("name"))}
@@ -496,6 +471,53 @@ def read_plugin(plugin_dir: Path, index: int) -> tuple[dict, list[dict]]:
                     pkg_info["compat_plugin_api"] = _sanitize(comp["pluginApi"], "package.openclaw.compat.pluginApi", red)
                 if isinstance(oc.get("extensions"), list):
                     pkg_info["extension_entry_count"] = len(oc["extensions"])
+                # 실행 진입점: 문서가 정한 `openclaw.extensions` 등의 경로 문자열만 기록한다(읽거나 실행·import하지 않음).
+                entry_points: dict[str, Any] = {}
+                for ek in ("extensions", "runtimeExtensions"):
+                    if isinstance(oc.get(ek), list):
+                        entry_points[ek] = [_sanitize(x, f"package.openclaw.{ek}", red) for x in oc[ek][:50] if isinstance(x, str)]
+                for ek in ("setupEntry", "runtimeSetupEntry"):
+                    if isinstance(oc.get(ek), str):
+                        entry_points[ek] = _sanitize(oc[ek], f"package.openclaw.{ek}", red)
+                if entry_points:
+                    escapes = [e for v in entry_points.values() for e in ([v] if isinstance(v, str) else v)
+                               if e.startswith(("/", "\\")) or ".." in e.replace("\\", "/").split("/") or (len(e) > 1 and e[1] == ":")]
+                    pkg_info["entry_points"] = {**entry_points, "executed_or_loaded_by_scanner": False,
+                                                "outside_package_dir_declared": bool(escapes),
+                                                "basis": "문서: 진입점은 플러그인 패키지 디렉터리 안이어야 함. 경로 문자열만 기록했고 파일 존재·내용은 확인하지 않음"}
+                    if escapes:
+                        issues.append(_issue("warning", "entry_point_outside_package", "진입점 경로가 패키지 디렉터리 밖을 가리키는 형태입니다. 읽지 않았습니다.", field_path="package.openclaw.extensions"))
+                rpp = inst.get("requiredPlatformPackages")
+                if isinstance(rpp, list):
+                    pkg_info["required_platform_packages"] = [_sanitize(x, "package.openclaw.install.requiredPlatformPackages", red) for x in rpp[:50] if isinstance(x, str)]
+                deps: dict[str, Any] = {}
+                for dk in ("dependencies", "peerDependencies", "optionalDependencies"):
+                    dv = pj.get(dk)
+                    if isinstance(dv, dict):
+                        deps[dk] = {"count": len(dv), "entries": [{"name": _sanitize(n, f"package.{dk}", red), "spec": _sanitize(v, f"package.{dk}.spec", red)}
+                                                                 for n, v in list(dv.items())[:200] if isinstance(n, str) and isinstance(v, str)]}
+                if deps:
+                    pkg_info["dependencies"] = {**deps, "note": "package.json에 선언된 이름·버전 범위만 기록했습니다. 설치 여부·실제 해석된 버전·취약점은 확인하지 않았습니다."}
+                hints: dict[str, Any] = {}
+                au = pj.get("author")
+                if isinstance(au, str):
+                    nm = re.split(r"[<(]", au, 1)[0].strip()        # "이름 <이메일> (URL)"에서 이름만 (이메일·URL은 저장하지 않는다)
+                    if nm:
+                        hints["author_name"] = _sanitize(nm, "package.author", red)
+                elif isinstance(au, dict) and isinstance(au.get("name"), str) and au["name"]:
+                    hints["author_name"] = _sanitize(au["name"], "package.author.name", red)
+                rp = pj.get("repository")
+                rurl = rp if isinstance(rp, str) else (rp.get("url") if isinstance(rp, dict) else None)
+                if isinstance(rurl, str) and rurl:
+                    hints["repository"] = _sanitize(rurl, "package.repository", red)
+                if isinstance(pj.get("homepage"), str) and pj["homepage"]:
+                    hints["homepage"] = _sanitize(pj["homepage"], "package.homepage", red)
+                if hints:
+                    pkg_info["declared_provider_hints"] = hints
+                if isinstance(pj.get("gitHead"), str) and pj["gitHead"]:
+                    gh = pj["gitHead"]
+                    pkg_info["git_head"] = {"value": gh if re.fullmatch(r"[0-9a-f]{40}", gh) else None,
+                                            "format": "sha1_hex40" if re.fullmatch(r"[0-9a-f]{40}", gh) else "unrecognized", "verified_by_scanner": False}
                 pkg_info["declared_keys"] = [_seg(k) for k in pj][:60]
                 ppath, _ = _safe_path(pkg_path)
                 item["observed_from"]["package_json"] = {"source_path": ppath, "evidence_type": "static_file"}
@@ -504,6 +526,10 @@ def read_plugin(plugin_dir: Path, index: int) -> tuple[dict, list[dict]]:
         "basis": "package.json과 openclaw.plugin.json에 적힌 값. 설치 기록(플러그인 인덱스)은 읽지 않았으므로 설치 경로·출처는 확인하지 않았습니다.",
         "package_name": (pkg_info or {}).get("name"), "package_version": (pkg_info or {}).get("version"),
         "manifest_version": declared.get("version"), "install_hints": (pkg_info or {}).get("install_hints"),
+        "declared_source_kinds": [kind for key, kind in (("npmSpec", "npm"), ("clawhubSpec", "clawhub"), ("localPath", "local_path"))
+                                  if key in ((pkg_info or {}).get("install_hints") or {})],
+        "integrity": {"expected_integrity_declared": bool((pkg_info or {}).get("expected_integrity_declared")),
+                      "verification": "not_performed", "basis": "서명·무결성 검증은 신뢰 기준(허용 레지스트리·키)이 합의되지 않아 수행하지 않았습니다. 선언 여부만 기록합니다."},
     }
 
     # manifest에 선언된 MCP 서버: 기존 수집기를 그대로 쓴다. 같은 매니페스트 안의 선언이므로 연결 근거가 분명하다.
@@ -526,8 +552,11 @@ def read_plugin(plugin_dir: Path, index: int) -> tuple[dict, list[dict]]:
     for i, rel in enumerate(declared.get("skills", []) if isinstance(declared.get("skills"), list) else []):
         raw_rel = root["skills"][i]
         entry: dict[str, Any] = {"declared_path": rel, "skills": []}
-        target = (plugin_dir / raw_rel)
-        if os.path.isabs(raw_rel) or not _within(plugin_dir, target):
+        # Manifest paths may use either platform's separators. Check Windows
+        # drives/UNC paths even on POSIX, then resolve the relative path locally.
+        relative = raw_rel.replace("\\", "/")
+        target = plugin_dir / relative
+        if PureWindowsPath(raw_rel).drive or Path(relative).is_absolute() or not _within(plugin_dir, target):
             entry["status"] = "outside_plugin_root_not_read"
             issues.append(_issue("error", "skills_path_outside_plugin_root", "skills 경로가 플러그인 루트 밖이라 읽지 않았습니다.", field_path=f"skills[{i}]"))
         else:
@@ -570,8 +599,12 @@ def _cred_kind(value: Any) -> dict:
     return {"value_kind": "non_string", "type": _type_name(value)}
 
 
-def read_activation_settings(config_path: Path) -> dict:
-    """`plugins.*`·`skills.*`에 선언된 활성화 설정을 읽는다. 선언일 뿐 실제 로딩·활성 상태가 아니다."""
+def read_activation_settings(config_path: Path, resolve_includes: bool = False) -> dict:
+    """`plugins.*`·`skills.*`에 선언된 활성화 설정을 읽는다. 선언일 뿐 실제 로딩·활성 상태가 아니다.
+
+    `resolve_includes=True`이면 `$include`를 읽기 전용으로 펼치고(`config_includes.py`) 허용·차단·활성화 선언마다 원본 파일(최상위 설정 폴더 기준
+    상대 경로)·include 사슬·논리 키 경로를 `*_origin(s)`에 기록한다. 기본값(False)은 기존 동작과 같다.
+    """
     out: dict[str, Any] = {"source_path": _safe_path(config_path)[0], "evidence_type": "static_file", "plugins": None, "skills": None,
                            "issues": [], "status": "complete"}
     issues: list[dict] = out["issues"]
@@ -585,6 +618,27 @@ def read_activation_settings(config_path: Path) -> dict:
         out.update(status="failed", outcome="root_not_object")
         issues.append(_issue("error", "root_not_object", "설정 최상위가 객체가 아닙니다."))
         return out
+    ctx = None
+    if resolve_includes:
+        from .collector import _include_info
+        from .config_includes import resolve_includes as _resolve   # 순환 import 방지
+        ctx = _resolve(config_path, root)
+        root = ctx.root
+        out["includes"] = _include_info(ctx)
+        for inc in ctx.issues:
+            issues.append(_issue("error", inc["code"], inc["message"], field_path=inc.get("field_path"), source="include_resolution"))
+
+    def origin(*ptr: Any) -> dict | None:
+        """이 키 경로(논리 경로)의 원본 파일. 옵션을 쓰지 않았으면 None(필드를 더하지 않는다)."""
+        if ctx is None:
+            return None
+        label, chain = ctx.origin_of(tuple(ptr))
+        return {"file": label, "include_chain": list(chain), "config_path": dotted_path(tuple(ptr))}
+
+    def put(rec: dict, key: str, value: dict | None) -> None:
+        if value is not None:
+            rec[key] = value
+
     for dup in _find_duplicate_keys(root, ()):
         issues.append(_issue("error", "duplicate_key", "같은 키가 여러 번 선언되어 마지막 값만 읽었습니다.", field_path=dup))
     red = Redactor()
@@ -594,20 +648,25 @@ def read_activation_settings(config_path: Path) -> dict:
         e = _bool_or_issue(plugins, "enabled", "plugins", issues)
         if e is not None:
             p["enabled"] = e
+            put(p, "enabled_origin", origin("plugins", "enabled"))
         for lk in ("allow", "deny"):
             if lk in plugins:
                 v = _str_list(plugins[lk], f"plugins.{lk}", issues, red)
                 if v is not None:
                     p[lk] = v
+                    if ctx is not None and isinstance(plugins[lk], list) and len(plugins[lk]) == len(v):
+                        p[f"{lk}_origins"] = [origin("plugins", lk, i) for i in range(len(v))]      # 원소별 출처(공식: 배열은 연결됨)
         entries: dict[str, dict] = {}
         ent = plugins.get("entries")
         if isinstance(ent, dict):
             for k, v in ent.items():
                 rec: dict[str, Any] = {"entry_key": k}
+                put(rec, "origin", origin("plugins", "entries", k))
                 if isinstance(v, dict):
                     en = _bool_or_issue(v, "enabled", f"plugins.entries.{k}", issues)
                     if en is not None:
                         rec["enabled"] = en
+                        put(rec, "enabled_origin", origin("plugins", "entries", k, "enabled"))
                     rec["other_keys"] = [_seg(x) for x in v if x != "enabled"][:40]
                 else:
                     issues.append(_issue("warning", "field_type_invalid", "plugins.entries 항목이 객체가 아닙니다.", field_path=f"plugins.entries.{_seg(k)}"))
@@ -623,22 +682,29 @@ def read_activation_settings(config_path: Path) -> dict:
             v = _str_list(skills["allowBundled"], "skills.allowBundled", issues, red)
             if v is not None:
                 s["allowBundled"] = v
+                if ctx is not None and isinstance(skills["allowBundled"], list) and len(skills["allowBundled"]) == len(v):
+                    s["allowBundled_origins"] = [origin("skills", "allowBundled", i) for i in range(len(v))]
         load = skills.get("load")
         if isinstance(load, dict) and "extraDirs" in load:
             v = _str_list(load["extraDirs"], "skills.load.extraDirs", issues, red)
             if v is not None:
                 s["load_extraDirs"] = v
+                if ctx is not None and isinstance(load["extraDirs"], list) and len(load["extraDirs"]) == len(v):
+                    s["load_extraDirs_origins"] = [origin("skills", "load", "extraDirs", i) for i in range(len(v))]
         sentries: dict[str, dict] = {}
         ent = skills.get("entries")
         if isinstance(ent, dict):
             for k, v in ent.items():
                 rec = {"entry_key": k}
+                put(rec, "origin", origin("skills", "entries", k))
                 if isinstance(v, dict):
                     en = _bool_or_issue(v, "enabled", f"skills.entries.{k}", issues)
                     if en is not None:
                         rec["enabled"] = en
+                        put(rec, "enabled_origin", origin("skills", "entries", k, "enabled"))
                     if "apiKey" in v:
                         rec["apiKey"] = _cred_kind(v["apiKey"])
+                        put(rec, "apiKey_origin", origin("skills", "entries", k, "apiKey"))
                     if isinstance(v.get("env"), dict):
                         rec["env_names"] = [_seg(x) for x in v["env"]][:MAX_NAMES]   # 값은 저장하지 않는다
                     if "config" in v:
@@ -670,6 +736,16 @@ def _declared_for_plugin(settings: dict | None, plugin_id: Any) -> dict | None:
         "listed_in_deny": (plugin_id in p["deny"]) if "deny" in p else None,
         "note": "설정에 적힌 값입니다. 실제 로딩·활성 여부는 이 값만으로 판단하지 않습니다(기본값·자동 활성화 규칙은 적용하지 않음).",
     }
+    origins = {k: v for k, v in {
+        "plugins_enabled": p.get("enabled_origin"),
+        "entry": (entry or {}).get("origin"),
+        "entry_enabled": (entry or {}).get("enabled_origin"),
+        # 같은 id가 연결된 모든 원소(배열 연결로 중복될 수 있음)의 출처
+        "allow": [o for x, o in zip(p.get("allow", []), p.get("allow_origins", [])) if x == plugin_id] or None,
+        "deny": [o for x, o in zip(p.get("deny", []), p.get("deny_origins", [])) if x == plugin_id] or None,
+    }.items() if v is not None}
+    if origins:
+        out["origins"] = origins
     return out
 
 
@@ -682,7 +758,12 @@ def _declared_for_skill(settings: dict | None, key: Any) -> dict | None:
             "entry_declared": entry is not None, "entry_enabled": (entry or {}).get("enabled"),
             "apiKey": (entry or {}).get("apiKey"), "env_names": (entry or {}).get("env_names"),
             "listed_in_allowBundled": (key in s["allowBundled"]) if "allowBundled" in s else None,
-            "note": "설정에 적힌 값입니다. 실제 적용 여부는 확인하지 않았습니다."}
+            "note": "설정에 적힌 값입니다. 실제 적용 여부는 확인하지 않았습니다.",
+            **({"origins": {k: v for k, v in {
+                "entry": (entry or {}).get("origin"), "entry_enabled": (entry or {}).get("enabled_origin"),
+                "apiKey": (entry or {}).get("apiKey_origin"),
+                "allowBundled": [o for x, o in zip(s.get("allowBundled", []), s.get("allowBundled_origins", [])) if x == key] or None,
+            }.items() if v is not None}} if any(k in s for k in ("allowBundled_origins",)) or (entry or {}).get("origin") else {})}
 
 
 # ---- 저장된 명령 출력 --------------------------------------------------------------------
@@ -830,8 +911,8 @@ def _norm(p: str | None) -> str | None:
 # ---- 전체 -------------------------------------------------------------------------------
 
 def collect_assets(plugin_dirs: list[Path], skills_dirs: list[Path], config: Path | None,
-                   plugins_list: Path | dict | None, skills_list: Path | dict | None) -> dict:
-    settings = read_activation_settings(config) if config else None
+                   plugins_list: Path | dict | None, skills_list: Path | dict | None, resolve_includes: bool = False) -> dict:
+    settings = read_activation_settings(config, resolve_includes) if config else None
     plugin_items: list[dict] = []
     skill_items: list[dict] = []
     for i, d in enumerate(plugin_dirs):
@@ -956,6 +1037,8 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--plugin-dir", action="append", default=[], type=Path, help="openclaw.plugin.json이 있는 플러그인 루트 디렉터리 (여러 번 가능)")
     p.add_argument("--skills-dir", action="append", default=[], type=Path, help="SKILL.md가 있는 skill 폴더, 또는 그런 폴더들의 부모 디렉터리 (여러 번 가능)")
     p.add_argument("--config", type=Path, help="plugins.*·skills.* 활성화 선언을 읽을 OpenClaw 설정 파일(JSON5)")
+    p.add_argument("--resolve-includes", action="store_true",
+                   help="--config의 $include를 읽기 전용으로 펼칩니다(공식 병합 규칙, 최상위 설정 폴더 안만). 활성화·허용·차단 선언마다 원본 파일과 키 경로를 기록합니다. 생략하면 읽지 않습니다.")
     p.add_argument("--plugins-list-json", type=Path, help="저장해 둔 `openclaw plugins list --json` 출력 파일")
     p.add_argument("--skills-list-json", type=Path, help="저장해 둔 `openclaw skills list --json` 출력 파일")
     p.add_argument("--openclaw-query", action="append", default=[], choices=("plugins", "skills"),
@@ -970,6 +1053,8 @@ def main(argv: list[str] | None = None) -> int:
     parser = _parser()
     args = parser.parse_args(argv)
     queries = list(dict.fromkeys(args.openclaw_query))
+    if args.resolve_includes and not args.config:
+        parser.error("--resolve-includes는 --config와 함께만 쓸 수 있습니다.")
     given = bool(args.plugin_dir or args.skills_dir or args.config or args.plugins_list_json or args.skills_list_json or queries)
     if not given:
         parser.error("입력이 없습니다. --plugin-dir, --skills-dir, --config, --plugins-list-json, --skills-list-json, --openclaw-query 중 하나 이상을 지정하세요.")
@@ -993,7 +1078,7 @@ def main(argv: list[str] | None = None) -> int:
         if _same_file(inp, args.output):
             print("오류: --output이 입력과 같은 경로입니다. 입력을 덮어쓰지 않습니다.", file=sys.stderr)
             return EXIT_OUTPUT_ERROR
-    report = build_report(collect_assets(args.plugin_dir, args.skills_dir, args.config, plugins_src, skills_src), given)
+    report = build_report(collect_assets(args.plugin_dir, args.skills_dir, args.config, plugins_src, skills_src, args.resolve_includes), given)
     report, normalized = normalize_for_output(report)
     if normalized:
         report["collection"]["output_text_normalizations"] = normalized

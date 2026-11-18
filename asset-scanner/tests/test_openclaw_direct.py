@@ -24,7 +24,8 @@ from asset_scanner.plugin_skill_assets import collect_assets, read_plugins_list_
 from conftest import SCANNER_ROOT
 
 FAKE = Path(__file__).resolve().parent / "fake_openclaw.py"
-PASS = ("FAKE_OPENCLAW_MODE", "FAKE_OPENCLAW_LOG", "FAKE_PLUGIN_ROOT", "FAKE_SKILL_FILE", "FAKE_OPENCLAW_PIDFILE")
+PASS = ("FAKE_OPENCLAW_MODE", "FAKE_OPENCLAW_LOG", "FAKE_PLUGIN_ROOT", "FAKE_SKILL_FILE", "FAKE_OPENCLAW_PIDFILE",
+        "FAKE_OPENCLAW_PY", "FAKE_OPENCLAW_SCRIPT")
 GW_URL = "ws://127.0.0.1:18789"
 _REAL_RUN = subprocess.run
 _REAL_POPEN = subprocess.Popen
@@ -34,8 +35,13 @@ _REAL_POPEN = subprocess.Popen
 def fake(tmp_path, monkeypatch):
     log = tmp_path / "calls.jsonl"
     if sys.platform == "win32":
+        # cmd.exe는 배치 파일을 UTF-8이 아닌 OEM 코드페이지(한국어 Windows는 cp949)로 읽는다. 파이썬·스크립트 경로를 파일 본문에
+        # 넣으면 한글 경로(사용자 폴더 등)가 깨져 "경로를 찾을 수 없음"으로 실패한다. 본문은 ASCII로 두고 경로는 환경변수로 넘긴다
+        # (cmd는 환경변수를 유니코드로 확장하므로 코드페이지와 무관하다).
         shim = tmp_path / "fake-openclaw.cmd"
-        shim.write_text(f'@echo off\r\n"{sys.executable}" "{FAKE}" %*\r\n', encoding="utf-8")
+        shim.write_text('@echo off\r\n"%FAKE_OPENCLAW_PY%" "%FAKE_OPENCLAW_SCRIPT%" %*\r\n', encoding="ascii")
+        monkeypatch.setenv("FAKE_OPENCLAW_PY", sys.executable)
+        monkeypatch.setenv("FAKE_OPENCLAW_SCRIPT", str(FAKE))
     else:
         shim = tmp_path / "fake-openclaw"
         shim.write_text(f'#!/bin/sh\nexec "{sys.executable}" "{FAKE}" "$@"\n', encoding="utf-8")

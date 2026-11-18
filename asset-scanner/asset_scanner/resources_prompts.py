@@ -36,8 +36,8 @@ from typing import Any
 from . import __version__
 from .cli import _make_console_output_safe, _same_file
 from .output import OutputError, normalize_for_output, write_json_atomic
-from .redaction import Redactor, looks_like_secret_value
-from .tools_catalog import (
+from .redaction import Redactor, describe_alteration, looks_like_secret_value
+from .tools_catalog import (snapshot_fields,
     EXIT_BY_STATUS,
     EXIT_OUTPUT_ERROR,
     LEGACY_PROTOCOL_VERSION,
@@ -528,6 +528,7 @@ def _collect_list(kind: _Kind, spec: Any, version: str, declared: str, server_in
                            for p, names in dups]
             red = Redactor()
             definition = _sanitize_definition(item, kind, red)
+            alteration = describe_alteration(item, definition, red.redactions)
             touched = _redacted_top_paths(red.redactions)
             identity = {kind.id_field: _identity_entry(item, definition, kind.id_field, touched)}
             if kind.kind != "prompt":
@@ -550,7 +551,8 @@ def _collect_list(kind: _Kind, spec: Any, version: str, declared: str, server_in
                 "definition_issues": def_issues,
                 "other_definition_fields": other,
                 "redactions": red.redactions,
-                "definition_altered": bool(red.redactions),
+                "definition_altered": alteration["altered"],
+                "alteration": alteration,
                 "trust": "untrusted_server_provided",
             })
             for di in def_issues:
@@ -673,6 +675,8 @@ def _collect_server(index: int, entry: Any, seen_refs: set[str]) -> dict:
 
     caps, cap_issues = _declared_capabilities(entry.get("server_capabilities", _MISSING))
     server["declared_capabilities"] = {**caps, "source": "stored_in_input_not_verified"}
+    # 기존 요약(declared_capabilities)은 유지하고, 입력에 제공된 내용은 별도 필드에 가린 뒤 보존한다(입력에 없으면 만들지 않음).
+    server.update(snapshot_fields(entry, srv_red))
     lists_dups = set(getattr(lists_in, "duplicate_keys", []))
     other_keys = sorted(_seg(k) for k in lists_in if k not in {kd.key for kd in KINDS})
     if other_keys:

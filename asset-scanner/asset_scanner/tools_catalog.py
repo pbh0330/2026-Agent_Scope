@@ -27,7 +27,7 @@ from typing import Any
 from . import __version__
 from .cli import _make_console_output_safe, _same_file
 from .output import OutputError, normalize_for_output, write_json_atomic
-from .redaction import REDACTED, Redactor, is_env_ref_only, is_secret_name, looks_like_secret_value
+from .redaction import REDACTED, Redactor, describe_alteration, is_env_ref_only, is_secret_name, looks_like_secret_value
 
 FORMAT_NAME = "agent-scope.scanner.mcp-tools-catalog"
 FORMAT_VERSION = "0.1.0-draft"
@@ -62,7 +62,9 @@ DEFINITION_VALIDATION = {
                        "고립된 surrogate, 비유한 숫자)를 적용한 정의(definition_altered: true)는 서버가 보낸 원본과 달라질 수 있다. "
                        "키 이름이 바뀌면 이름을 가리키는 참조가 어긋날 수 있다(required는 같은 자리표시자로 맞추지만 그 밖의 참조는 "
                        "맞추지 않는다). 가린 정의를 실행 가능한 원본 스키마로 보증하지 않으며 $ref는 문자열로만 저장하고 "
-                       "실행·조회하지 않고 접속하지 않는다. 가림 위치와 이유는 tools[].redactions에 있고 원문 값은 기록하지 않는다."),
+                       "실행·조회하지 않고 접속하지 않는다. 가림 위치와 이유는 tools[].redactions에 있고 원문 값은 기록하지 않는다. "
+                       "비밀값이 없는 URL(`$schema` 끝의 `#` 포함)은 원문 그대로 보존한다. tools[].alteration은 원본 정의와 비교한 "
+                       "변경 여부(altered)·기록된 사유 코드(reasons)·사유 없이 달라진 경우(difference_without_recorded_reason)를 담는다."),
 }
 
 NOT_VERIFIED = [
@@ -571,6 +573,43 @@ def _failed_server(index: int, label: str, code: str, message: str, **extra: Any
     }
 
 
+MAX_SNAPSHOT_BYTES = 16 * 1024
+
+
+def snapshot_fields(entry: dict, red: Redactor) -> dict:
+    """저장 캡처 서버 항목에 **제공된** `server_capabilities`·`server_info`·`requested_protocol_version`을 그대로(가림 후) 옮긴다.
+
+    공격표면 정의서 11.1의 server capabilities·extensions 용. 입력에 적힌 값이며 스캐너가 서버에서 확인한 것이 아니다(`verified_by_scanner: false`).
+    제공되지 않았으면 키를 만들지 않는다. 객체가 아니거나 16KiB를 넘으면 값을 저장하지 않고 상태만 남긴다.
+    """
+    out: dict[str, Any] = {}
+    for src, dst in (("server_capabilities", "capabilities_as_provided"), ("server_info", "server_info_as_provided"),
+                     ("client_capabilities", "client_capabilities_as_provided"), ("client_info", "client_info_as_provided")):
+        if src not in entry:
+            continue
+        raw = entry[src]
+        rec: dict[str, Any] = {"origin": "stored_capture_field"}
+        if src.startswith("client_"):
+            # 누가 보낸 값인지는 캡처가 밝힌 경우만 옮긴다. 밝히지 않았으면 스캐너나 OpenClaw의 값이라고 가정하지 않는다.
+            who = entry.get("client_sender")
+            rec["sender"] = _safe_short(red, who, "client_sender") if isinstance(who, str) and who else "not_stated_in_capture"
+        if not isinstance(raw, dict):
+            out[dst] = {"status": "invalid_type", "type": _json_type_name(raw), **rec}
+            continue
+        try:
+            size = len(json.dumps(raw, ensure_ascii=False, default=str).encode("utf-8"))
+        except (TypeError, ValueError):
+            size = MAX_SNAPSHOT_BYTES + 1
+        if size > MAX_SNAPSHOT_BYTES:
+            out[dst] = {"status": "too_large", "limit_bytes": MAX_SNAPSHOT_BYTES, **rec}
+            continue
+        out[dst] = {"value": _sanitize(raw, dst, red), "verified_by_scanner": False, **rec}
+    v = entry.get("requested_protocol_version")
+    if isinstance(v, str):
+        out["requested_protocol_version_as_provided"] = _safe_short(red, v, "requested_protocol_version")
+    return out
+
+
 def _collect_server(index: int, entry: Any, seen_refs: set[str]) -> dict:
     if not isinstance(entry, dict):
         return _failed_server(index, "<invalid>", "invalid_server_entry", "servers 항목이 객체가 아닙니다.")
@@ -606,6 +645,7 @@ def _collect_server(index: int, entry: Any, seen_refs: set[str]) -> dict:
 
     version = entry.get("protocol_version")
     server["declared_protocol_version"] = _safe_short(srv_red, version, "protocol_version") if isinstance(version, str) else None
+    server.update(snapshot_fields(entry, srv_red))
     pages = entry.get("pages", _MISSING)
 
     def done_failed(code: str, message: str, **extra: Any) -> dict:
@@ -686,6 +726,7 @@ def _collect_server(index: int, entry: Any, seen_refs: set[str]) -> dict:
                            for p, names in dups]
             red = Redactor()
             definition = _sanitize(tool, "", red)
+            alteration = describe_alteration(tool, definition, red.redactions)
             official_keys = _TOOL_OFFICIAL_KEYS | ({"execution"} if version == LEGACY_PROTOCOL_VERSION else set())
             other = sorted(_seg(k) for k in tool if k not in official_keys)
             entry_out = {
@@ -704,7 +745,8 @@ def _collect_server(index: int, entry: Any, seen_refs: set[str]) -> dict:
                 "other_definition_fields": other,
                 "redactions": red.redactions,
                 # 가림·정규화가 적용돼 서버가 보낸 원본과 다를 수 있는 정의인가 (`scope.definition_validation.redaction_note`)
-                "definition_altered": bool(red.redactions),
+                "definition_altered": alteration["altered"],
+                "alteration": alteration,
                 "trust": "untrusted_server_provided",
             }
             tools_out.append(entry_out)
