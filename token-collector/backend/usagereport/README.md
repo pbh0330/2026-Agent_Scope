@@ -87,6 +87,20 @@ OpenClaw ─OTLP─▶ Collector(otelcol-contrib, file 익스포터) ─▶ agen
 - 이미지 등 결과 일부만 센 값(`skippedBlocks`/`agentscope.count.skipped_blocks` > 0)은 배분에 쓰지 않는다.
 - 같은 배분이 사용 현황 API(`../usageapi`) 응답에도 그대로 쓰인다.
 
+### 지연 도구 로딩(`tool_search` → `tool_call`) 접기 (11.18 테스트베드)
+
+도구가 많으면 OpenClaw는 MCP 도구를 모델에 바로 주지 않는다. 모델이 `tool_search`로 찾고 `tool_call`로 부른다.
+이때 도구 스팬이 두 개 남는다. 바깥 `tool_call`(core, 모델이 받은 호출 ID)과 그 안의 실제 도구
+(`fs-workspace__read_text_file` 등, 호출 ID `tool_search_code:<바깥 ID>:<도구 이름>:<번호>`)다.
+모델 입력에 들어가는 결과는 바깥 호출 하나이고, 결과 기록 플러그인도 바깥 호출 ID로 센다.
+
+- 바깥 `tool_call` 하나가 안쪽 도구 하나만 감쌌으면 둘을 한 건으로 접는다. 도구 이름·출처는 안쪽 것, 호출 ID·시각은 바깥 것을 쓴다.
+  그래서 자산 매핑은 실제 MCP 도구로 되고, 결과별 토큰 수는 바깥 ID로 찾고, 병렬 여부는 바깥 호출끼리 겹치는지로 정한다.
+- 짝이 없거나 바깥 하나에 안쪽이 여럿이면 접지 않는다(`tool_call`이 core 도구로 남음).
+- 접기 전 11.18 테스트베드 데이터: MCP 호출 7건이 전부 래퍼와 겹쳐 병렬로 판정되고 토큰 수를 못 찾아 null.
+  접은 뒤: fs-workspace 3건 11,107토큰, inventory-remote 4건 1,669토큰, 토큰 수 누락 0건.
+- `tool_search` 자체는 결과(검색 결과 목록)가 모델 입력에 들어가므로 core 도구로 그대로 센다.
+
 단가 버전: 참고 정가는 `anthropic-list-price@2026-11-09`(Haiku 4.5(날짜 있는 이름·없는 이름), Haiku 5.5, Sonnet 5.5), openclaw.json 단가는 원천에 버전이 없어서
 모델별 단가표 내용의 해시(`openclaw-config-sha256:xxxxxxxxxxxx`)를 버전으로 쓴다(단가 값만 해시, 키 등 다른 값은 미포함).
 

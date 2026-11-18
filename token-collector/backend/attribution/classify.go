@@ -2,6 +2,7 @@ package attribution
 
 import (
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -50,6 +51,78 @@ func Classify(spans []Span, opts Options) []Result {
 		out = append(out, ClassifyRun(k, group, opts)...)
 	}
 	return out
+}
+
+// OpenClaw 지연 도구 로딩(tool_search): 모델은 tool_search로 도구를 찾고 tool_call로 부른다.
+// 이때 스팬이 두 개 남는다. 바깥 tool_call(core, 모델이 받은 호출 ID)과 그 안의 실제 도구
+// (예: mcp, 호출 ID "tool_search_code:<바깥 ID>:<도구 이름>:<번호>")다. 모델 입력에 들어가는 결과는
+// 바깥 호출 하나의 결과이고, 결과 기록 플러그인도 바깥 호출 ID로 센다.
+const (
+	toolCallWrapperName   = "tool_call"
+	wrappedCallIDPrefix   = "tool_search_code:"
+	AttrWrappedToolCallID = "agentscope.wrapped_tool_call_id" // 접은 뒤 안쪽 스팬의 원래 호출 ID
+)
+
+// foldToolCallWrappers는 바깥 tool_call 스팬 하나가 안쪽 도구 스팬 하나만 감쌌을 때 둘을 하나로 접는다.
+// 안쪽 스팬(실제 도구 이름·출처)을 남기고 호출 ID와 시각을 바깥 것으로 바꾼다. 그래서 겹침을 병렬로 보지 않고,
+// 결과별 토큰 수도 바깥 ID로 찾는다. 짝이 안 맞거나 한 래퍼에 안쪽이 여럿이면 그대로 둔다.
+func foldToolCallWrappers(tools []Span) []Span {
+	wrapper := map[string]int{} // 바깥 호출 ID → tools 인덱스
+	for i, t := range tools {
+		if id := t.Str(AttrToolCallID, ""); id != "" && t.Str(AttrToolName, "") == toolCallWrapperName {
+			wrapper[id] = i
+		}
+	}
+	if len(wrapper) == 0 {
+		return tools
+	}
+	inner := map[string][]int{} // 바깥 호출 ID → 안쪽 스팬 인덱스
+	for i, t := range tools {
+		id := t.Str(AttrToolCallID, "")
+		if !strings.HasPrefix(id, wrappedCallIDPrefix) {
+			continue
+		}
+		rest := strings.TrimPrefix(id, wrappedCallIDPrefix)
+		outer, _, ok := strings.Cut(rest, ":")
+		if !ok {
+			continue
+		}
+		if _, ok := wrapper[outer]; ok {
+			inner[outer] = append(inner[outer], i)
+		}
+	}
+	drop := map[int]bool{}
+	out := make([]Span, len(tools))
+	copy(out, tools)
+	for outer, idx := range inner {
+		if len(idx) != 1 {
+			continue
+		}
+		in := out[idx[0]]
+		attrs := make(map[string]any, len(in.Attrs)+1)
+		for k, v := range in.Attrs {
+			attrs[k] = v
+		}
+		attrs[AttrWrappedToolCallID] = in.Str(AttrToolCallID, "")
+		attrs[AttrToolCallID] = outer
+		in.Attrs = attrs
+		// 시각은 바깥 호출 것을 쓴다. 모델이 동시에 낸 호출인지(병렬)는 바깥 호출끼리 겹치는지로 정해진다
+		// (11.18 실측: 바깥 두 개는 겹치고 안쪽 두 개는 차례로 실행됨).
+		w := tools[wrapper[outer]]
+		in.Start, in.End = w.Start, w.End
+		out[idx[0]] = in
+		drop[wrapper[outer]] = true
+	}
+	if len(drop) == 0 {
+		return tools
+	}
+	kept := out[:0]
+	for i, t := range out {
+		if !drop[i] {
+			kept = append(kept, t)
+		}
+	}
+	return kept
 }
 
 func overlaps(a, b Span) bool {
@@ -115,6 +188,7 @@ func ClassifyRun(k RunKey, group []Span, opts Options) []Result {
 	if len(tools) == 0 {
 		return nil
 	}
+	tools = foldToolCallWrappers(tools)
 
 	var results []Result
 	if len(models) == 0 {

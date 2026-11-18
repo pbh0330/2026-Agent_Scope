@@ -279,3 +279,70 @@ func TestLoadPricingFromOpenClawConfig(t *testing.T) {
 		t.Fatalf("got %+v", m)
 	}
 }
+
+// ---- OpenClaw 지연 도구 로딩(tool_search → tool_call 래퍼) ----
+
+func callTool(id string, start, end float64, name, callID string) Span {
+	s := tool(id, start, end, name)
+	s.Attrs[AttrToolCallID] = callID
+	return s
+}
+
+// 11.18 테스트베드 실측 모양: 바깥 tool_call이 안쪽 MCP 도구를 감싸 시간이 겹친다.
+func TestToolCallWrapperFoldsToInnerTool(t *testing.T) {
+	spans := []Span{
+		mc("m1", 0, 2, 1000, 50),
+		callTool("w1", 2.0, 2.10, "tool_call", "toolu_A"),
+		callTool("i1", 2.01, 2.08, "inventory-remote__inventory_list_hosts", "tool_search_code:toolu_A:inventory-remote__inventory_list_hosts:1"),
+		mc("m2", 3, 5, 1526, 40),
+	}
+	rs := Classify(spans, Options{})
+	if len(rs) != 1 {
+		t.Fatalf("want 1 result (wrapper folded), got %+v", rs)
+	}
+	r := rs[0]
+	if r.Pattern != Sequential || !r.HasTokens || r.ApproxTokens != 476 {
+		t.Fatalf("want sequential 476, got %+v", r)
+	}
+	if r.ToolName != "inventory-remote__inventory_list_hosts" || r.ToolCallID != "toolu_A" || r.ToolSpanID != "i1" {
+		t.Fatalf("want inner tool with outer call id, got %+v", r)
+	}
+	if spans[2].Attrs[AttrToolCallID] != "tool_search_code:toolu_A:inventory-remote__inventory_list_hosts:1" {
+		t.Fatalf("input span must not be mutated")
+	}
+}
+
+// 래퍼 두 개가 동시에 돌면 안쪽 두 도구가 병렬 구간이 되고, 결과별 토큰 수는 바깥 ID로 찾는다.
+func TestToolCallWrappersParallelAllocateByOuterCounts(t *testing.T) {
+	spans := []Span{
+		mc("m1", 0, 2, 1000, 50),
+		callTool("w1", 2.0, 2.2, "tool_call", "toolu_A"),
+		callTool("w2", 2.0, 2.3, "tool_call", "toolu_B"),
+		callTool("i1", 2.01, 2.1, "inventory-remote__inventory_get_host", "tool_search_code:toolu_A:inventory-remote__inventory_get_host:2"),
+		callTool("i2", 2.15, 2.25, "inventory-remote__inventory_get_host", "tool_search_code:toolu_B:inventory-remote__inventory_get_host:3"),
+		mc("m2", 3, 5, 2070, 40),
+	}
+	rs := Classify(spans, Options{})
+	if len(rs) != 2 || patterns(rs)[Parallel] != 2 {
+		t.Fatalf("want 2 parallel inner tools, got %+v", rs)
+	}
+	rs = AllocateByCounts(rs, map[string]int64{"toolu_A": 511, "toolu_B": 509})
+	var sum int64
+	for _, r := range rs {
+		if !r.HasTokens || !strings.HasPrefix(r.ToolName, "inventory-remote__") {
+			t.Fatalf("want allocated inner tools, got %+v", r)
+		}
+		sum += r.ApproxTokens
+	}
+	if sum != 1020 {
+		t.Fatalf("segment total must be preserved: got %d", sum)
+	}
+}
+
+// 짝이 없는 tool_call(안쪽 스팬 누락)은 그대로 core 도구로 남는다.
+func TestToolCallWithoutInnerStays(t *testing.T) {
+	rs := Classify([]Span{mc("m1", 0, 2, 1000, 50), callTool("w1", 2, 2.1, "tool_call", "toolu_A"), mc("m2", 3, 5, 1300, 40)}, Options{})
+	if len(rs) != 1 || rs[0].ToolName != "tool_call" || rs[0].ApproxTokens != 250 {
+		t.Fatalf("got %+v", rs)
+	}
+}
