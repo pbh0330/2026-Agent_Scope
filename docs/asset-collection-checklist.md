@@ -46,21 +46,75 @@ PR #11의 `docs/asset-id-rules-proposal` 브랜치에서 이 문서의 3절 응�
 
 ## 3. 스캐너 담당 응답란
 
-가능 여부는 `가능 / 일부 가능 / 불가 / 미지원` 중 하나로 작성해 주세요. 일부 가능·불가이면 누락 필드와 이유를 적어 주세요. 출력 예시는 비밀값을 제거한 파일·PR 링크와 JSON 필드 경로로 남기면 됩니다. 테스트베드 담당은 같은 근거에 환경·프로필·버전을 함께 기록해 주세요.
+- 확인자·확인일: 김규민 / 2026-11-18
+- 구현 기준: [PR #5 ee9c1e0](https://github.com/pbh0330/2026-Agent_Scope/commit/ee9c1e02a660c23e1a445680df2905ae41be463b)
+- 검증: Linux·Python 3.12.14 / 994 passed·0 failed·0 skipped / pytest 종료 코드 0
+- 입력 조건: 직접 작성한 가상 설정·목록 응답·Skill/Plugin·서비스 파일, 가짜 OpenClaw CLI, 개발용 MCP 서버
+- 실환경 미검증: 실제 OpenClaw·OVA·외부 업무 서버·최신 Windows 전체 실행
+- 판정 기준: 명시한 원천 필드의 수집 가능 여부. 공통 ID 미정과 실환경 미검증은 별도 구분
+- 근거: [최신 원천·필드·가상 출력 발췌](https://github.com/pbh0330/2026-Agent_Scope/blob/ee9c1e02a660c23e1a445680df2905ae41be463b/asset-scanner/docs/source-collection-closure-20261118.md), [기존 가상 입력·스캐너 출력](https://github.com/pbh0330/2026-Agent_Scope/blob/ee9c1e02a660c23e1a445680df2905ae41be463b/asset-scanner/docs/virtual-samples-and-outputs.md)
 
-| 자산·하위 유형 | 스캐너 수집 가능 여부 | 실제 명령·파일 및 필드 경로 | 안전한 출력 예시·근거 링크 | 누락 항목·제약 | 확인자·확인일 |
-| --- | --- | --- | --- | --- | --- |
-| Gateway | 확인 대기 | — | — | — | — |
-| Node | 확인 대기 | — | — | — | — |
-| MCP Server | 확인 대기 | — | — | — | — |
-| Tool | 확인 대기 | — | — | — | — |
-| Resource | 확인 대기 | — | — | — | — |
-| ResourceTemplate | 확인 대기 | — | — | — | — |
-| Prompt | 확인 대기 | — | — | — | — |
-| Skill | 확인 대기 | — | — | — | — |
-| Plugin | 확인 대기 | — | — | — | — |
-| Permission | 확인 대기 | — | — | — | — |
-| Authentication | 확인 대기 | — | — | — | — |
+**994개 테스트 구성**
+
+- 44개 파일의 조건별 사례 수. 동일 기능의 정상·누락·자료형 오류·실패 조건 포함
+- 설정·등록 정보: 92개
+- include 병합·출처·읽기 경계: 95개
+- 저장 MCP 목록·버전·능력: 135개
+- MCP 통신·TLS·인증·한도: 185개
+- Plugin·Skill 파일·설치 기록: 94개
+- Gateway·Node·가짜 OpenClaw CLI 조회 처리: 94개
+- Permission/Auth·서비스 계정 선언: 58개
+- 서버 선언–Tool 목록 연결: 83개
+- 가림·출력·기존 결함 회귀: 158개
+- 분류 방식: 파일의 주된 목적 기준, 중복 집계 없음
+- 통신 조건: 실제 stdio·루프백 HTTP/HTTPS 통신, 임시 CA·가짜 인증값 사용
+- 목록 확인: `pytest --collect-only`로 구성 확인. 통과 수는 앞선 단일 전체 실행 결과
+
+**자산별 수집 상태 — 아래 예시는 가상 입력의 출력**
+
+- **Gateway — 가능(지정 identity 원천)**
+  - 원천·필드: 저장/직접 조회 identity → `identities[].device_id.original_value`, `public_key`, `origin`, `observation`
+  - 제약: 환경·프로필 공통 ID는 합의 대기; 초기화·복제 후 identity 유지 실측 대기
+- **Node — 가능(identity·devices 원천)**
+  - 원천·필드: `node identity --json`, `devices list --json` → `device_id`, `client.clientId/clientMode`, `reported_pairing_state`, `source_pointer`
+  - 예시·제약: `clientId: node-host`는 종류 라벨. paired 기록과 connected는 별도. 공통 `PAIRED_WITH` 자동 생성·SQLite 자동 탐색 미지원
+- **MCP Server — 가능(지원 등록 영역의 선언)**
+  - 원천·필드: `mcp.servers`, `nodeHost.mcp.servers`, manifest `mcpServers` → `registration_key`, `declared`, `declaration_path/pointer`
+  - 예시·제약: `registration_key: s`, `declaration_path: mcp.servers.s`. 실행 위치·성공·노출은 선언만으로 판정하지 않음
+- **Tool — 가능(목록 정의)**
+  - 원천·필드: `tools/list` → `definition.name/title/description/inputSchema/outputSchema/annotations`, `server_ref`
+  - 예시·제약: `name: read_demo`. 선택 필드 미제공 시 생성 안 함; 목록 존재를 노출·호출 가능으로 간주하지 않음
+- **Resource — 가능(목록 정의)**
+  - 원천·필드: `resources/list` → `definition.uri/name/title/description/mimeType/size/annotations`
+  - 예시·제약: `uri: file:///srv/sample-docs/readme.md`. `resources/read` 미실행
+- **ResourceTemplate — 가능(목록 정의)**
+  - 원천·필드: `resources/templates/list` → `definition.uriTemplate/name/title/description/mimeType`
+  - 예시·제약: `uriTemplate: file:///srv/sample-docs/{path}`. 구체 URI와 별도 보존; 템플릿 확장 미실행
+- **Prompt — 가능(목록 정의)**
+  - 원천·필드: `prompts/list` → `definition.name/title/description/arguments`
+  - 예시·제약: `name: summarize_doc`. `prompts/get` 미실행
+- **Skill — 일부 가능**
+  - 원천·필드: 지정 `SKILL.md`·설정·JSON 목록 → `identity.name.original_value`, `observed_from.skill_file`, `config_key`, `frontmatter`, `metadata_openclaw`, `install_origin`
+  - 예시·제약: `name: demo`. YAML 부분집합; 전체 설치 자동 탐색·설치본 인덱스·경로 이동 후 동일성·섀도잉 계산 미지원
+- **Plugin — 일부 가능**
+  - 원천·필드: 지정 manifest/package·JSON 목록·저장 inspect → `identity.id`, `root_dir`, `mcp_servers`, `plugin_inspect_outputs[].install`
+  - 예시·제약: `source: npm`, `version: 1.2.3`. id+rootDir 일치 시 설치본 연결. SQLite 자동 탐색·무결성 검증 미지원; 설치 시각을 last_updated로 대체하지 않음
+- **Permission — 일부 가능(지원 정책 원천)**
+  - 원천·필드: 설정·지정 승인 문서 → `category`, `config_path/pointer`, `applies_to`, `value_kind/value`; 지정 systemd → `units[].declarations`
+  - 예시·제약: `tools.allow: [read]`, `tools.deny: [browser]`. 지원 경로의 허용·차단 모두 보존. 모든 채널 정책 미지원; 서비스 선언을 실제 UID/GID로 간주하지 않음
+- **Authentication — 일부 가능(종류·참조)**
+  - 원천·필드: 지원 인증 설정·서버 선언 → `credential.kind/ref/ref_names`, `credentials`
+  - 예시·제약: `kind: literal_withheld`. 자격증명 원문·그 해시 비저장. OAuth issuer/audience/expiry 자동 수집 미구현; 원천·접근 범위 확인 필요
+
+**요청된 식별 원천의 연결 기준**
+
+- 선언–목록 연결: `config_scan_ref + registry_path + registration_key` 일치 시 연결; 이름만 같은 항목은 병합 안 함
+- 선언 주체·경로: `trace.declaring_subject`, `logical_location`, `physical_source_path` 별도 보존; 물리 경로를 ID로 사용 안 함
+- 주체 입력: `--subject` 사용자 입력과 `--observed-identity` 관측값 분리; 충돌 기록
+- include: `--resolve-includes` 사용 시 원본 파일·사슬·필드/원소별 출처 보존; 추가 허용 경계 지원
+- 환경·프로필: 직접 조회의 `--profile/--dev`, `--config-path`, `--state-dir`, `--openclaw-home` 지원. 모든 결과의 공통 환경/프로필 ID 필드는 미정
+- 복수 설치: 같은 이름/ID·다른 디렉터리는 별도 보존. Plugin은 id+rootDir, Skill은 파일 경로로 관측 연결; 영속 ID·섀도잉 규칙은 미확정
+- Permission/Auth 경계: 원천 키 경로 또는 명시한 목록 원소 단위. allow/deny 배열은 각각 보존하고 대상마다 복제 안 함; 공통 정책 묶음 경계는 협의 대기
 
 ## 4. 공통 확인 사항
 
@@ -76,3 +130,14 @@ PR #11의 `docs/asset-id-rules-proposal` 브랜치에서 이 문서의 3절 응�
 | ID 공통 구현 | 식별 범위·직렬화·정규화·해시 길이·버전 합의 후 스캐너와 Ground Truth의 공통 함수·테스트 벡터 적용 가능 여부 확인 | 스캐너·테스트베드·QA / 협의 대기 |
 
 수집 가능 여부가 확인되면 이슈 #10에 유형별 결과와 미결정 항목을 정리합니다. 이 표를 채우는 것만으로 ID 규칙 채택이나 이슈 종료를 확정하지 않습니다.
+
+**스캐너 공통 확인 응답 — 김규민 / 2026-11-18**
+
+- 반복·프로필·초기화·복제: 가상 원천 테스트와 실제 환경 반복/재설치/재페어링 실측 분리; 후자는 대기
+- 출처: 등록 영역·등록키·논리/물리 경로·include 출처 보존. 공통 선언 주체 ID는 미생성
+- 완전성: 정상 빈 목록·partial·failed·unsupported·not_performed 구분; 페이지·커서·한도·제외 사유 기록
+- 이름·URI: 원래 name/uri/uriTemplate과 title 구분; 가림·변경된 값을 원본 동일성 입력으로 사용 안 함
+- 비밀값: 지원 원천의 종류·안전한 참조만 보존. 가짜 인증값 비노출 검증; 실제 인증 유효성은 미판정
+- 필수 값 누락: missing/not_collected/withheld_by_redaction 보존; 빈 문자열·공통 unknown으로 정상 ID 발급 안 함
+- ID 공통 구현: 미구현. 범위·정규화·직렬화·해시·원천 중복·정책 경계 합의 후 공통 함수·테스트 벡터 연동
+- 이번 응답의 의미: 현재 수집 범위와 제약 공유. ID 규칙 확정·Issue #10 종료·PR 병합은 포함하지 않음
