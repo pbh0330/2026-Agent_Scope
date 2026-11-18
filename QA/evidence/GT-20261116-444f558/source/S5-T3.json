@@ -1,0 +1,59 @@
+{
+  "profile": "S5-T3",
+  "base_profile": "P2",
+  "base_snapshot": "SNAP-2-P2",
+  "environment": {
+    "openclaw_version": "2026.9.6",
+    "mcp_spec_version": "2026-07-28"
+  },
+  "scope": "P2 대비 추가·변경·삭제된 자산과 관계만 기록. 나머지는 ground-truth/P2.json과 같다",
+  "approved_servers": "ground-truth/approved-servers.json",
+  "summary": {
+    "asset_counts": {
+      "gateway": 1,
+      "node": 1,
+      "plugin": 1,
+      "mcp_server": 5,
+      "tool": 40,
+      "resource": 11,
+      "prompt": 5,
+      "skill": 3
+    },
+    "relation_count": 67
+  },
+  "added_assets": [],
+  "changed_assets": [
+    {
+      "asset_key": "tb-gw/mcp_server/inventory-remote",
+      "changes": {
+        "ssl_verify": {
+          "before": true,
+          "after": null
+        }
+      }
+    }
+  ],
+  "removed_assets": [],
+  "added_relations": [],
+  "removed_relations": [],
+  "expected_alerts": [],
+  "expected_no_alert": {
+    "scenario": [
+      "S1",
+      "S5"
+    ],
+    "targets": [
+      "tb-gw/mcp_server/inventory-remote"
+    ],
+    "note": "S5-C2로 경고를 내면 FAIL(생략은 false가 아님)"
+  },
+  "expected_unknown": [
+    {
+      "case": "3",
+      "scenario": "S5",
+      "condition_id": "S5-C3",
+      "target": "tb-gw/mcp_server/inventory-remote",
+      "reason": "https지만 sslVerify 항목이 없어 OpenClaw 기본값에 따라 검증 여부가 갈림. 기본값을 확인하기 전까지 판단 불가"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "commit": "0b2ff6bb2dd2f87e95550223008050e960cd07af",
+  "runs": [
+    {
+      "step": "config",
+      "exit_code": 0
+    },
+    {
+      "step": "tools",
+      "exit_code": 0
+    }
+  ],
+  "source_tool_count": 14,
+  "source_negotiated_version": "2025-11-25",
+  "inputs_unchanged": true,
+  "input_sha256": {
+    "2026-agent-scope-pr/testbed/profiles/P0/tb-gw.openclaw.json": "9992dff8231d5de5c54b0d976d744697fb0ad6abdfd1d665a8cae7d7b4256e40",
+    "2026-agent-scope-pr/testbed/ground-truth/raw/P0/fs-workspace.advertised.json": "f050bd9cc8313ec39bcdc046d828ab0c07f00dadf2831ddac0381c0d899ec2d6"
+  },
+  "comparison_checks": {
+    "server_key": true,
+    "declared_fields": true,
+    "tool_count": true,
+    "all_tool_definitions": false,
+    "protocol_version": true
+  }
+}

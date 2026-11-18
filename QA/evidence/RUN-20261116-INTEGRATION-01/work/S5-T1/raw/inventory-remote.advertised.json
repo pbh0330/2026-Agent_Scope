@@ -1,0 +1,87 @@
+{
+  "requestedProtocolVersion": "2026-07-28",
+  "negotiatedProtocolVersion": "2025-11-25",
+  "serverInfo": {
+    "name": "agentscope-inventory-remote",
+    "version": "0.1.0"
+  },
+  "capabilities": {
+    "tools": {
+      "listChanged": true
+    },
+    "resources": {
+      "listChanged": true
+    },
+    "prompts": {
+      "listChanged": true
+    }
+  },
+  "tools": [
+    {
+      "name": "inventory_list_hosts",
+      "title": "List inventory hosts",
+      "description": "List the host IDs in the testbed's fictional inventory.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "inventory_get_host",
+      "title": "Get inventory host",
+      "description": "Get one fictional inventory host record by ID.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Host ID, e.g. web-01"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    }
+  ],
+  "resources": [
+    {
+      "uri": "inventory://hosts",
+      "name": "inventory-hosts",
+      "title": "Inventory hosts",
+      "description": "All fictional hosts as JSON",
+      "mimeType": "application/json"
+    }
+  ],
+  "resourceTemplates": [],
+  "prompts": [
+    {
+      "name": "inventory_owner_report",
+      "title": "Inventory owner report",
+      "description": "Ask for a short report of hosts owned by one team.",
+      "arguments": [
+        {
+          "name": "owner",
+          "description": "Owner team, e.g. team-a",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='utf-8'?>
+<testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="34" time="53.078" timestamp="2026-11-13T13:45:33.441296+09:00"><testcase classname="tests.test_live_tools" name="test_two_tools_from_a_real_stdio_server_match_the_ground_truth" time="1.373" /><testcase classname="tests.test_live_tools" name="test_the_server_really_received_only_discovery_and_tools_list" time="0.000" /><testcase classname="tests.test_live_tools" name="test_source_is_marked_as_a_real_stdio_query_not_a_stored_response" time="0.000" /><testcase classname="tests.test_live_tools" name="test_negotiated_version_server_info_and_capabilities_are_what_the_server_sent" time="0.008" /><testcase classname="tests.test_live_tools" name="test_ground_truth_and_example_inputs_are_not_modified_by_any_live_run" time="0.001"><failure message="PermissionError: [Errno 13] Permission denied: '&lt;LOCAL_PATH&gt;'">live = &lt;function live.&lt;locals&gt;._run at 0x000002E56CD9EE50&gt;
+
+    def test_ground_truth_and_example_inputs_are_not_modified_by_any_live_run(live):
+        files = sorted(EXAMPLES.iterdir())
+&gt;       before = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in files}
+                                         ^^^^^^^^^^^^^^
+
+tests\test_live_tools.py:182: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+&lt;LOCAL_PATH&gt;
+    with self.open(mode='rb', buffering=0) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = WindowsPath('&lt;LOCAL_PATH&gt;')
+mode = 'rb', buffering = 0, encoding = None, errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+&gt;       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       PermissionError: [Errno 13] Permission denied: '&lt;LOCAL_PATH&gt;'
+
+&lt;LOCAL_PATH&gt;</failure></testcase><testcase classname="tests.test_live_tools" name="test_successful_empty_list_and_server_error_are_different_outcomes" time="2.724" /><testcase classname="tests.test_live_tools" name="test_two_pages_are_followed_to_the_end" time="1.438" /><testcase classname="tests.test_live_tools" name="test_an_empty_string_cursor_is_not_the_end_of_the_list" time="1.420" /><testcase classname="tests.test_live_tools" name="test_failure_on_a_later_page_keeps_the_earlier_tools_as_partial" time="1.471" /><testcase classname="tests.test_live_tools" name="test_cursor_loop_is_stopped_and_reported" time="1.357" /><testcase classname="tests.test_live_tools" name="test_max_pages_limit_stops_an_endless_listing" time="1.379" /><testcase classname="tests.test_live_tools" name="test_max_tools_limit_stops_an_endless_listing" time="1.389" /><testcase classname="tests.test_live_tools" name="test_request_timeout_is_reported_without_traceback_and_the_server_is_cleaned_up" time="9.621" /><testcase classname="tests.test_live_tools" name="test_total_timeout_stops_the_session_and_the_server_is_cleaned_up" time="11.049" /><testcase classname="tests.test_live_tools" name="test_server_exiting_during_the_request_is_reported_and_cleaned_up" time="1.264" /><testcase classname="tests.test_live_tools" name="test_invalid_cli_use_is_an_argument_error_and_starts_no_server" time="0.645" /><testcase classname="tests.test_live_tools" name="test_sdk_validation_rejection_is_a_failure_with_evidence_not_an_empty_list" time="1.370" /><testcase classname="tests.test_live_tools" name="test_legacy_negotiation_lists_tools_using_2025_rules" time="1.728" /><testcase classname="tests.test_live_tools" name="test_legacy_wire_pagination_errors_limits_and_redaction[paginated-5000-complete-2-2]" time="0.697" /><testcase classname="tests.test_live_tools" name="test_legacy_wire_pagination_errors_limits_and_redaction[empty-cursor-5000-complete-2-2]" time="0.700" /><testcase classname="tests.test_live_tools" name="test_legacy_wire_pagination_errors_limits_and_redaction[fail-second-5000-partial-1-2]" time="0.746" /><testcase classname="tests.test_live_tools" name="test_legacy_wire_pagination_errors_limits_and_redaction[empty-5000-complete-0-1]" time="0.746" /><testcase classname="tests.test_live_tools" name="test_legacy_wire_pagination_errors_limits_and_redaction[error-5000-failed-None-1]" time="0.752" /><testcase classname="tests.test_live_tools" name="test_legacy_wire_pagination_errors_limits_and_redaction[uneven-pages-2-partial-2-2]" time="0.701" /><testcase classname="tests.test_live_tools" name="test_legacy_wire_pagination_errors_limits_and_redaction[secrets-5000-complete-2-1]" time="0.715" /><testcase classname="tests.test_live_tools" name="test_optional_fields_absent_on_the_wire_are_not_invented_by_the_sdk_models" time="1.372" /><testcase classname="tests.test_live_tools" name="test_tools_the_sdk_list_tools_would_silently_drop_are_kept_and_marked" time="2.175" /><testcase classname="tests.test_live_tools" name="test_fake_credentials_in_a_live_response_are_not_left_in_file_stdout_stderr_or_server_log" time="1.459" /><testcase classname="tests.test_live_tools" name="test_korean_and_emoji_are_preserved_and_the_cp949_console_does_not_break" time="1.479" /><testcase classname="tests.test_live_tools" name="test_utf8_console_run_matches_too" time="1.439" /><testcase classname="tests.test_live_tools" name="test_save_failure_is_exit_4_without_traceback_and_the_server_is_still_cleaned_up" time="1.491" /><testcase classname="tests.test_live_tools" name="test_static_modules_do_not_import_the_sdk_and_static_clis_never_start_a_server" time="0.256" /><testcase classname="tests.test_live_tools" name="test_the_process_check_really_detects_a_running_and_a_stopped_process" time="0.004" /><testcase classname="tests.test_live_tools" name="test_requirements_pin_the_exact_sdk_version_that_is_installed" time="0.002" /></testsuite></testsuites>

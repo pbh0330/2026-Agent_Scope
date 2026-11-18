@@ -1,0 +1,89 @@
+{
+  "profile": "S5-T1",
+  "base_profile": "P2",
+  "base_snapshot": "SNAP-2-P2",
+  "environment": {
+    "openclaw_version": "2026.9.6",
+    "mcp_spec_version": "2026-07-28"
+  },
+  "scope": "P2 대비 추가·변경·삭제된 자산과 관계만 기록. 나머지는 ground-truth/P2.json과 같다",
+  "approved_servers": "ground-truth/approved-servers.json",
+  "summary": {
+    "asset_counts": {
+      "gateway": 1,
+      "node": 1,
+      "plugin": 1,
+      "mcp_server": 5,
+      "tool": 40,
+      "resource": 11,
+      "prompt": 5,
+      "skill": 3
+    },
+    "relation_count": 67
+  },
+  "added_assets": [],
+  "changed_assets": [
+    {
+      "asset_key": "tb-gw/mcp_server/inventory-remote",
+      "changes": {
+        "ssl_verify": {
+          "before": true,
+          "after": null
+        },
+        "url": {
+          "before": "https://tb-node:8443/mcp",
+          "after": "http://tb-node:8080/mcp"
+        }
+      }
+    }
+  ],
+  "removed_assets": [],
+  "added_relations": [],
+  "removed_relations": [],
+  "expected_alerts": [
+    {
+      "required": true,
+      "case": "1",
+      "scenario": "S5",
+      "condition_id": "S5-C1",
+      "target": "tb-gw/mcp_server/inventory-remote",
+      "risk_condition": "암호화되지 않은 전송",
+      "reason": "streamable-http를 http://로 연결. Bearer 헤더가 평문으로 전송될 수 있는 설정",
+      "severity": "high",
+      "confidence": "high"
+    },
+    {
+      "required": false,
+      "case": "1",
+      "scenario": "S1",
+      "condition_id": "S1-C2",
+      "target": "tb-gw/mcp_server/inventory-remote",
+      "risk_condition": "Endpoint 불일치",
+      "reason": "승인 endpoint와 다름. 동반 경고(S5 채점 미포함)",
+      "severity": "high",
+      "confidence": "high"
+    },
+    {
+      "required": false,
+      "case": "1",
+      "scenario": "S4",
+      "condition_id": "S4-C3",
+      "target": "tb-gw/mcp_server/inventory-remote",
+      "risk_condition": "자격증명이 승인되지 않은 Endpoint로 전송",
+      "reason": "INVENTORY_MCP_TOKEN이 바뀐 endpoint로 전송. 동반 경고",
+      "severity": "high",
+      "confidence": "medium"
+    }
+  ],
+  "expected_no_alert": {
+    "scenario": "S5",
+    "targets": [
+      "tb-gw/mcp_server/fs-workspace",
+      "tb-node/mcp_server/kg-memory",
+      "tb-node/mcp_server/demo-everything",
+      "tb-gw/mcp_server/asset-catalog"
+    ],
+    "note": "stdio 서버는 not_applicable"
+  },
+  "expected_unknown": []
+}

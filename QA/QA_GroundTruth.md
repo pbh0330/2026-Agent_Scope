@@ -1,126 +1,118 @@
 # QA Ground Truth
 
-> 2026-10-31 PR #1 HEAD `8442670745c7d1c64cf58df945b955f06bd2f01a` 반영. Gateway 포함 8종 분류는 확정이며 공통 계약은 0.7.0-draft 초안입니다. 아래는 실행 결과가 아닌 인수 확인 항목입니다.
->
-> 구버전 7종 입력은 명시적 변환 후 같은 범위로 비교합니다. Permission/Auth 하위 유형을 구분하고 공통 정책을 적용 대상 수만큼 중복 집계하지 않습니다. identity는 반복 조회·프로필·신원 초기화·복제·재페어링 전후를 검증합니다. Gateway→Node 페어링은 관계 규칙 합의 후 증적과 조회 완전성을 확인하고 실패를 해제나 Node 삭제로 판정하지 않습니다. P2의 Gateway 선언 소속·Node VM 실행은 별도 증적으로 기록합니다. P0 full 정답과 실제 snapshot에서 ID 매핑·중복·참조 무결성을 확인합니다. ID 규칙·실제 수집 지원·정답 작성·QA 통과는 별도 확인 대상입니다.
+2026-11-16 기준 원천 정답과 기존 실행 증적을 연결한 기준서다. 정답 ID는 **GT-20261116-444f558**이며, 아래 정답 수는 테스트베드 commit `444f558893315e6c3a02e0a29d3d1dfe5f5a7bdb`에 한정해 고정한다. 팀의 최종 0.7 계약 승인과는 별개다.
 
-## 1. 목적
+## 1. 기준 환경과 범위
 
-스캐너 및 대시보드 결과를 비교할 수 있도록 테스트베드에 실제로 구성한 자산, 관계 및 기대 경고를 수동으로 기록한다. 추정값이 아니라 설정 파일, manifest 및 MCP 목록 응답으로 확인한 값을 사용한다.
-
-테스트베드의 정답 JSON을 인수하면 자산·관계의 원본으로 참조하고, 이 문서는 QA 검토·ID 매핑·기대 조건·증적 연결을 관리한다. [PR 4](https://github.com/pbh0330/2026-Agent_Scope/pull/4)의 형식은 초안이므로 예시를 실제 정답으로 복사하지 않는다. 적용 JSON과 스키마의 버전 및 변환 규칙을 확인한 뒤 비교한다.
-
-## 2. 기준 환경
-
-| 항목 | 값 |
+| 항목 | 고정값·상태 |
 |---|---|
-| Ground Truth 버전 | GT-001 |
-| 작성일 | TBD |
-| 작성자·검토자 | TBD / TBD |
-| 기준 스냅샷 ID | TBD |
-| 프로파일·위협 구성 ID | TBD (P0/P1/P2 또는 위협 구성) |
-| 정답 JSON 경로·commit | TBD (인수한 실제 파일 기준) |
-| 기준 프로파일·변경분 적용 규칙 | TBD (차분은 기준 정답과 추가·변경·삭제·종속 관계 규칙을 확인해 비교 전 full 목록으로 물질화) |
-| 수집 범위·인증 맥락 | TBD (안전한 참조만 기록) |
-| Gateway 식별자 | TBD |
-| Node 식별자 | TBD |
-| OpenClaw 버전·commit | TBD |
-| 출력 스키마 버전 | TBD (준비 기준 0.7.0-draft) |
-| ID 규칙·정답 생성기·변환기 버전/commit | TBD (#10·#11 협의 결과 확인) |
-| 8종별 지원·범위 제외·미수집 사유 | TBD |
-| 실행 기준 시나리오 문서·ID·버전 | S1~S5 / 문서 버전 TBD |
-| 관련 설정·manifest | 비밀값을 제거한 경로 또는 증적 ID 기록 |
+| 원천 | [GitHub 고정 commit](https://github.com/pbh0330/2026-Agent_Scope/tree/444f558893315e6c3a02e0a29d3d1dfe5f5a7bdb/testbed/ground-truth) |
+| 작성·검토 | 원천: 테스트베드 담당 / QA 정리: Codex, 2026-11-16 / 담당자 최종 검토 대기 |
+| 보관·집계 | [기준 인덱스](evidence/GT-20261116-444f558/index.json), 같은 디렉터리의 source·full·links |
+| 정상군 | P0/P1/P2, SNAP-2-P0/P1/P2 |
+| 위협군 | S1~S4: 담당자 VM 실측 SNAP-3-S1~S4. S1-T5·S5-T1/T2/T3: 설정 사본 정적 검증 |
+| 적용 규칙 | 각 위협 파일을 P2에 독립 적용. 시나리오 간 누적 적용 금지 |
+| 자산 범위 | 테스트베드 추가 자산. stock Plugin 63종·Skill 57종 제외 |
+| 환경·프로필 | 출력 environment_id=agentscope-testbed, profile_id=tb-openclaw. 구성 ID=P0 등은 별도 |
+| OpenClaw | 2026.9.6, 실제 설치 commit 미확인 |
+| MCP | 기준 버전 2026-07-28 / P2 서버 5개 협상 버전 2025-11-25 |
+| 연결 실행 | RUN-20261116-INTEGRATION-01, 저장 자료 기반·live_query=false |
+| 출력 계약 | 실제 0.6.0-draft / 최종 인수 준비 0.7.0-draft, 문서 v0.7.5 |
+| 구현 기준 | 스캐너 0b2ff6b·대시보드 cef7f2f·시나리오 4b0007f. [실행 정보](evidence/RUN-20261116-INTEGRATION-01/execution.json) 참조 |
 
-## 3. 정답 자산 목록
+동일 commit의 값만 이 정답으로 판정한다. 원천 변경 시 새 Ground Truth ID와 새 실행 보고서를 만들고 과거 증적을 보존한다. 제안 중인 ID 규칙을 확정값으로 사용하지 않는다.
 
-`정답 ID`는 테스트 문서용 안정 식별자다. 실제 출력 ID와 별도로 관리하고 비교 시 매핑한다.
+## 2. 구성별 정답 수와 실행 연결
 
-매핑 상태는 matched/ambiguous/unmatched와 사유를 기록한다. 7종 입력은 단순 버전 변경 없이 Gateway identity·Permission/Auth·소속·문맥·관계·집계를 함께 변환한다. 인증 참조·정책 정답은 실제 구성 증적으로 보완하며 임의로 생성하지 않는다.
+원천은 기대값, 출력은 기존 실행 관측값이다. 필수·선택·unknown은 원천 기대 조건 행 수다. 정상군의 0은 원천 expected_alerts가 없다는 뜻이며 정상 탐지 판정은 별도 기대 결과를 사용한다.
 
-| 정답 ID | JSON asset_key | 출력 asset_id | 출력 owner_ref | 선언/광고 계층 | 유형 변환·매핑 근거 |
-|---|---|---|---|---|---|
-| TBD | TBD | TBD | TBD | declared / advertised | TBD |
+| 구성 | 원천 자산 | 원천 관계 | 필수 경고 | 선택 경고 | unknown | 관측 자산/관계 | 저장 비교 PASS | ID 매핑 증적 |
+|---|---:|---:|---:|---:|---:|---|---:|---|
+| P0 | 17 | 16 | 0 | 0 | 0 | 20/18 | expected 없음 | [17/17](evidence/GT-20261116-444f558/links/P0.json) |
+| P1 | 57 | 56 | 0 | 0 | 0 | 61/60 | expected 없음 | [57/57](evidence/GT-20261116-444f558/links/P1.json) |
+| P2 | 67 | 67 | 0 | 0 | 0 | 73/73 | 5 | [67/67](evidence/GT-20261116-444f558/links/P2.json) |
+| S1 | 77 | 77 | 4 | 2 | 0 | 83/83 | 10 | [77/77](evidence/GT-20261116-444f558/links/S1.json) |
+| S1-T5 | 67 | 67 | 1 | 0 | 0 | 73/73 | 5 | [67/67](evidence/GT-20261116-444f558/links/S1-T5.json) |
+| S2 | 67 | 67 | 2 | 1 | 0 | 72/72 | 6 | [67/67](evidence/GT-20261116-444f558/links/S2.json) |
+| S3 | 69 | 69 | 2 | 1 | 0 | 75/75 | 6 | [69/69](evidence/GT-20261116-444f558/links/S3.json) |
+| S4 | 67 | 67 | 1 | 0 | 1 | 74/74 | 4 | [67/67](evidence/GT-20261116-444f558/links/S4.json) |
+| S5-T1 | 67 | 67 | 1 | 2 | 0 | 73/73 | 7 | [67/67](evidence/GT-20261116-444f558/links/S5-T1.json) |
+| S5-T2 | 67 | 67 | 1 | 0 | 0 | 73/73 | 2 | [67/67](evidence/GT-20261116-444f558/links/S5-T2.json) |
+| S5-T3 | 67 | 67 | 0 | 0 | 1 | 73/73 | 2 | [67/67](evidence/GT-20261116-444f558/links/S5-T3.json) |
 
-JSON이 `resource`·`prompt`를 별도 유형으로 제공하면 합의된 출력의 `resource_prompt` 및 `asset_subtype`으로 대응시킨다. ID 생성 규칙과 소속 서버를 확인하고 이름만으로 매핑하지 않는다. 관계의 ADVERTISES, evidence_refs·confidence 등 필수 정보가 원본에 없으면 보완 근거를 인수하며 임의로 채우지 않는다.
+구성 간 동일 자산이 반복되므로 자산 수를 구성 간 합산해 환경 전체 자산 수로 사용하지 않는다. 관측 출력의 추가 정책·인증 자산은 원천 정답 수에 더하지 않는다.
 
-| 정답 ID | 자산 유형 | 이름·공식 식별자 | 선언/소유 주체 | 출처 | 정상/위협 | 필수 기대 속성 | 증적 ID |
-|---|---|---|---|---|---|---|---|
-| GT-A-001 | Gateway | TBD | - | Gateway 설정 | 정상 | TBD | EV-001 |
-| GT-A-002 | Node | TBD | - (페어링은 별도 관계) | Node 설정 | 정상 | TBD | EV-002 |
-| GT-A-003 | MCP Server | 승인 테스트 서버 | GT-A-001 | 설정 | 정상 | endpoint, transport, TLS 상태 | EV-003 |
-| GT-A-004 | MCP Server | 비인가 테스트 서버 | GT-A-002 (예시), Plugin 선언이면 해당 Plugin ID | 설정 | S1 | source, endpoint, 노출 상태 | EV-004 |
-| GT-A-005 | Tool | 동명 테스트 Tool | GT-A-003 | `tools/list` | 정상 | name, description, inputSchema | EV-005 |
-| GT-A-006 | Tool | 동명 테스트 Tool | GT-A-004 | `tools/list` | S3 | name, description, inputSchema | EV-006 |
-| GT-A-007 | Resource/Template/Prompt | TBD | GT-A-003 | 목록 응답 | 정상 | asset_subtype, uri/uriTemplate/name | EV-007 |
-| GT-A-008 | Skill | TBD | Gateway/Node | SKILL.md | 정상 또는 S1 | source, version/commit, integrity | EV-008 |
-| GT-A-009 | Plugin | TBD | Gateway | manifest·설정 | 정상 또는 S1 | provider, version, 등록 자산 | EV-009 |
-| GT-A-010 | Permission/Auth (permission) | 테스트 정책 | 원천 선언 주체 TBD | 정책 설정 | 정상 | asset_subtype, 적용 대상 asset_id, 정책 근거 | EV-010 |
-| GT-A-011 | Permission/Auth (authentication) | 테스트 인증 참조 | 원천 선언 주체 TBD | 인증 설정 | 정상 또는 S4 | asset_subtype, 안전한 참조·적용 대상, 비밀값 제외 | EV-011 |
+### 정상군 유형별 내역
 
-하위 유형은 resource/resource_template/prompt와 permission/authentication이다. Permission/Auth 상세와 적용 대상은 합의한 project.permission_auth.target_refs로 연결한다. 적용 대상 수만큼 정책을 복제하지 않는다. 서버 실행 위치는 선언 소속과 분리해 증적이 있을 때만 기록한다.
+| 원천 유형 | P0 | P1 | P2 |
+|---|---:|---:|---:|
+| gateway | 1 | 1 | 1 |
+| node | 1 | 1 | 1 |
+| mcp_server | 1 | 3 | 5 |
+| tool | 14 | 36 | 40 |
+| resource (template 포함) | 0 | 10 | 11 |
+| prompt | 0 | 4 | 5 |
+| skill | 0 | 2 | 3 |
+| plugin | 0 | 0 | 1 |
+| permission_auth 독립 자산 | 원천 미작성 | 원천 미작성 | 원천 미작성 |
 
-실제 테스트베드 구성에 맞추어 행을 추가·삭제한다. 존재하지 않는 예시 행을 정답으로 집계하지 않는다.
+공통 계약의 resource_prompt와 하위 유형으로 변환한다. Permission/Auth가 원천 독립 자산에 없다는 이유로 실환경에 존재하지 않는다고 판정하지 않는다. 가공 출력의 추가 자산은 설정·정책 근거로 별도 인수한다. 숫자를 맞추기 위해 자산을 추가·삭제하지 않는다.
 
-위 자산 및 아래 관계 목록은 S1~S5 검증을 준비하기 위한 작성 예시다. 담당자와 합의한 정상/위협 구성 및 실제 설정·목록 응답으로 확인한 값에 따라 갱신한다. 예시만으로 정답 자산·관계가 확보된 것으로 처리하지 않는다.
+## 3. 기대 조건과 기존 TC
 
-## 4. 정답 관계 목록
+조건 식별 키는 **구성 + scenario_id + condition_id + target**이다. 필수 경고는 구성별 합계 **12행**, 선택 경고 **6행**, unknown **2행**이다. 모든 행이 저장된 expected.json의 조건에 연결되며 해당 저장 판정은 PASS다. 조건별 target·실제 asset_id·alert_id·check_id는 2절 links의 condition_links에서 확인한다.
 
-| 정답 ID | 시작 자산 | 관계 | 도착 자산 | 근거 유형 | 신뢰도 | 증적 ID |
-|---|---|---|---|---|---|---|
-| GT-R-001 | GT-A-001 | `DECLARES` | GT-A-003 | config | confirmed | EV-003 |
-| GT-R-002 | GT-A-002 | `DECLARES` | GT-A-004 | config | confirmed | EV-004 |
-| GT-R-003 | GT-A-003 | `ADVERTISES` | GT-A-005 | protocol | confirmed | EV-005 |
-| GT-R-004 | GT-A-004 | `ADVERTISES` | GT-A-006 | protocol | confirmed | EV-006 |
-| GT-R-005 | GT-A-008 또는 GT-A-009 | `ASSOCIATED_WITH` | GT-A-004 | manifest/config | confirmed 또는 high | EV-008 |
+| 구성 | 조건·대상 | 기대 결과 | 관련 TC |
+|---|---|---|---|
+| S1 | S1-C1 shadow-notes / node-helper | 각 high/high, 필수 2건 | QA-S1-01 |
+| S1 | S1-C2 inventory-remote | endpoint 8443→9443, high/high | QA-S1-01 |
+| S1 | S1-C3 notes-sync | 미승인 Plugin 등록, high/high. Plugin 자체 경고는 선택 | QA-S1-01 |
+| S1-T5 | S1-C4 inventory-remote | Node 선언 위치 이상 medium/high. C1 미승인으로 오판 금지 | QA-S1-01 |
+| S2 | S2-C2 fs-workspace | 홈 전체 범위 확대 medium/high | QA-S2-01 |
+| S2 | S2-C1 demo-everything | get-env·gzip-file-as-resource 제외 해제 high/high | QA-S2-01 |
+| S3 | S3-C1 inventory-remote/read_text_file | 동명·정의 차이 medium/high | QA-S3-01 |
+| S3 | S3-C2 inventory-remote/catalog_search | 동명·정의 동일 low/medium | QA-S3-01 |
+| S4 | S4-C1 fs-workspace | 같은 Gateway 저장소의 참조 공유 medium/high | QA-S4-01 |
+| S4 | S4-C2 demo-everything | 다른 Node 저장소의 같은 이름은 unknown. 공유 경고 금지 | QA-S4-01, QA-SCHEMA-03 |
+| S5-T1 | S5-C1 inventory-remote | HTTP 평문 high/high | QA-S5-01 |
+| S5-T2 | S5-C2 inventory-remote | sslVerify=false 명시 high/high | QA-S5-01 |
+| S5-T3 | S5-C3 inventory-remote | 생략은 unknown. C2 경고 금지 | QA-S5-02, QA-INT-02 |
 
-관계 이름·방향은 적용 계약 합의 후 판정한다. Plugin이 선언한 서버는 해당 Plugin의 DECLARES로 연결하고 위 Gateway/Node 예시를 모든 서버에 강제하지 않는다. PAIRED_WITH는 Gateway → Node 후보이며 합의 후 실제 페어링 증적으로 행을 추가한다. 정책 target_refs 보조 선은 저장된 관계 수에 더하지 않는다.
+표의 등급은 severity/confidence 기대값이다. S3-C2 정의 비교는 inputSchema draft-07 래퍼 정규화 규칙을 기록한다. 선택·동반 경고는 필수 검지율 분모에 넣지 않는다. expected_no_alert는 지정된 시나리오·대상 범위에 적용하며 전 시나리오 경고 금지로 확대하지 않는다.
 
-## 5. S1~S5 시나리오별 기대 경고
+기존 **47조건 PASS**는 정상·필수/선택 경고·금지 경고·unknown 등의 비교기 검사 수다. 필수 경고 12건이나 인수 TC 43개와 집계 단위가 다르다. 이 문서의 정답 고정으로 기존 TC의 미실행 조건을 통과 처리하지 않는다.
 
-아래 표는 로컬 준비 자료 `위협시나리오.md` (미공유 후보; 실행 전 확정 문서 인수 필요)의 S1~S5를 검증하기 위한 기대 경고 초안이다. 실행 전 담당자와 정상/위협 구성별 기대 조건을 확정하고 고유 ID를 부여해 경고·근거·관련 자산과 발생하면 안 되는 경고를 기록한다. 조건 ID는 실행결과와 연결한다. 활성 상태와 세부 조건이 미확정인 행은 확정 정답 수에 포함하지 않는다.
+## 4. 전체 목록·ID·관계
 
-| 시나리오 | 활성 상태 | 기대 경고 | 관련 정답 자산·관계 | 발생하면 안 되는 경고 |
-|---|---|---|---|---|
-| S1 비인가 서버 | TBD | 미승인 Server, 불명확한 출처, 잠재 노출 | TBD | 승인 서버에 대한 비인가 경고 |
-| S2 과도한 권한 Tool | TBD | 위험 입력·권한·승인 정책 누락 | TBD | 실제 접근·전송이 발생했다는 확정 표현 |
-| S3 동명 Tool 충돌 | TBD | 서로 다른 Server의 동일 이름 및 차이 | TBD | 두 Tool의 단일 자산 병합 |
-| S4 자격증명 공유 | TBD | 동일 참조 공유, scope 과다, audience 불일치 | TBD | 실제 자격증명 값 표시 |
-| S5 안전하지 않은 연결 | TBD | 평문 또는 TLS 검증 비활성화 | TBD | 정상 HTTPS 연결에 대한 경고 |
+- 전체 정답은 [P0 full](evidence/GT-20261116-444f558/full/P0.json), [P1 full](evidence/GT-20261116-444f558/full/P1.json), [P2 full](evidence/GT-20261116-444f558/full/P2.json) 및 같은 full 디렉터리의 위협 구성 JSON이다. 기존 가상 GT-A/GT-R 예시 표를 실제 정답 목록으로 대체했다.
+- source는 원천 JSON, full은 차분을 펼친 원천 형식, links는 실행 대응표다. full이라는 이유로 0.7 공통 계약 변환이 끝난 것은 아니다.
+- 차분 변경 전 값을 대조하고 after를 적용한 뒤 자산·관계의 명시 삭제·추가를 반영한다. null을 false로 바꾸지 않는다. S1-T5는 Server 교체와 6개 관계 재연결을 포함한다. 삭제 자산에 대한 관계 참조가 남으면 입력 불일치로 중단한다.
+- 원천 asset_key와 출력 project.canonical_key를 대조해 후보 1개는 matched, 복수는 ambiguous, 없으면 unmatched로 기록한다. 이번 11개 구성은 원천 자산 모두 matched다. 전체 속성·관계 동등성 검증 완료를 의미하지 않는다.
+- inventory-remote의 Gateway 선언·Node 실행을 구분한다. Plugin 서버의 원천 ASSOCIATED_WITH와 공통 소속·DECLARES 변환은 근거를 확인한다. 원천 PAIRED_WITH를 실제 출력에 근거 없이 보강하지 않는다.
+- Tool 광고와 에이전트 노출은 별도다. P0 광고 14개·노출 2개, Plugin asset-catalog·notes-sync의 노출 null을 유지한다.
 
-각 기대 경고·금지 경고를 아래 표의 개별 조건으로 구체화한다. 하나의 행은 하나의 판정 가능한 조건이며, 위 요약 표의 행 수를 기대 경고 수로 사용하지 않는다.
+## 5. 실행결과 연결과 남은 인수 항목
 
-| 조건 ID | 시나리오 | 관련 TC ID | 정상/위협 구성·프로파일 | 기대 결과·금지 결과 | 관련 자산·관계·증적 | 합의 상태·기준 버전 |
-|---|---|---|---|---|---|---|
-| TBD | TBD | TBD | TBD | TBD | TBD | 미확정 |
+[QA 실행결과](QA_실행결과.md)는 43개 TC 총괄, [연동 보고서](reports/QA_연동검증_20261116.md)는 저장 자료 실행, [TC 증적 연결](reports/QA_TC증적연결_20261116.md)은 항목별 판정 범위를 관리한다. 이번 원천·키·조건 연결은 기존 실행 증적에 대한 후속 검사이며 VM을 다시 실행한 기록이 아니다.
 
-## 6. 집계값
+확정한 항목: 원천 commit, 구성별 자산·관계·기대 조건 수, 원천 키와 출력 ID 대응, 저장 기대 판정 연결.
 
-| 항목 | 정답 수 |
-|---|---:|
-| 전체 자산 | TBD |
-| Gateway | TBD |
-| Node | TBD |
-| MCP Server | TBD |
-| Tool | TBD |
-| Resource/Template/Prompt | TBD |
-| Skill | TBD |
-| Plugin | TBD |
-| Permission/Auth | TBD |
-| 전체 관계 | TBD |
-| 기대 경고 | TBD |
+저장 입력 11개 구성의 3회 재현성은 [11월 17일 후속 검증](reports/QA_저장자료후속검증_20261117.md)에서 확인했다. 원천 노출 true와 출력 null의 차이가 있는 설정 사본 4개 구성은 변경 서버를 재측정하지 않은 범위로 별도 기록했다.
 
-전체 자산은 8종 고유 ID 수이며 Gateway와 Permission/Auth를 포함한다. Host·Client·Agent 문맥·Gateway 그룹·예시 행은 제외한다. 하위 유형 합계는 상위 유형 수와 중복 합산하지 않는다. 미지원·실패 유형과 합의된 범위 밖 제외를 별도로 기록한다.
+남은 항목: 추가 정책/인증 자산의 근거·속성·적용 대상 인수, 전체 속성·관계 동등성, 최종 0.7 계약·공통 ID 규칙, 실제 VM 재수집과 그 반복 검증·화면/API. 선택 경고와 등급 차이의 최종 채점 규칙은 담당자 확인을 남긴다. 이 미완료 사항 때문에 이미 확인한 원천 정답 수를 TBD로 되돌리지 않는다.
 
-## 7. 증적 목록
+현재 준비 기준은 [로컬 스키마 v0.7.7](reference/schema-design-draft-v0.7.7.md)의 16.1~16.2절이다. 데이터 계약은 `0.7.0-draft`이며 위 표의 v0.7.5는 기존 실행 기준이다. 현재 source/full/links/index는 고정 원천 형식과 실행 대응 자료이며 공통 GroundTruth·QAResult 계약으로 변환한 출력이 아니다. 공통 ground_truth_id/version, gt_asset_id, 별도 증적 namespace와 ID 매핑·metrics·limitations는 계약 합의 후 변환·검증한다. 문서 개정만으로 원천 파일·해시·정답 수를 변경하지 않는다.
 
-증적에는 실제 비밀값이 포함되지 않도록 마스킹 여부를 재확인한다.
+## 6. 재생성과 변경 관리
 
-| 증적 ID | 유형 | 설명 | 파일·URL·캡처 위치 | 수집일 | 마스킹 확인 |
-|---|---|---|---|---|---|
-| EV-001 | config/screenshot | TBD | TBD | TBD | [ ] |
+2026-11-18 [제출 범위 결정](QA_제출범위_20261118.md)에 따라 현재 원천 형식·해시·ID 매핑을 유지한다. 공통 GroundTruth/QAResult 전환은 이번 제출의 선행 조건이 아니며 원천→출력의 누락·병합·참조·경고 검증은 계속 수행한다.
 
-## 8. 변경 이력
+`python QA/reports/link_ground_truth.py`로 source·full·links·index를 재생성한다. 입력은 .parts-snapshots-20261116의 고정 원천 사본과 기존 실행 data다. 원천 summary, 변경 전 값, 키 중복·관계 참조를 검사하고 index에 원본 바이트의 SHA-256을 기록한다. GitHub 최신본을 자동 갱신하는 명령은 아니다. 고정 사본 교체 시에는 GitHub commit과 내용을 다시 확인한다.
 
-| 버전 | 일자 | 변경 내용 | 작성자 | 검토자 |
-|---|---|---|---|---|
-| GT-001 | TBD | 최초 작성 | TBD | TBD |
+| 버전 | 일자 | 변경 |
+|---|---|---|
+| GT-001 | 과거 준비본 | 예시·TBD 인수 양식 |
+| GT-20261116-444f558 | 2026-11-16 | 원천 수 확정, 11개 full 정답·실제 출력 ID·저장 조건 연결 |
+
+배경과 원천 세부 사항은 [Ground Truth 확인 정리](reports/QA_GroundTruth_확인정리_20261116.md)를 참조한다.
+

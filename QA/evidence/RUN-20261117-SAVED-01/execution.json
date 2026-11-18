@@ -1,0 +1,51 @@
+{
+  "runs": [
+    {
+      "run": 1,
+      "exit_code": 0,
+      "elapsed_seconds": 6.278
+    },
+    {
+      "run": 2,
+      "exit_code": 0,
+      "elapsed_seconds": 6.319
+    },
+    {
+      "run": 3,
+      "exit_code": 0,
+      "elapsed_seconds": 5.126
+    }
+  ],
+  "excluded_time_fields": [
+    "collected_at",
+    "detected_at",
+    "evaluated_at",
+    "finished_at",
+    "generated_at",
+    "observed_at",
+    "report_id",
+    "snapshot_id",
+    "started_at"
+  ],
+  "scope": "saved inputs only; no VM recollection, browser or usage API",
+  "pinned_versions": {
+    "dashboard": {
+      "branch": "feature/dashboard",
+      "commit": "cef7f2f251f7936e5fbf010e31178535b9d7b088"
+    },
+    "scenario": {
+      "branch": "docs/threat-scenarios",
+      "commit": "4b0007fa70907714d3f64072e86f998631032e62"
+    },
+    "testbed": {
+      "branch": "develop",
+      "commit": "314bd5c5400f76e2a95e80b19708002cf358f3d8"
+    },
+    "token": {
+      "branch": "feature/token-collector",
+      "commit": "6e4cf5c0cf7116821d48fd3231c7cb2a6595a4ae"
+    }
+  },
+  "scanner_commit": "0b2ff6bb2dd2f87e95550223008050e960cd07af",
+  "testbed_vm_commit": "444f558893315e6c3a02e0a29d3d1dfe5f5a7bdb"
+}

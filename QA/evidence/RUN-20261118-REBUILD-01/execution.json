@@ -1,0 +1,90 @@
+{
+  "scanner_commit": "ee9c1e02a660c23e1a445680df2905ae41be463b",
+  "dashboard_commit": "8f56930af9f2b9b8491b0df6c26ba6c4a4dc8cc5",
+  "testbed_commit": "444f558893315e6c3a02e0a29d3d1dfe5f5a7bdb",
+  "scenario_commit": "4b0007fa70907714d3f64072e86f998631032e62",
+  "scope": "saved VM captures/config copies; no VM recollection; no usage API in regeneration",
+  "pipeline_exit_code": 0,
+  "profiles": [
+    {
+      "profile": "P0",
+      "assets": 20,
+      "relations": 18,
+      "alerts": 0,
+      "status": "success"
+    },
+    {
+      "profile": "P1",
+      "assets": 61,
+      "relations": 60,
+      "alerts": 0,
+      "status": "success"
+    },
+    {
+      "profile": "P2",
+      "assets": 73,
+      "relations": 73,
+      "alerts": 0,
+      "status": "partial"
+    },
+    {
+      "profile": "S1",
+      "assets": 83,
+      "relations": 83,
+      "alerts": 5,
+      "status": "partial"
+    },
+    {
+      "profile": "S1-T5",
+      "assets": 73,
+      "relations": 73,
+      "alerts": 1,
+      "status": "partial"
+    },
+    {
+      "profile": "S2",
+      "assets": 72,
+      "relations": 72,
+      "alerts": 3,
+      "status": "partial"
+    },
+    {
+      "profile": "S3",
+      "assets": 75,
+      "relations": 75,
+      "alerts": 3,
+      "status": "partial"
+    },
+    {
+      "profile": "S4",
+      "assets": 74,
+      "relations": 74,
+      "alerts": 1,
+      "status": "partial"
+    },
+    {
+      "profile": "S5-T1",
+      "assets": 73,
+      "relations": 73,
+      "alerts": 3,
+      "status": "partial"
+    },
+    {
+      "profile": "S5-T2",
+      "assets": 73,
+      "relations": 73,
+      "alerts": 1,
+      "status": "partial"
+    },
+    {
+      "profile": "S5-T3",
+      "assets": 73,
+      "relations": 73,
+      "alerts": 0,
+      "status": "partial"
+    }
+  ],
+  "expected_checks": 47,
+  "independent_passed": 64,
+  "independent_failed": 0
+}

@@ -1,0 +1,220 @@
+[
+  {
+    "profile": "P0",
+    "page": "자산 현황",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "profile": "P0",
+    "page": "자산 지도",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "profile": "P0",
+    "page": "위협과 조치",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "profile": "P1",
+    "page": "자산 현황",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "profile": "P1",
+    "page": "자산 지도",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "profile": "P1",
+    "page": "위협과 조치",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "profile": "P2",
+    "page": "자산 현황",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "profile": "P2",
+    "page": "자산 지도",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "profile": "P2",
+    "page": "위협과 조치",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "profile": "S1",
+    "page": "자산 현황",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "profile": "S1",
+    "page": "자산 지도",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "profile": "S1",
+    "page": "위협과 조치",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "profile": "S1-T5",
+    "page": "자산 현황",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "profile": "S1-T5",
+    "page": "자산 지도",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "profile": "S1-T5",
+    "page": "위협과 조치",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "profile": "S2",
+    "page": "자산 현황",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "profile": "S2",
+    "page": "자산 지도",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "profile": "S2",
+    "page": "위협과 조치",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "profile": "S3",
+    "page": "자산 현황",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "profile": "S3",
+    "page": "자산 지도",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "profile": "S3",
+    "page": "위협과 조치",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "profile": "S4",
+    "page": "자산 현황",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "profile": "S4",
+    "page": "자산 지도",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "profile": "S4",
+    "page": "위협과 조치",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "profile": "S5-T1",
+    "page": "자산 현황",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "profile": "S5-T1",
+    "page": "자산 지도",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "profile": "S5-T1",
+    "page": "위협과 조치",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "profile": "S5-T2",
+    "page": "자산 현황",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "profile": "S5-T2",
+    "page": "자산 지도",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "profile": "S5-T2",
+    "page": "위협과 조치",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "profile": "S5-T3",
+    "page": "자산 현황",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "profile": "S5-T3",
+    "page": "자산 지도",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "profile": "S5-T3",
+    "page": "위협과 조치",
+    "pass": true,
+    "js_errors": []
+  },
+  {
+    "case": "old_version",
+    "pass": true,
+    "scope": "browser rejected controlled invalid input"
+  },
+  {
+    "case": "duplicate_id",
+    "pass": true,
+    "scope": "browser rejected controlled invalid input"
+  },
+  {
+    "case": "missing_gateway",
+    "pass": true,
+    "scope": "browser rejected controlled invalid input"
+  },
+  {
+    "case": "invalid_target",
+    "pass": true,
+    "scope": "browser rejected controlled invalid input"
+  }
+]

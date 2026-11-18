@@ -1,0 +1,333 @@
+{
+  "ground_truth_id": "GT-20261116-444f558",
+  "source_commit": "444f558893315e6c3a02e0a29d3d1dfe5f5a7bdb",
+  "scope": "testbed-added assets; stock excluded; source counts fixed to commit",
+  "execution_id": "RUN-20261116-INTEGRATION-01",
+  "profiles": [
+    {
+      "profile": "P0",
+      "source_sha256": "aef7bd70907805026cecd46d748991bbfa7f9d01b9a724ba30ab461041b9dd9e",
+      "source_assets": 17,
+      "source_relations": 16,
+      "asset_counts": {
+        "gateway": 1,
+        "node": 1,
+        "mcp_server": 1,
+        "tool": 14
+      },
+      "required_alerts": 0,
+      "optional_alerts": 0,
+      "unknown_conditions": 0,
+      "output_assets": 20,
+      "output_relations": 18,
+      "mapping_counts": {
+        "matched": 17
+      },
+      "saved_expected_counts": {},
+      "snapshot_file": "snapshots/P0/snapshot.json",
+      "expected_file": null,
+      "unlinked_conditions": 0
+    },
+    {
+      "profile": "P1",
+      "source_sha256": "c769da510c822a95be26665d0297b173c6c55c89b425e35739dae89744b5b8c5",
+      "source_assets": 57,
+      "source_relations": 56,
+      "asset_counts": {
+        "gateway": 1,
+        "node": 1,
+        "mcp_server": 3,
+        "tool": 36,
+        "resource": 10,
+        "prompt": 4,
+        "skill": 2
+      },
+      "required_alerts": 0,
+      "optional_alerts": 0,
+      "unknown_conditions": 0,
+      "output_assets": 61,
+      "output_relations": 60,
+      "mapping_counts": {
+        "matched": 57
+      },
+      "saved_expected_counts": {},
+      "snapshot_file": "snapshots/P1/snapshot.json",
+      "expected_file": null,
+      "unlinked_conditions": 0
+    },
+    {
+      "profile": "P2",
+      "source_sha256": "69943b4208ea6d0e7655ecaaecdaf572b0f14c57033c4bf4a4bdd18164597226",
+      "source_assets": 67,
+      "source_relations": 67,
+      "asset_counts": {
+        "gateway": 1,
+        "node": 1,
+        "plugin": 1,
+        "mcp_server": 5,
+        "tool": 40,
+        "resource": 11,
+        "prompt": 5,
+        "skill": 3
+      },
+      "required_alerts": 0,
+      "optional_alerts": 0,
+      "unknown_conditions": 0,
+      "output_assets": 73,
+      "output_relations": 73,
+      "mapping_counts": {
+        "matched": 67
+      },
+      "saved_expected_counts": {
+        "PASS": 5
+      },
+      "snapshot_file": "snapshots/P2/snapshot.json",
+      "expected_file": "snapshots/P2/expected.json",
+      "unlinked_conditions": 0
+    },
+    {
+      "profile": "S1",
+      "source_sha256": "97e868b4c92e671d2344ab40205579e33398ed18aece6eda3d925fbb5cdaf7c1",
+      "source_assets": 77,
+      "source_relations": 77,
+      "asset_counts": {
+        "gateway": 1,
+        "node": 1,
+        "plugin": 2,
+        "mcp_server": 8,
+        "tool": 46,
+        "resource": 11,
+        "prompt": 5,
+        "skill": 3
+      },
+      "required_alerts": 4,
+      "optional_alerts": 2,
+      "unknown_conditions": 0,
+      "output_assets": 83,
+      "output_relations": 83,
+      "mapping_counts": {
+        "matched": 77
+      },
+      "saved_expected_counts": {
+        "PASS": 10
+      },
+      "snapshot_file": "snapshots/S1/snapshot.json",
+      "expected_file": "snapshots/S1/expected.json",
+      "unlinked_conditions": 0
+    },
+    {
+      "profile": "S1-T5",
+      "source_sha256": "3f72c4c0716737d5f95a30c9d7069fb975f3058ec5610fed35b9a5bf8407d591",
+      "source_assets": 67,
+      "source_relations": 67,
+      "asset_counts": {
+        "gateway": 1,
+        "node": 1,
+        "plugin": 1,
+        "mcp_server": 5,
+        "tool": 40,
+        "resource": 11,
+        "prompt": 5,
+        "skill": 3
+      },
+      "required_alerts": 1,
+      "optional_alerts": 0,
+      "unknown_conditions": 0,
+      "output_assets": 73,
+      "output_relations": 73,
+      "mapping_counts": {
+        "matched": 67
+      },
+      "saved_expected_counts": {
+        "PASS": 5
+      },
+      "snapshot_file": "snapshots/S1-T5/snapshot.json",
+      "expected_file": "snapshots/S1-T5/expected.json",
+      "unlinked_conditions": 0
+    },
+    {
+      "profile": "S2",
+      "source_sha256": "d978354490b0e027171ccddaeb688cc37872712c6e60871427a0db2721cca571",
+      "source_assets": 67,
+      "source_relations": 67,
+      "asset_counts": {
+        "gateway": 1,
+        "node": 1,
+        "plugin": 1,
+        "mcp_server": 5,
+        "tool": 40,
+        "resource": 11,
+        "prompt": 5,
+        "skill": 3
+      },
+      "required_alerts": 2,
+      "optional_alerts": 1,
+      "unknown_conditions": 0,
+      "output_assets": 72,
+      "output_relations": 72,
+      "mapping_counts": {
+        "matched": 67
+      },
+      "saved_expected_counts": {
+        "PASS": 6
+      },
+      "snapshot_file": "snapshots/S2/snapshot.json",
+      "expected_file": "snapshots/S2/expected.json",
+      "unlinked_conditions": 0
+    },
+    {
+      "profile": "S3",
+      "source_sha256": "d3f141c7ff0738d238e612fa5b01b616c52b61f4f10be86e489ce1fa1ee89fa7",
+      "source_assets": 69,
+      "source_relations": 69,
+      "asset_counts": {
+        "gateway": 1,
+        "node": 1,
+        "plugin": 1,
+        "mcp_server": 5,
+        "tool": 42,
+        "resource": 11,
+        "prompt": 5,
+        "skill": 3
+      },
+      "required_alerts": 2,
+      "optional_alerts": 1,
+      "unknown_conditions": 0,
+      "output_assets": 75,
+      "output_relations": 75,
+      "mapping_counts": {
+        "matched": 69
+      },
+      "saved_expected_counts": {
+        "PASS": 6
+      },
+      "snapshot_file": "snapshots/S3/snapshot.json",
+      "expected_file": "snapshots/S3/expected.json",
+      "unlinked_conditions": 0
+    },
+    {
+      "profile": "S4",
+      "source_sha256": "68c07b7c134a6bb7541b254155af6691fb8c18cd4d783cf6aee1ed365bd005c1",
+      "source_assets": 67,
+      "source_relations": 67,
+      "asset_counts": {
+        "gateway": 1,
+        "node": 1,
+        "plugin": 1,
+        "mcp_server": 5,
+        "tool": 40,
+        "resource": 11,
+        "prompt": 5,
+        "skill": 3
+      },
+      "required_alerts": 1,
+      "optional_alerts": 0,
+      "unknown_conditions": 1,
+      "output_assets": 74,
+      "output_relations": 74,
+      "mapping_counts": {
+        "matched": 67
+      },
+      "saved_expected_counts": {
+        "PASS": 4
+      },
+      "snapshot_file": "snapshots/S4/snapshot.json",
+      "expected_file": "snapshots/S4/expected.json",
+      "unlinked_conditions": 0
+    },
+    {
+      "profile": "S5-T1",
+      "source_sha256": "ebd52eb4125c3977a1818bf4ff711e9e3734fc03f0377b323ac8844719bd6568",
+      "source_assets": 67,
+      "source_relations": 67,
+      "asset_counts": {
+        "gateway": 1,
+        "node": 1,
+        "plugin": 1,
+        "mcp_server": 5,
+        "tool": 40,
+        "resource": 11,
+        "prompt": 5,
+        "skill": 3
+      },
+      "required_alerts": 1,
+      "optional_alerts": 2,
+      "unknown_conditions": 0,
+      "output_assets": 73,
+      "output_relations": 73,
+      "mapping_counts": {
+        "matched": 67
+      },
+      "saved_expected_counts": {
+        "PASS": 7
+      },
+      "snapshot_file": "snapshots/S5-T1/snapshot.json",
+      "expected_file": "snapshots/S5-T1/expected.json",
+      "unlinked_conditions": 0
+    },
+    {
+      "profile": "S5-T2",
+      "source_sha256": "42796fccace704bfa1a34d39f717cd48c34ea5aa3659c2f9cacdaaf77b61780f",
+      "source_assets": 67,
+      "source_relations": 67,
+      "asset_counts": {
+        "gateway": 1,
+        "node": 1,
+        "plugin": 1,
+        "mcp_server": 5,
+        "tool": 40,
+        "resource": 11,
+        "prompt": 5,
+        "skill": 3
+      },
+      "required_alerts": 1,
+      "optional_alerts": 0,
+      "unknown_conditions": 0,
+      "output_assets": 73,
+      "output_relations": 73,
+      "mapping_counts": {
+        "matched": 67
+      },
+      "saved_expected_counts": {
+        "PASS": 2
+      },
+      "snapshot_file": "snapshots/S5-T2/snapshot.json",
+      "expected_file": "snapshots/S5-T2/expected.json",
+      "unlinked_conditions": 0
+    },
+    {
+      "profile": "S5-T3",
+      "source_sha256": "820e55224283f2a619b34ad5f1409cccdccf55be7c0662a5bd7ad990a4311aed",
+      "source_assets": 67,
+      "source_relations": 67,
+      "asset_counts": {
+        "gateway": 1,
+        "node": 1,
+        "plugin": 1,
+        "mcp_server": 5,
+        "tool": 40,
+        "resource": 11,
+        "prompt": 5,
+        "skill": 3
+      },
+      "required_alerts": 0,
+      "optional_alerts": 0,
+      "unknown_conditions": 1,
+      "output_assets": 73,
+      "output_relations": 73,
+      "mapping_counts": {
+        "matched": 67
+      },
+      "saved_expected_counts": {
+        "PASS": 2
+      },
+      "snapshot_file": "snapshots/S5-T3/snapshot.json",
+      "expected_file": "snapshots/S5-T3/expected.json",
+      "unlinked_conditions": 0
+    }
+  ],
+  "limitations": [
+    "canonical-key mappings only; not full attribute/relation equivalence",
+    "saved evidence only; no live VM query; no final 0.7 contract acceptance"
+  ]
+}

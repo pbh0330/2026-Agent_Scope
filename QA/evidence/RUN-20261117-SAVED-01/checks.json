@@ -1,0 +1,1651 @@
+[
+  {
+    "profile": "P0",
+    "check": "three_run_snapshot_equality",
+    "pass": true,
+    "details": [
+      "b8872ed2a6ca44564117558dcaef0880c37492a45df2db80c4730caa3facc025",
+      "b8872ed2a6ca44564117558dcaef0880c37492a45df2db80c4730caa3facc025",
+      "b8872ed2a6ca44564117558dcaef0880c37492a45df2db80c4730caa3facc025"
+    ]
+  },
+  {
+    "profile": "P0",
+    "check": "three_run_detections_equality",
+    "pass": true,
+    "details": [
+      "d8857b7ebe19c9e519022af3f3e0e7dffb100ceeec40502303259d28d1d971fe",
+      "d8857b7ebe19c9e519022af3f3e0e7dffb100ceeec40502303259d28d1d971fe",
+      "d8857b7ebe19c9e519022af3f3e0e7dffb100ceeec40502303259d28d1d971fe"
+    ]
+  },
+  {
+    "profile": "P0",
+    "check": "unique_asset_ids",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "P0",
+    "check": "unique_canonical_keys",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "P0",
+    "check": "unique_relation_ids",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "P0",
+    "check": "same_name_tools_keep_distinct_ids_and_owners",
+    "pass": true,
+    "details": {
+      "duplicate_names": []
+    }
+  },
+  {
+    "profile": "P0",
+    "check": "evidence_and_collection_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "P0",
+    "check": "asset_and_relation_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "P0",
+    "check": "detection_target_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "P0",
+    "check": "no_static_runtime_assertion",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "P0",
+    "check": "source_asset_mapping",
+    "pass": true,
+    "details": {
+      "source": 17,
+      "matched": 17
+    }
+  },
+  {
+    "profile": "P0",
+    "check": "source_exposure_true_false_null",
+    "pass": true,
+    "details": {
+      "compared": 14,
+      "differences": []
+    }
+  },
+  {
+    "profile": "P0",
+    "check": "source_advertises_and_owner",
+    "pass": true,
+    "details": {
+      "compared": 14,
+      "differences": []
+    }
+  },
+  {
+    "profile": "P1",
+    "check": "three_run_snapshot_equality",
+    "pass": true,
+    "details": [
+      "c98b1583488d79015b806617163c2298e0afad8caa6ff99d3ca0ccb878739aeb",
+      "c98b1583488d79015b806617163c2298e0afad8caa6ff99d3ca0ccb878739aeb",
+      "c98b1583488d79015b806617163c2298e0afad8caa6ff99d3ca0ccb878739aeb"
+    ]
+  },
+  {
+    "profile": "P1",
+    "check": "three_run_detections_equality",
+    "pass": true,
+    "details": [
+      "0294172879cbfcaecacd89631d3ff74e2669bd9c9410270d5dbbeff5d19db29b",
+      "0294172879cbfcaecacd89631d3ff74e2669bd9c9410270d5dbbeff5d19db29b",
+      "0294172879cbfcaecacd89631d3ff74e2669bd9c9410270d5dbbeff5d19db29b"
+    ]
+  },
+  {
+    "profile": "P1",
+    "check": "unique_asset_ids",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "P1",
+    "check": "unique_canonical_keys",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "P1",
+    "check": "unique_relation_ids",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "P1",
+    "check": "same_name_tools_keep_distinct_ids_and_owners",
+    "pass": true,
+    "details": {
+      "duplicate_names": []
+    }
+  },
+  {
+    "profile": "P1",
+    "check": "evidence_and_collection_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "P1",
+    "check": "asset_and_relation_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "P1",
+    "check": "detection_target_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "P1",
+    "check": "no_static_runtime_assertion",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "P1",
+    "check": "source_asset_mapping",
+    "pass": true,
+    "details": {
+      "source": 57,
+      "matched": 57
+    }
+  },
+  {
+    "profile": "P1",
+    "check": "source_exposure_true_false_null",
+    "pass": true,
+    "details": {
+      "compared": 36,
+      "differences": []
+    }
+  },
+  {
+    "profile": "P1",
+    "check": "source_advertises_and_owner",
+    "pass": true,
+    "details": {
+      "compared": 50,
+      "differences": []
+    }
+  },
+  {
+    "profile": "P2",
+    "check": "three_run_snapshot_equality",
+    "pass": true,
+    "details": [
+      "f36263ba2070798adf5b26e455462f262349a00c9b48f47f56ea3709bc460a9f",
+      "f36263ba2070798adf5b26e455462f262349a00c9b48f47f56ea3709bc460a9f",
+      "f36263ba2070798adf5b26e455462f262349a00c9b48f47f56ea3709bc460a9f"
+    ]
+  },
+  {
+    "profile": "P2",
+    "check": "three_run_detections_equality",
+    "pass": true,
+    "details": [
+      "61d102c9f03ecd27f19418bd3e6535e71da8b713d137eb83e6de2a6245246dba",
+      "61d102c9f03ecd27f19418bd3e6535e71da8b713d137eb83e6de2a6245246dba",
+      "61d102c9f03ecd27f19418bd3e6535e71da8b713d137eb83e6de2a6245246dba"
+    ]
+  },
+  {
+    "profile": "P2",
+    "check": "unique_asset_ids",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "P2",
+    "check": "unique_canonical_keys",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "P2",
+    "check": "unique_relation_ids",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "P2",
+    "check": "same_name_tools_keep_distinct_ids_and_owners",
+    "pass": true,
+    "details": {
+      "duplicate_names": []
+    }
+  },
+  {
+    "profile": "P2",
+    "check": "evidence_and_collection_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "P2",
+    "check": "asset_and_relation_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "P2",
+    "check": "detection_target_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "P2",
+    "check": "no_static_runtime_assertion",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "P2",
+    "check": "source_asset_mapping",
+    "pass": true,
+    "details": {
+      "source": 67,
+      "matched": 67
+    }
+  },
+  {
+    "profile": "P2",
+    "check": "source_exposure_true_false_null",
+    "pass": true,
+    "details": {
+      "compared": 40,
+      "differences": []
+    }
+  },
+  {
+    "profile": "P2",
+    "check": "source_advertises_and_owner",
+    "pass": true,
+    "details": {
+      "compared": 56,
+      "differences": []
+    }
+  },
+  {
+    "profile": "S1",
+    "check": "three_run_snapshot_equality",
+    "pass": true,
+    "details": [
+      "92fbd8959142661d5a7547259951a1e42d3d3c1778e1cf014a0397ec200164b1",
+      "92fbd8959142661d5a7547259951a1e42d3d3c1778e1cf014a0397ec200164b1",
+      "92fbd8959142661d5a7547259951a1e42d3d3c1778e1cf014a0397ec200164b1"
+    ]
+  },
+  {
+    "profile": "S1",
+    "check": "three_run_detections_equality",
+    "pass": true,
+    "details": [
+      "07fd669daedbf0efa7506c86507d27233ab50b5587509d9eefb361610c126c67",
+      "07fd669daedbf0efa7506c86507d27233ab50b5587509d9eefb361610c126c67",
+      "07fd669daedbf0efa7506c86507d27233ab50b5587509d9eefb361610c126c67"
+    ]
+  },
+  {
+    "profile": "S1",
+    "check": "unique_asset_ids",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "S1",
+    "check": "unique_canonical_keys",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "S1",
+    "check": "unique_relation_ids",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "S1",
+    "check": "same_name_tools_keep_distinct_ids_and_owners",
+    "pass": true,
+    "details": {
+      "duplicate_names": []
+    }
+  },
+  {
+    "profile": "S1",
+    "check": "evidence_and_collection_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "S1",
+    "check": "asset_and_relation_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "S1",
+    "check": "detection_target_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "S1",
+    "check": "no_static_runtime_assertion",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "S1",
+    "check": "source_asset_mapping",
+    "pass": true,
+    "details": {
+      "source": 77,
+      "matched": 77
+    }
+  },
+  {
+    "profile": "S1",
+    "check": "source_exposure_true_false_null",
+    "pass": true,
+    "details": {
+      "compared": 46,
+      "differences": []
+    }
+  },
+  {
+    "profile": "S1",
+    "check": "source_advertises_and_owner",
+    "pass": true,
+    "details": {
+      "compared": 62,
+      "differences": []
+    }
+  },
+  {
+    "profile": "S1",
+    "check": "required_alert:S1-C1:tb-gw/mcp_server/shadow-notes",
+    "pass": true,
+    "details": {
+      "alert_ids": [
+        "alert-3f8abc0a6678"
+      ],
+      "expected_severity": "high",
+      "actual_severities": [
+        "high"
+      ]
+    }
+  },
+  {
+    "profile": "S1",
+    "check": "required_alert:S1-C1:tb-node/mcp_server/node-helper",
+    "pass": true,
+    "details": {
+      "alert_ids": [
+        "alert-344225048858"
+      ],
+      "expected_severity": "high",
+      "actual_severities": [
+        "high"
+      ]
+    }
+  },
+  {
+    "profile": "S1",
+    "check": "required_alert:S1-C2:tb-gw/mcp_server/inventory-remote",
+    "pass": true,
+    "details": {
+      "alert_ids": [
+        "alert-3fb872e538d3"
+      ],
+      "expected_severity": "high",
+      "actual_severities": [
+        "high"
+      ]
+    }
+  },
+  {
+    "profile": "S1",
+    "check": "required_alert:S1-C3:tb-gw/mcp_server/notes-sync",
+    "pass": true,
+    "details": {
+      "alert_ids": [
+        "alert-a41c7bbc1a7a"
+      ],
+      "expected_severity": "high",
+      "actual_severities": [
+        "high"
+      ]
+    }
+  },
+  {
+    "profile": "S1",
+    "check": "optional_alert:S1-C3:tb-gw/plugin/agentscope-notes-sync",
+    "pass": null,
+    "details": {
+      "present": true,
+      "excluded_from_required_denominator": true
+    }
+  },
+  {
+    "profile": "S1",
+    "check": "optional_alert:S4-C3:tb-gw/mcp_server/inventory-remote",
+    "pass": null,
+    "details": {
+      "present": true,
+      "excluded_from_required_denominator": true
+    }
+  },
+  {
+    "profile": "S1",
+    "check": "no_forbidden_alert:tb-gw/mcp_server/fs-workspace",
+    "pass": true,
+    "details": {
+      "scenarios": [
+        "S1"
+      ],
+      "allowed_rules": [],
+      "forbidden_alerts": [],
+      "scope": "exclude exact expected positive rule/primary target matches; server can be a related asset"
+    }
+  },
+  {
+    "profile": "S1",
+    "check": "no_forbidden_alert:tb-node/mcp_server/kg-memory",
+    "pass": true,
+    "details": {
+      "scenarios": [
+        "S1"
+      ],
+      "allowed_rules": [],
+      "forbidden_alerts": [],
+      "scope": "exclude exact expected positive rule/primary target matches; server can be a related asset"
+    }
+  },
+  {
+    "profile": "S1",
+    "check": "no_forbidden_alert:tb-node/mcp_server/demo-everything",
+    "pass": true,
+    "details": {
+      "scenarios": [
+        "S1"
+      ],
+      "allowed_rules": [],
+      "forbidden_alerts": [],
+      "scope": "exclude exact expected positive rule/primary target matches; server can be a related asset"
+    }
+  },
+  {
+    "profile": "S1",
+    "check": "no_forbidden_alert:tb-gw/mcp_server/asset-catalog",
+    "pass": true,
+    "details": {
+      "scenarios": [
+        "S1"
+      ],
+      "allowed_rules": [],
+      "forbidden_alerts": [],
+      "scope": "exclude exact expected positive rule/primary target matches; server can be a related asset"
+    }
+  },
+  {
+    "profile": "S1-T5",
+    "check": "three_run_snapshot_equality",
+    "pass": true,
+    "details": [
+      "27da8fc6367bad94622d0f7e77c2b082569b9a9c7b8b0e96b2b168d4f83efc09",
+      "27da8fc6367bad94622d0f7e77c2b082569b9a9c7b8b0e96b2b168d4f83efc09",
+      "27da8fc6367bad94622d0f7e77c2b082569b9a9c7b8b0e96b2b168d4f83efc09"
+    ]
+  },
+  {
+    "profile": "S1-T5",
+    "check": "three_run_detections_equality",
+    "pass": true,
+    "details": [
+      "cc5d092b48e1e844dd313edbf9ca9359c25a8b14563981bb5bb92a5ce4c98db3",
+      "cc5d092b48e1e844dd313edbf9ca9359c25a8b14563981bb5bb92a5ce4c98db3",
+      "cc5d092b48e1e844dd313edbf9ca9359c25a8b14563981bb5bb92a5ce4c98db3"
+    ]
+  },
+  {
+    "profile": "S1-T5",
+    "check": "unique_asset_ids",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "S1-T5",
+    "check": "unique_canonical_keys",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "S1-T5",
+    "check": "unique_relation_ids",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "S1-T5",
+    "check": "same_name_tools_keep_distinct_ids_and_owners",
+    "pass": true,
+    "details": {
+      "duplicate_names": []
+    }
+  },
+  {
+    "profile": "S1-T5",
+    "check": "evidence_and_collection_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "S1-T5",
+    "check": "asset_and_relation_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "S1-T5",
+    "check": "detection_target_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "S1-T5",
+    "check": "no_static_runtime_assertion",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "S1-T5",
+    "check": "source_asset_mapping",
+    "pass": true,
+    "details": {
+      "source": 67,
+      "matched": 67
+    }
+  },
+  {
+    "profile": "S1-T5",
+    "check": "source_exposure_stale_difference",
+    "pass": null,
+    "details": {
+      "compared": 40,
+      "source_true_output_null": [
+        "inventory-remote/tool/inventory_list_hosts",
+        "inventory-remote/tool/inventory_get_host"
+      ],
+      "reason": "changed server: P2 advertised capture reused, exposure not remeasured"
+    }
+  },
+  {
+    "profile": "S1-T5",
+    "check": "stale_exposure_is_unknown",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "S1-T5",
+    "check": "source_advertises_and_owner",
+    "pass": true,
+    "details": {
+      "compared": 56,
+      "differences": []
+    }
+  },
+  {
+    "profile": "S1-T5",
+    "check": "required_alert:S1-C4:tb-node/mcp_server/inventory-remote",
+    "pass": true,
+    "details": {
+      "alert_ids": [
+        "alert-2620b071ae01"
+      ],
+      "expected_severity": "medium",
+      "actual_severities": [
+        "medium"
+      ]
+    }
+  },
+  {
+    "profile": "S1-T5",
+    "check": "no_forbidden_alert:tb-gw/mcp_server/fs-workspace",
+    "pass": true,
+    "details": {
+      "scenarios": [
+        "S1"
+      ],
+      "allowed_rules": [],
+      "forbidden_alerts": [],
+      "scope": "exclude exact expected positive rule/primary target matches; server can be a related asset"
+    }
+  },
+  {
+    "profile": "S1-T5",
+    "check": "no_forbidden_alert:tb-node/mcp_server/kg-memory",
+    "pass": true,
+    "details": {
+      "scenarios": [
+        "S1"
+      ],
+      "allowed_rules": [],
+      "forbidden_alerts": [],
+      "scope": "exclude exact expected positive rule/primary target matches; server can be a related asset"
+    }
+  },
+  {
+    "profile": "S1-T5",
+    "check": "no_forbidden_alert:tb-node/mcp_server/demo-everything",
+    "pass": true,
+    "details": {
+      "scenarios": [
+        "S1"
+      ],
+      "allowed_rules": [],
+      "forbidden_alerts": [],
+      "scope": "exclude exact expected positive rule/primary target matches; server can be a related asset"
+    }
+  },
+  {
+    "profile": "S1-T5",
+    "check": "no_forbidden_alert:tb-gw/mcp_server/asset-catalog",
+    "pass": true,
+    "details": {
+      "scenarios": [
+        "S1"
+      ],
+      "allowed_rules": [],
+      "forbidden_alerts": [],
+      "scope": "exclude exact expected positive rule/primary target matches; server can be a related asset"
+    }
+  },
+  {
+    "profile": "S2",
+    "check": "three_run_snapshot_equality",
+    "pass": true,
+    "details": [
+      "1cd96f2a4ae195da041068210779e2a39ca7397942a65689ddb6d8bcb25de0f8",
+      "1cd96f2a4ae195da041068210779e2a39ca7397942a65689ddb6d8bcb25de0f8",
+      "1cd96f2a4ae195da041068210779e2a39ca7397942a65689ddb6d8bcb25de0f8"
+    ]
+  },
+  {
+    "profile": "S2",
+    "check": "three_run_detections_equality",
+    "pass": true,
+    "details": [
+      "254f67f25ae0219918d5a8ff94e9c1f7325449febb5bba5e85f574f05c3fdcbd",
+      "254f67f25ae0219918d5a8ff94e9c1f7325449febb5bba5e85f574f05c3fdcbd",
+      "254f67f25ae0219918d5a8ff94e9c1f7325449febb5bba5e85f574f05c3fdcbd"
+    ]
+  },
+  {
+    "profile": "S2",
+    "check": "unique_asset_ids",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "S2",
+    "check": "unique_canonical_keys",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "S2",
+    "check": "unique_relation_ids",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "S2",
+    "check": "same_name_tools_keep_distinct_ids_and_owners",
+    "pass": true,
+    "details": {
+      "duplicate_names": []
+    }
+  },
+  {
+    "profile": "S2",
+    "check": "evidence_and_collection_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "S2",
+    "check": "asset_and_relation_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "S2",
+    "check": "detection_target_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "S2",
+    "check": "no_static_runtime_assertion",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "S2",
+    "check": "source_asset_mapping",
+    "pass": true,
+    "details": {
+      "source": 67,
+      "matched": 67
+    }
+  },
+  {
+    "profile": "S2",
+    "check": "source_exposure_true_false_null",
+    "pass": true,
+    "details": {
+      "compared": 40,
+      "differences": []
+    }
+  },
+  {
+    "profile": "S2",
+    "check": "source_advertises_and_owner",
+    "pass": true,
+    "details": {
+      "compared": 56,
+      "differences": []
+    }
+  },
+  {
+    "profile": "S2",
+    "check": "required_alert:S2-C2:tb-gw/mcp_server/fs-workspace",
+    "pass": true,
+    "details": {
+      "alert_ids": [
+        "alert-1973a9effa5a"
+      ],
+      "expected_severity": "medium",
+      "actual_severities": [
+        "medium"
+      ]
+    }
+  },
+  {
+    "profile": "S2",
+    "check": "required_alert:S2-C1:tb-node/mcp_server/demo-everything",
+    "pass": true,
+    "details": {
+      "alert_ids": [
+        "alert-a590a0e0b80b"
+      ],
+      "expected_severity": "high",
+      "actual_severities": [
+        "high"
+      ]
+    }
+  },
+  {
+    "profile": "S2",
+    "check": "optional_alert:S1-C2:tb-gw/mcp_server/fs-workspace",
+    "pass": null,
+    "details": {
+      "present": true,
+      "excluded_from_required_denominator": true
+    }
+  },
+  {
+    "profile": "S2",
+    "check": "no_forbidden_alert:tb-node/mcp_server/kg-memory",
+    "pass": true,
+    "details": {
+      "scenarios": [
+        "S2"
+      ],
+      "allowed_rules": [],
+      "forbidden_alerts": [],
+      "scope": "exclude exact expected positive rule/primary target matches; server can be a related asset"
+    }
+  },
+  {
+    "profile": "S2",
+    "check": "no_forbidden_alert:tb-gw/mcp_server/inventory-remote",
+    "pass": true,
+    "details": {
+      "scenarios": [
+        "S2"
+      ],
+      "allowed_rules": [],
+      "forbidden_alerts": [],
+      "scope": "exclude exact expected positive rule/primary target matches; server can be a related asset"
+    }
+  },
+  {
+    "profile": "S2",
+    "check": "no_forbidden_alert:tb-gw/mcp_server/asset-catalog",
+    "pass": true,
+    "details": {
+      "scenarios": [
+        "S2"
+      ],
+      "allowed_rules": [],
+      "forbidden_alerts": [],
+      "scope": "exclude exact expected positive rule/primary target matches; server can be a related asset"
+    }
+  },
+  {
+    "profile": "S3",
+    "check": "three_run_snapshot_equality",
+    "pass": true,
+    "details": [
+      "00eb9b14157281044880faad004811e5cbdeeb850d15d7fc7e6ff0f7a65360e2",
+      "00eb9b14157281044880faad004811e5cbdeeb850d15d7fc7e6ff0f7a65360e2",
+      "00eb9b14157281044880faad004811e5cbdeeb850d15d7fc7e6ff0f7a65360e2"
+    ]
+  },
+  {
+    "profile": "S3",
+    "check": "three_run_detections_equality",
+    "pass": true,
+    "details": [
+      "558967d0e77574e02313c0ddf84115ebd7d2674bde8038b6f727bad48b01d1d8",
+      "558967d0e77574e02313c0ddf84115ebd7d2674bde8038b6f727bad48b01d1d8",
+      "558967d0e77574e02313c0ddf84115ebd7d2674bde8038b6f727bad48b01d1d8"
+    ]
+  },
+  {
+    "profile": "S3",
+    "check": "unique_asset_ids",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "S3",
+    "check": "unique_canonical_keys",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "S3",
+    "check": "unique_relation_ids",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "S3",
+    "check": "same_name_tools_keep_distinct_ids_and_owners",
+    "pass": true,
+    "details": {
+      "duplicate_names": [
+        "read_text_file",
+        "catalog_search"
+      ]
+    }
+  },
+  {
+    "profile": "S3",
+    "check": "evidence_and_collection_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "S3",
+    "check": "asset_and_relation_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "S3",
+    "check": "detection_target_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "S3",
+    "check": "no_static_runtime_assertion",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "S3",
+    "check": "source_asset_mapping",
+    "pass": true,
+    "details": {
+      "source": 69,
+      "matched": 69
+    }
+  },
+  {
+    "profile": "S3",
+    "check": "source_exposure_true_false_null",
+    "pass": true,
+    "details": {
+      "compared": 42,
+      "differences": []
+    }
+  },
+  {
+    "profile": "S3",
+    "check": "source_advertises_and_owner",
+    "pass": true,
+    "details": {
+      "compared": 58,
+      "differences": []
+    }
+  },
+  {
+    "profile": "S3",
+    "check": "required_alert:S3-C1:inventory-remote/tool/read_text_file",
+    "pass": true,
+    "details": {
+      "alert_ids": [
+        "alert-6b38b71e97e1"
+      ],
+      "expected_severity": "medium",
+      "actual_severities": [
+        "medium"
+      ]
+    }
+  },
+  {
+    "profile": "S3",
+    "check": "required_alert:S3-C2:inventory-remote/tool/catalog_search",
+    "pass": true,
+    "details": {
+      "alert_ids": [
+        "alert-4ddae61e8a9e"
+      ],
+      "expected_severity": "low",
+      "actual_severities": [
+        "low"
+      ]
+    }
+  },
+  {
+    "profile": "S3",
+    "check": "optional_alert:S2-C1:tb-gw/mcp_server/inventory-remote",
+    "pass": null,
+    "details": {
+      "present": true,
+      "excluded_from_required_denominator": true
+    }
+  },
+  {
+    "profile": "S3",
+    "check": "no_forbidden_alert:tb-gw/mcp_server/inventory-remote",
+    "pass": true,
+    "details": {
+      "scenarios": [
+        "S1",
+        "S3"
+      ],
+      "allowed_rules": [
+        "S2-C1"
+      ],
+      "forbidden_alerts": [],
+      "scope": "exclude exact expected positive rule/primary target matches; server can be a related asset"
+    }
+  },
+  {
+    "profile": "S3",
+    "check": "no_forbidden_alert:kg-memory/tool/read_graph",
+    "pass": true,
+    "details": {
+      "scenarios": [
+        "S1",
+        "S3"
+      ],
+      "allowed_rules": [],
+      "forbidden_alerts": [],
+      "scope": "exclude exact expected positive rule/primary target matches; server can be a related asset"
+    }
+  },
+  {
+    "profile": "S3",
+    "check": "no_forbidden_alert:demo-everything/tool/echo",
+    "pass": true,
+    "details": {
+      "scenarios": [
+        "S1",
+        "S3"
+      ],
+      "allowed_rules": [],
+      "forbidden_alerts": [],
+      "scope": "exclude exact expected positive rule/primary target matches; server can be a related asset"
+    }
+  },
+  {
+    "profile": "S4",
+    "check": "three_run_snapshot_equality",
+    "pass": true,
+    "details": [
+      "c24e96dc591ac367011a3f4b8c7ca8a4e555f9aeac3bf72e13627bd08f8d8e1c",
+      "c24e96dc591ac367011a3f4b8c7ca8a4e555f9aeac3bf72e13627bd08f8d8e1c",
+      "c24e96dc591ac367011a3f4b8c7ca8a4e555f9aeac3bf72e13627bd08f8d8e1c"
+    ]
+  },
+  {
+    "profile": "S4",
+    "check": "three_run_detections_equality",
+    "pass": true,
+    "details": [
+      "ddf2a733a8ba461e2d8cecef5567b6533bf84d1b2d0f279c9e9942608b48fbc4",
+      "ddf2a733a8ba461e2d8cecef5567b6533bf84d1b2d0f279c9e9942608b48fbc4",
+      "ddf2a733a8ba461e2d8cecef5567b6533bf84d1b2d0f279c9e9942608b48fbc4"
+    ]
+  },
+  {
+    "profile": "S4",
+    "check": "unique_asset_ids",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "S4",
+    "check": "unique_canonical_keys",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "S4",
+    "check": "unique_relation_ids",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "S4",
+    "check": "same_name_tools_keep_distinct_ids_and_owners",
+    "pass": true,
+    "details": {
+      "duplicate_names": []
+    }
+  },
+  {
+    "profile": "S4",
+    "check": "evidence_and_collection_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "S4",
+    "check": "asset_and_relation_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "S4",
+    "check": "detection_target_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "S4",
+    "check": "no_static_runtime_assertion",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "S4",
+    "check": "source_asset_mapping",
+    "pass": true,
+    "details": {
+      "source": 67,
+      "matched": 67
+    }
+  },
+  {
+    "profile": "S4",
+    "check": "source_exposure_true_false_null",
+    "pass": true,
+    "details": {
+      "compared": 40,
+      "differences": []
+    }
+  },
+  {
+    "profile": "S4",
+    "check": "source_advertises_and_owner",
+    "pass": true,
+    "details": {
+      "compared": 56,
+      "differences": []
+    }
+  },
+  {
+    "profile": "S4",
+    "check": "required_alert:S4-C1:tb-gw/mcp_server/fs-workspace",
+    "pass": true,
+    "details": {
+      "alert_ids": [
+        "alert-96e9fa6e4aec"
+      ],
+      "expected_severity": "medium",
+      "actual_severities": [
+        "medium"
+      ]
+    }
+  },
+  {
+    "profile": "S4",
+    "check": "unknown:S4-C2",
+    "pass": true,
+    "details": {
+      "evaluation_ids": [
+        "eval-S4-C2-3f3200cdef"
+      ],
+      "forbidden_alerts": []
+    }
+  },
+  {
+    "profile": "S4",
+    "check": "no_forbidden_alert:tb-node/mcp_server/kg-memory",
+    "pass": true,
+    "details": {
+      "scenarios": [
+        "S4"
+      ],
+      "allowed_rules": [],
+      "forbidden_alerts": [],
+      "scope": "exclude exact expected positive rule/primary target matches; server can be a related asset"
+    }
+  },
+  {
+    "profile": "S4",
+    "check": "no_forbidden_alert:tb-gw/mcp_server/asset-catalog",
+    "pass": true,
+    "details": {
+      "scenarios": [
+        "S4"
+      ],
+      "allowed_rules": [],
+      "forbidden_alerts": [],
+      "scope": "exclude exact expected positive rule/primary target matches; server can be a related asset"
+    }
+  },
+  {
+    "profile": "S5-T1",
+    "check": "three_run_snapshot_equality",
+    "pass": true,
+    "details": [
+      "1263ec2c7b412b73232a9e32d7e2ddc15621e0602810410ead83044a158ed8fc",
+      "1263ec2c7b412b73232a9e32d7e2ddc15621e0602810410ead83044a158ed8fc",
+      "1263ec2c7b412b73232a9e32d7e2ddc15621e0602810410ead83044a158ed8fc"
+    ]
+  },
+  {
+    "profile": "S5-T1",
+    "check": "three_run_detections_equality",
+    "pass": true,
+    "details": [
+      "9e139719fbf77fd15bae7e553e94e9a9a570ee78fbb53d25a1a54e29c9a4f7fd",
+      "9e139719fbf77fd15bae7e553e94e9a9a570ee78fbb53d25a1a54e29c9a4f7fd",
+      "9e139719fbf77fd15bae7e553e94e9a9a570ee78fbb53d25a1a54e29c9a4f7fd"
+    ]
+  },
+  {
+    "profile": "S5-T1",
+    "check": "unique_asset_ids",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "S5-T1",
+    "check": "unique_canonical_keys",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "S5-T1",
+    "check": "unique_relation_ids",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "S5-T1",
+    "check": "same_name_tools_keep_distinct_ids_and_owners",
+    "pass": true,
+    "details": {
+      "duplicate_names": []
+    }
+  },
+  {
+    "profile": "S5-T1",
+    "check": "evidence_and_collection_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "S5-T1",
+    "check": "asset_and_relation_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "S5-T1",
+    "check": "detection_target_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "S5-T1",
+    "check": "no_static_runtime_assertion",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "S5-T1",
+    "check": "source_asset_mapping",
+    "pass": true,
+    "details": {
+      "source": 67,
+      "matched": 67
+    }
+  },
+  {
+    "profile": "S5-T1",
+    "check": "source_exposure_stale_difference",
+    "pass": null,
+    "details": {
+      "compared": 40,
+      "source_true_output_null": [
+        "inventory-remote/tool/inventory_list_hosts",
+        "inventory-remote/tool/inventory_get_host"
+      ],
+      "reason": "changed server: P2 advertised capture reused, exposure not remeasured"
+    }
+  },
+  {
+    "profile": "S5-T1",
+    "check": "stale_exposure_is_unknown",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "S5-T1",
+    "check": "source_advertises_and_owner",
+    "pass": true,
+    "details": {
+      "compared": 56,
+      "differences": []
+    }
+  },
+  {
+    "profile": "S5-T1",
+    "check": "required_alert:S5-C1:tb-gw/mcp_server/inventory-remote",
+    "pass": true,
+    "details": {
+      "alert_ids": [
+        "alert-e156c22369ab"
+      ],
+      "expected_severity": "high",
+      "actual_severities": [
+        "high"
+      ]
+    }
+  },
+  {
+    "profile": "S5-T1",
+    "check": "optional_alert:S1-C2:tb-gw/mcp_server/inventory-remote",
+    "pass": null,
+    "details": {
+      "present": true,
+      "excluded_from_required_denominator": true
+    }
+  },
+  {
+    "profile": "S5-T1",
+    "check": "optional_alert:S4-C3:tb-gw/mcp_server/inventory-remote",
+    "pass": null,
+    "details": {
+      "present": true,
+      "excluded_from_required_denominator": true
+    }
+  },
+  {
+    "profile": "S5-T1",
+    "check": "no_forbidden_alert:tb-gw/mcp_server/fs-workspace",
+    "pass": true,
+    "details": {
+      "scenarios": [
+        "S5"
+      ],
+      "allowed_rules": [],
+      "forbidden_alerts": [],
+      "scope": "exclude exact expected positive rule/primary target matches; server can be a related asset"
+    }
+  },
+  {
+    "profile": "S5-T1",
+    "check": "no_forbidden_alert:tb-node/mcp_server/kg-memory",
+    "pass": true,
+    "details": {
+      "scenarios": [
+        "S5"
+      ],
+      "allowed_rules": [],
+      "forbidden_alerts": [],
+      "scope": "exclude exact expected positive rule/primary target matches; server can be a related asset"
+    }
+  },
+  {
+    "profile": "S5-T1",
+    "check": "no_forbidden_alert:tb-node/mcp_server/demo-everything",
+    "pass": true,
+    "details": {
+      "scenarios": [
+        "S5"
+      ],
+      "allowed_rules": [],
+      "forbidden_alerts": [],
+      "scope": "exclude exact expected positive rule/primary target matches; server can be a related asset"
+    }
+  },
+  {
+    "profile": "S5-T1",
+    "check": "no_forbidden_alert:tb-gw/mcp_server/asset-catalog",
+    "pass": true,
+    "details": {
+      "scenarios": [
+        "S5"
+      ],
+      "allowed_rules": [],
+      "forbidden_alerts": [],
+      "scope": "exclude exact expected positive rule/primary target matches; server can be a related asset"
+    }
+  },
+  {
+    "profile": "S5-T2",
+    "check": "three_run_snapshot_equality",
+    "pass": true,
+    "details": [
+      "03ffd293deddacf70b34825a030ae9224face210adc3a6cb83b3a34d68c68995",
+      "03ffd293deddacf70b34825a030ae9224face210adc3a6cb83b3a34d68c68995",
+      "03ffd293deddacf70b34825a030ae9224face210adc3a6cb83b3a34d68c68995"
+    ]
+  },
+  {
+    "profile": "S5-T2",
+    "check": "three_run_detections_equality",
+    "pass": true,
+    "details": [
+      "6bb5445cef10a8f548cbd7ffc27d2b225e7fa3c8207c2bc3a2ab35956969f928",
+      "6bb5445cef10a8f548cbd7ffc27d2b225e7fa3c8207c2bc3a2ab35956969f928",
+      "6bb5445cef10a8f548cbd7ffc27d2b225e7fa3c8207c2bc3a2ab35956969f928"
+    ]
+  },
+  {
+    "profile": "S5-T2",
+    "check": "unique_asset_ids",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "S5-T2",
+    "check": "unique_canonical_keys",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "S5-T2",
+    "check": "unique_relation_ids",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "S5-T2",
+    "check": "same_name_tools_keep_distinct_ids_and_owners",
+    "pass": true,
+    "details": {
+      "duplicate_names": []
+    }
+  },
+  {
+    "profile": "S5-T2",
+    "check": "evidence_and_collection_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "S5-T2",
+    "check": "asset_and_relation_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "S5-T2",
+    "check": "detection_target_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "S5-T2",
+    "check": "no_static_runtime_assertion",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "S5-T2",
+    "check": "source_asset_mapping",
+    "pass": true,
+    "details": {
+      "source": 67,
+      "matched": 67
+    }
+  },
+  {
+    "profile": "S5-T2",
+    "check": "source_exposure_stale_difference",
+    "pass": null,
+    "details": {
+      "compared": 40,
+      "source_true_output_null": [
+        "inventory-remote/tool/inventory_list_hosts",
+        "inventory-remote/tool/inventory_get_host"
+      ],
+      "reason": "changed server: P2 advertised capture reused, exposure not remeasured"
+    }
+  },
+  {
+    "profile": "S5-T2",
+    "check": "stale_exposure_is_unknown",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "S5-T2",
+    "check": "source_advertises_and_owner",
+    "pass": true,
+    "details": {
+      "compared": 56,
+      "differences": []
+    }
+  },
+  {
+    "profile": "S5-T2",
+    "check": "required_alert:S5-C2:tb-gw/mcp_server/inventory-remote",
+    "pass": true,
+    "details": {
+      "alert_ids": [
+        "alert-c13abe88bf62"
+      ],
+      "expected_severity": "high",
+      "actual_severities": [
+        "high"
+      ]
+    }
+  },
+  {
+    "profile": "S5-T2",
+    "check": "no_forbidden_alert:tb-gw/mcp_server/inventory-remote",
+    "pass": true,
+    "details": {
+      "scenarios": [
+        "S1",
+        "S5"
+      ],
+      "allowed_rules": [
+        "S5-C2"
+      ],
+      "forbidden_alerts": [],
+      "scope": "exclude exact expected positive rule/primary target matches; server can be a related asset"
+    }
+  },
+  {
+    "profile": "S5-T3",
+    "check": "three_run_snapshot_equality",
+    "pass": true,
+    "details": [
+      "f8f4dbd37354a27686c03dfc2080b1cb83cea54cc189a9d5409b90801470de53",
+      "f8f4dbd37354a27686c03dfc2080b1cb83cea54cc189a9d5409b90801470de53",
+      "f8f4dbd37354a27686c03dfc2080b1cb83cea54cc189a9d5409b90801470de53"
+    ]
+  },
+  {
+    "profile": "S5-T3",
+    "check": "three_run_detections_equality",
+    "pass": true,
+    "details": [
+      "ad7d53a975688c87aa47ef072bac165120d1034235ae9f048e7b336ed489250c",
+      "ad7d53a975688c87aa47ef072bac165120d1034235ae9f048e7b336ed489250c",
+      "ad7d53a975688c87aa47ef072bac165120d1034235ae9f048e7b336ed489250c"
+    ]
+  },
+  {
+    "profile": "S5-T3",
+    "check": "unique_asset_ids",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "S5-T3",
+    "check": "unique_canonical_keys",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "S5-T3",
+    "check": "unique_relation_ids",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "S5-T3",
+    "check": "same_name_tools_keep_distinct_ids_and_owners",
+    "pass": true,
+    "details": {
+      "duplicate_names": []
+    }
+  },
+  {
+    "profile": "S5-T3",
+    "check": "evidence_and_collection_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "S5-T3",
+    "check": "asset_and_relation_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "S5-T3",
+    "check": "detection_target_references",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "S5-T3",
+    "check": "no_static_runtime_assertion",
+    "pass": true,
+    "details": []
+  },
+  {
+    "profile": "S5-T3",
+    "check": "source_asset_mapping",
+    "pass": true,
+    "details": {
+      "source": 67,
+      "matched": 67
+    }
+  },
+  {
+    "profile": "S5-T3",
+    "check": "source_exposure_stale_difference",
+    "pass": null,
+    "details": {
+      "compared": 40,
+      "source_true_output_null": [
+        "inventory-remote/tool/inventory_list_hosts",
+        "inventory-remote/tool/inventory_get_host"
+      ],
+      "reason": "changed server: P2 advertised capture reused, exposure not remeasured"
+    }
+  },
+  {
+    "profile": "S5-T3",
+    "check": "stale_exposure_is_unknown",
+    "pass": true,
+    "details": null
+  },
+  {
+    "profile": "S5-T3",
+    "check": "source_advertises_and_owner",
+    "pass": true,
+    "details": {
+      "compared": 56,
+      "differences": []
+    }
+  },
+  {
+    "profile": "S5-T3",
+    "check": "unknown:S5-C3",
+    "pass": true,
+    "details": {
+      "evaluation_ids": [
+        "eval-S5-C3-455c4ef364"
+      ],
+      "forbidden_alerts": []
+    }
+  },
+  {
+    "profile": "S5-T3",
+    "check": "no_forbidden_alert:tb-gw/mcp_server/inventory-remote",
+    "pass": true,
+    "details": {
+      "scenarios": [
+        "S1",
+        "S5"
+      ],
+      "allowed_rules": [],
+      "forbidden_alerts": [],
+      "scope": "exclude exact expected positive rule/primary target matches; server can be a related asset"
+    }
+  }
+]

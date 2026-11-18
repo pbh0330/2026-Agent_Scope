@@ -1,0 +1,39 @@
+{
+  "window": {
+    "start": "2026-10-29T05:24:02.000Z",
+    "end": "2026-10-29T05:29:03.000Z"
+  },
+  "estimated": true,
+  "calls": 16,
+  "attributed_tokens": 15769,
+  "estimated_cost_usd": null,
+  "pricing": {
+    "currency": "USD",
+    "sources": []
+  },
+  "by_method": {
+    "allocated": {
+      "calls": 13,
+      "tokens": 13501
+    },
+    "not_computed": {
+      "calls": 0
+    },
+    "sequential": {
+      "calls": 3,
+      "tokens": 2268
+    }
+  },
+  "by_mapping": {
+    "ambiguous": 0,
+    "matched": 2,
+    "unmatched": 14
+  },
+  "data_quality": {
+    "missing_counts": 0,
+    "not_computed": 0,
+    "negative_delta": 0,
+    "calls_without_cost": 16,
+    "inventory_snapshot_id": "snap-p2-20261117T101837Z"
+  }
+}

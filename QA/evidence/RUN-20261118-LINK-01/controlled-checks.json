@@ -1,0 +1,14 @@
+[
+  {
+    "check": "controlled_positive_mapping",
+    "pass": true
+  },
+  {
+    "check": "all_calls_preserved",
+    "pass": true
+  },
+  {
+    "check": "matched_and_unmatched_partition",
+    "pass": true
+  }
+]

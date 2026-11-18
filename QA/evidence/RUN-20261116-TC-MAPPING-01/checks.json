@@ -1,0 +1,46 @@
+{
+  "QA-S1-02": {
+    "pass": true,
+    "evidence": "P2/snapshot.json + P2/detections.json",
+    "scope": "saved baseline P2; static detection only"
+  },
+  "QA-S2-02": {
+    "pass": true,
+    "evidence": "P2/snapshot.json + P2/detections.json",
+    "scope": "saved baseline P2; static detection only"
+  },
+  "QA-S3-02": {
+    "pass": true,
+    "evidence": "P2/snapshot.json + P2/detections.json",
+    "scope": "saved baseline P2; static detection only"
+  },
+  "QA-S4-02": {
+    "pass": true,
+    "evidence": "P2/snapshot.json + P2/detections.json",
+    "scope": "saved baseline P2; static detection only"
+  },
+  "QA-S5-02": {
+    "pass": true,
+    "evidence": "P2/snapshot.json + P2/detections.json",
+    "scope": "saved baseline P2; static detection only"
+  },
+  "QA-S3-01": {
+    "pass": true,
+    "duplicate_names": [
+      "read_text_file",
+      "catalog_search"
+    ]
+  },
+  "QA-COL-02": {
+    "pass": true,
+    "hosts": [
+      "tb-gw",
+      "tb-node"
+    ]
+  },
+  "QA-REL-01": {
+    "pass": true,
+    "violations": [],
+    "scope": "DECLARES to Server; ADVERTISES owner and direction; other DECLARES target types not evaluated"
+  }
+}

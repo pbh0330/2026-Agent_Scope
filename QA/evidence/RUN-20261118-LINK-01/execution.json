@@ -1,0 +1,10 @@
+{
+  "dashboard_commit": "8f56930af9f2b9b8491b0df6c26ba6c4a4dc8cc5",
+  "token_commit": "6e4cf5c0cf7116821d48fd3231c7cb2a6595a4ae",
+  "snapshot_id": "snap-p2-20261117T101837Z",
+  "controlled_input": "PC fixture copy; MCP exposed name replaced; NOT testbed telemetry",
+  "expected_asset_id": "tool_808858ad67b2571e",
+  "matched_calls": 2,
+  "checks_passed": 3,
+  "checks_failed": 0
+}

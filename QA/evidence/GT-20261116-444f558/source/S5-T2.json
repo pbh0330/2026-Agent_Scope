@@ -1,0 +1,63 @@
+{
+  "profile": "S5-T2",
+  "base_profile": "P2",
+  "base_snapshot": "SNAP-2-P2",
+  "environment": {
+    "openclaw_version": "2026.9.6",
+    "mcp_spec_version": "2026-07-28"
+  },
+  "scope": "P2 대비 추가·변경·삭제된 자산과 관계만 기록. 나머지는 ground-truth/P2.json과 같다",
+  "approved_servers": "ground-truth/approved-servers.json",
+  "summary": {
+    "asset_counts": {
+      "gateway": 1,
+      "node": 1,
+      "plugin": 1,
+      "mcp_server": 5,
+      "tool": 40,
+      "resource": 11,
+      "prompt": 5,
+      "skill": 3
+    },
+    "relation_count": 67
+  },
+  "added_assets": [],
+  "changed_assets": [
+    {
+      "asset_key": "tb-gw/mcp_server/inventory-remote",
+      "changes": {
+        "ssl_verify": {
+          "before": true,
+          "after": false
+        }
+      }
+    }
+  ],
+  "removed_assets": [],
+  "added_relations": [],
+  "removed_relations": [],
+  "expected_alerts": [
+    {
+      "required": true,
+      "case": "2",
+      "scenario": "S5",
+      "condition_id": "S5-C2",
+      "target": "tb-gw/mcp_server/inventory-remote",
+      "risk_condition": "인증서 검증 명시적 비활성화",
+      "reason": "https 연결이지만 sslVerify가 false로 명시됨",
+      "severity": "high",
+      "confidence": "high"
+    }
+  ],
+  "expected_no_alert": {
+    "scenario": [
+      "S1",
+      "S5"
+    ],
+    "targets": [
+      "tb-gw/mcp_server/inventory-remote"
+    ],
+    "note": "S1: endpoint 같음. S5-C1: https라 해당 없음"
+  },
+  "expected_unknown": []
+}

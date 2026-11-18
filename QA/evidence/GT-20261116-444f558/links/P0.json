@@ -1,0 +1,132 @@
+{
+  "profile": "P0",
+  "snapshot_id": "snap-p0-20261116T061536Z",
+  "id_mappings": [
+    {
+      "asset_key": "tb-gw/gateway",
+      "asset_ids": [
+        "gw_4261ac71d127a248"
+      ],
+      "status": "matched"
+    },
+    {
+      "asset_key": "tb-node/node",
+      "asset_ids": [
+        "node_1ca37e363256f7fb"
+      ],
+      "status": "matched"
+    },
+    {
+      "asset_key": "tb-gw/mcp_server/fs-workspace",
+      "asset_ids": [
+        "srv_82d252784c25ade0"
+      ],
+      "status": "matched"
+    },
+    {
+      "asset_key": "fs-workspace/tool/read_file",
+      "asset_ids": [
+        "tool_195991a776278649"
+      ],
+      "status": "matched"
+    },
+    {
+      "asset_key": "fs-workspace/tool/read_text_file",
+      "asset_ids": [
+        "tool_808858ad67b2571e"
+      ],
+      "status": "matched"
+    },
+    {
+      "asset_key": "fs-workspace/tool/read_media_file",
+      "asset_ids": [
+        "tool_024b0ecd7f1ef493"
+      ],
+      "status": "matched"
+    },
+    {
+      "asset_key": "fs-workspace/tool/read_multiple_files",
+      "asset_ids": [
+        "tool_dd5b0d8c51c2703a"
+      ],
+      "status": "matched"
+    },
+    {
+      "asset_key": "fs-workspace/tool/write_file",
+      "asset_ids": [
+        "tool_ae3a16e72cd51e20"
+      ],
+      "status": "matched"
+    },
+    {
+      "asset_key": "fs-workspace/tool/edit_file",
+      "asset_ids": [
+        "tool_48ebc84cc788d189"
+      ],
+      "status": "matched"
+    },
+    {
+      "asset_key": "fs-workspace/tool/create_directory",
+      "asset_ids": [
+        "tool_6d81dcbe721e8c45"
+      ],
+      "status": "matched"
+    },
+    {
+      "asset_key": "fs-workspace/tool/list_directory",
+      "asset_ids": [
+        "tool_194d79b6acffacf6"
+      ],
+      "status": "matched"
+    },
+    {
+      "asset_key": "fs-workspace/tool/list_directory_with_sizes",
+      "asset_ids": [
+        "tool_a3b41a1ef6d32f7b"
+      ],
+      "status": "matched"
+    },
+    {
+      "asset_key": "fs-workspace/tool/directory_tree",
+      "asset_ids": [
+        "tool_db2ee601e1be0f61"
+      ],
+      "status": "matched"
+    },
+    {
+      "asset_key": "fs-workspace/tool/move_file",
+      "asset_ids": [
+        "tool_885804152d454da3"
+      ],
+      "status": "matched"
+    },
+    {
+      "asset_key": "fs-workspace/tool/search_files",
+      "asset_ids": [
+        "tool_6674705e458e8b17"
+      ],
+      "status": "matched"
+    },
+    {
+      "asset_key": "fs-workspace/tool/get_file_info",
+      "asset_ids": [
+        "tool_e18ee8a4b7d18ab1"
+      ],
+      "status": "matched"
+    },
+    {
+      "asset_key": "fs-workspace/tool/list_allowed_directories",
+      "asset_ids": [
+        "tool_1168c52833bf45ae"
+      ],
+      "status": "matched"
+    }
+  ],
+  "additional_output_assets": [
+    "pa_10415b79168a91f6",
+    "pa_0547cf3234bd24fd",
+    "pa_3a3c5f7d09203be0"
+  ],
+  "condition_links": [],
+  "saved_expected_checks": []
+}

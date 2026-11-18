@@ -1,0 +1,322 @@
+[
+  {
+    "profile": "P0",
+    "check": "asset_ids_unique",
+    "pass": true
+  },
+  {
+    "profile": "P0",
+    "check": "source_keys_and_ids_unchanged",
+    "pass": true
+  },
+  {
+    "profile": "P0",
+    "check": "relationship_count_unchanged",
+    "pass": true
+  },
+  {
+    "profile": "P0",
+    "check": "evidence_collection_refs_resolve",
+    "pass": true
+  },
+  {
+    "profile": "P0",
+    "check": "gateway_resolves",
+    "pass": true
+  },
+  {
+    "profile": "P1",
+    "check": "asset_ids_unique",
+    "pass": true
+  },
+  {
+    "profile": "P1",
+    "check": "source_keys_and_ids_unchanged",
+    "pass": true
+  },
+  {
+    "profile": "P1",
+    "check": "relationship_count_unchanged",
+    "pass": true
+  },
+  {
+    "profile": "P1",
+    "check": "evidence_collection_refs_resolve",
+    "pass": true
+  },
+  {
+    "profile": "P1",
+    "check": "gateway_resolves",
+    "pass": true
+  },
+  {
+    "profile": "P2",
+    "check": "asset_ids_unique",
+    "pass": true
+  },
+  {
+    "profile": "P2",
+    "check": "source_keys_and_ids_unchanged",
+    "pass": true
+  },
+  {
+    "profile": "P2",
+    "check": "relationship_count_unchanged",
+    "pass": true
+  },
+  {
+    "profile": "P2",
+    "check": "evidence_collection_refs_resolve",
+    "pass": true
+  },
+  {
+    "profile": "P2",
+    "check": "gateway_resolves",
+    "pass": true
+  },
+  {
+    "profile": "P2",
+    "check": "pipeline_expected",
+    "pass": true
+  },
+  {
+    "profile": "S1",
+    "check": "asset_ids_unique",
+    "pass": true
+  },
+  {
+    "profile": "S1",
+    "check": "source_keys_and_ids_unchanged",
+    "pass": true
+  },
+  {
+    "profile": "S1",
+    "check": "relationship_count_unchanged",
+    "pass": true
+  },
+  {
+    "profile": "S1",
+    "check": "evidence_collection_refs_resolve",
+    "pass": true
+  },
+  {
+    "profile": "S1",
+    "check": "gateway_resolves",
+    "pass": true
+  },
+  {
+    "profile": "S1",
+    "check": "pipeline_expected",
+    "pass": true
+  },
+  {
+    "profile": "S1-T5",
+    "check": "asset_ids_unique",
+    "pass": true
+  },
+  {
+    "profile": "S1-T5",
+    "check": "source_keys_and_ids_unchanged",
+    "pass": true
+  },
+  {
+    "profile": "S1-T5",
+    "check": "relationship_count_unchanged",
+    "pass": true
+  },
+  {
+    "profile": "S1-T5",
+    "check": "evidence_collection_refs_resolve",
+    "pass": true
+  },
+  {
+    "profile": "S1-T5",
+    "check": "gateway_resolves",
+    "pass": true
+  },
+  {
+    "profile": "S1-T5",
+    "check": "pipeline_expected",
+    "pass": true
+  },
+  {
+    "profile": "S2",
+    "check": "asset_ids_unique",
+    "pass": true
+  },
+  {
+    "profile": "S2",
+    "check": "source_keys_and_ids_unchanged",
+    "pass": true
+  },
+  {
+    "profile": "S2",
+    "check": "relationship_count_unchanged",
+    "pass": true
+  },
+  {
+    "profile": "S2",
+    "check": "evidence_collection_refs_resolve",
+    "pass": true
+  },
+  {
+    "profile": "S2",
+    "check": "gateway_resolves",
+    "pass": true
+  },
+  {
+    "profile": "S2",
+    "check": "pipeline_expected",
+    "pass": true
+  },
+  {
+    "profile": "S3",
+    "check": "asset_ids_unique",
+    "pass": true
+  },
+  {
+    "profile": "S3",
+    "check": "source_keys_and_ids_unchanged",
+    "pass": true
+  },
+  {
+    "profile": "S3",
+    "check": "relationship_count_unchanged",
+    "pass": true
+  },
+  {
+    "profile": "S3",
+    "check": "evidence_collection_refs_resolve",
+    "pass": true
+  },
+  {
+    "profile": "S3",
+    "check": "gateway_resolves",
+    "pass": true
+  },
+  {
+    "profile": "S3",
+    "check": "pipeline_expected",
+    "pass": true
+  },
+  {
+    "profile": "S4",
+    "check": "asset_ids_unique",
+    "pass": true
+  },
+  {
+    "profile": "S4",
+    "check": "source_keys_and_ids_unchanged",
+    "pass": true
+  },
+  {
+    "profile": "S4",
+    "check": "relationship_count_unchanged",
+    "pass": true
+  },
+  {
+    "profile": "S4",
+    "check": "evidence_collection_refs_resolve",
+    "pass": true
+  },
+  {
+    "profile": "S4",
+    "check": "gateway_resolves",
+    "pass": true
+  },
+  {
+    "profile": "S4",
+    "check": "pipeline_expected",
+    "pass": true
+  },
+  {
+    "profile": "S5-T1",
+    "check": "asset_ids_unique",
+    "pass": true
+  },
+  {
+    "profile": "S5-T1",
+    "check": "source_keys_and_ids_unchanged",
+    "pass": true
+  },
+  {
+    "profile": "S5-T1",
+    "check": "relationship_count_unchanged",
+    "pass": true
+  },
+  {
+    "profile": "S5-T1",
+    "check": "evidence_collection_refs_resolve",
+    "pass": true
+  },
+  {
+    "profile": "S5-T1",
+    "check": "gateway_resolves",
+    "pass": true
+  },
+  {
+    "profile": "S5-T1",
+    "check": "pipeline_expected",
+    "pass": true
+  },
+  {
+    "profile": "S5-T2",
+    "check": "asset_ids_unique",
+    "pass": true
+  },
+  {
+    "profile": "S5-T2",
+    "check": "source_keys_and_ids_unchanged",
+    "pass": true
+  },
+  {
+    "profile": "S5-T2",
+    "check": "relationship_count_unchanged",
+    "pass": true
+  },
+  {
+    "profile": "S5-T2",
+    "check": "evidence_collection_refs_resolve",
+    "pass": true
+  },
+  {
+    "profile": "S5-T2",
+    "check": "gateway_resolves",
+    "pass": true
+  },
+  {
+    "profile": "S5-T2",
+    "check": "pipeline_expected",
+    "pass": true
+  },
+  {
+    "profile": "S5-T3",
+    "check": "asset_ids_unique",
+    "pass": true
+  },
+  {
+    "profile": "S5-T3",
+    "check": "source_keys_and_ids_unchanged",
+    "pass": true
+  },
+  {
+    "profile": "S5-T3",
+    "check": "relationship_count_unchanged",
+    "pass": true
+  },
+  {
+    "profile": "S5-T3",
+    "check": "evidence_collection_refs_resolve",
+    "pass": true
+  },
+  {
+    "profile": "S5-T3",
+    "check": "gateway_resolves",
+    "pass": true
+  },
+  {
+    "profile": "S5-T3",
+    "check": "pipeline_expected",
+    "pass": true
+  }
+]

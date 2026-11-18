@@ -1,0 +1,18 @@
+{
+  "source_commit": "6e4cf5c0cf7116821d48fd3231c7cb2a6595a4ae",
+  "inventory_snapshot_id": "snap-p2-20261116T061537Z",
+  "input_kind": "saved PC traces; not testbed calls",
+  "reference_pricing": false,
+  "passed": 14,
+  "failed": 0,
+  "calls": 16,
+  "mapping": {
+    "ambiguous": 0,
+    "matched": 0,
+    "unmatched": 16
+  },
+  "limitations": [
+    "No testbed telemetry available; successful tool-to-asset mapping remains unverified.",
+    "No browser UI, VM, live reload, or token-count plugin execution."
+  ]
+}
