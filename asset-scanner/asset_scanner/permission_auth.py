@@ -2,7 +2,7 @@
 
     python -m asset_scanner.permission_auth --config <openclaw.json5> --output <결과 JSON>
 
-설정 파일을 읽기만 한다. 실행·접속·`$include` 읽기·환경변수 해석을 하지 않는다. 수집 대상은 OpenClaw 2026.9.6 패키지 문서에서
+지정한 설정 파일을 읽기만 한다. `--resolve-includes`를 켜면 허용 경계의 포함 파일도 읽는다. 실행·접속·설정 값의 환경변수 해석은 하지 않는다. 수집 대상은 OpenClaw 2026.9.6 패키지 문서에서
 확인한 설정 경로의 **선언된 값**뿐이며(표 `SPEC`, 근거 문서는 항목마다 `doc_basis`), 문서에 없는 키는 값을 읽지 않는다.
 
 - 원천 항목을 합치거나 집계하지 않는다. "실제로 적용되는 정책", 허용/거부의 최종 결과, 기본값은 계산하지 않는다.
@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -61,12 +62,16 @@ for _k, _t in _TOOL_KEYS:
     SPEC.append((("tools", _k), _t, "tool_policy", D_TOOLS))
     SPEC.append((("tools", "byProvider", "*", _k), _t, "tool_policy", D_TOOLS))
     SPEC.append((("agents", "entries", "*", "tools", _k), _t, "tool_policy", D_TOOLS))
+    SPEC.append((("agents", "entries", "*", "tools", "byProvider", "*", _k), _t, "tool_policy", D_TOOLS))
 for _k in ("allow", "alsoAllow", "deny"):
     SPEC.append((("tools", "toolsBySender", "*", _k), "list", "tool_policy", D_TOOLS))
+    SPEC.append((("agents", "entries", "*", "tools", "toolsBySender", "*", _k), "list", "tool_policy", D_TOOLS))
+    SPEC.append((("agents", "entries", "*", "tools", "sandbox", "tools", _k), "list", "sandbox_policy", D_SANDBOX))
 SPEC += [
     (("tools", "elevated", "enabled"), "bool", "tool_policy", D_TOOLS),
     (("tools", "elevated", "allowFrom", "*"), "count", "tool_policy", D_TOOLS),
     (("agents", "entries", "*", "tools", "elevated", "enabled"), "bool", "tool_policy", D_TOOLS),
+    (("agents", "entries", "*", "tools", "elevated", "allowFrom", "*"), "count", "tool_policy", D_TOOLS),
     (("agents", "defaults", "skills"), "list", "skill_policy", D_SKILLS),
     (("agents", "entries", "*", "skills"), "list", "skill_policy", D_SKILLS),
     (("skills", "allowBundled"), "list", "skill_policy", D_SKILLS),
@@ -121,6 +126,7 @@ SPEC += [
     (("agents", "entries", "*", "sandbox", "workspaceAccess"), "str:none,ro,rw", "sandbox_policy", D_AGENTS),
     (("tools", "sandbox", "tools", "allow"), "list", "sandbox_policy", D_SANDBOX),
     (("tools", "sandbox", "tools", "deny"), "list", "sandbox_policy", D_SANDBOX),
+    (("tools", "sandbox", "tools", "alsoAllow"), "list", "sandbox_policy", D_SANDBOX),
     # --- 명령 권한: tools.exec.* (built-in-tools.md, exec-approvals.md) ---
     (("tools", "exec", "mode"), "str:deny,allowlist,ask,auto,full", "exec_policy", D_EXEC),
     (("tools", "exec", "security"), "str:deny,allowlist,full", "exec_policy", D_EXEC),
@@ -169,6 +175,21 @@ SPEC += [
 D_SCHEMA = "openclaw/openclaw eb377ac59e6c9fd6c7705028034812becf00271b src/config/zod-schema.agent-runtime.ts (AgentSandboxSchema, AgentToolsSchema, ToolExecApplyPatchSchema)"
 D_MODEL_NETWORK = "openclaw/openclaw eb377ac59e6c9fd6c7705028034812becf00271b src/config/types.models.ts, src/config/types.provider-request.ts"
 D_TLON_NETWORK = "openclaw/openclaw eb377ac59e6c9fd6c7705028034812becf00271b docs/channels/tlon.md (network.dangerouslyAllowPrivateNetwork)"
+# 공유 ToolPolicySchema의 나머지 사용처와 같은 파일의 명시된 접근 범위 선언.
+for _key in ("allow", "alsoAllow", "deny"):
+    SPEC.append((("tools", "subagents", "tools", _key), "list", "tool_policy", D_SCHEMA + " (ToolsSchema.subagents.tools, ToolPolicySchema)"))
+SPEC += [
+    (("tools", "agentToAgent", "enabled"), "bool", "tool_policy", D_SCHEMA + " (ToolsSchema.agentToAgent)"),
+    (("tools", "agentToAgent", "allow"), "list", "tool_policy", D_SCHEMA + " (ToolsSchema.agentToAgent)"),
+    (("tools", "sessions", "visibility"), "str:self,tree,agent,all", "tool_policy", D_SCHEMA + " (ToolsSchema.sessions.visibility)"),
+]
+for _key in ("allowWithinProvider", "allowAcrossProviders"):
+    SPEC.append((("tools", "message", "crossContext", _key), "bool", "tool_policy", D_SCHEMA + " (MessageToolConfigSchema)"))
+    SPEC.append((("agents", "entries", "*", "tools", "message", "crossContext", _key), "bool", "tool_policy", D_SCHEMA + " (AgentToolsSchema.message, MessageToolConfigSchema)"))
+SPEC = [(p, t, category, D_SCHEMA + " (CommonToolPolicyFields, AgentToolsSchema, ElevatedAllowFromSchema, ToolPolicySchema)")
+        if (p[:4] == ("agents", "entries", "*", "tools") and p[4:5] in (("byProvider",), ("toolsBySender",), ("elevated",), ("sandbox",)))
+        or p == ("tools", "sandbox", "tools", "alsoAllow") else (p, t, category, doc)
+        for p, t, category, doc in SPEC]
 _existing_patterns = {p for p, *_ in SPEC}
 for _p, _t, _category, _doc in list(SPEC):
     if _p[:3] == ("agents", "defaults", "sandbox"):
@@ -194,6 +215,7 @@ MCP_AUTH_SPEC: list[tuple[tuple[str, ...], str]] = [
 ]
 
 NOT_COLLECTED = [
+    "full_openclaw_config_validation",   # 전체 스키마·규칙 간 충돌 검사(수집 complete와 설정 유효성은 별개)
     "effective_policy",            # 허용/거부의 최종 결과·기본값·우선순위 계산
     "tool_groups_and_profiles_expansion",   # group:fs, profile 이름이 가리키는 Tool 목록 펼치기
     "runtime_approvals_and_pairing_state",  # 승인·페어링 상태(런타임 상태)
@@ -240,11 +262,28 @@ def _sender_kind(key: str) -> str:
 
 
 def _applies_to(category: str, real: tuple, pattern: tuple[str, ...]) -> dict:
+    if real[:3] == ("tools", "subagents", "tools"):
+        return {"scope": "global_subagent_tools"}
+    if real[:2] == ("tools", "agentToAgent"):
+        return {"scope": "agent_to_agent"}
+    if real[:2] == ("tools", "sessions"):
+        return {"scope": "session_visibility"}
+    if real[:3] == ("tools", "message", "crossContext"):
+        return {"scope": "global_message_cross_context"}
     if real[:1] == ("tools",) and len(real) > 2 and real[1] == "byProvider":
         return {"scope": "provider", "provider": real[2]}
     if real[:1] == ("tools",) and len(real) > 2 and real[1] == "toolsBySender":
         return {"scope": "sender_group", "sender_key_kind": _sender_kind(real[2]), "sender_key": "<withheld>" if real[2] != "*" else "*"}
     if real[:2] == ("agents", "entries"):
+        if real[3:6] == ("tools", "message", "crossContext"):
+            return {"scope": "agent_message_cross_context", "agent_key": real[2]}
+        if real[3:5] == ("tools", "byProvider"):
+            return {"scope": "agent_provider", "agent_key": real[2], "provider": real[5]}
+        if real[3:5] == ("tools", "toolsBySender"):
+            return {"scope": "agent_sender_group", "agent_key": real[2], "sender_key_kind": _sender_kind(real[5]),
+                    "sender_key": "<withheld>" if real[5] != "*" else "*"}
+        if real[3:6] == ("tools", "elevated", "allowFrom"):
+            return {"scope": "agent_elevated_sender_allowlist", "agent_key": real[2], "provider": real[6]}
         return {"scope": "agent", "agent_key": real[2]}
     if real[:2] == ("agents", "defaults"):
         return {"scope": "agent_defaults"}
@@ -308,8 +347,9 @@ def _value(vtype: str, v: Any, path_str: str, red: Redactor) -> tuple[dict | Non
             return None, ("array of string", v)
         return {"value_kind": "string_list", "value": red.sanitize_args(v[:MAX_LIST], path_str), "count": len(v)}, None
     if base == "count":   # 값이 개인 식별정보일 수 있어 개수만 남긴다
-        if not (isinstance(v, list) and all(isinstance(x, (str, int)) for x in v)):
-            return None, ("array of string", v)
+        if not (isinstance(v, list) and all(isinstance(x, str) or
+                (isinstance(x, (int, float)) and not isinstance(x, bool) and (not isinstance(x, float) or math.isfinite(x))) for x in v)):
+            return None, ("array of string or finite number (not boolean)", v)
         return {"value_kind": "count_only", "count": len(v), "values_withheld": True}, None
     if base == "keys":
         if not isinstance(v, dict):
@@ -462,12 +502,39 @@ def collect_permission_auth(config_path: Path, resolve_includes: bool = False, e
     red = Redactor()
 
     def emit(category: str, real: tuple, shown: tuple, vtype: str, v: Any, doc: str, applies: dict) -> None:
+        safe_shown = tuple(red.sanitize_string(p, f"source_key[{i}]") if isinstance(p, str) else p for i, p in enumerate(shown))
+        path_redacted = safe_shown != real
+        cursor = root
+        for key in real:
+            if isinstance(cursor, dict):
+                path_redacted = path_redacted or key in getattr(cursor, "masked_keys", [])
+                cursor = cursor.get(key)
+            elif isinstance(cursor, list) and isinstance(key, int) and 0 <= key < len(cursor):
+                cursor = cursor[key]
+            else:
+                break
+        shown = safe_shown
         path_str = dotted_path(shown)
+        safe_applies = {}
+        for key, value in applies.items():
+            if isinstance(value, str):
+                if key.endswith("pointer") and value.startswith("/"):
+                    parts = [p.replace("~1", "/").replace("~0", "~") for p in value[1:].split("/")]
+                    value = json_pointer(tuple(red.sanitize_string(p, "scope_pointer_key") for p in parts))
+                else:
+                    value = red.sanitize_string(value, "applies_to." + key)
+            safe_applies[key] = value
+        if safe_applies.get("registration_key") != applies.get("registration_key"):
+            safe_applies["registration_key_redacted"] = True
+        applies = safe_applies
         fields, problem = _value(vtype, v, path_str, red)
         item: dict[str, Any] = {
             "ref": f"policy-item[{len(items)}]", "category": category, "origin": "config_declared",
             "config_path": path_str, "config_pointer": json_pointer(shown), "applies_to": applies, "doc_basis": doc,
         }
+        if path_redacted:
+            item["config_path_redacted"] = True
+            item["original_config_pointer_available"] = False
         if fields is not None:
             item.update(fields)
         else:
@@ -492,8 +559,8 @@ def collect_permission_auth(config_path: Path, resolve_includes: bool = False, e
             extra: dict[int, str] = {}
             if pattern[:2] == ("tools", "toolsBySender"):
                 extra[2] = f"<sender-key:{_sender_kind(real[2])}>"
-            if pattern[:3] == ("tools", "elevated", "allowFrom"):
-                pass  # 키는 채널 이름이다
+            if pattern[:5] == ("agents", "entries", "*", "tools", "toolsBySender"):
+                extra[5] = f"<sender-key:{_sender_kind(real[5])}>"
             applies = _applies_to(category, real, pattern)
             emit(category, real, _display_parts(real, extra) if extra else shown, vtype, v, doc, applies)
 
@@ -528,10 +595,10 @@ def collect_permission_auth(config_path: Path, resolve_includes: bool = False, e
     for dup in _find_duplicate_keys(root, ()):
         head = dup.replace("[", ".").split(".")[0].strip('"')
         if not dup or dup == "(root)" or head in areas:
-            issues.append(_issue("error", "duplicate_key", "같은 키가 여러 번 선언되어 마지막 값만 읽었습니다.", field_path=dup))
+            issues.append(_issue("error", "duplicate_key", "같은 키가 여러 번 선언되어 마지막 값만 읽었습니다.", field_path=red.sanitize_string(dup, "diagnostic_field_path")))
     for container, v in _find_includes(root):
         if relevant(container):
-            out["unresolved"].append(_include_record(container, v, "이번 단계는 $include 파일을 읽지 않습니다. 정책이 다른 파일에 있을 수 있습니다." if include_ctx is None
+            out["unresolved"].append(_include_record(tuple(red.sanitize_string(p, "include_source_key") if isinstance(p, str) else p for p in container), v, "이번 단계는 $include 파일을 읽지 않습니다. 정책이 다른 파일에 있을 수 있습니다." if include_ctx is None
                                                      else "$include를 끝까지 해석하지 못했습니다(사유: includes.issues)."))
     if include_ctx is not None:
         from .collector import _include_info

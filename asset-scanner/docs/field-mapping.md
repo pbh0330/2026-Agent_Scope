@@ -686,3 +686,12 @@ JSON 파서는 같은 키가 두 번 나오면 마지막 값만 남긴다. 앞�
 - **중단 원인에 대한 판단 (추정)**: 중단 당시 테스트 자체의 결함이나 비정상적인 메모리 증가는 확인되지 않았다. 같은 테스트가 단독으로 통과했고 python 프로세스의 최대 메모리는 241MB 이하였다. 시스템 전체 메모리는 8GB 중 97%가 사용 중이었고 상위 사용 프로세스는 Claude Code·브라우저·메모 앱이었다. 묶음 3에서는 python이 207MB 이하인데도 시스템 여유가 139MB까지 내려갔다. 다만 당시 중단 시점의 메모리 사용 기록은 남아 있지 않아 원인을 확정하지는 못했다.
 - 분할 실행기 첫 시도(b1)에서 종료 코드 칸이 비어 그 기록은 무효로 보고 실행기를 고쳐 다시 실행했다(Windows PowerShell 5.1의 `Start-Process` 종료 코드 문제). 위 표의 값은 고친 뒤의 기록이다.
 - 서버를 띄우는 stdio 테스트(③의 b1·b2·b3·b5와 일부)는 프로젝트의 개발용 MCP 서버만 실행한다. 팀 테스트베드·외부 서버 접속은 없다.
+
+
+## 11. Agent별 권한 원천과 표시 경로
+
+- 대상: `permission_auth`, [상세 원천·범위](agent-policy-sources-20261118.md)
+- 추가 적용 범위: `agent_provider`, `agent_sender_group`, `agent_elevated_sender_allowlist`, `global_subagent_tools`, `agent_to_agent`, `session_visibility`, 메시지 교차 범위
+- 표시 경로가 바뀌거나 설정 키가 가려진 경우: `config_path_redacted: true`, `original_config_pointer_available: false`
+- 원본 경로를 제공하지 못한 항목도 별도 원천으로 보존. 표시 포인터·결과 내 순번을 영속 식별값으로 사용하지 않음
+- 전체 OpenClaw 설정 검증과 실효 권한 계산은 수행하지 않음

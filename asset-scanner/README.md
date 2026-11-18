@@ -649,3 +649,11 @@ SDK `mcp`는 2026-07-28 규격을 지원하는 정식 2.x 중 **2.3.0**으로 �
 ## 809775e 이후 원천 수집 보완
 
 [원천 → 수집 코드 → 출력 필드 → 검증 대응표](docs/source-collection-closure-20261118.md)에 추가 입력과 정확한 한계를 기록했습니다. `device_inventory`(장치·클라이언트 라벨), `service_identity`(지정 systemd 파일의 실행 계정 선언), `plugin_skill_assets --plugin-inspect-json`(설치 기록)을 추가했습니다. Agent별 샌드박스·exec 선언, Tlon/모델 제공자 네트워크 정책, `applyPatch.workspaceOnly`, 추가 include 경계도 읽습니다. 실제 OpenClaw/OVA 검증과 전체 요구사항 충족 승인은 별개입니다.
+
+
+## Agent별 권한 정책 원천 보완
+
+- Agent별 Provider·발신자·승격·sandbox, 전역 하위 Agent·세션·교차 Provider 전송 선언 수집 확대
+- 가려진 설정 경로의 원본 식별 입력 부적합 상태 표시
+- 최종 실효 권한·전체 설정 유효성·공통 ID 계산은 수행하지 않음
+- [경로·출력·검증·한계](docs/agent-policy-sources-20261118.md)
