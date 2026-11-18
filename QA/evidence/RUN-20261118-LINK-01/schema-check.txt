@@ -1,0 +1,5 @@
+협의    11  col.scope(후보 목록 밖)=agent_exposure
+협의    11  col.scope(후보 목록 밖)=gateway_identity
+협의    10  col.scope(후보 목록 밖)=gateway_pairing
+협의    11  col.scope(후보 목록 밖)=node_identity
+오류 합계 0

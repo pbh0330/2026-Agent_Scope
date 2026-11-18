@@ -1,0 +1,18 @@
+{
+  "status": "locally verified candidate; not merged or uploaded",
+  "scanner": "82c75792f26befbae2d0b21d56d52d8e5d9824d2",
+  "dashboard_base": "8f56930af9f2b9b8491b0df6c26ba6c4a4dc8cc5",
+  "token": "6e4cf5c0cf7116821d48fd3231c7cb2a6595a4ae",
+  "testbed": "444f558893315e6c3a02e0a29d3d1dfe5f5a7bdb",
+  "scenario": "4b0007fa70907714d3f64072e86f998631032e62",
+  "dashboard_local_patch": {
+    "path": "dashboard-wording.patch",
+    "sha256": "f0462e946237f8675abe9081d383c616cc419e45b78dc1dec7f08ec9a547684d",
+    "git_apply_check": "passed with --ignore-space-change (CRLF source/LF patch)"
+  },
+  "remaining": [
+    "Actual VM telemetry matching not run: no VM OTLP/tool-results input located in checked sources.",
+    "Latest affected Windows tests interrupted without result; not marked passed.",
+    "Dashboard wording patch not applied remotely; no merged submission commit fixed."
+  ]
+}

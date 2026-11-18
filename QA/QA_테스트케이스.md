@@ -4,6 +4,8 @@
 
 ## 1. 공통 기록 규칙
 
+- 2026-11-18 이번 제출의 실행 범위는 [마감 전 QA 제출 기준](QA_제출범위_20261118.md)을 우선한다. 43개 TC와 기존 판정을 보존하며 전체 계약·정책 전환·페어링 등 유예 부분과 현재 기능의 필수 검사 부분을 구분한다. 아래 0.7 전체 인수 조건을 이번 제출의 일괄 선행 조건으로 적용하지 않는다. 유예 항목을 자동 Pass/N/A로 변경하지 않는다.
+
 - 실제 실행 결과는 `QA_실행결과.md`에 기록한다.
 - 모든 테스트는 실행한 commit, 스키마 버전 및 기준 스냅샷을 명시한다.
 - 필드·상태·수집 결과 테스트는 [공통 스키마](https://github.com/pbh0330/2026-Agent_Scope/blob/9085e8deb4820b3c7582224f3e5dbac42e28a52d/docs/schema-design-draft.md)의 0.7.0-draft를 준비 기준으로 한다. 검토 기준은 PR #18 HEAD `9085e8deb4820b3c7582224f3e5dbac42e28a52d` (2026-11-13)이며 문서 v0.7.5 / 계약 0.7.0-draft다. 8종 분류는 확정이며 세부 필드·관계·ID와 구현 지원은 별도 확인한다. 실행 전 적용 문서 버전·commit과 담당자 합의를 기록하며 미합의 세부 조건은 Blocked와 사유를 남긴다.
@@ -188,7 +190,7 @@
 ### QA-SCHEMA-02 하위 호환성과 버전
 
 - 입력: 이전에 저장한 정상 출력과 변경된 스키마 출력
-- 구버전 검증: 0.6.0-draft 등 7종 입력을 버전 문자열만 바꿔 수용하지 않는다. 기존 QA의 Gateway 포함 7종과 Gateway 제외·Permission/Auth 포함 7종을 구분한다. 실제 identity·증적으로 Gateway를 매핑하고 Permission/Auth 보완, owner_ref·gateway_ref·TargetRef·관계·집계·Ground Truth를 함께 변환한다. 변환기 버전과 미보완 범위를 기록한다.
+- 구버전 검증: 버전과 실제 자산 구조를 함께 확인한다. 현재 0.6.0-draft 어댑터 출력에도 Gateway 포함 8종이 있으므로 버전 문자열로 유형 수를 단정하지 않는다. 과거 7종 입력은 Gateway 포함 여부와 Permission/Auth 포함 여부를 구분한다. 버전 문자열만 바꿔 수용하지 않고 실제 identity·증적으로 Gateway를 매핑하며, 필요한 Permission/Auth 보완과 owner_ref·gateway_ref·TargetRef·관계·집계·Ground Truth 변환을 함께 확인한다. 변환기 버전과 미보완 범위를 기록한다.
 - 기대 결과: 스키마 버전을 식별할 수 있고, 비호환 변경은 명시적으로 실패하거나 변환 절차를 제공한다.
 
 ### QA-SCHEMA-03 상태의 미확인·부정 판정 구분
@@ -339,9 +341,18 @@ PR #18 기준 인수 자료: [#7 시나리오·기대 결과](https://github.com
 | QA-COL-10, QA-REL-01 | inventory-remote의 Gateway 선언·Node 실행을 보존한다. Plugin manifest 등록 서버를 확인하고 원천 ASSOCIATED_WITH와 공통 소속/관계의 변환 근거를 기록한다. |
 | QA-S1-01 | S1-C1 대상 2개, C2 endpoint 변경, C3 Plugin 등록 서버를 구분한다. S1-T5는 C4 선언 위치 이상이며 C1 미승인 서버로 오판하지 않는다. notes-sync 노출 null을 유지한다. |
 | QA-S2-01, QA-INT-02 | fs-workspace 홈 범위 확대와 demo 필터 제거를 구분한다. get-env·gzip-file-as-resource 노출 false→true와 정의를 확인한다. 광고·필터 일치만으로 실제 실행 성공을 확정하지 않는다. |
-| QA-S3-01 | read_text_file 정의 차이와 catalog_search 정의 동일을 각각 확인한다. inputSchema draft-07 래퍼 정규화 규칙을 기록하고 서버별 ID·owner_ref를 유지한다. |
+| QA-S3-01 | read_text_file 정의 차이와 catalog_search 정의 동일을 각각 확인한다. outputSchema도 비교 대상에 포함한다. inputSchema/outputSchema의 최상위 $schema를 제외하는 비교 투영과 정규화 버전을 기록하되 중첩 필드까지 일괄 제거하지 않는다. 원본 MCP 정의는 보존하고 서버별 ID·owner_ref를 유지한다. |
 | QA-S4-01, QA-SCHEMA-03 | 동일 Gateway 저장소의 공유 참조는 S4-C1, 다른 Node 저장소의 같은 이름은 S4-C2 unknown으로 구분한다. 실제 비밀값 비교 없이 동일성을 확정하지 않는다. |
 | QA-S5-01, QA-S5-02, QA-INT-02 | T1 HTTP, T2 명시적 sslVerify=false, T3 생략을 각각 입력한다. T3는 S5-C3 unknown이며 C2 경고를 내면 실패다. 정상 HTTPS와 미확인을 구분한다. |
 | QA-SCHEMA-03, QA-INT-02 | P0 Tool 광고 14개·노출 2개와 Plugin 도구의 null을 보존한다. MCP 기준 버전과 실제 협상 버전을 별도 기록한다. |
 
 기대 경고는 구성·condition_id·target 단위로 대조하고 required:false를 필수 경고 분모에 더하지 않는다. expected_no_alert의 시나리오 범위를 지키며 unknown과 not_applicable을 구분한다. S1~S4 저장 실측 자료 기반 검사와 S1-T5·S5 설정 사본 검사를 결과에 명시하고, 어느 쪽도 이번 실행에서 VM을 재수집한 것으로 기록하지 않는다.
+
+## 12. 로컬 스키마 v0.7.7 반영 (2026-11-17)
+
+현재 준비 기준은 [로컬 스키마](reference/schema-design-draft-v0.7.7.md)의 문서 v0.7.7, 데이터 계약 `0.7.0-draft`다. 앞 절의 PR #18 `9085e8d`·v0.7.5는 과거 검토·실행 기준으로 보존한다. 로컬 개정본을 해당 원격 commit에 반영된 문서로 취급하지 않는다. 15절의 현재 적용 범위와 16.3절의 미합의·추가 검증을 구분한다.
+
+- QA-S3-01 후속 회귀 입력: outputSchema만 다른 동명 Tool, 최상위 $schema만 다른 정의, 중첩의 의미 있는 필드가 다른 정의를 구분한다. 비교 투영 외 원본 저장값이 바뀌지 않는지 확인하고 condition_id·severity·근거를 기록한다. 기존 Pass는 기존 입력·commit 범위이며 이 추가 회귀를 실행한 결과가 아니다.
+- QA-USAGE-02: InventorySnapshot 0.6과 UsageReport 0.7 각각의 계약을 식별하고 생산자·소비자별 변환 또는 거부를 검증한다. 두 파일의 버전 문자열이 다르다는 이유만으로 연동 실패를 단정하지 않는다.
+- QA-UI-01/03, QA-COL-10: 최신 화면의 자산 현황·자산 지도·위협과 조치 경로에서 집계·근거를 확인한다. 선언 위치와 실행 위치, 자격증명 참조 설정과 실제 전송, 노출과 호출 성공을 구분한다. 화면 commit은 실행 시 고정한다.
+- QA-SCHEMA-01, QA-REL-03/04: 전체 계약·정책 target_refs/집계·페어링의 합의 및 실제 증적이 여전히 필요하다. 문서 개정만으로 Blocked를 해제하지 않는다.

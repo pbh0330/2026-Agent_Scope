@@ -1,0 +1,58 @@
+[
+  {
+    "name": "environment_mismatch_rejected",
+    "pass": true
+  },
+  {
+    "name": "health_http_json",
+    "pass": true
+  },
+  {
+    "name": "summary_http_json",
+    "pass": true
+  },
+  {
+    "name": "by-asset.asset_http_json",
+    "pass": true
+  },
+  {
+    "name": "by-asset.server_http_json",
+    "pass": true
+  },
+  {
+    "name": "by-asset.pattern_http_json",
+    "pass": true
+  },
+  {
+    "name": "records_http_json",
+    "pass": true
+  },
+  {
+    "name": "timeseries_http_json",
+    "pass": true
+  },
+  {
+    "name": "brake-events_http_json",
+    "pass": true
+  },
+  {
+    "name": "health_snapshot_matches",
+    "pass": true
+  },
+  {
+    "name": "summary_snapshot_matches",
+    "pass": true
+  },
+  {
+    "name": "records_count_matches",
+    "pass": true
+  },
+  {
+    "name": "pc_calls_remain_unmatched",
+    "pass": true
+  },
+  {
+    "name": "unmatched_records_have_no_asset",
+    "pass": true
+  }
+]

@@ -1,0 +1,20 @@
+[
+  {
+    "case": "live_proxy_summary",
+    "pass": true
+  },
+  {
+    "case": "live_total_rendered",
+    "pass": true
+  },
+  {
+    "case": "mapped_server_usage_rendered",
+    "pass": true,
+    "expected": "3,920 tokens / 2 calls"
+  },
+  {
+    "case": "no_browser_runtime_errors",
+    "pass": true,
+    "errors": []
+  }
+]

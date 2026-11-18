@@ -1,0 +1,175 @@
+{
+  "tools": 14,
+  "schema_urls": 28,
+  "differences": 0,
+  "checks": [
+    {
+      "path": "read_file/inputSchema/$schema",
+      "source": "http://json-schema.org/draft-07/schema#",
+      "output": "http://json-schema.org/draft-07/schema#",
+      "pass": true
+    },
+    {
+      "path": "read_file/outputSchema/$schema",
+      "source": "http://json-schema.org/draft-07/schema#",
+      "output": "http://json-schema.org/draft-07/schema#",
+      "pass": true
+    },
+    {
+      "path": "read_text_file/inputSchema/$schema",
+      "source": "http://json-schema.org/draft-07/schema#",
+      "output": "http://json-schema.org/draft-07/schema#",
+      "pass": true
+    },
+    {
+      "path": "read_text_file/outputSchema/$schema",
+      "source": "http://json-schema.org/draft-07/schema#",
+      "output": "http://json-schema.org/draft-07/schema#",
+      "pass": true
+    },
+    {
+      "path": "read_media_file/inputSchema/$schema",
+      "source": "http://json-schema.org/draft-07/schema#",
+      "output": "http://json-schema.org/draft-07/schema#",
+      "pass": true
+    },
+    {
+      "path": "read_media_file/outputSchema/$schema",
+      "source": "http://json-schema.org/draft-07/schema#",
+      "output": "http://json-schema.org/draft-07/schema#",
+      "pass": true
+    },
+    {
+      "path": "read_multiple_files/inputSchema/$schema",
+      "source": "http://json-schema.org/draft-07/schema#",
+      "output": "http://json-schema.org/draft-07/schema#",
+      "pass": true
+    },
+    {
+      "path": "read_multiple_files/outputSchema/$schema",
+      "source": "http://json-schema.org/draft-07/schema#",
+      "output": "http://json-schema.org/draft-07/schema#",
+      "pass": true
+    },
+    {
+      "path": "write_file/inputSchema/$schema",
+      "source": "http://json-schema.org/draft-07/schema#",
+      "output": "http://json-schema.org/draft-07/schema#",
+      "pass": true
+    },
+    {
+      "path": "write_file/outputSchema/$schema",
+      "source": "http://json-schema.org/draft-07/schema#",
+      "output": "http://json-schema.org/draft-07/schema#",
+      "pass": true
+    },
+    {
+      "path": "edit_file/inputSchema/$schema",
+      "source": "http://json-schema.org/draft-07/schema#",
+      "output": "http://json-schema.org/draft-07/schema#",
+      "pass": true
+    },
+    {
+      "path": "edit_file/outputSchema/$schema",
+      "source": "http://json-schema.org/draft-07/schema#",
+      "output": "http://json-schema.org/draft-07/schema#",
+      "pass": true
+    },
+    {
+      "path": "create_directory/inputSchema/$schema",
+      "source": "http://json-schema.org/draft-07/schema#",
+      "output": "http://json-schema.org/draft-07/schema#",
+      "pass": true
+    },
+    {
+      "path": "create_directory/outputSchema/$schema",
+      "source": "http://json-schema.org/draft-07/schema#",
+      "output": "http://json-schema.org/draft-07/schema#",
+      "pass": true
+    },
+    {
+      "path": "list_directory/inputSchema/$schema",
+      "source": "http://json-schema.org/draft-07/schema#",
+      "output": "http://json-schema.org/draft-07/schema#",
+      "pass": true
+    },
+    {
+      "path": "list_directory/outputSchema/$schema",
+      "source": "http://json-schema.org/draft-07/schema#",
+      "output": "http://json-schema.org/draft-07/schema#",
+      "pass": true
+    },
+    {
+      "path": "list_directory_with_sizes/inputSchema/$schema",
+      "source": "http://json-schema.org/draft-07/schema#",
+      "output": "http://json-schema.org/draft-07/schema#",
+      "pass": true
+    },
+    {
+      "path": "list_directory_with_sizes/outputSchema/$schema",
+      "source": "http://json-schema.org/draft-07/schema#",
+      "output": "http://json-schema.org/draft-07/schema#",
+      "pass": true
+    },
+    {
+      "path": "directory_tree/inputSchema/$schema",
+      "source": "http://json-schema.org/draft-07/schema#",
+      "output": "http://json-schema.org/draft-07/schema#",
+      "pass": true
+    },
+    {
+      "path": "directory_tree/outputSchema/$schema",
+      "source": "http://json-schema.org/draft-07/schema#",
+      "output": "http://json-schema.org/draft-07/schema#",
+      "pass": true
+    },
+    {
+      "path": "move_file/inputSchema/$schema",
+      "source": "http://json-schema.org/draft-07/schema#",
+      "output": "http://json-schema.org/draft-07/schema#",
+      "pass": true
+    },
+    {
+      "path": "move_file/outputSchema/$schema",
+      "source": "http://json-schema.org/draft-07/schema#",
+      "output": "http://json-schema.org/draft-07/schema#",
+      "pass": true
+    },
+    {
+      "path": "search_files/inputSchema/$schema",
+      "source": "http://json-schema.org/draft-07/schema#",
+      "output": "http://json-schema.org/draft-07/schema#",
+      "pass": true
+    },
+    {
+      "path": "search_files/outputSchema/$schema",
+      "source": "http://json-schema.org/draft-07/schema#",
+      "output": "http://json-schema.org/draft-07/schema#",
+      "pass": true
+    },
+    {
+      "path": "get_file_info/inputSchema/$schema",
+      "source": "http://json-schema.org/draft-07/schema#",
+      "output": "http://json-schema.org/draft-07/schema#",
+      "pass": true
+    },
+    {
+      "path": "get_file_info/outputSchema/$schema",
+      "source": "http://json-schema.org/draft-07/schema#",
+      "output": "http://json-schema.org/draft-07/schema#",
+      "pass": true
+    },
+    {
+      "path": "list_allowed_directories/inputSchema/$schema",
+      "source": "http://json-schema.org/draft-07/schema#",
+      "output": "http://json-schema.org/draft-07/schema#",
+      "pass": true
+    },
+    {
+      "path": "list_allowed_directories/outputSchema/$schema",
+      "source": "http://json-schema.org/draft-07/schema#",
+      "output": "http://json-schema.org/draft-07/schema#",
+      "pass": true
+    }
+  ]
+}

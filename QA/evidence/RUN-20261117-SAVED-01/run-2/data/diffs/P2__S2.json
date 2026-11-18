@@ -1,0 +1,109 @@
+{
+  "schema_version": "0.6.0-draft",
+  "diff_id": "diff-snap-p2-20261116T183150Z--snap-s2-20261116T183152Z",
+  "environment_id": "agentscope-testbed",
+  "profile_id": "tb-openclaw",
+  "previous_snapshot_id": "snap-p2-20261116T183150Z",
+  "current_snapshot_id": "snap-s2-20261116T183152Z",
+  "previous_report_id": "det-snap-p2-20261116T183150Z",
+  "current_report_id": "det-snap-s2-20261116T183152Z",
+  "generated_at": "2026-11-16T18:31:55Z",
+  "comparison_status": "complete",
+  "changes": [
+    {
+      "asset_id": "srv_82d252784c25ade0",
+      "change_type": "modified",
+      "changed_fields": [
+        "/product/config"
+      ],
+      "detected_at": "2026-11-16T18:31:52Z",
+      "evidence_refs": [
+        "ev-decl-tb-gw-fs-workspace"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "srv_eee2566222d9bc33",
+      "change_type": "modified",
+      "changed_fields": [
+        "/product/config"
+      ],
+      "detected_at": "2026-11-16T18:31:52Z",
+      "evidence_refs": [
+        "ev-decl-tb-node-demo-everything"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_762c09336caad7d0",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-11-16T18:31:52Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "tool_d364d522832496d7",
+      "change_type": "modified",
+      "changed_fields": [
+        "/project/state_assessments"
+      ],
+      "detected_at": "2026-11-16T18:31:52Z",
+      "evidence_refs": [
+        "ev-cap-demo-everything"
+      ],
+      "reason": "비교 필드 변경"
+    },
+    {
+      "asset_id": "pa_087042e2e785a2d2",
+      "change_type": "removed_from_scope",
+      "changed_fields": [],
+      "detected_at": "2026-11-16T18:31:52Z",
+      "evidence_refs": [],
+      "reason": "같은 범위를 끝까지 조회했지만 이번 결과에 없음(설치 삭제를 뜻하지 않음)",
+      "previous": {
+        "name": "demo-everything · toolFilter",
+        "asset_type": "permission_auth"
+      }
+    }
+  ],
+  "relation_changes": [
+    {
+      "relation_id": "rel_aec40614c2934d60",
+      "change_type": "not_observed",
+      "changed_fields": [],
+      "reason": "이번 결과에 없음",
+      "previous": {
+        "relation_type": "APPLIES_TO"
+      }
+    }
+  ],
+  "alert_changes": [
+    {
+      "finding_key": "41427410155c8145ad5fad31",
+      "change_type": "opened",
+      "previous_alert_id": null,
+      "current_alert_id": "alert-41427410155c",
+      "reason": "이번 평가에서 새로 탐지"
+    },
+    {
+      "finding_key": "1973a9effa5a2b9e27004622",
+      "change_type": "opened",
+      "previous_alert_id": null,
+      "current_alert_id": "alert-1973a9effa5a",
+      "reason": "이번 평가에서 새로 탐지"
+    },
+    {
+      "finding_key": "a590a0e0b80b80589d69e893",
+      "change_type": "opened",
+      "previous_alert_id": null,
+      "current_alert_id": "alert-a590a0e0b80b",
+      "reason": "이번 평가에서 새로 탐지"
+    }
+  ],
+  "limitations": []
+}
