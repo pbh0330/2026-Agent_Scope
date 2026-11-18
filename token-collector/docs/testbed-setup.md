@@ -1,6 +1,6 @@
 # 테스트베드 적용 가이드 — 토큰 사용량 수집
 
-작성 11.02, 수정 11.05(Anthropic API 직접 연결, Haiku 5.5 직접 등록) 이정철 · 대상 tb-gw(Ubuntu 24.04, OpenClaw 2026.9.6) · 10.31 회의 결정 반영
+작성 11.02, 수정 11.05(Anthropic API 직접 연결, Haiku 5.5 직접 등록), 11.19(테스트베드 첫 실측 반영) 이정철 · 대상 tb-gw(Ubuntu 24.04, OpenClaw 2026.9.6) · 10.31 회의 결정 반영
 
 ## 0. 무엇을 하나
 
@@ -40,6 +40,27 @@ tb-gw에서 쓰는 사용자는 아래에서 `<TB_USER>`로 적는다. 명령은
 1. tb-gw를 끈 상태에서 SNAP-2-P2로 되돌린 뒤 켠다.
 2. 이 가이드를 끝까지 진행하고 동작 확인(8절)까지 마친 뒤, **11절 체크리스트를 거쳐** 끈 상태에서 SNAP-2-P2-T를 만든다.
 3. SNAP-2-P2-T의 정답 목록에는 플러그인 `diagnostics-otel`, `agentscope-token-guard`가 추가된다(SNAP-2-P2와 따로 관리).
+
+### OVA로 가져와서 IP가 바뀐 경우
+
+VMware가 아닌 곳(예: VirtualBox)으로 OVA를 가져오면 VM IP가 바뀐다. 11.18 VirtualBox 실측에서 겪은 것:
+
+- 두 VM이 DHCP에서 **같은 IP**를 받을 수 있다(복제 VM이라 DHCP가 같은 기기로 봄). `hostname -I`로 확인하고 다르면 고정 IP를 준다.
+- 두 VM의 `/etc/hosts`에서 `tb-gw`, `tb-node` 줄을 새 IP로 고친다.
+- tb-node의 노드 서비스는 게이트웨이 **IP**로 접속하도록 설치돼 있다. 새 tb-gw IP로 바꾼다.
+
+```bash
+# tb-node에서. <새 TB_GW_IP>는 숫자 IP로 적는다
+sed -i 's/--host [^ ]* /--host <새 TB_GW_IP> /' ~/.config/systemd/user/openclaw-node.service
+systemctl --user daemon-reload && systemctl --user restart openclaw-node
+# tb-gw에서: Status가 paired · connected 인지
+openclaw nodes describe --node tb-node | grep -i status
+```
+
+- **호스트 이름(`tb-gw`)으로 바꾸면 안 된다.** OpenClaw는 암호화하지 않은 ws://를 사설 IP·localhost(그리고 `.local`, `.ts.net`)로만 연결한다.
+  이름이면 `SECURITY ERROR: Cannot connect to "tb-gw" over plaintext ws://`를 남기고 접속하지 않는다.
+- 노드 서비스 로그는 `journalctl --user`에 안 나온다. `sudo journalctl _SYSTEMD_USER_UNIT=openclaw-node.service -n 20`으로 본다.
+- 노드가 끊겨 있으면 노드 쪽 MCP 서버(kg-memory, demo-everything)가 에이전트에게 안 보인다(`isn't available in this session`).
 
 ## 3. 모델 설정(Haiku 5.5 직접 등록, 키는 설정 파일에 넣지 않음)
 
@@ -81,10 +102,13 @@ systemctl --user list-units 'openclaw*'      # 예: openclaw-gateway.service
 
 ```bash
 read -rs -p "Anthropic API 키: " K && systemctl --user set-environment ANTHROPIC_API_KEY="$K"; unset K; echo
+V="$(systemctl --user show-environment | sed -n 's/^ANTHROPIC_API_KEY=//p')"; echo "${#V}자, sk-ant- 시작: $(case $V in sk-ant-*) echo 예;; *) echo 아니오;; esac)"; unset V
 systemctl --user restart openclaw-gateway     # 위에서 확인한 이름
-systemctl --user show-environment | grep -c '^ANTHROPIC_API_KEY='   # 1이면 들어감(값은 출력하지 않음)
 ```
 
+- **길이를 꼭 확인한다(값은 출력하지 않음).** 100자 안팎이고 `sk-ant-`로 시작해야 한다. `0자`면 다시 넣는다.
+  `grep -c '^ANTHROPIC_API_KEY='`의 1은 변수 이름만 있다는 뜻이라 빈 값이어도 1이 나온다(11.18 실측: 빈 키가 들어가 모델 호출이 전부 `SECRET_SURFACE_UNAVAILABLE`).
+- 게이트웨이는 시작할 때 키를 한 번 읽어 둔다. 키가 없거나 빈 채로 시작했으면 키를 넣은 뒤 **다시 시작**한다(11.18에 이 방법으로 해결).
 - `read -s`라 화면과 셸 기록(history)에 키가 남지 않는다. `set-environment`는 파일에 저장하지 않는다.
 - VM을 껐다 켜면 사라지므로 다시 넣는다. 스냅샷은 전원을 끈 상태로 만들므로 키가 들어가지 않는다.
 - `openclaw gateway restart`는 실행 중인 프로세스 안에서 다시 시작해 새 환경 변수를 못 받을 수 있다. 키를 넣은 뒤에는 `systemctl --user restart`를 쓴다.
@@ -117,7 +141,11 @@ git clone -b feature/token-collector https://github.com/pbh0330/2026-Agent_Scope
 
 ## 6. OpenClaw 텔레메트리(diagnostics-otel)
 
+**6~7절은 게이트웨이를 멈춘 상태에서 한다.** 켜 둔 채로 설정을 바꾸면 게이트웨이가 정리 작업을 하는 동안
+플러그인 설치가 `another OpenClaw process owns state-lifecycle`로 실패한다(11.18 실측). 7절 끝에서 다시 켠다.
+
 ```bash
+systemctl --user stop openclaw-gateway
 openclaw plugins install @openclaw/diagnostics-otel
 openclaw config get plugins.allow --json     # 결과에 따라 아래 주의 참고
 
@@ -149,7 +177,8 @@ openclaw config set plugins.entries.agentscope-token-guard.config '{
              "day": { "warn": { "countedTokens": 1000000 } } }
 }' --strict-json
 
-systemctl --user restart openclaw-gateway
+openclaw plugins list | grep -iE 'diagnostics-otel|token-guard'    # 둘 다 enabled
+systemctl --user restart openclaw-gateway    # 멈춰 둔 게이트웨이를 켠다(4절 키가 들어간 뒤여야 함)
 openclaw plugins inspect agentscope-token-guard --runtime --json   # before_tool_call, tool_result_persist 훅이 보여야 함
 ```
 
@@ -164,7 +193,10 @@ openclaw plugins inspect agentscope-token-guard --runtime --json   # before_tool
 ## 8. 동작 확인
 
 ```bash
-openclaw agent --agent main --message "워크스페이스에서 .md 파일 두 개를 골라 동시에(병렬로) 읽고 한 줄씩 요약해줘"
+# 11.18 실측에서 쓴 방법: 같은 셸에 키를 불러와 실행(파일에 안 남김, 셸을 닫으면 사라짐)
+export ANTHROPIC_API_KEY="$(systemctl --user show-environment | sed -n 's/^ANTHROPIC_API_KEY=//p')"
+openclaw agent --agent main --message "Do not use the built-in ls, read or exec tools. Use the fs-workspace MCP server: call list_directory on the workspace root, then call read_text_file on two .md files at the same time (in parallel)."
+unset ANTHROPIC_API_KEY
 
 J=~/.openclaw/agentscope/agentscope-tool-results.jsonl
 tail -n 20 $J | grep -o '"kind":"[a-z_]*"' | sort | uniq -c
@@ -180,6 +212,11 @@ grep -c '"kind":"token_count_error"\|"kind":"count_export_error"' $J
 | `token_count_error`, `count_export_error` | 0 |
 
 - `openclaw agent exec`는 게이트웨이를 거치지 않아 텔레메트리가 안 나온다. 위처럼 `openclaw agent`(게이트웨이 경유)를 쓴다.
+- **요청에 MCP 서버·도구 이름을 적는다.** 그냥 "파일 읽어줘"라고 하면 에이전트가 내장 `ls`/`read`/`exec`를 써서 서버별 사용량이 안 남는다(11.18 첫 실행 18건 중 MCP 1건).
+  11.18에 쓴 요청: fs-workspace(위), kg-memory `create_entities`·`search_nodes`·`read_graph`+`open_nodes` 병렬, demo-everything `echo`·`get-sum`,
+  inventory-remote `inventory_list_hosts`·`inventory_get_host` 2개 병렬.
+- 테스트베드는 MCP 도구가 많아서 OpenClaw가 도구를 `tool_search`로 찾고 `tool_call`로 부른다. 플러그인 기록에는 `tool_call`로 남고,
+  스팬에는 바깥 `tool_call`과 안쪽 실제 도구가 같이 남는다. 계산기가 둘을 한 건으로 접는다(`backend/usagereport/README.md` "지연 도구 로딩").
 - 확인 결과(위 명령 출력, `plugins inspect` 출력)를 정철에게 보내 주면 PC 결과와 같은지 함께 본다.
 - 11.05 PC(9.6 + Haiku 5.5 직접 등록)에서 확인한 것. 테스트베드 첫 데이터도 같은지 본다.
   - **훅**: 도구 결과마다 `tool_result`, `token_count`, 스팬 파일의 카운트 스팬이 하나씩 남았다.
@@ -252,4 +289,7 @@ grep -rl 'sk-ant-' ~/.openclaw ~/.config/systemd ~/.bashrc ~/.profile 2>/dev/nul
 | API health가 `degraded` | `last_error` 확인, `journalctl --user -u agentscope-usage-api -n 50`. 이전 데이터로는 계속 답함 |
 | `count_export_error` | Collector가 꺼짐(`systemctl --user status agentscope-collector`, `journalctl --user -u agentscope-collector`) |
 | 플러그인이 안 보임 | `plugins.allow` 목록(6절 주의), `openclaw plugins list` |
+| 플러그인 설치 중 `another OpenClaw process owns state-lifecycle` | 게이트웨이를 멈추고 다시 설치(6절) |
+| `SECRET_SURFACE_UNAVAILABLE`, `secret reference was not found` | 키가 없거나 빈 값. 4절 길이 확인 후 다시 넣고 게이트웨이 재시작 |
+| 노드 `paired · disconnected`, 노드 MCP 서버가 안 보임 | 2절 "OVA로 가져와서 IP가 바뀐 경우". 노드 `--host`는 숫자 IP |
 | 되돌리기 | SNAP-2-P2로 복귀(이 가이드의 변경은 전부 분기에서만) |
