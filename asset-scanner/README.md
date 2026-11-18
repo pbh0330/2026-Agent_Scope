@@ -657,3 +657,15 @@ SDK `mcp`는 2026-07-28 규격을 지원하는 정식 2.x 중 **2.3.0**으로 �
 - 가려진 설정 경로의 원본 식별 입력 부적합 상태 표시
 - 최종 실효 권한·전체 설정 유효성·공통 ID 계산은 수행하지 않음
 - [경로·출력·검증·한계](docs/agent-policy-sources-20261118.md)
+
+
+## OpenClaw 실환경 검증 전 추가 원천 보완 (2026-11-18)
+
+- 채널·계정·그룹·발신자 정책 선언: 기존 `permission_auth --config`에 통합. 개인 대상 키·목록은 비공개로 구분하고 원본 식별 경로로 쓰지 않습니다.
+- 설치 경계 자동 탐색: `python -m asset_scanner.installation_inventory --state-dir <상태폴더> --workspace-dir <작업폴더> --output <경계밖_결과.json>`
+- 저장 Plugin 인덱스·SQLite 설치 기록: 같은 모듈의 `--plugin-index-json`·`--state-db`, 외부 설치 경로는 `--allow-root`로 명시합니다.
+- 인증 메타데이터: `python -m asset_scanner.auth_metadata --mcp-oauth-json <저장자료.json> --output <결과.json>`. `--auth-profiles-json`·MCP `--state-db`·별도 선택 `--model-account-db`를 지원합니다. 인증값·사용자 식별값·인증값 해시는 저장하지 않습니다.
+- Linux 실행 계정 관측: `python -m asset_scanner.process_identity --pid <확인한_PID> --output <결과.json>`. `--entry-file`로 진입점 파일 형식의 근거도 읽을 수 있습니다.
+- Skill YAML: `PyYAML==6.0.3`을 추가했습니다. `python -m pip install -r requirements-dev.txt`로 의존성을 갱신합니다. 구문 노드를 한도 내 JSON 자료형으로 바꾸며 Python 객체를 생성하지 않습니다.
+- 모든 새 출력은 스캐너 내부 형식입니다. 실제 로딩·인증 성공·실효 권한·공통 ID를 확정하지 않습니다.
+- 원천·출력·사용법·검증·남은 범위: [실환경 검증 전 수집 보완](docs/pre-openclaw-development-20261118.md)

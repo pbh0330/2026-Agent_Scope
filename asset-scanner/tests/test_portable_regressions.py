@@ -45,7 +45,7 @@ def test_plain_scalar_preserves_paragraphs():
     assert unparsed == [] and values["description"] == "first\nparagraph"
 
 
-@pytest.mark.parametrize("value", ['"invalid\\escape"', '"a" "b"', "'a' 'b'"])
+@pytest.mark.parametrize("value", ['"invalid\\qscape"', '"a" "b"', "'a' 'b'"])
 def test_unsupported_quoted_syntax_is_not_silently_rewritten(value):
     values, unparsed, _ = parse("name: demo\ndescription: " + value)
     assert values == {"name": "demo"} and unparsed == ["description"]

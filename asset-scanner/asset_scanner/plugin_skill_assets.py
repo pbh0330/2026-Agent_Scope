@@ -27,6 +27,7 @@ import argparse
 import json
 import os
 import re
+import stat
 import sys
 from datetime import datetime, timezone
 from pathlib import Path, PureWindowsPath
@@ -57,7 +58,7 @@ EXIT_OUTPUT_ERROR = 4
 NOT_VERIFIED = [
     "plugin_code_loaded",        # 플러그인 코드를 import·실행하지 않았다
     "runtime_activation",        # 설정 선언·저장된 출력 외에는 실제 로딩·활성 상태를 모른다
-    "install_provenance",        # 설치 기록(SQLite 플러그인 인덱스)은 읽지 않았다
+    "install_provenance",        # 설치 기록의 신뢰성·현재 파일과의 일치는 검증하지 않음
     "tools_hooks_registered",    # 등록된 Tool·훅은 저장된 출력에 적힌 이름만 옮겼다
     "skill_eligibility",         # 의존 바이너리·환경변수 충족 여부를 확인하지 않았다
     "live_server_query",
@@ -104,11 +105,16 @@ def _identity(raw: Any, shown: Any) -> dict:
 
 def _read_text_limited(path: Path, limit: int) -> tuple[str | None, dict | None]:
     try:
-        if not path.is_file():
-            return None, _issue("error", "file_not_found", "파일이 없거나 일반 파일이 아닙니다.")
+        original = path.stat(follow_symlinks=False)
+        if not stat.S_ISREG(original.st_mode) or original.st_nlink > 1:
+            return None, _issue("error", "file_not_found", "파일이 없거나 링크·비일반 파일입니다.")
         if path.stat().st_size > limit * 64:
             return None, _issue("error", "file_too_large", "파일이 너무 커서 읽지 않았습니다.")
-        with open(path, "rb") as f:
+        fd = os.open(path, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_BINARY", 0))
+        with os.fdopen(fd, "rb") as f:
+            opened = os.fstat(f.fileno())
+            if (original.st_dev, original.st_ino) != (opened.st_dev, opened.st_ino):
+                return None, _issue("error", "read_failed", "읽는 중 파일이 바뀌었습니다.")
             data = f.read(limit)
         return data.decode("utf-8-sig"), None
     except UnicodeDecodeError:
@@ -120,9 +126,9 @@ def _read_text_limited(path: Path, limit: int) -> tuple[str | None, dict | None]
 # ---- SKILL.md frontmatter ------------------------------------------------------------
 
 def parse_frontmatter_ex(text: str) -> tuple[dict | None, dict, str | None]:
-    """`---`로 둘러싸인 frontmatter를 `skill_frontmatter`의 안전한 YAML 부분 해석기로 읽는다.
+    """`---`로 둘러싸인 frontmatter를 `skill_frontmatter`의 한도 있는 YAML 1.2 핵심 자료형 해석기로 읽는다.
 
-    반환: (값, 부가 정보{unparsed, duplicate_keys, limit_hits, alias_keys}, 문제 코드). 임의 코드 실행·별칭 확장이 없고 한도를 둔다.
+    반환: (값, 부가 정보{unparsed, duplicate_keys, limit_hits, alias_keys}, 문제 코드). 임의 객체를 생성하지 않으며 별칭 확장에 한도를 둔다.
     """
     lines = text.splitlines()
     if not lines or lines[0].strip() != "---":
@@ -300,6 +306,7 @@ def read_skill(skill_md: Path, base_label: str) -> dict:
             issues.append(_issue("warning", "required_field_missing", f"문서가 필수로 정한 frontmatter {req}가 없습니다.", field_path=req))
     item["folder_name"] = _text(red, folder, "folder_name")
     item["name_matches_folder"] = (name_raw == folder) if name_raw is not None else None
+    item["frontmatter_parser"] = extra.get("parser", "bounded_legacy_json5_fallback")
     item["frontmatter"] = shown
     item["metadata_openclaw"] = meta_shown
     origin_rec = _read_install_origin(skill_md.parent, red, issues)
@@ -309,7 +316,7 @@ def read_skill(skill_md: Path, base_label: str) -> dict:
     if unparsed:
         item["frontmatter_unparsed_keys"] = [_seg(k) for k in unparsed]
         issues.append(_issue("warning", "frontmatter_value_not_parsed",
-                             "이 해석기가 지원하지 않는 YAML(앵커·별칭·태그·복합 키·탭 들여쓰기·한도 초과)이라 값을 읽지 않고 키 이름만 남깁니다.",
+                             "안전하게 JSON 자료형으로 해석할 수 없는 YAML(사용자 정의 태그·순환 별칭·복합 키·구문 오류·한도 초과)은 값 없이 키 이름만 남깁니다.",
                              keys=[_seg(k) for k in unparsed]))
     if extra.get("alias_keys"):
         issues.append(_issue("warning", "frontmatter_alias_not_expanded", "앵커·별칭·태그는 확장하거나 실행하지 않았습니다.", keys=[_seg(k) for k in extra["alias_keys"]]))
@@ -323,7 +330,7 @@ def read_skill(skill_md: Path, base_label: str) -> dict:
                           "basis": "metadata.openclaw.skillKey" if isinstance(meta.get("skillKey"), str) else "name"}
     item["issues"] = issues
     item["redactions"] = red.redactions
-    item["collection_status"] = "partial" if any(i["severity"] == "error" for i in issues) else "complete"
+    item["collection_status"] = "partial" if unparsed or extra.get("limit_hits") or any(i["severity"] == "error" for i in issues) else "complete"
     item["outcome"] = "skill_read"
     return item
 

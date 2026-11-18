@@ -209,6 +209,34 @@ SPEC += [
 ]
 
 # MCP 서버 항목의 인증 관련 필드. 등록 영역(mcp.servers·nodeHost.mcp.servers)마다 같은 형식으로 읽는다.
+# 채널 공통 계약과 문서화된 중첩 정책. 플러그인의 임의 설정 전체를 복사하지 않는다.
+D_CHANNEL = "openclaw/openclaw eb377ac59e6c9fd6c7705028034812becf00271b src/config/types.channels.ts, zod-schema.channel-messaging-common.ts, types.telegram.ts, types.discord.ts, types.slack.ts"
+_CHANNEL_CONTAINERS = {"accounts": "account", "groups": "group", "topics": "topic", "dms": "peer",
+                       "guilds": "guild", "channels": "channel", "rooms": "room", "toolsBySender": "sender"}
+_CHANNEL_NESTED = [(), ("dm",), ("groups", "*"), ("groups", "*", "topics", "*"), ("dms", "*"),
+                   ("dms", "*", "topics", "*"), ("guilds", "*"), ("guilds", "*", "channels", "*"),
+                   ("channels", "*"), ("rooms", "*")]
+_CHANNEL_LEAVES = {"enabled": "bool", "requireMention": "bool", "groupEnabled": "bool", "policy": "str",
+                   "dmPolicy": "str:pairing,allowlist,open,disabled", "groupPolicy": "str:open,disabled,allowlist",
+                   "contextVisibility": "str:all,allowlist,allowlist_quote", "skills": "list",
+                   **{k: "count" for k in ("allowFrom", "groupAllowFrom", "users", "roles", "groupChannels")}}
+for _account in ((), ("accounts", "*")):
+    for _nested in _CHANNEL_NESTED:
+        _base = ("channels", "*") + _account + _nested
+        for _leaf, _kind in _CHANNEL_LEAVES.items():
+            SPEC.append((_base + (_leaf,), _kind, "channel_policy", D_CHANNEL))
+        for _leaf in ("allow", "alsoAllow", "deny"):
+            SPEC.append((_base + ("tools", _leaf), "list", "channel_policy", D_CHANNEL))
+            SPEC.append((_base + ("toolsBySender", "*", _leaf), "list", "channel_policy", D_CHANNEL))
+
+
+def _channel_display(parts: tuple) -> tuple:
+    if parts[:1] != ("channels",):
+        return parts
+    return tuple(f"<{_CHANNEL_CONTAINERS[parts[i - 1]]}-key>" if i >= 3 and parts[i - 1] in _CHANNEL_CONTAINERS and x != "*" else x
+                 for i, x in enumerate(parts))
+
+
 MCP_AUTH_SPEC: list[tuple[tuple[str, ...], str]] = [
     (("auth",), "str"), (("oauth", "identity"), "str:shared,per-requester"), (("oauth", "scope"), "str"), (("oauth", "authProfileId"), "str"),
     (("oauth", "redirectUrl"), "str"), (("oauth", "clientMetadataUrl"), "str"), (("clientCert",), "path"), (("clientKey",), "path"),
@@ -220,7 +248,7 @@ NOT_COLLECTED = [
     "tool_groups_and_profiles_expansion",   # group:fs, profile 이름이 가리키는 Tool 목록 펼치기
     "runtime_approvals_and_pairing_state",  # 승인·페어링 상태(런타임 상태)
     "secret_values",               # 인증정보 원문·길이·해시
-    "channel_access_control",      # 채널별 허용 목록 등 이 표에 없는 정책 영역
+    "unlisted_channel_plugin_policies",  # 공통 계약 밖 플러그인 고유 정책·실효 접근 판정
     "exec_approvals_effective_result",       # `openclaw approvals get`의 병합된 유효 정책(요청 정책+호스트 문서) 계산
     "exec_approvals_allowlist_arguments_and_history",   # argPattern 해시·마지막 사용 명령·경로·시각 등 사용 이력
     "standing_grants",                       # 자동화 승인으로 생긴 상시 허용 기록(런타임 상태)
@@ -262,6 +290,8 @@ def _sender_kind(key: str) -> str:
 
 
 def _applies_to(category: str, real: tuple, pattern: tuple[str, ...]) -> dict:
+    if category == "channel_policy":
+        return {"scope": "channel_defaults" if real[1] == "defaults" else "channel_policy", "channel": real[1]}
     if real[:3] == ("tools", "subagents", "tools"):
         return {"scope": "global_subagent_tools"}
     if real[:2] == ("tools", "agentToAgent"):
@@ -554,6 +584,22 @@ def collect_permission_auth(config_path: Path, resolve_includes: bool = False, e
             item["include_origin"] = {"file": label, "include_chain": list(chain)}
         items.append(item)
 
+    # 수집 대상으로 선언한 채널 경로의 부모가 깨졌다면 조용한 빈 결과로 처리하지 않는다.
+    checked_containers = set()
+    for pattern, _, category, _ in SPEC:
+        if category != "channel_policy":
+            continue
+        for end in range(1, len(pattern)):
+            prefix = pattern[:end]
+            if prefix in checked_containers:
+                continue
+            checked_containers.add(prefix)
+            for real, _, value in _walk(root, prefix, (), ()):
+                if not isinstance(value, dict):
+                    path = dotted_path(_channel_display(real))
+                    safe = red.sanitize_string(path, "channel_container")
+                    issues.append(_issue("warning", "channel_policy_container_invalid", "채널 정책의 상위 항목이 객체가 아니어서 하위 선언을 읽지 못했습니다.", field_path=safe))
+
     for pattern, vtype, category, doc in SPEC:
         for real, shown, v in _walk(root, pattern, (), ()):
             extra: dict[int, str] = {}
@@ -562,7 +608,7 @@ def collect_permission_auth(config_path: Path, resolve_includes: bool = False, e
             if pattern[:5] == ("agents", "entries", "*", "tools", "toolsBySender"):
                 extra[5] = f"<sender-key:{_sender_kind(real[5])}>"
             applies = _applies_to(category, real, pattern)
-            emit(category, real, _display_parts(real, extra) if extra else shown, vtype, v, doc, applies)
+            emit(category, real, _channel_display(real) if category == "channel_policy" else (_display_parts(real, extra) if extra else shown), vtype, v, doc, applies)
 
     # MCP 서버의 인증 관련 선언: 설정 수집기와 같은 등록 영역·선언 위치 표기로 적용 대상을 연결한다.
     for label, reg in SUPPORTED_REGISTRY_PATHS.items():
@@ -595,10 +641,10 @@ def collect_permission_auth(config_path: Path, resolve_includes: bool = False, e
     for dup in _find_duplicate_keys(root, ()):
         head = dup.replace("[", ".").split(".")[0].strip('"')
         if not dup or dup == "(root)" or head in areas:
-            issues.append(_issue("error", "duplicate_key", "같은 키가 여러 번 선언되어 마지막 값만 읽었습니다.", field_path=red.sanitize_string(dup, "diagnostic_field_path")))
+            issues.append(_issue("error", "duplicate_key", "같은 키가 여러 번 선언되어 마지막 값만 읽었습니다.", field_path="channels.<withheld-policy-path>" if dup.startswith("channels.") else red.sanitize_string(dup, "diagnostic_field_path")))
     for container, v in _find_includes(root):
         if relevant(container):
-            out["unresolved"].append(_include_record(tuple(red.sanitize_string(p, "include_source_key") if isinstance(p, str) else p for p in container), v, "이번 단계는 $include 파일을 읽지 않습니다. 정책이 다른 파일에 있을 수 있습니다." if include_ctx is None
+            out["unresolved"].append(_include_record(tuple(red.sanitize_string(p, "include_source_key") if isinstance(p, str) else p for p in _channel_display(container)), v, "이번 단계는 $include 파일을 읽지 않습니다. 정책이 다른 파일에 있을 수 있습니다." if include_ctx is None
                                                      else "$include를 끝까지 해석하지 못했습니다(사유: includes.issues)."))
     if include_ctx is not None:
         from .collector import _include_info
@@ -608,7 +654,7 @@ def collect_permission_auth(config_path: Path, resolve_includes: bool = False, e
     for r in red.env_refs:
         out["unresolved"].append(r)
     out["redactions"] = red.redactions
-    incomplete = any(i["severity"] == "error" for i in issues) or bool(out["unresolved"]) or any(i["code"] == "field_type_invalid" for i in issues)
+    incomplete = any(i["severity"] == "error" for i in issues) or bool(out["unresolved"]) or any(i["code"] in {"field_type_invalid", "channel_policy_container_invalid"} for i in issues)
     out["status"] = "partial" if incomplete else "complete"
     out["outcome"] = "items_read" if items else "no_declared_items"
     return out

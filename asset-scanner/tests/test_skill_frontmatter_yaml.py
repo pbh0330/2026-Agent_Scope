@@ -88,16 +88,16 @@ def test_json5_style_metadata_block_still_works():
 
 # ---- 안전성: 별칭·한도·중복 -------------------------------------------------------------------------------
 
-def test_anchors_aliases_and_tags_are_not_expanded_and_the_keys_are_reported():
+def test_bounded_anchors_and_aliases_are_read_but_python_tags_are_not_constructed():
     v, unparsed, _ = fm("name: n\nbase: &a [1, 2]\ncopy: *a\ntagged: !!python/object/apply:os.system [x]\nok: fine")
-    assert set(unparsed) == {"base", "copy", "tagged"} and v["ok"] == "fine" and "copy" not in v and "tagged" not in v
+    assert unparsed == ["tagged"] and v["base"] == v["copy"] == [1, 2] and v["ok"] == "fine" and "tagged" not in v
 
 
-def test_alias_bomb_is_cheap_because_nothing_is_expanded():
+def test_alias_expansion_stops_at_the_node_budget():
     lines = ["name: n", "a0: &a0 [x]"] + [f"a{i}: &a{i} [*a{i - 1}, *a{i - 1}]" for i in range(1, 30)]
     t0 = time.perf_counter()
     v, unparsed, _ = fm("\n".join(lines))
-    assert time.perf_counter() - t0 < 1.0 and len(unparsed) == 30 and v == {"name": "n"}
+    assert time.perf_counter() - t0 < 1.0 and len(unparsed) >= 20 and v["name"] == "n" and "a29" not in v
 
 
 def test_duplicate_keys_are_reported_at_top_level_and_nested(tmp_path):

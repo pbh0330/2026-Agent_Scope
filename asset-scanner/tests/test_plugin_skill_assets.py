@@ -211,9 +211,9 @@ def test_multiline_metadata_block_is_reinterpreted_and_block_scalars_are_read_bu
     text = "---\nname: n\ndescription: >\n  long folded\n  text\nalias: &a x\nmetadata:\n  openclaw:\n    emoji: \"e\"\n    always: true\n---\nb"
     fm, unparsed, problem = parse_frontmatter(text)
     assert problem is None and fm["metadata"] == {"openclaw": {"emoji": "e", "always": True}}
-    assert fm["description"] == "long folded text\n" and unparsed == ["alias"]
+    assert fm["description"] == "long folded text\n" and unparsed == [] and fm["alias"] == "x"
     s = run(skills_dirs=[make_skill(tmp_path, "n", text)])["skills"][0]
-    assert s["frontmatter"]["description"] == "long folded text\n" and s["frontmatter_unparsed_keys"] == ["alias"]
+    assert s["frontmatter"]["description"] == "long folded text\n" and "frontmatter_unparsed_keys" not in s
     assert s["metadata_openclaw"]["always"] is True
     assert not any(i["code"] == "required_field_missing" for i in s["issues"])        # description을 읽었으므로 필수 필드 누락이 아니다
 

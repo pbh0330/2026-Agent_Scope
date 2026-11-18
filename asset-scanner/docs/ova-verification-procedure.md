@@ -181,3 +181,15 @@ GitHub 고정 커밋의 **사본**을 검증한 것이며 **VM에 설치된 파�
 | 3-6 | Skill 설치 명세 | `metadata.openclaw.install`의 `sha256`이 숫자로 읽히지 않는지(`sha256_state`) | ⟦`install_specs`·`sha256_state`⟧ |
 | 2-7 | 스캐너 직접 조회의 client capabilities | 방식 A에서 `live_discovery` 결과의 `client_capabilities_sent`(스캐너 SDK가 보낸 값, OpenClaw 값 아님) | ⟦`mode`·`capabilities`⟧ |
 | 2-8 | OpenClaw 클라이언트의 client capabilities | 스캐너로는 관측할 수 없음. OpenClaw가 서버에 보낸 값을 확인하려면 서버 측 로그·캡처가 필요(`client_sender` 출처와 함께 저장 캡처에 넣을 수 있음) | ⟦확보 가능 여부⟧ |
+
+
+## 2026-11-18 사전 보완 후 확인
+
+- 현재 수집 원천·필드·검증: [실환경 검증 전 수집 보완](pre-openclaw-development-20261118.md)
+- `requirements-dev.txt`를 설치해 PyYAML 6.0.3 추가 의존성을 반영합니다.
+- VM의 실제 상태/workspace/설치 경계와 읽기 권한을 먼저 확인한 뒤 `installation_inventory`를 실행합니다. 경계 밖 출처를 임의로 따라가지 않습니다.
+- 실제 설치 인덱스 버전·테이블·manifest·installRecords와 결과를 대조합니다. 버전이 다르면 지원 실패를 기록하고 원본 DB를 수정하지 않습니다.
+- MCP OAuth는 `auth_metadata --state-db`, 사용자별 모델 계정은 별도 `--model-account-db` 선택입니다. 원본 인증 DB·토큰을 공유할 필요가 없습니다.
+- JWT를 선택 해석해도 서명·인증 성공·실효 권한은 확인되지 않습니다. 실제 서버의 issuer/resource와 저장 metadata를 별도로 대조합니다.
+- Linux 실행 계정은 담당자가 확인한 실제 Gateway/Node PID로 `process_identity --pid`를 실행합니다. 수집기가 PID의 OpenClaw 소속을 추정하지 않습니다.
+- 기존의 Node/Gateway 식별 유지·목록 대조·실제 도메인/TLS/인증 검증을 이어갑니다. 이 절차 자체를 실환경 검증 완료로 기록하지 않습니다.

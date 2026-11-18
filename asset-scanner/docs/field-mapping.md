@@ -695,3 +695,14 @@ JSON 파서는 같은 키가 두 번 나오면 마지막 값만 남긴다. 앞�
 - 표시 경로가 바뀌거나 설정 키가 가려진 경우: `config_path_redacted: true`, `original_config_pointer_available: false`
 - 원본 경로를 제공하지 못한 항목도 별도 원천으로 보존. 표시 포인터·결과 내 순번을 영속 식별값으로 사용하지 않음
 - 전체 OpenClaw 설정 검증과 실효 권한 계산은 수행하지 않음
+
+
+## 12. 설치·채널·인증·프로세스 원천 추가 (2026-11-18)
+
+- 상세 대응표: [실환경 검증 전 수집 보완](pre-openclaw-development-20261118.md)
+- 채널: `items[].category: channel_policy`, 개인 대상 경로 가림·원래 경로 미확보 상태·목록 개수. 불완전한 부모 객체도 partial로 표시.
+- 설치: `installation_inventory.assets`는 기존 Plugin/Skill 보고서 형식. `installation_records`는 인덱스/설치 원장 원천이며 id+root 일치 시 `index_record_refs`로 연결. 런타임 로딩 근거가 아님.
+- 인증: `auth_metadata.items[].metadata`, `source_ref`, 파일 내 `stored_owner_partition_ref`. 모든 인증값·개인 계정 ID는 비저장. `expires`·`tokenExpiresAt`은 밀리초, 선택 JWT `exp`는 초. 만료 비교는 스캐너 시계 기준이며 인증 성공 판정 아님.
+- 프로세스: 선택 Linux PID의 UID/GID·시작 tick을 관측. 공통 ID·OpenClaw 소속은 미추정.
+- 파일: `entry_file_observations`·`file_kind/basis`는 헤더/확장자 근거. `filesystem_mtime_ns`는 `last_updated`가 아님.
+- 새 모듈·필드는 대시보드 어댑터에 자동 전달되지 않으며 공통 ID 스키마를 변경하지 않음.
