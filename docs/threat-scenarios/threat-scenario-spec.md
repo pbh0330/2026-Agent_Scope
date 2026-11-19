@@ -838,7 +838,7 @@ S2 공격 표면은 원문대로 A·C다. 공통 스키마 0.7 13.3절의 "PR #7
 | `not_evaluated` | 이번 버전에서 평가하지 않음 | 없음 |
 | `error` | 평가 실행 오류 | 없음 |
 
-v2.1에서 `unknown`으로 확정한 경우: 승인 목록 없음(S1-C0), 다른 저장소의 같은 참조 이름(S4-C2), https인데 sslVerify 항목 없음(S5-C3), 한쪽 Tool 정의 미수집(S3-C3).
+v2.1에서 `unknown`으로 확정한 경우: 승인 목록 없음(S1-C0), 다른 저장소의 같은 참조 이름(S4-C2), 한쪽 Tool 정의 미수집(S3-C3). https인데 sslVerify 항목 없음(S5-C3)도 `unknown`이었으나, 2026-11-19 OpenClaw 기본값(검증함)을 확인해 `not_detected`로 바꿨다.
 
 severity(영향·대응 우선순위)와 confidence(근거의 확실성)는 따로 정한다. 조건별 기본값은 카탈로그에 있고 규칙 정책으로 조정한다. 18절 Confidence 기준은 그대로다.
 

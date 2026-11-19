@@ -427,10 +427,10 @@
         {
           "condition_id": "S5-C3",
           "name": "https인데 sslVerify 항목 없음 (구 S5-03)",
-          "result_when_met": "unknown",
+          "result_when_met": "not_detected",
           "severity": null,
           "confidence": null,
-          "note": "생략은 false가 아님. OpenClaw 기본값을 확인하면 not_detected 또는 detected로 바꿈"
+          "note": "생략은 false가 아님. OpenClaw 2026.9.6은 생략 시 인증서 검증을 함(2026-11-17 테스트베드 소스·실측 확인) → not_detected. v2.1 확정 시에는 unknown"
         },
         {
           "condition_id": "S5-C4",

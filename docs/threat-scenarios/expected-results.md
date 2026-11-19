@@ -19,7 +19,7 @@
 |---|---|---|
 | `detected` | 근거와 기준 정책으로 위험 조건을 확인 | 생성 |
 | `not_detected` | 근거와 기준 정책으로 위험 조건이 없음을 확인 | 없음 |
-| `unknown` | 판정에 필요한 입력·근거 부족 (예: 다른 저장소의 같은 참조 이름, sslVerify 항목 없음) | **없음**. 정상으로 세지 않는다 |
+| `unknown` | 판정에 필요한 입력·근거 부족 (예: 다른 저장소의 같은 참조 이름) | **없음**. 정상으로 세지 않는다 |
 | `not_applicable` | 대상이 아님 (예: stdio Server의 S5) | 없음 |
 | `not_evaluated` | 이번 버전에서 평가하지 않는 조건 (예: S4-C4, S5-C4·C5) | 없음 |
 
@@ -71,7 +71,7 @@ QA_GroundTruth 5절 조건 ID 표는 아래 조건 ID로 바꾼다.
 | S3 | S3-C3 | 같은 이름, 한쪽 정의 미수집 | unknown | — |
 | S5 | S5-C1 | 암호화되지 않은 전송 | detected | high / high |
 | S5 | S5-C2 | 인증서 검증 명시적 비활성화 | detected | high / high |
-| S5 | S5-C3 | https인데 sslVerify 항목 없음 | **unknown** | — |
+| S5 | S5-C3 | https인데 sslVerify 항목 없음 | **not_detected** (2026-11-19 확정, 기본값 = 검증함) | — |
 | S5 | S5-C4, S5-C5 | 연결 대상 검증 정보 부족, 적용 범위 불명확 | not_evaluated | — |
 | S5 | S5-NA | stdio 로컬 실행 | not_applicable | — |
 
@@ -382,11 +382,8 @@ S4-T3은 S1 프로파일의 `required: false` S4 항목(조건 `S4-C3`, severity
     "base_profile": "P2",
     "changed_assets": [{"asset_key": "tb-gw/mcp_server/inventory-remote", "changes": {"sslVerify": {"before": true, "after": null}}}],
     "expected_alerts": [],
-    "expected_no_alert": {"scenario": ["S1", "S5"], "targets": ["tb-gw/mcp_server/inventory-remote"], "note": "S5-C2로 경고를 내면 FAIL(생략은 false가 아님)"},
-    "expected_unknown": [
-      {"case": "3", "scenario": "S5", "condition_id": "S5-C3", "target": "tb-gw/mcp_server/inventory-remote",
-       "reason": "https지만 sslVerify 항목이 없어 OpenClaw 기본값에 따라 검증 여부가 갈림. 기본값을 확인하기 전까지 판단 불가"}
-    ]
+    "expected_no_alert": {"scenario": ["S1", "S5"], "targets": ["tb-gw/mcp_server/inventory-remote"], "note": "S5-C3: sslVerify 생략은 OpenClaw 2026.9.6 기본값에서 인증서 검증을 함(안전). 경고를 내면 FAIL"},
+    "expected_unknown": []
   }
 ]
 ```

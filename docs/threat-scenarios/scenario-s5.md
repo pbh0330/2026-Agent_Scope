@@ -335,12 +335,12 @@ Asset Graph에서는 다음 관계를 확인할 수 있도록 한다.
 |---|---|---|---|---|
 | `S5-C1` | S5-01 | 암호화되지 않은 전송 (`http://`, `ws://`) | detected | high / high |
 | `S5-C2` | S5-02 | 인증서 검증 명시적 비활성화 (`sslVerify: false`) | detected | high / high |
-| `S5-C3` | S5-03 | https인데 `sslVerify` 항목 없음 | **unknown** (경고 없음) | — |
+| `S5-C3` | S5-03 | https인데 `sslVerify` 항목 없음 | **not_detected** (안전, 경고 없음). v2.1 확정 시에는 unknown, 2026-11-19 변경 | — |
 | `S5-C4` | S5-04 | 연결 대상 검증 정보 부족 | not_evaluated | 후속 (실제 연결해 받은 인증서 정보 필요) |
 | `S5-C5` | S5-05 | 보안 설정 적용 범위 불명확 | not_evaluated | 후속 (판정 기준 구체화 필요) |
 | `S5-NA` | — | stdio 로컬 실행 | not_applicable | — |
 
-- `S5-C3`: 결정 사항 3. 4.3절 "설정을 확인할 수 없다는 이유만으로 비활성화로 판단하지 않는다"를 그대로 적용한다. OpenClaw의 `sslVerify` 기본값이 문서나 테스트베드 시험으로 확인되면 `S5-C2` 또는 `not_detected`로 바꿀 수 있다. 시험 방법: 게이트웨이의 실습용 CA 신뢰 설정을 잠시 빼고 `sslVerify`를 생략한 설정으로 원격 서버에 연결한다. 거부되면 기본값은 검증함(`not_detected`), 연결되면 검증 안 함(`S5-C2`)이다.
+- `S5-C3`: 결정 사항 3에서는 4.3절 "설정을 확인할 수 없다는 이유만으로 비활성화로 판단하지 않는다"에 따라 `unknown`으로 두었다. 이후 OpenClaw 2026.9.6은 `sslVerify`를 생략하면 인증서 검증을 그대로 한다(2026-11-17 테스트베드 확인: 소스 `mcp-http-fetch`에서 `rejectUnauthorized: false`는 `sslVerify === false`일 때만 설정, 게이트웨이의 실습용 CA 신뢰를 빼고 연결하면 `UNABLE_TO_VERIFY_LEAF_SIGNATURE`로 거부). 그래서 2026-11-19부터 생략은 `not_detected`(안전)로 판정한다. 생략을 `false`로 보지 않는다는 원칙은 그대로이며, 다른 OpenClaw 버전에서 기본값이 바뀌면 다시 확인한다.
 - 최신 스캐너(2026-11-13 이후)는 `sslVerify` 값을 직접 수집한다. 예전 스캐너처럼 키 이름만 있으면 대시보드 어댑터가 설정에서 값을 보강하고 그 사실을 기록한다.
 - `S5-C4`: 연결 대상이 맞는지는 실제로 연결해 받은 서버 인증서 정보(주체·SAN·발급자)가 있어야 판단할 수 있다. 설정 파일만으로는 알 수 없다. 스캐너가 원격 조회 때 본 인증서 정보를 결과에 남기면 평가한다.
 - `S5-C5`: 무엇을 보면 "적용 범위가 불명확"한 위협인지 판정 기준이 아직 구체적이지 않다. 기준을 정한 뒤 평가한다.
@@ -355,7 +355,7 @@ Asset Graph에서는 다음 관계를 확인할 수 있도록 한다.
 | `S5-T0` | P2 정상: https + `sslVerify: true` | `not_detected`, stdio 4개 `not_applicable` |
 | `S5-T1` | url → `http://tb-node:8080/mcp`, `sslVerify` 삭제 | `S5-C1` (+ 동반 `S1-C2`, `S4-C3`) |
 | `S5-T2` | `sslVerify: false` | `S5-C2` |
-| `S5-T3` | `sslVerify` 항목 삭제 | `S5-C3` unknown, 경고 없음 |
+| `S5-T3` | `sslVerify` 항목 삭제 | `S5-C3` not_detected(안전), 경고 없음 |
 
 7.1절 Ground Truth 표의 "위험 설정 1·2"는 T1·T2, "불확실 설정"은 T3이다.
 
