@@ -1,0 +1,18 @@
+{
+  "id": "sample-voice",
+  "name": "Sample Voice Plugin",
+  "version": "0.1.0",
+  "description": "테스트용 가상 플러그인입니다. 실제 플러그인이 아닙니다.",
+  "kind": "memory",
+  "channels": ["sample-voice"],
+  "skills": ["skills"],
+  "configSchema": { "type": "object", "additionalProperties": false, "properties": {} },
+  "mcpServers": {
+    "sample-voice-tools": {
+      "command": "node",
+      "args": ["./server/index.js"],
+      "env": { "SAMPLE_API_KEY": "FAKE-SAMPLE-ENV-VALUE" },
+      "toolFilter": { "include": ["voice_*"] }
+    }
+  }
+}

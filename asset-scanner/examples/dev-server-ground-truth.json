@@ -1,0 +1,30 @@
+{
+  "format": "dev-server-ground-truth",
+  "description": "개발용 MCP 서버(asset_scanner.dev_mcp_server, 시나리오 two-tools)가 tools/list로 광고해야 하는 Tool의 정답 목록입니다. 서버 코드와 별개로 손으로 작성했으며 스캐너 출력과 대조하는 기준입니다. 팀 테스트베드의 정답 목록이 아닙니다.",
+  "server": {"module": "asset_scanner.dev_mcp_server", "scenario": "two-tools", "name": "asset-scanner-dev-server", "version": "0.0.1"},
+  "tools": [
+    {
+      "name": "echo_text",
+      "description": "Echo the given text back unchanged.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {"text": {"type": "string", "description": "Text to echo back"}},
+        "required": ["text"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "add_numbers",
+      "description": "Add two integers and return their sum.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "a": {"type": "integer", "description": "First addend"},
+          "b": {"type": "integer", "description": "Second addend"}
+        },
+        "required": ["a", "b"],
+        "additionalProperties": false
+      }
+    }
+  ]
+}

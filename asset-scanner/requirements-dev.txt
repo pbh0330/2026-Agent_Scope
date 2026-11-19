@@ -1,0 +1,3 @@
+-r requirements.txt
+# 테스트 의존성 (pytest가 함께 설치하는 하위 패키지는 pip freeze 결과: colorama 0.4.6, iniconfig 2.3.0, packaging 26.3, pluggy 1.6.0, Pygments 2.21.0)
+pytest==9.1.1

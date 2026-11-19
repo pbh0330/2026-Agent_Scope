@@ -1,0 +1,23 @@
+// ⚠ 테스트용 가상 설정입니다. 실제 팀·테스트베드 OpenClaw 설정이 아닙니다.
+// 서로 다른 MCP 서버 2개(로컬 stdio 1개, 원격 HTTP 1개)를 선언합니다.
+// 원격 서버는 enabled: false 로 비활성화되어 있습니다. 비활성 서버도 등록 자산으로 수집되어야 합니다.
+{
+  gateway: {
+    port: 18789, // MCP 수집과 무관한 설정
+  },
+  mcp: {
+    servers: {
+      "sample-files": {
+        command: "npx",
+        args: ["-y", "@example/sample-files-mcp", "./workspace",],
+        cwd: "./sandbox",
+      },
+      "sample-remote": {
+        url: "https://mcp.example.test/mcp",
+        transport: "streamable-http",
+        enabled: false,
+        requestTimeoutMs: 20000,
+      },
+    },
+  },
+}
