@@ -1,5 +1,7 @@
 # 자산 스캐너 — OpenClaw MCP 서버 등록 정보 수집기 (1단계)
 
+> **실제 OVA 검증을 진행할 때:** [정철님용 단일 실행 가이드](docs/ova-test-guide.md)를 사용하세요. VM 안에서 코드 준비·설정 및 설치 수집·OpenClaw 직접 조회·MCP 목록 조회·결과 전달까지 순서대로 설명합니다. 실행 코드는 `82c7579`로 고정하며 실제 OVA 결과는 아직 확인하지 않았습니다.
+
 OpenClaw 설정 파일(JSON/JSON5)을 **읽기만 해서** 선택한 등록 영역(기본 `mcp.servers`, 선택 `nodeHost.mcp.servers`)에 등록된 MCP 서버 목록과 출처를 JSON으로 저장합니다.
 
 플러그인 manifest의 `mcpServers`도 `--plugin-manifest`로 명시해 읽을 수 있습니다. 등록 선언만 수집하며 플러그인의 설치·활성화·서버 실행 여부는 판정하지 않습니다.
