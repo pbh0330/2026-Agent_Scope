@@ -7,32 +7,12 @@
   "expected_profile": "S5-T3",
   "expected_source": "testbed/ground-truth/S5-T3.json",
   "expected_version": "2.1",
-  "generated_at": "2026-11-17T10:18:39Z",
+  "generated_at": "2026-11-19T08:07:43Z",
   "detection_report_id": "det-snap-s5-t3-20261117T101839Z",
   "verdict": "PASS",
   "checks": [
     {
       "check_id": "exp-01",
-      "kind": "unknown",
-      "condition_id": "S5-C3",
-      "scenario_id": "S5",
-      "target": "tb-gw/mcp_server/inventory-remote",
-      "asset_id": "srv_8d8aec91ec656a07",
-      "result": "PASS",
-      "expected": {
-        "result": "unknown",
-        "alert": false
-      },
-      "actual": {
-        "results": [
-          "unknown"
-        ]
-      },
-      "evidence_refs": [],
-      "reason": "https지만 sslVerify 항목이 없어 OpenClaw 기본값에 따라 검증 여부가 갈림. 기본값을 확인하기 전까지 판단 불가"
-    },
-    {
-      "check_id": "exp-02",
       "kind": "no_alert",
       "condition_id": null,
       "scenario_id": "S1/S5",
@@ -50,7 +30,7 @@
         "alerts": []
       },
       "evidence_refs": [],
-      "reason": "S5-C2로 경고를 내면 FAIL(생략은 false가 아님)"
+      "reason": "S5-C3: sslVerify 생략은 OpenClaw 2026.9.6 기본 검증 ON(안전) — 경고를 내면 FAIL. 근거: 소스 mcp-http-fetch(rejectUnauthorized는 sslVerify===false에서만) + 실측(CA 미신뢰 시 UNABLE_TO_VERIFY_LEAF_SIGNATURE, 2026-11-17). S1: endpoint 같음"
     }
   ],
   "metrics": [
@@ -78,9 +58,9 @@
     {
       "name": "unknown_kept",
       "scope": "unknown",
-      "numerator": 1,
-      "denominator": 1,
-      "value": 1.0
+      "numerator": 0,
+      "denominator": 0,
+      "value": null
     }
   ],
   "limitations": [

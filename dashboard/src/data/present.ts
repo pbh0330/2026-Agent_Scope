@@ -26,7 +26,7 @@ export const TYPES_8: AssetType[] = ['gateway', 'node', 'mcp_server', 'tool', 'r
 export const SCENARIO_KO: { id: string; name: string; what: string }[] = [
   { id: 'S1', name: '승인 안 된 서버', what: '서버·플러그인 승인 여부' },
   { id: 'S2', name: '도구 권한 과다', what: '에이전트에 보이는 도구 범위' },
-  { id: 'S4', name: '토큰 공유', what: '서버끼리 같은 토큰 사용' },
+  { id: 'S4', name: '토큰 공유', what: '서버 간 자격증명 참조 공유 설정' },
   { id: 'S3', name: '도구 이름 겹침', what: '서로 다른 서버의 같은 도구 이름' },
   { id: 'S5', name: '약한 연결 보안', what: '암호화·인증서 확인' },
 ]
@@ -36,20 +36,20 @@ interface ThreatCopy { title: string; why: string; steps: string[]; phrase: (n: 
 /** 판정 조건(S#-C#)별 사용자 문구. 조건 정의는 docs/threat-scenarios v2.1 */
 export const THREAT_COPY: Record<string, ThreatCopy> = {
   'S1-C1': {
-    title: '승인하지 않은 서버가 연결됐어요',
-    why: '관리자가 승인한 목록에 없는 MCP 서버가 에이전트 설정에 들어 있어요. 에이전트가 이 서버의 도구를 바로 쓸 수 있어서, 누가 왜 넣었는지 모르면 정보가 밖으로 새거나 원치 않는 동작이 일어날 수 있어요.',
+    title: '승인하지 않은 서버가 등록됐어요',
+    why: '관리자가 승인한 목록에 없는 MCP 서버가 에이전트 설정에 들어 있어요. 설정만으로 실제 도구 호출 가능 여부는 확정할 수 없어요. 누가 왜 넣었는지 모르면 정보가 밖으로 새거나 원치 않는 동작이 일어날 수 있어요.',
     steps: ['이 서버를 추가한 사람이 있는지 팀에 확인하세요.', '쓰지 않는 서버면 설정에서 지우세요.', '쓰는 서버면 승인 목록에 올리세요.'],
-    phrase: n => `승인하지 않은 서버 ${n}개가 연결됐어요`,
+    phrase: n => `승인하지 않은 서버 ${n}개가 등록됐어요`,
   },
   'S1-C2': {
     title: '서버 주소가 바뀌었어요',
-    why: '승인할 때와 다른 주소로 연결되고 있어요. 누군가 연결 대상을 바꿨다면 에이전트가 주고받는 내용이 다른 곳으로 갈 수 있어요.',
+    why: '승인할 때와 다른 주소가 설정돼 있어요. 누군가 연결 대상을 바꿨다면 에이전트가 주고받는 내용이 다른 곳으로 갈 수 있어요.',
     steps: ['바뀐 주소가 맞는지 설정을 바꾼 사람에게 확인하세요.', '의도하지 않은 변경이면 승인된 주소로 되돌리세요.', '맞는 변경이면 승인 목록의 주소를 갱신하세요.'],
     phrase: n => `승인된 서버 ${n}개의 연결 설정이 바뀌었어요`,
   },
   'S1-C3': {
     title: '승인하지 않은 플러그인이 서버를 추가했어요',
-    why: '승인 목록에 없는 플러그인이 MCP 서버를 함께 등록했어요. 플러그인을 설치하는 것만으로 에이전트가 쓸 수 있는 도구가 늘어나요.',
+    why: '승인 목록에 없는 플러그인이 MCP 서버를 함께 등록했어요. 등록된 도구가 에이전트에 노출되는지와 실제 호출 가능한지는 별도 확인이 필요해요.',
     steps: ['이 플러그인을 설치한 적이 있는지 확인하세요.', '필요 없으면 플러그인을 삭제하세요.', '필요하면 플러그인을 승인 목록에 올리세요.'],
     phrase: n => `승인하지 않은 플러그인이 서버 ${n}개를 추가했어요`,
   },
@@ -96,16 +96,16 @@ export const THREAT_COPY: Record<string, ThreatCopy> = {
     phrase: n => `겹쳐 있는 도구 ${n}건`,
   },
   'S4-C1': {
-    title: '서버 여러 개가 같은 토큰을 써요',
-    why: '하나의 인증 토큰을 여러 서버가 같이 쓰고 있어요. 한 서버에서 토큰이 새면 다른 서버까지 함께 뚫려요.',
+    title: '서버 여러 개에 같은 자격증명 참조가 설정됐어요',
+    why: '같은 저장소의 자격증명 참조가 여러 서버에 설정돼 있어요. 실제 비밀값의 동일성이나 인증 성공을 확인한 것은 아니에요. 참조한 자격증명이 유출되면 영향 범위가 커질 수 있어요.',
     steps: ['서버마다 따로 토큰을 발급하세요.', '함께 쓰던 토큰은 교체하세요.'],
-    phrase: n => `같은 토큰을 쓰는 곳 ${n}건`,
+    phrase: n => `같은 자격증명 참조를 공유하는 설정 ${n}건`,
   },
   'S4-C3': {
-    title: '토큰이 바뀐 주소로 보내지고 있어요',
-    why: '인증 토큰이 승인되지 않은 주소로 함께 전송돼요. 그 주소가 다른 사람의 서버라면 토큰이 그대로 넘어가요.',
+    title: '미승인 주소에 자격증명 참조가 설정됐어요',
+    why: '승인되지 않은 주소에 인증 참조가 설정돼 있어요. 실제 전송을 확인한 것은 아니지만 연결 시 자격증명이 노출될 수 있어요.',
     steps: ['서버 주소가 왜 바뀌었는지 먼저 확인하세요.', '의도하지 않은 변경이면 토큰을 바로 새로 발급하세요.', '주소를 승인된 곳으로 되돌리세요.'],
-    phrase: n => `토큰 ${n}개가 바뀐 주소로 보내지고 있어요`,
+    phrase: n => `미승인 주소의 자격증명 참조 설정 ${n}건`,
   },
   'S5-C1': {
     title: '암호화되지 않은 연결이에요',
@@ -277,7 +277,8 @@ export function serverLead(m: Model, p: Present, a: Asset): string {
   const by = p.addedBy(a)
   const route = by ? `${p.name(by)}${josa(p.name(by), '이', '가')} 추가한` : h ? `${p.name(h)} 설정에 등록된` : '설정에 등록된'
   const t = transportOf(a)
-  return t ? `${route} ${t === 'local' ? '같은 장치에서 실행되는' : '인터넷 주소로 연결하는'} 서버예요.` : `${route} 서버예요. 연결 방식은 확인하지 못했어요.`
+  // 설정에 적힌 연결 방식만 말한다. 실제로 실행·연결됐는지는 정적 점검으로 알 수 없다.
+  return t ? `${route} 서버예요. 설정상 ${t === 'local' ? '명령을 실행해 띄우는' : '인터넷 주소로 접속하는'} 방식이에요.` : `${route} 서버예요. 연결 방식은 확인하지 못했어요.`
 }
 
 /** 서버의 도구·리소스 수 */
@@ -299,9 +300,18 @@ const TOOL_KO: Record<string, string> = {
   read_text_file: '파일 내용 읽기', read_file: '파일 내용 읽기', read_multiple_files: '여러 파일 읽기', write_file: '파일 쓰기', edit_file: '파일 고치기',
   list_directory: '폴더 목록 보기', directory_tree: '폴더 구조 보기', search_files: '파일 찾기', get_file_info: '파일 정보 보기', create_directory: '폴더 만들기',
   move_file: '파일 옮기기', list_allowed_directories: '열린 폴더 보기',
+  tool_search: '쓸 도구 찾기', inventory_get_host: '서버 정보 조회', inventory_list_hosts: '서버 목록 조회',
+  create_entities: '기억 항목 만들기', read_graph: '기억 전체 읽기', open_nodes: '기억 항목 열기', search_nodes: '기억 검색',
+  'get-sum': '숫자 더하기', echo: '받은 말 되돌려 주기',
 }
-export function usageToolName(label: string, source?: string): { name: string; kind: string } {
+/**
+ * 사용량 목록의 이름. 자산에 연결된 기록은 연결된 도구 자산과 그 서버로 이름을 만들고(서버가 정한 도구 이름은 그대로 써도 된다),
+ * 연결되지 않은 에이전트 기본 도구(core)는 하는 일 이름으로 쓴다. 기록의 노출 이름(fs-workspace__… 등 설정 이름)에서 뜻을 추측하지 않는다.
+ */
+export function usageToolName(label: string, source?: string, tool?: Asset, server?: string, linkedId?: string | null): { name: string; kind: string } {
+  if (tool) return { name: TOOL_KO[tool.name] ?? tool.name, kind: server ? `${server} 도구` : 'MCP 서버 도구' }
+  if (linkedId) return { name: '이 구성에 없는 도구', kind: '다른 구성의 자산에 연결됨' }
   const raw = label.includes('__') ? label.split('__').slice(1).join('__') : label
-  const kind = source === 'mcp' || label.includes('__') ? 'MCP 서버 도구' : '에이전트 기본 도구'
-  return { name: TOOL_KO[raw] ?? (kind === 'MCP 서버 도구' ? '이름 없는 MCP 도구' : '이름 없는 기본 도구'), kind }
+  const core = source === 'core'
+  return { name: TOOL_KO[raw] ?? (core ? raw : '자산에 연결되지 않은 도구'), kind: core ? '에이전트 기본 도구' : '연결 안 됨' }
 }

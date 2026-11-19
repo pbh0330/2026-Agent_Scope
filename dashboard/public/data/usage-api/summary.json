@@ -1,12 +1,12 @@
 {
   "window": {
-    "start": "2026-10-29T05:24:02.000Z",
-    "end": "2026-10-29T05:29:03.000Z"
+    "start": "2026-11-18T14:31:32.000Z",
+    "end": "2026-11-18T15:14:25.000Z"
   },
   "estimated": true,
-  "calls": 16,
-  "attributed_tokens": 15769,
-  "estimated_cost_usd": 0.015769,
+  "calls": 37,
+  "attributed_tokens": 39118,
+  "estimated_cost_usd": 0.0039118,
   "pricing": {
     "currency": "USD",
     "sources": [
@@ -15,27 +15,27 @@
   },
   "by_method": {
     "allocated": {
-      "calls": 13,
-      "tokens": 13501
+      "calls": 12,
+      "tokens": 18489
     },
     "not_computed": {
       "calls": 0
     },
     "sequential": {
-      "calls": 3,
-      "tokens": 2268
+      "calls": 25,
+      "tokens": 20629
     }
   },
   "by_mapping": {
     "ambiguous": 0,
-    "matched": 0,
-    "unmatched": 16
+    "matched": 13,
+    "unmatched": 24
   },
   "data_quality": {
     "missing_counts": 0,
     "not_computed": 0,
-    "negative_delta": 0,
+    "negative_delta": 5,
     "calls_without_cost": 0,
-    "inventory_snapshot_id": null
+    "inventory_snapshot_id": "snap-p2-20261117T101837Z"
   }
 }

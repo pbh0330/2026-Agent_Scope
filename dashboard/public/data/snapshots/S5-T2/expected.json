@@ -7,7 +7,7 @@
   "expected_profile": "S5-T2",
   "expected_source": "testbed/ground-truth/S5-T2.json",
   "expected_version": "2.1",
-  "generated_at": "2026-11-17T10:18:39Z",
+  "generated_at": "2026-11-19T08:07:43Z",
   "detection_report_id": "det-snap-s5-t2-20261117T101839Z",
   "verdict": "PASS",
   "checks": [

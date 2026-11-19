@@ -433,7 +433,10 @@ class Detector:
             elif ssl is True:
                 self.evaluate("S5-C2", ids, "not_detected", "sslVerify true", evs, rel)
             else:
-                self.evaluate("S5-C3", ids, "unknown", "sslVerify 항목이 없음 — 기본값을 확인하지 못해 비활성으로 판단하지 않음")
+                # 2026-11-17 테스트베드 확정: OpenClaw 2026.9.6은 sslVerify를 생략하면 인증서 검증을 그대로 한다
+                # (소스 mcp-http-fetch: rejectUnauthorized:false는 sslVerify===false일 때만, 실측: CA 미신뢰 시 연결 거부).
+                self.evaluate("S5-C3", ids, "not_detected",
+                              "sslVerify 항목 없음 — OpenClaw 기본값은 인증서 검증을 함(2026-11-17 소스·실측 확인)", evs, rel)
         if remote:
             self.evaluate("S5-C4", remote, "not_evaluated", "연결 대상 검증 정보(인증서 주체·핀 등) 미수집 — v2.1 범위 밖")
             self.evaluate("S5-C5", remote, "not_evaluated", "보안 설정 적용 범위 분석 — v2.1 범위 밖")

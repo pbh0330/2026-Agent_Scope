@@ -2,24 +2,24 @@
   "status": "ok",
   "mode": "fixed",
   "data_window": {
-    "start": "2026-10-29T05:24:02.000Z",
-    "end": "2026-10-29T05:29:03.000Z"
+    "start": "2026-11-18T14:31:32.000Z",
+    "end": "2026-11-18T15:14:25.000Z"
   },
-  "records": 16,
-  "brake_events": null,
+  "records": 37,
+  "brake_events": 0,
   "sources": [
-    "pc-1029.traces.jsonl"
+    "agentscope-traces.jsonl"
   ],
-  "loaded_at": "2026-11-14T17:29:56.909Z",
+  "loaded_at": "2026-11-18T15:20:58.300Z",
   "last_error": null,
-  "inventory_snapshot_id": null,
+  "inventory_snapshot_id": "snap-p2-20261117T101837Z",
   "missing_counts": 0,
   "limitations": [
     "approx_input_tokens is an estimate of how much a tool result added to the next model input; it is not billed usage and must not be added to model-level input/output/cache totals.",
     "environment_id and profile_id are injected by the adapter because the telemetry carries only host-level resource attributes.",
     "Parallel and batch segments split their measured input increase using per-result token counts from the token-count API (attribution_method=parallel-token-count / batch-token-count): each result first gets a fixed per-result overhead k, the rest is split in proportion to the counts, and the split preserves the segment total.",
-    "Per-result overhead k for claude-haiku-4-5-20251001 is 16 tokens: the median of (measured increase - counted tokens) over 3 sequential segment(s) in this data.",
-    "inventory_snapshot_id is null: no InventorySnapshot was provided, so every record is unmatched.",
+    "Per-result overhead k for claude-haiku-5-5 is 12 tokens: the median of (measured increase - counted tokens) over 3 sequential segment(s) in this data.",
+    "Tool mapping reproduces OpenClaw's provider-safe tool names (<server>__<tool>, 64-char limit) and node-hosted tool names (<server>_<tool>, servers declared under nodeHost.mcp.servers) from the snapshot; names that OpenClaw de-duplicated with a -N suffix cannot be resolved statically.",
     "pricing.source=reference_list_price uses public list prices for reference because the configured price is zero or missing; it is not the actual bill.",
     "A run cut off at the end of the capture can leave its last tools unattributed; re-run the adapter on a later capture that contains the whole run."
   ]

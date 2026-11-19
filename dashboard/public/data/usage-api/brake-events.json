@@ -1,9 +1,9 @@
 {
   "window": {
-    "start": "2026-10-29T05:24:02.000Z",
-    "end": "2026-10-29T05:29:03.000Z"
+    "start": "2026-11-18T14:31:32.000Z",
+    "end": "2026-11-18T15:14:25.000Z"
   },
-  "available": false,
+  "available": true,
   "by_level": {
     "approve": 0,
     "block": 0,

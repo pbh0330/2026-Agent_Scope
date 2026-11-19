@@ -64,7 +64,7 @@ go run ./cmd/agentscope-usage-api --env agentscope-testbed --profile tb-openclaw
 #                    --tool-results ~/.openclaw/agentscope/agentscope-tool-results.jsonl (+ 같은 --env/--profile/--inventory)
 ```
 
-- **스냅샷 연결(`--inventory`)**: 자산 지도에서 서버를 눌렀을 때의 "AI 사용량"은 API를 대시보드 스냅샷 파일과 같은 `--env agentscope-testbed --profile tb-openclaw`로 띄웠을 때만 채워집니다. 값이 다르면 API가 시작을 거부합니다. 대시보드는 이름으로 추측해서 연결하지 않습니다. 위 예시의 PC 실측 데이터(16건)는 테스트베드 도구가 아니라서 연결 0건이 정상입니다.
+- **스냅샷 연결(`--inventory`)**: 자산 지도에서 서버를 눌렀을 때의 "AI 사용량"은 API를 대시보드 스냅샷 파일과 같은 `--env agentscope-testbed --profile tb-openclaw`로 띄웠을 때만 채워집니다. 값이 다르면 API가 시작을 거부합니다. 대시보드는 이름으로 추측해서 연결하지 않습니다. 위 예시의 PC 실측 데이터(16건)는 테스트베드 도구가 아니라서 연결 0건이 정상입니다. 저장된 사본(아래)은 테스트베드 실측이라 MCP 서버 4개가 모두 연결돼 있습니다.
 - **API 주소(`USAGE_API_TARGET`)**: 기본은 같은 PC(`http://127.0.0.1:8088`)입니다. 테스트베드 tb-gw의 API에 붙이려면 주소를 바꿔 개발 서버를 띄웁니다. API가 CORS를 지원하지 않아 브라우저에서 직접 부를 수 없으므로 항상 이 프록시를 거칩니다.
 
 ```powershell
@@ -99,7 +99,7 @@ cd dashboard
 
 - `--scenarios`를 생략하면 `pipeline/policies`의 사본(카탈로그·S2 정책·기대 결과)을 씁니다.
 - `--testbed`에 `profiles/S1`이 없으면(예: develop만 받은 경우) S1 스냅샷을 건너뛰고, `ground-truth/approved-servers.json`이 없으면 `pipeline/policies` 사본을 씁니다.
-- `--usage-api http://127.0.0.1:8088`(선택): 실행 중인 사용 현황 API의 응답(summary, by-asset, records, timeseries, brake-events, health)을 `public/data/usage-api/`에 저장합니다. 지금 사본은 10/29 PC 실측 16건(고정 응답 모드)이고 플러그인 기록이 없어 브레이크는 비어 있습니다.
+- `--usage-api http://127.0.0.1:8088`(선택): 실행 중인 사용 현황 API의 응답(summary, by-asset, records, timeseries, brake-events, health)을 `public/data/usage-api/`에 저장합니다. 지금 사본은 토큰 수집기 파트가 만든 **테스트베드 tb-gw 실측(11.18) 37건**입니다(`token-collector/backend/usageapi/static/tb-1119`, P2 스냅샷 `snap-p2-20261117T101837Z`에 연결, 귀속 토큰 39,118, 토큰 수 누락 0). MCP 서버 4개 모두 서버별 사용량이 있고, 에이전트 기본 도구(core) 24건은 자산이 아니라 연결 대상이 없습니다. 브레이크는 기준을 넘은 실행이 없어 0건입니다. 자산 ID는 구성 사이에 같아서 S1 등 다른 구성에서도 같은 서버에 사용량이 보입니다. 테스트 요청은 도구 이름을 지정해 보낸 것이라 사용량 크기는 정상 사용 분포가 아닙니다.
 - `--usage`(선택, 이전 방식): usage.json 파일을 그대로 복사합니다(`token-collector/backend/usagereport/testdata/example.usage.json`). 화면은 API 형식만 읽습니다.
 
 브랜치가 아직 합쳐지지 않았다면 각 브랜치를 따로 받아 둔 폴더 경로를 넘기면 됩니다.
@@ -131,7 +131,7 @@ cd dashboard
 | S4 | S4-T1, T2 | **VM 수집** SNAP-3-S4 |
 | S3 | S3-T1, T2 | **VM 수집** SNAP-3-S3 (inventory-remote 실제 광고본) |
 | S1-T5 | 선언 위치 이상 | 설정 사본(VM 미구축) — 수집본은 P2 기준, 바뀐 서버의 노출은 미확인 |
-| S5-T1~T3 | 평문 전송, 인증서 검증 끔, sslVerify 없음 | 설정 사본(VM 미구축) |
+| S5-T1~T3 | 평문 전송, 인증서 검증 끔, sslVerify 없음(= 안전, OpenClaw 기본값은 검증함) | 설정 사본(VM 미구축) |
 
 대시보드가 직접 만든 합성 구성은 없습니다.
 
@@ -143,7 +143,8 @@ cd dashboard
 - **스캐너 값 우선**: 최신 스캐너(11/13)가 `sslVerify`·`toolFilter` 선언값을 직접 수집하므로 그 값을 그대로 씁니다. 예전 스캐너처럼 키 이름만 있을 때에만 어댑터가 설정에서 보강하고 `adapter_supplement`로 기록합니다. 최신 수집값을 덮어쓰지 않습니다(QA-INT-02). 플러그인이 등록한 서버도 스캐너 `--plugin-manifest` 결과(비밀값 가림 적용)를 우선 씁니다.
 - **MCP 버전**: 스캐너 tools_catalog가 `2025-11-25`·`2026-07-28`을 모두 지원하게 되어, 저장된 `*.advertised.json`을 스캐너가 읽은 결과로 Tool 자산을 만듭니다(수집 작업 `details.parsed_by`). 스캐너가 읽지 못한 경우에만 원본을 직접 읽고 사유를 남깁니다.
 - **탐지기**: 팀 탐지 모듈이 아직 없어 위협 시나리오 v2.1(부록 A, `scenario-catalog.json`)을 옮긴 구현(`detector.py`)을 넣었습니다. 조건 ID(`S1-C1` 등)와 기본 심각도·신뢰도는 카탈로그에서 읽고, 판정 기준은 S1·S4-C3 `approved-servers.json`, S2 `expected-tool-policy.json`입니다. 모든 위험 구성에서 `expected-results.md`의 필수 경고·비경고·판단 불가와 일치하는 것을 확인했습니다. 평가를 항상 함께 출력해 "이상 없음"과 "판단 불가"를 구분하며, 탐지 모듈이 생기면 같은 `detections.json` 형식으로 교체하면 화면은 그대로입니다.
-- **토큰 사용**: 사용 현황 API 응답 필드를 그대로 씁니다(`src/types/contracts.ts`의 Usage* 타입, `src/data/usage.ts`). 지금 사본은 PC 실측 데이터(`env-pc`)라 테스트베드 스냅샷과 자산 연결이 0건입니다. 테스트베드 실시간 모드에서 `--inventory`로 띄우면 이어집니다. 사용 기록은 자산의 "사용됨" 상태를 바꾸지 않고 따로 표시합니다(스키마 14.2).
+- **S5-C3(sslVerify 생략)**: 2026-11-17 테스트베드에서 OpenClaw 2026.9.6은 생략 시 인증서 검증을 그대로 한다는 것을 소스·실측으로 확인했습니다(`fix/testbed-s5t3-sslverify-default`). 그래서 생략은 `not_detected`(안전)로 판정하고, S5-T3 정답도 `expected_unknown` → `expected_no_alert`로 바뀌었습니다. 생략을 `false`로 보지 않는다는 원칙은 그대로입니다.
+- **토큰 사용**: 사용 현황 API 응답 필드를 그대로 씁니다(`src/types/contracts.ts`의 Usage* 타입, `src/data/usage.ts`). 지금 사본은 테스트베드 실측 37건이라 MCP 도구 기록 13건이 모두 자산에 연결돼 있습니다. 자산 지도 아래 "AI 사용량"에서 서버별·도구별로, 서버 상세 패널에서 그 서버의 사용량으로 보입니다. 에이전트 기본 도구(core)는 자산이 아니라 "에이전트 기본 도구"로 따로 묶습니다. 사용 기록의 이름(`fs-workspace__…` 같은 설정 이름)에서 뜻을 추측하지 않고, 연결된 도구 자산과 그 서버 이름으로 표시합니다. 사용 기록은 자산의 "사용됨" 상태를 바꾸지 않고 따로 표시합니다(스키마 14.2).
 
 ## QA 첫 통합 실행(QA-INT-01) 대조표
 

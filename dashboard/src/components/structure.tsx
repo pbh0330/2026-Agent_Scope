@@ -1,4 +1,4 @@
-// 자산 지도: 어디서 실행되나(게이트웨이·노드) → 무엇이 연결됐나(MCP 서버) → 무엇을 할 수 있나(도구·리소스)
+// 자산 지도: 어디에 선언됐나(게이트웨이·노드) → 무엇이 연결됐나(MCP 서버) → 무엇을 할 수 있나(도구·리소스)
 // 플러그인·스킬·권한·인증은 실행 위치 상자 안에 개수로, 세부는 오른쪽 패널에서 보여 준다.
 // 색은 상태에만 쓴다: 빨강=위협, 초록=에이전트에 보이는 도구, 회색=막힘·확인 못 함.
 import { ChevronDown, ChevronRight, Lock, X } from 'lucide-react'
@@ -132,7 +132,7 @@ export function StructureMap({ model, present, mode = 'all', focus, picked, onPi
         <defs>
           <linearGradient id="sm-host" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#5B5FEF" /><stop offset="1" stopColor="#8B6CF6" /></linearGradient>
         </defs>
-        {[[C1 + HW / 2, '어디서 실행되나'], [C2 + SW / 2, '무엇이 연결됐나'], [(C3 + W) / 2, '무엇을 할 수 있나']].map(([x, t]) => (
+        {[[C1 + HW / 2, '어디에 선언됐나'], [C2 + SW / 2, '무엇이 연결됐나'], [(C3 + W) / 2, '무엇을 할 수 있나']].map(([x, t]) => (
           <text key={t as string} x={x as number} y={22} textAnchor="middle" fontSize={14} fontWeight={800} fill="var(--ink-3)">{t}</text>
         ))}
         <line x1={20} x2={W - 20} y1={36} y2={36} stroke="var(--line)" />

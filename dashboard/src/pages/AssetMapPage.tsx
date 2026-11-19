@@ -47,7 +47,7 @@ export function AssetMapPage({ model, present, usage, onThreat, initial }: {
       <ScanScope model={model} present={present} />
       {pick && <AssetPanel model={model} present={present} pick={pick} usage={usage} onClose={() => setPick(null)} onThreat={onThreat} onPick={setPick} />}
 
-      <UsageSection usage={usage} />
+      <UsageSection usage={usage} model={model} present={present} />
     </>
   )
 }
@@ -179,7 +179,8 @@ function toPick(v?: string): MapPick | null {
   return { kind: 'asset', id: v }
 }
 
-function UsageSection({ usage }: { usage: UsageBundle | null }) {
+function UsageSection({ usage, model, present }: { usage: UsageBundle | null; model: Model; present: Present }) {
+  const [more, setMore] = useState(false)
   if (!usage) {
     return (
       <section className="usage-sec">
@@ -194,7 +195,9 @@ function UsageSection({ usage }: { usage: UsageBundle | null }) {
   const points = usage.timeseries.total.points.map(p => ({ label: fmt(p.t), value: p.tokens, note: `요청 ${p.calls}번` }))
   const items = usage.byAsset.asset.items.slice().sort((a, b) => b.tokens - a.tokens)
   const max = Math.max(1, ...items.map(i => i.tokens))
-  const linked = items.filter(i => i.asset_id).length
+  // 에이전트 기본 도구(core)는 자산이 아니라 연결 대상이 없다. 연결이 빠진 것은 MCP·플러그인 도구 기록만 센다.
+  const TOP = 8
+  const unlinked = items.filter(i => !i.asset_id && i.tool_source !== 'core').length
   return (
     <section className="usage-sec">
       <h2 className="sec-title">AI 사용량</h2>
@@ -207,12 +210,22 @@ function UsageSection({ usage }: { usage: UsageBundle | null }) {
             <div><span>예상 비용</span><b>{s.estimated_cost_usd == null ? '—' : `약 $${s.estimated_cost_usd < 0.01 ? s.estimated_cost_usd.toFixed(3) : s.estimated_cost_usd.toFixed(2)}`}</b></div>
           </div>
           <AreaChart points={points} unit=" 토큰" />
+          <h3 className="us-h">서버별</h3>
+          <ul className="us">
+            {usage.byAsset.server.items.slice().sort((x, y) => y.tokens - x.tokens).map(i => {
+              const a = i.asset_id ? model.byId.get(i.asset_id) : undefined
+              const label = a ? present.name(a) : i.key === 'source:core' ? '에이전트 기본 도구' : i.asset_id ? '이 구성에 없는 서버' : '연결되지 않은 기록'
+              return <li key={i.key}><span>{label}</span><em>{i.calls}번</em><b>{i.tokens.toLocaleString('ko-KR')}</b></li>
+            })}
+          </ul>
         </div>
         <div className="card">
           <div className="card-h row"><h2>어디에 썼나</h2><small className="muted">도구별</small></div>
           <ul className="ul">
-            {items.map(i => {
-              const n = usageToolName(i.label, i.tool_source)
+            {(more ? items : items.slice(0, TOP)).map(i => {
+              const tool = i.asset_id ? model.byId.get(i.asset_id) : undefined
+              const srv = tool?.owner_ref ? model.byId.get(tool.owner_ref) : undefined
+              const n = usageToolName(i.label, i.tool_source, tool, srv ? present.name(srv) : undefined, i.asset_id)
               return (
                 <li key={i.key}>
                   <div><b>{n.name}</b><em>{n.kind} · {i.calls}번</em></div>
@@ -222,7 +235,12 @@ function UsageSection({ usage }: { usage: UsageBundle | null }) {
               )
             })}
           </ul>
-          {linked < items.length && <p className="emp">자산 지도의 서버와 아직 연결되지 않은 기록이 있어요. 연결되면 서버를 눌렀을 때 그 서버의 사용량이 함께 보여요.</p>}
+          {items.length > TOP && (
+            <button className="more-btn" onClick={() => setMore(!more)}>{more ? '접기' : `나머지 ${items.length - TOP}개 보기`}</button>
+          )}
+          {unlinked > 0
+            ? <p className="emp">자산 지도의 서버와 연결되지 않은 도구 기록이 {unlinked}건 있어요. 연결되면 서버를 눌렀을 때 그 서버의 사용량이 함께 보여요.</p>
+            : <p className="emp">MCP 서버 도구 기록은 모두 자산 지도의 서버와 연결돼 있어요. 서버를 누르면 그 서버의 사용량이 보여요.</p>}
         </div>
       </div>
     </section>

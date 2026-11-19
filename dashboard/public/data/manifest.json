@@ -350,7 +350,7 @@
       "expected": {
         "verdict": "PASS",
         "counts": {
-          "PASS": 2,
+          "PASS": 1,
           "PARTIAL": 0,
           "FAIL": 0,
           "SKIP": 0,
@@ -499,13 +499,13 @@
   "usage_api": {
     "dir": "usage-api",
     "api_base": "/api/v1/usage",
-    "captured_at": "2026-11-14T17:32:42Z",
+    "captured_at": "2026-11-18T15:20:58.300Z",
     "mode": "fixed",
     "sources": [
-      "pc-1029.traces.jsonl"
+      "agentscope-traces.jsonl"
     ],
-    "records": 16,
-    "inventory_snapshot_id": null,
-    "source": "feature/token-collector · backend/usageapi (agentscope-usage-api)"
+    "records": 37,
+    "inventory_snapshot_id": "snap-p2-20261117T101837Z",
+    "source": "feature/token-collector · backend/usageapi/static/tb-1119 (테스트베드 tb-gw 실측 11.18, P2 스냅샷 연결)"
   }
 }

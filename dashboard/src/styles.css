@@ -344,3 +344,11 @@ p { margin: 0; }
 .contract li { display: grid; gap: 2px; padding: 10px 12px; border-radius: 10px; background: var(--rose-t); }
 .contract code { font-size: .8rem; color: var(--ink-2); overflow-wrap: anywhere; }
 .contract span { font-size: .92rem; }
+
+.more-btn { margin-top: 10px; width: 100%; padding: 8px 0; border: 0; border-radius: 10px; background: var(--sunken); color: var(--ink-2); font: inherit; font-size: .88rem; font-weight: 700; cursor: pointer; }
+.more-btn:hover { color: var(--indigo); }
+.us-h { margin: 18px 0 8px; font-size: .95rem; font-weight: 800; }
+.us { list-style: none; margin: 0; padding: 0; display: grid; }
+.us li { display: grid; grid-template-columns: 1fr auto auto; gap: 14px; align-items: baseline; padding: 9px 0; border-top: 1px solid var(--line); font-size: .92rem; }
+.us li em { font-style: normal; color: var(--ink-3); font-size: .84rem; }
+.us li b { font-weight: 800; min-width: 64px; text-align: right; }

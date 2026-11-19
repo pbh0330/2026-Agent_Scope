@@ -7,7 +7,7 @@
   "expected_profile": "S4",
   "expected_source": "testbed/ground-truth/S4.json",
   "expected_version": "2.1",
-  "generated_at": "2026-11-17T10:18:38Z",
+  "generated_at": "2026-11-19T08:07:43Z",
   "detection_report_id": "det-snap-s4-20261117T101838Z",
   "verdict": "PASS",
   "checks": [

@@ -3,7 +3,7 @@
   "catalog_version": "2.1",
   "schema_version": "0.7.0-draft",
   "generated_from": "docs/threat-scenarios/scenario-s1..s5.md v2.1 (2026-11-08)",
-  "owner": "위협 시나리오 파트",
+  "owner": "위협 시나리오·대시보드 파트",
   "note": "필수 필드는 schema-design-draft 13절 ScenarioDefinition. conditions·priority_grade·related_surfaces·qa_case_ids·doc·excluded는 이 카탈로그의 확장 필드. severity·confidence는 조건 충족 시 기본값이며 규칙 정책에서 결정한다.",
   "priority_basis": "구현 순서 S1→S2→S4→S3→S5 (PR #4 순서, 2026-11-08 담당자 확정). priority_grade(P1~P3)는 위험 등급으로 별도 유지",
   "scenarios": [
@@ -274,7 +274,7 @@
           "result_when_met": "not_evaluated",
           "severity": null,
           "confidence": null,
-          "note": "scope·audience 미수집, 후속"
+          "note": "scope·audience 미수집. 테스트베드 토큰은 Bearer 값이라 설정에 권한 범위 정보 자체가 없음. 범위 정보가 있는 인증 방식(OAuth 등)을 수집하게 되면 평가. 후속"
         }
       ],
       "excluded": [],
@@ -427,10 +427,10 @@
         {
           "condition_id": "S5-C3",
           "name": "https인데 sslVerify 항목 없음 (구 S5-03)",
-          "result_when_met": "unknown",
+          "result_when_met": "not_detected",
           "severity": null,
           "confidence": null,
-          "note": "생략은 false가 아님"
+          "note": "생략은 false가 아님. OpenClaw 2026.9.6은 생략 시 인증서 검증을 함(2026-11-17 테스트베드 소스·실측 확인) → not_detected. v2.1 확정 시에는 unknown"
         },
         {
           "condition_id": "S5-C4",
@@ -438,7 +438,7 @@
           "result_when_met": "not_evaluated",
           "severity": null,
           "confidence": null,
-          "note": "후속"
+          "note": "실제로 연결해 받은 서버 인증서 정보(주체·SAN·발급자)가 필요. 설정 파일만으로는 판단할 수 없음. 스캐너가 결과에 남기면 평가. 후속"
         },
         {
           "condition_id": "S5-C5",
@@ -446,7 +446,7 @@
           "result_when_met": "not_evaluated",
           "severity": null,
           "confidence": null,
-          "note": "후속"
+          "note": "판정 기준이 아직 구체적이지 않음(무엇을 보면 위협인지 정의 필요). 기준을 정한 뒤 평가. 후속"
         },
         {
           "condition_id": "S5-NA",

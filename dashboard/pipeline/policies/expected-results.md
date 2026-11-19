@@ -1,15 +1,15 @@
 # S1~S5 기대 결과 (QA·테스트베드 인계용)
 
-> 문서 버전: v2.1 · 기준일 2026-11-08 · 작성: 위협 시나리오 파트  
+> 문서 버전: v2.1 · 기준일 2026-11-08 · 작성: 위협 시나리오·대시보드 파트  
 > 기준 구성: `SNAP-2-P2` (테스트베드 정상군 P2)  
 > 조건 ID·심각도·신뢰도 기본값: [`scenario-catalog.json`](scenario-catalog.json)  
 > 판정 기준 정책: S1 `testbed/ground-truth/approved-servers.json`, S2 [`policies/expected-tool-policy.json`](policies/expected-tool-policy.json)
 
 이 문서는 각 위험 구성에서 **어떤 경고가 나와야 하고, 어떤 경고가 나오면 안 되며, 어떤 항목은 판단 불가로 남아야 하는지**를 정한다.
-형식은 테스트베드 정답 `testbed/ground-truth/S1.json`(P2 대비 변경분 + `expected_alerts`)을 따르고, 공통 스키마 0.7 16.1절 `expected_evaluations`로 바꾸는 규칙을 마지막 절에 적었다.
+형식은 박병하님의 `testbed/ground-truth/S1.json`(P2 대비 변경분 + `expected_alerts`)을 따르고, 공통 스키마 0.7 16.1절 `expected_evaluations`로 바꾸는 규칙을 마지막 절에 적었다.
 
-- QA: `QA/QA_GroundTruth.md` 5절의 S1~S5 기대 경고(TBD)를 이 문서로 채운다. QA 케이스 대응은 [1절](#1-qa-케이스-대응).
-- 테스트베드: S2~S5 위험 구성의 설정 변경은 각 절의 **P2 대비 변경**에 있다. 실제 구성 후 자산 목록(`added_assets` 등)은 테스트베드 원본으로 채워 주세요. 이 문서는 경고 부분만 정한다.
+- 서진님(QA): `QA/QA_GroundTruth.md` 5절의 S1~S5 기대 경고(TBD)를 이 문서로 채운다. QA 케이스 대응은 [1절](#1-qa-케이스-대응).
+- 병하님(테스트베드): S2~S5 위험 구성의 설정 변경은 각 절의 **P2 대비 변경**에 있다. 실제 구성 후 자산 목록(`added_assets` 등)은 테스트베드 원본으로 채워 주세요. 이 문서는 경고 부분만 정한다.
 
 ---
 
@@ -19,7 +19,7 @@
 |---|---|---|
 | `detected` | 근거와 기준 정책으로 위험 조건을 확인 | 생성 |
 | `not_detected` | 근거와 기준 정책으로 위험 조건이 없음을 확인 | 없음 |
-| `unknown` | 판정에 필요한 입력·근거 부족 (예: 다른 저장소의 같은 참조 이름, sslVerify 항목 없음) | **없음**. 정상으로 세지 않는다 |
+| `unknown` | 판정에 필요한 입력·근거 부족 (예: 다른 저장소의 같은 참조 이름) | **없음**. 정상으로 세지 않는다 |
 | `not_applicable` | 대상이 아님 (예: stdio Server의 S5) | 없음 |
 | `not_evaluated` | 이번 버전에서 평가하지 않는 조건 (예: S4-C4, S5-C4·C5) | 없음 |
 
@@ -71,7 +71,7 @@ QA_GroundTruth 5절 조건 ID 표는 아래 조건 ID로 바꾼다.
 | S3 | S3-C3 | 같은 이름, 한쪽 정의 미수집 | unknown | — |
 | S5 | S5-C1 | 암호화되지 않은 전송 | detected | high / high |
 | S5 | S5-C2 | 인증서 검증 명시적 비활성화 | detected | high / high |
-| S5 | S5-C3 | https인데 sslVerify 항목 없음 | **unknown** | — |
+| S5 | S5-C3 | https인데 sslVerify 항목 없음 | **not_detected** (2026-11-19 확정, 기본값 = 검증함) | — |
 | S5 | S5-C4, S5-C5 | 연결 대상 검증 정보 부족, 적용 범위 불명확 | not_evaluated | — |
 | S5 | S5-NA | stdio 로컬 실행 | not_applicable | — |
 
@@ -113,9 +113,9 @@ P2에서는 S1~S5 경고가 하나도 나오면 안 된다.
 
 ## 3. S1 비인가 MCP Server 등록 및 노출 (우선순위 1)
 
-프로파일은 테스트베드 `testbed/profiles/S1`(`SNAP-3-S1`)을 그대로 쓴다. 테스트베드 `S1.json`의 `expected_alerts`에 `condition_id`와 `severity`만 더하면 된다.
+프로파일은 병하님 `testbed/profiles/S1`(`SNAP-3-S1`)을 그대로 쓴다. 병하님 `S1.json`의 `expected_alerts`에 `condition_id`와 `severity`만 더하면 된다.
 
-| 테스트베드 case | 테스트 | 조건 ID | target | severity |
+| 병하님 case | 테스트 | 조건 ID | target | severity |
 |---|---|---|---|---|
 | 1-gw | S1-T1 | S1-C1 | `tb-gw/mcp_server/shadow-notes` | high |
 | 1-node | S1-T2 | S1-C1 | `tb-node/mcp_server/node-helper` | high |
@@ -124,7 +124,7 @@ P2에서는 S1~S5 경고가 하나도 나오면 안 된다.
 | 3 (플러그인, 선택) | S1-T4 | S1-C3 | `tb-gw/plugin/agentscope-notes-sync` | high |
 | 2 (S4 동반, 선택) | S4-T3 | S4-C3 | `tb-gw/mcp_server/inventory-remote` | high |
 
-`무결성 이상`은 v2.1에서 제외한다(패키지 해시·서명을 스캐너가 수집하지 않음). 테스트베드 S1 README와 같다.
+`무결성 이상`은 v2.1에서 제외한다(패키지 해시·서명을 스캐너가 수집하지 않음). 병하님 S1 README와 같다.
 
 ### S1-T5 선언 위치 이상 (선택, 신규)
 
@@ -159,7 +159,7 @@ P2에서는 S1~S5 경고가 하나도 나오면 안 된다.
 
 ## 4. S2 악성 또는 과도한 권한의 도구 광고 (우선순위 2)
 
-### P2 대비 변경 (테스트베드 구성용)
+### P2 대비 변경 (병하님 구성용)
 
 | 테스트 | VM | 위치 | 변경 |
 |---|---|---|---|
@@ -339,7 +339,7 @@ S4-T3은 S1 프로파일의 `required: false` S4 항목(조건 `S4-C3`, severity
 
 ### P2 대비 변경
 
-원격 서버가 inventory-remote 하나라 세 케이스가 같은 항목을 바꾼다. 한 프로파일에 함께 넣을 수 없으므로 **설정 사본 3개**(`profiles/S5/T1~T3`)로 정적 검증하는 것을 제안한다. S5는 설정만 보는 규칙이라 VM 스냅샷이 없어도 판정할 수 있다. VM에 반영할지는 테스트베드 담당이 정한다.
+원격 서버가 inventory-remote 하나라 세 케이스가 같은 항목을 바꾼다. 한 프로파일에 함께 넣을 수 없으므로 **설정 사본 3개**(`profiles/S5/T1~T3`)로 정적 검증하는 것을 제안한다. S5는 설정만 보는 규칙이라 VM 스냅샷이 없어도 판정할 수 있다. VM에 반영할지는 병하님이 정한다.
 
 | 테스트 | 위치 (tb-gw) | 변경 |
 |---|---|---|
@@ -382,11 +382,8 @@ S4-T3은 S1 프로파일의 `required: false` S4 항목(조건 `S4-C3`, severity
     "base_profile": "P2",
     "changed_assets": [{"asset_key": "tb-gw/mcp_server/inventory-remote", "changes": {"sslVerify": {"before": true, "after": null}}}],
     "expected_alerts": [],
-    "expected_no_alert": {"scenario": ["S1", "S5"], "targets": ["tb-gw/mcp_server/inventory-remote"], "note": "S5-C2로 경고를 내면 FAIL(생략은 false가 아님)"},
-    "expected_unknown": [
-      {"case": "3", "scenario": "S5", "condition_id": "S5-C3", "target": "tb-gw/mcp_server/inventory-remote",
-       "reason": "https지만 sslVerify 항목이 없어 OpenClaw 기본값에 따라 검증 여부가 갈림. 기본값을 확인하기 전까지 판단 불가"}
-    ]
+    "expected_no_alert": {"scenario": ["S1", "S5"], "targets": ["tb-gw/mcp_server/inventory-remote"], "note": "S5-C3: sslVerify 생략은 OpenClaw 2026.9.6 기본값에서 인증서 검증을 함(안전). 경고를 내면 FAIL"},
+    "expected_unknown": []
   }
 ]
 ```
@@ -395,7 +392,7 @@ S4-T3은 S1 프로파일의 `required: false` S4 항목(조건 `S4-C3`, severity
 
 ## 8. 공통 스키마 0.7 16.1절로 바꾸는 규칙
 
-테스트베드 형식은 P2 대비 **변경분**이다. QA 비교 전에 아래처럼 full 정답과 `expected_evaluations`로 바꾼다.
+병하님 형식은 P2 대비 **변경분**이다. QA 비교 전에 아래처럼 full 정답과 `expected_evaluations`로 바꾼다.
 
 1. **자산·관계**: P2 full 정답(`P2.json`)에 `added_assets`를 더하고 `removed_assets`를 빼고 `changed_assets`의 `after` 값을 덮어쓴다. 관계는 `added_relations`/`removed_relations`로 같은 방식. 지워진 자산을 가리키는 관계도 함께 지운다. 결과에 `mode: "full"`, `base_ground_truth_id: "P2"`를 남긴다.
 2. **`expected_alerts` → `expected_evaluations`**: 항목마다

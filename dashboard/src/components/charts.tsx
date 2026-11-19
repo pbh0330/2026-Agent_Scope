@@ -135,6 +135,8 @@ export function AreaChart({ points, unit = '' }: { points: { label: string; valu
   const top = Math.ceil(max / step) * step
   const ticks = Array.from({ length: top / step + 1 }, (_, i) => i * step)
   const n = Math.max(points.length - 1, 1)
+  // 가로축 글자는 최대 8개 정도만 쓴다(점이 많으면 글자가 겹친다). 값은 점에 마우스를 올려 본다.
+  const every = Math.max(1, Math.ceil(points.length / 8))
   const x = (i: number) => padL + (i / n) * (W - padL - padR)
   const y = (v: number) => padT + (H - padT - padB) - (v / top) * (H - padT - padB)
   const known = points.map((p, i) => ({ ...p, i })).filter(p => p.value !== null)
@@ -167,7 +169,7 @@ export function AreaChart({ points, unit = '' }: { points: { label: string; valu
             <circle cx={x(i)} cy={y(p.value ?? 0)} r={hover === i ? 6 : 4}
               fill={p.value === null ? 'var(--surface)' : 'var(--surface)'} stroke={p.value === null ? 'var(--ink-3)' : 'var(--c1)'} strokeWidth="2"
               strokeDasharray={p.value === null ? '2 2' : undefined} />
-            <text x={x(i)} y={H - 8} textAnchor="middle" className="axis">{p.label}</text>
+            {(i % every === 0 || (i === points.length - 1 && i % every >= every / 2)) && <text x={x(i)} y={H - 8} textAnchor="middle" className="axis">{p.label}</text>}
           </g>
         ))}
       </svg>
