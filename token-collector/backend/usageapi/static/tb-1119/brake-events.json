@@ -1,0 +1,15 @@
+{
+  "window": {
+    "start": "2026-11-18T14:31:32.000Z",
+    "end": "2026-11-18T15:14:25.000Z"
+  },
+  "available": true,
+  "by_level": {
+    "approve": 0,
+    "block": 0,
+    "warn": 0
+  },
+  "total": 0,
+  "items": [],
+  "next_cursor": null
+}

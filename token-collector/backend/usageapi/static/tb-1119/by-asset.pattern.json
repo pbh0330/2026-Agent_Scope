@@ -1,0 +1,44 @@
+{
+  "window": {
+    "start": "2026-11-18T14:31:32.000Z",
+    "end": "2026-11-18T15:14:25.000Z"
+  },
+  "estimated": true,
+  "group": "pattern",
+  "total_tokens": 39118,
+  "inventory_snapshot_id": "snap-p2-20261117T101837Z",
+  "items": [
+    {
+      "key": "pattern:sequential",
+      "label": "sequential",
+      "asset_id": null,
+      "asset_type": null,
+      "calls": 25,
+      "calls_not_computed": 0,
+      "tokens": 20629,
+      "tokens_sequential": 20629,
+      "tokens_allocated": 0,
+      "estimated_cost_usd": 0.0020629,
+      "share": 0.5274,
+      "relative": 1,
+      "last_used_at": "2026-11-18T15:14:01.944Z",
+      "last_trace_id": "cc4eb87ac8dda5fb4bb1d09e3a14db72"
+    },
+    {
+      "key": "pattern:parallel",
+      "label": "parallel",
+      "asset_id": null,
+      "asset_type": null,
+      "calls": 12,
+      "calls_not_computed": 0,
+      "tokens": 18489,
+      "tokens_sequential": 0,
+      "tokens_allocated": 18489,
+      "estimated_cost_usd": 0.0018489,
+      "share": 0.4726,
+      "relative": 0.8963,
+      "last_used_at": "2026-11-18T15:14:24.501Z",
+      "last_trace_id": "64ebab62a06c15e4ffc7807607f2c2b0"
+    }
+  ]
+}
