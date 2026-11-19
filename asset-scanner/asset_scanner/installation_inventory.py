@@ -93,7 +93,8 @@ def collect_installations(state_dirs=(), workspace_dirs=(), installation_roots=(
 
     for values, specs in ((state_dirs, (("extensions", "plugin"), ("git", "plugin"), ("npm", "plugin"), ("skills", "skill"))),
                           (workspace_dirs, ((".openclaw/extensions", "plugin"), ("skills", "skill"))),
-                          (installation_roots, (("extensions", "plugin"), ("skills", "skill")))):
+                          # 소스 배치와 npm 배포물의 빌드 배치를 명시된 동일 경계 안에서 탐색한다.
+                          (installation_roots, (("extensions", "plugin"), ("dist/extensions", "plugin"), ("skills", "skill")))):
         for value in values:
             root = Path(value).absolute()
             if not root.is_dir():
