@@ -1,0 +1,53 @@
+{
+  "description": "S1 판정 기준인 승인 MCP 서버 목록(allowlist). profiles/README.md 3절 표의 기계 판독용 사본. 정상군 SNAP-2-P2 기준",
+  "version": "2026-10-31",
+  "match_keys": ["name", "declared_at_vm", "registered_by", "endpoint"],
+  "servers": [
+    {
+      "name": "fs-workspace",
+      "registered_by": "tb-gw:config",
+      "declared_at_vm": "tb-gw",
+      "declared_at": "tb-gw:~/.openclaw/openclaw.json#mcp.servers.fs-workspace",
+      "runs_on": "tb-gw",
+      "endpoint": { "transport": "stdio", "command": "mcp-server-filesystem", "args": ["/home/<TB_USER>/workspace"] },
+      "source": "@modelcontextprotocol/server-filesystem@2026.8.31"
+    },
+    {
+      "name": "kg-memory",
+      "registered_by": "tb-node:config",
+      "declared_at_vm": "tb-node",
+      "declared_at": "tb-node:~/.openclaw/openclaw.json#nodeHost.mcp.servers.kg-memory",
+      "runs_on": "tb-node",
+      "endpoint": { "transport": "stdio", "command": "mcp-server-memory", "args": [] },
+      "source": "@modelcontextprotocol/server-memory@2026.8.31"
+    },
+    {
+      "name": "demo-everything",
+      "registered_by": "tb-node:config",
+      "declared_at_vm": "tb-node",
+      "declared_at": "tb-node:~/.openclaw/openclaw.json#nodeHost.mcp.servers.demo-everything",
+      "runs_on": "tb-node",
+      "endpoint": { "transport": "stdio", "command": "mcp-server-everything", "args": ["stdio"] },
+      "source": "@modelcontextprotocol/server-everything@2026.8.31"
+    },
+    {
+      "name": "inventory-remote",
+      "registered_by": "tb-gw:config",
+      "declared_at_vm": "tb-gw",
+      "declared_at": "tb-gw:~/.openclaw/openclaw.json#mcp.servers.inventory-remote",
+      "runs_on": "tb-node",
+      "endpoint": { "transport": "streamable-http", "url": "https://tb-node:8443/mcp" },
+      "source": "testbed/mcp-servers/inventory-remote (자체 제작)"
+    },
+    {
+      "name": "asset-catalog",
+      "registered_by": "plugin:agentscope-asset-catalog",
+      "declared_at_vm": "tb-gw",
+      "declared_at": "tb-gw:~/.openclaw/extensions/agentscope-asset-catalog/openclaw.plugin.json#mcpServers.asset-catalog",
+      "runs_on": "tb-gw",
+      "endpoint": { "transport": "stdio", "command": "node", "args": ["./mcp-server.mjs"] },
+      "source": "testbed/plugins/agentscope-asset-catalog (자체 제작, 로컬 경로 설치)"
+    }
+  ],
+  "approved_plugins": ["agentscope-asset-catalog"]
+}
