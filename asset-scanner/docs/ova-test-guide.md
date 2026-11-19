@@ -1,6 +1,6 @@
 # OpenClaw OVA 환경 자산 수집 검증 절차서
 
-작성일: 2026-11-19 · 코드 기준: **`82c75792f26befbae2d0b21d56d52d8e5d9824d2`** · PR #5
+작성일: 2026-11-19 · 코드 기준: **`55db6a39a275ae5b10eaf2ad3c77d699acce24c7`** · PR #5
 
 **목적:** OVA에 구성된 실제 OpenClaw 환경에서 설정·설치 정보 수집, OpenClaw 실행 파일 직접 조회, MCP 서버의 네 종류 목록 조회를 검증합니다. 실행 조건·수집 결과·오류·제약을 기록하여 팀 검토와 후속 보완의 근거로 활용합니다.
 
@@ -11,9 +11,9 @@
 | 스캐너 개발 담당자 | 검증 결과와 원천 대조, 수집 오류·응답 차이 분석 및 보완 |
 
 - 스캐너는 `feature/scanner-config`에 함께 올라가 있습니다. PR #5는 `develop` 대상 **Draft이며 미병합**입니다. `main`이나 `develop`을 내려받으면 이 코드가 없습니다.
-- 이 코드의 Linux 자동 테스트는 50개 파일·1,130개 통과, pytest 종료 코드 0입니다. 가상 설정·DB·가짜 OpenClaw CLI·개발용 MCP 서버 등을 이용한 결과로, **실제 OVA 검증 결과는 아닙니다.** 본 절차의 검증 대상은 실제 OVA 환경입니다.
+- 이 코드의 Linux 자동 테스트는 51개 파일·1,136개 통과, pytest 종료 코드 0입니다. 가상 설정·DB·가짜 OpenClaw CLI·개발용 MCP 서버 등을 이용한 자동 테스트입니다. **실제 OVA 결과는 코드 `82c7579`의 부분 검증이며, 이후 `dist/extensions` 탐색 수정은 VM 재검증 대기**입니다. 결과와 제약은 10절에 구분하여 기록합니다.
 - 명령은 **Windows PowerShell이 아니라 각 VM 안의 Linux Bash 터미널**에서 실행합니다. Gateway와 Node가 별도 VM이면 각각 진행합니다. stdio 서버는 스캐너와 같은 VM에서 실행되므로 호스트 PC에서 대신 실행하지 않습니다.
-- 설정 수집 → OpenClaw 직접 조회 → 선택 MCP 서버 조회 순서입니다. 전체 자동 테스트 1,130개를 VM에서 다시 실행할 필요는 없습니다.
+- 설정 수집 → OpenClaw 직접 조회 → 선택 MCP 서버 조회 순서입니다. 전체 자동 테스트 1,136개를 VM에서 다시 실행할 필요는 없습니다.
 
 ## 1. 검증 전 준비 사항
 
@@ -43,7 +43,7 @@
   git clone --single-branch --branch feature/scanner-config \
     https://github.com/pbh0330/2026-Agent_Scope.git "$SCANNER_SETUP_DIR"
   cd "$SCANNER_SETUP_DIR"
-  git switch --detach 82c75792f26befbae2d0b21d56d52d8e5d9824d2
+  git switch --detach 55db6a39a275ae5b10eaf2ad3c77d699acce24c7
   cd asset-scanner
   python3 -m venv .venv-ova
   .venv-ova/bin/python -m pip install -r requirements.txt
@@ -78,7 +78,7 @@ prepare_scan() {
   [ -f "$SCANNER_CONFIG" ] && [ -d "$SCANNER_STATE_DIR" ] || {
     printf '실제 설정 파일과 상태 폴더를 입력하세요.\n'; return 1;
   }
-  [ "$(git rev-parse HEAD)" = '82c75792f26befbae2d0b21d56d52d8e5d9824d2' ] || {
+  [ "$(git rev-parse HEAD)" = '55db6a39a275ae5b10eaf2ad3c77d699acce24c7' ] || {
     printf '2절의 코드 기준 SHA와 다릅니다. 기준을 확인하세요.\n'; return 1;
   }
   case "$SCANNER_CONFIG:$SCANNER_STATE_DIR" in /*:/*) ;; *) printf '절대 경로가 필요합니다.\n'; return 1;; esac
@@ -160,11 +160,17 @@ run_scan 05-plugins-direct -m asset_scanner.plugin_skill_assets \
 | `02-config.json` | `servers[]`의 등록키·선언 값·위치·include 출처. `registry_absent`·`server_count: null`은 등록 영역을 찾지 못했다는 뜻이며 서버 0개와 다릅니다. |
 | `03-permission.json` | 허용·차단·인증 선언의 원천 항목. 인증 성공이나 최종 실효 권한을 판정한 결과가 아닙니다. |
 | `04-installation.json` | `assets.plugins`·`assets.skills`, 설치 경로·출처. 입력한 경계 밖 설치본은 탐색하지 않으므로 0개만 보고 전체 미설치라고 판단하지 않습니다. |
-| `05-plugins-direct.json` | 실제 OpenClaw 목록과 파일 선언의 차이·관측 출처. 명령 실패는 그대로 남깁니다. |
+| `05-plugins-direct.json` | 실제 OpenClaw Plugin 목록과 관측 출처. 이 명령은 04번 보고서와 자동 연결하지 않으므로 `runtime_only` 개수를 누락 개수로 해석하지 않습니다. |
+
+`04-installation`과 `05-plugins-direct`는 독립 실행입니다. 설치본과 직접 목록을 연결하려면 실제 manifest 디렉터리를 확인하고 05번 명령에 `--plugin-dir /실제/Plugin/디렉터리`를 반복 지정하여 새 단계 이름으로 실행합니다. 원본 경로가 가려진 출력에서 경로를 추측하지 않습니다. 연결은 ID와 설치 루트가 모두 일치해야 하며, `loaded`·`disabled`는 OpenClaw가 보고한 상태로 구분합니다.
 
 ## 5. 실제 Gateway·Node identity와 장치
 
-Gateway VM에서는 실제 Gateway 주소를 입력한 뒤 실행합니다. 주소에는 사용자명·비밀번호·토큰을 넣지 않습니다. 주소나 인증이 미확인이라면 이 단계는 미수행으로 보고합니다.
+Gateway VM에서는 실제 Gateway 주소와 선택한 설정·상태·프로필을 확인한 뒤 실행합니다. 주소에는 사용자명·비밀번호·토큰을 넣지 않습니다. 주소나 인증이 미확인이라면 이 단계는 미수행으로 기록합니다.
+
+**OpenClaw 2026.9.6의 devices 인증 제약:** `devices list --url`은 설정·환경변수 인증으로 대체하지 않으므로 `--pass-env OPENCLAW_GATEWAY_TOKEN`만 추가해도 해결되지 않습니다([공식 문서, 고정 버전](https://github.com/openclaw/openclaw/blob/eb377ac59e6c9fd6c7705028034812becf00271b/docs/cli/devices.md)). 기본 절차는 identity에만 `--expect-gateway-url`을 적용하고, devices에는 **선택한 설정의 Gateway로 접속함을 확인한 경우** `--accept-configured-gateway`를 사용합니다. 명시적 URL을 자동 제거하거나 다른 Gateway로 재시도하는 동작은 추가하지 않습니다.
+
+이 방식의 devices 대상은 설정에 위임되며 명시적 URL로 고정한 조회와 다릅니다. 로컬 페어링 상태로 대체될 가능성도 결과의 `observation.gateway_target`에 기록됩니다. 특정 URL과 인증정보를 동시에 전달하는 devices 조회는 현재 인터페이스의 지원 한계이며, 토큰을 명령행에 노출해 우회하지 않습니다.
 
 ```bash
 if [ "$SCANNER_ROLE" = gateway ] && [ -n "$SCANNER_GATEWAY_URL" ]; then
@@ -175,7 +181,7 @@ if [ "$SCANNER_ROLE" = gateway ] && [ -n "$SCANNER_GATEWAY_URL" ]; then
     "${SCANNER_DIRECT[@]}" --expect-gateway-url "$SCANNER_GATEWAY_URL" \
     --query-gateway-identity gateway --output "$SCANNER_OUT/06-identity-b.json"
   run_scan 07-devices -m asset_scanner.device_inventory \
-    "${SCANNER_DIRECT[@]}" --expect-gateway-url "$SCANNER_GATEWAY_URL" \
+    "${SCANNER_DIRECT[@]}" --accept-configured-gateway \
     --query-devices --output "$SCANNER_OUT/07-devices.json"
 elif [ "$SCANNER_ROLE" = node ]; then
   run_scan 06-identity-a -m asset_scanner.node_gateway_identity \
@@ -258,6 +264,8 @@ if [ -f "$SCANNER_OUT/08-$SCANNER_TAG-tools.json" ]; then
     --subject "$SCANNER_ROLE=$SCANNER_ROLE" --output "$SCANNER_OUT/09-link-$SCANNER_TAG.json"
 fi
 ```
+
+설정 수집이 `${VAR}` 등 미해석 참조로 `partial`이면 전체 연결 보고서도 `config_scan_not_complete`로 `partial`일 수 있습니다. 이때 `collection.counts.linked`와 개별 연결 결과는 별도로 확인합니다. 전체 `partial`을 연결 실패로 해석하거나 경고를 없애기 위해 설정 파일에 인증값을 직접 쓰지 않습니다.
 
 `--subject`는 검증 수행자가 입력한 역할입니다. 같은 이름만으로 서버를 합치지 않고 `config_scan_ref`·등록 영역·등록키로 연결되는지 확인합니다. 여기의 라벨은 공통 ID가 아닙니다. 이 연결 모듈은 Tool 카탈로그 연결이며 Resource·Prompt까지 통합했다고 보고하지 않습니다.
 
@@ -352,3 +360,52 @@ PY
 ```
 
 검증이 중단된 경우 마지막 실행 단계·미수행 범위·중단 사유를 기록하여 공유합니다. 실제 환경의 경로·버전·응답 차이에 대한 보완 후, 정정된 정답 목록과 수집률 대조는 별도 단계로 진행합니다.
+
+
+## 10. 2026-11-19 OVA 실행 결과 및 후속 보완
+
+### 근거와 검증 범위
+
+- 제공된 `scan-1119.zip` 안의 최초 Gateway·Node 실행 ZIP과 Gateway 재실행 ZIP 2개를 분석했습니다. 네 실행 묶음의 `code-sha.txt`는 모두 `82c7579`이고, 단계별 판정은 `exits.tsv` 및 결과 JSON과 대조했습니다.
+- 실행 환경: Ubuntu 24.04, Python 3.12.3, OpenClaw 2026.9.6 (eb377ac), MCP SDK 2.3.0. 원격 VM 접속·재실행은 문서 작성 환경에서 수행하지 않았습니다.
+- OVA SNAP-2-P2를 VirtualBox로 가져온 **파생 환경**입니다. IP·hosts·Node 접속 대상 변경과 Gateway의 추가 Plugin 설치가 실행 메모에 기록되어 있습니다. 원본 OVA 그대로의 검증으로 취급하지 않습니다.
+- Node VM 응답 중단 후 재시작했다는 실행 메모와 담당자 보고가 있습니다. 초기 `network_error`는 ZIP에 남아 있지만, `No route to host` 및 메모리 원인에 대한 진단 원문은 포함되어 있지 않습니다. VM 메모리 부족을 확정 원인으로 쓰지 않습니다.
+
+### 실제 목록 조회 결과
+
+| VM·서버 | 전송·협상 버전 | Tool | Resource | ResourceTemplate | Prompt |
+|---|---|---|---|---|---|
+| Gateway · fs-workspace | stdio · 2025-11-25 | complete 14 | not_performed | not_performed | not_performed |
+| Node · kg-memory | stdio · 2025-11-25 | complete 9 | complete 1 | complete 0 (빈 목록) | not_performed |
+| Gateway · inventory-remote (재실행) | HTTPS·사설 CA·Bearer · 2025-11-25 | complete 2 | complete 1 | complete 0 (빈 목록) | complete 1 |
+| Node · demo-everything | 실행 전 거부 · 협상 없음 | not_performed | not_performed | not_performed | not_performed |
+
+- 앞의 두 서버에서 미수행한 목록은 `capability_not_declared`입니다. 개별 Tool 카탈로그는 complete이나 전체 네 목록 보고서는 미수행 목록 때문에 partial입니다. 미수행을 빈 목록이나 실제 메서드 미지원 응답으로 바꾸지 않습니다.
+- inventory-remote의 이전 두 실행은 연결 실패였고 세 번째는 종료 코드 0입니다. TLS 인증서 체인·호스트 이름 검증이 켜진 상태에서 네 목록이 완전 수집됐습니다. HTTPS 수집 기능 자체의 실패로 분류하지 않습니다.
+- demo-everything은 `env.EVERYTHING_DEMO_KEY`의 미해석 참조 때문에 거부됐으며, 보낸 목록 요청은 0개입니다. 해당 서버의 수집은 아직 미완료입니다.
+- 성공한 세 조회의 결과는 금지된 자산 실행 요청 카운터 0을 기록합니다. 목록 수집 성공은 Tool 실행·Resource 본문 읽기·Prompt 실행 검증이 아닙니다.
+
+### 기타 수집 결과와 판정
+
+| 항목 | 실제 기록 | 해석·후속 작업 |
+|---|---|---|
+| devices | 명시 URL: 실패, URL+환경변수 전달: 실패, 설정 위임: complete·1개·종료 코드 0 | 5절의 devices 명령을 설정 위임 방식으로 정정. 명시 URL 인증 지원이 완료된 것은 아님 |
+| 장치 원천 | paired, clientId node-host, clientMode node, reported connected true | 원천이 보고한 상태. 관측 시점 이후의 연결·공통 ID·복제 후 동일성은 확정하지 않음 |
+| Gateway·Node identity | 두 VM 모두 두 차례 complete, device_id·public_key 각각 동일 | 재조회 일치 확인. 재시작 후 두 값 유지 검증은 별도 대기 |
+| 설정 수집 | 각 VM 2개 선언, 각각 partial | inventory-remote Authorization 참조와 demo-everything env 참조를 보존. 인증값 해석은 하지 않음 |
+| Tool 선언 연결 | fs-workspace·kg-memory·inventory-remote 각 linked 1 | 세 보고서 모두 설정 수집 partial을 이어받음. 개별 연결은 성공 |
+| Permission/Auth | Gateway 4개, Node 2개 원천 항목 complete | 지원 설정의 선언 수집. 최종 실효 권한·모든 인증 저장소의 완전성 판정은 아님 |
+| 설치 원천 | Gateway Plugin 2·Skill 52 (partial), Node Plugin 0·Skill 53 (complete) | 지정 경계 내 결과. 아래의 번들 탐색 경로 누락을 발견하여 후속 수정 |
+| 직접 Plugin 목록 | Gateway 66개 (bundled 63·config 1·global 2), Node bundled 63개 | manifest를 05번 실행에 전달하지 않아 전부 runtime_only. 누락 수로 그대로 사용하지 않음 |
+| 프로세스 UID/GID | 두 VM 모두 선택 PID 관측 complete | 함께 지정한 openclaw.mjs 파일은 entry_not_regular_or_linked여서 보고서 전체 partial |
+| systemd 유닛 | 두 VM 모두 complete, declaration_count 0 | 선택 파일을 읽었으나 지원하는 실행 계정 선언은 없었음. 계정 관측은 PID 결과와 구분 |
+| 인증 DB | 두 VM 모두 complete, item_count 0 | 선택한 MCP 인증 원천에서 읽힌 항목 0개. 모델 계정·전체 인증 유무를 판정하지 않음 |
+
+### 확인된 누락과 남은 제약
+
+1. **번들 Plugin 탐색 경로:** 직접 목록의 bundled 63개는 `/usr/lib/node_modules/openclaw/dist/extensions` 아래 경로를 보고합니다. 기존 스캐너는 설치 루트의 `extensions`만 후보로 만들었으므로 `dist/extensions`를 추가했습니다. 경계·링크·출력 덮어쓰기 거부와 동명 복수 설치 보존은 유지합니다. 수정 후 실제 VM의 설치 개수·연결 결과는 재검증해야 합니다.
+2. **외부 설치와 진입 파일:** Gateway의 선택 경계 밖·링크 경로 이슈는 기록됐으나 이슈에 경로가 없어 token-guard와 일대일로 확정할 수 없습니다. diagnostics-otel은 `index.ts` 관측이 실패하고 `dist/index.js`는 성공했습니다. 개발용·실행용 진입점의 선택 규칙과 실제 파일 상태를 추가 확인합니다.
+3. **미해석 참조:** HTTP 인증 헤더 대체로 inventory-remote 조회는 성공했습니다. stdio env의 일반 참조 해석·대체는 현재 미지원이므로 demo-everything은 별도 보완과 재검증 대상입니다. 경고를 없애기 위한 complete 강제 표시는 하지 않습니다.
+4. **이번에 미수행:** skills 직접 조회, 설치 인덱스, 모델 계정 namespace, 서명·무결성 신뢰 판정, 재시작·복제·재페어링 후 identity 유지, 정답 대조·수집률 계산입니다.
+
+후속 경로 수정은 자동 테스트에서 기존 배치·빌드 배치·복수 설치·링크 거부·CLI 출력 경계를 검증했습니다. 이 결과와 실제 OVA 재검증 결과는 구분합니다.

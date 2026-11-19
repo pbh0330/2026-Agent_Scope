@@ -1,6 +1,6 @@
 # 자산 스캐너 — OpenClaw MCP 서버 등록 정보 수집기 (1단계)
 
-> **OVA 환경 검증:** [OpenClaw OVA 환경 자산 수집 검증 절차서](docs/ova-test-guide.md)에 VM 내 코드 준비·설정 및 설치 수집·OpenClaw 직접 조회·MCP 목록 조회·검증 결과 정리 및 공유 절차를 수록했습니다. 실행 코드는 `82c7579`로 고정하며 실제 OVA 검증 결과는 아직 확인하지 않았습니다.
+> **OVA 환경 검증:** [OpenClaw OVA 환경 자산 수집 검증 절차서](docs/ova-test-guide.md)에 VM 내 코드 준비·설정 및 설치 수집·OpenClaw 직접 조회·MCP 목록 조회·검증 결과 정리 및 공유 절차를 수록했습니다. 실행 코드는 절차서의 고정 SHA를 사용합니다. 코드 `82c7579`의 실제 OVA 파생 환경 결과와 `dist/extensions` 탐색 누락 보완·재검증 항목은 같은 절차서 10절에 기록했습니다.
 
 OpenClaw 설정 파일(JSON/JSON5)을 **읽기만 해서** 선택한 등록 영역(기본 `mcp.servers`, 선택 `nodeHost.mcp.servers`)에 등록된 MCP 서버 목록과 출처를 JSON으로 저장합니다.
 
@@ -11,7 +11,7 @@ OpenClaw 설정 파일(JSON/JSON5)을 **읽기만 해서** 선택한 등록 영�
 - 실제 연결 여부·도구 목록·capabilities·protocol_version·노출/호출 가능 상태는 채우지 않습니다.
 - 이 설정 수집기는 Tool 정의를 읽지 않습니다. 저장된 `tools/list` 응답을 읽는 별도 모듈은 아래 [Tool 카탈로그 1단계](#tool-카탈로그-1단계-저장된-toolslist-응답-읽기)를 보세요.
 - 위 약속은 **이 정적 설정 수집기와 저장된 파일을 읽는 모듈**(Tool 카탈로그, `resources_prompts`, `linking`, `plugin_skill_assets`, `node_gateway_identity`, `permission_auth`)에 해당합니다. 서버를 실행하거나 접속하는 모듈은 `live_tools`(개발용 서버 stdio)와 `live_discovery`(명시적으로 고른 서버 하나, [아래 절](#실제-mcp-서버-목록-조회-live_discovery--서버-프로세스를-실행하거나-접속합니다))뿐입니다. 개발용 MCP 서버를 실제로 실행해 조회하는 별도 모듈은 [실제 stdio 조회](#실제-stdio-조회-개발용-mcp-서버-1개--서버-프로세스를-실행합니다)에 있으며, **그 명령만 서버 프로세스를 실행**하고 팀 테스트베드 검증이 아닙니다.
-- **실제 테스트베드 연동은 미검증입니다.** `examples/`의 설정은 모두 테스트용 가상 설정이며 실제 팀 설정이 아닙니다.
+- **OVA 파생 환경의 부분 검증 결과가 있습니다(2026-11-19, 코드 `82c7579`).** 실제 stdio 서버 2개·사설 CA HTTPS 서버 1개의 목록 조회와 identity·설정 기반 devices 조회를 확인했습니다. 번들 탐색 경로 수정 후 VM 재검증은 대기입니다. `examples/`의 설정은 모두 테스트용 가상 설정입니다.
 
 ## 구성
 
@@ -41,7 +41,7 @@ asset-scanner/
 
 ## 설치 (Windows PowerShell)
 
-현재 검증 상태(2026-11-18 업로드본 후속 수정): **Linux Python 3.12.14에서 전체 935개 통과·실패/skip 0개·pytest 종료 코드 0**입니다. json5 0.15.0, mcp/mcp-types 2.3.0, pytest 9.1.1을 사용했습니다. Windows 최신 변경본과 실제 OpenClaw·OVA·실제 원격 서버 검증은 별도 대기입니다. 이전 Windows 분할 실행·RAM 부족 중단 기록과 이번 전체 실행은 구분합니다. [검증 기준·수정·실행 기록](docs/verification-20261118.md), [가상 입력 조건과 실제 출력](docs/virtual-samples-and-outputs.md)을 참고하세요.
+현재 자동 검증 상태(2026-11-19 후속 수정): **Linux Python 3.12.14에서 전체 51개 파일·1,136개 통과·실패/skip 0개·pytest 종료 코드 0**입니다. 추가 회귀 6개는 수정 전 4개 실패·2개 통과였고, 수정 후 영향 검사 77개가 통과했습니다. 실제 OVA는 코드 `82c7579`의 부분 검증 결과이며 최신 경로 수정의 VM 재실행과 Windows 최신 코드 실행은 대기입니다. 과거 935개 및 Windows 분할 실행 기록은 당시 결과로 보존합니다. 현재 실환경 결과·판정은 [검증 절차서 10절](docs/ova-test-guide.md)을 참조하세요.
 
 ```powershell
 cd asset-scanner
@@ -74,7 +74,7 @@ python -m venv .venv
 - 선택할 수 있는 값은 `mcp.servers`, `nodeHost.mcp.servers` 두 가지뿐입니다. 그 밖의 값은 인자 오류(종료 코드 2)입니다.
 - 파일 전체를 파싱하되, 선택한 등록 영역만 수집·보고합니다. 같은 파일에 두 영역이 있어도 고르지 않은 영역의 서버·중복 키·가린 키는 결과에 나타나지 않습니다. (파일 전체를 파싱하므로 구문 오류는 어느 영역을 골라도 수집 실패입니다.)
 - 선택한 경로는 결과의 `source.registry_path`, 서버별 `declaration_path`, 오류·참조의 위치에 기록됩니다. 표준출력 첫 줄에도 `등록 영역: …`이 표시됩니다.
-- 근거: OpenClaw 2026.9.6 패키지 문서(`docs/nodes/mcp-and-skills.md`). 설정 스키마·소스, 서버가 실제로 등록된 Node 설정으로는 아직 확인하지 않았습니다. → [필드 매핑 1-1](docs/field-mapping.md#1-1-등록-영역-선택---registry-path)
+- 근거: OpenClaw 2026.9.6 패키지 문서(`docs/nodes/mcp-and-skills.md`). 설정 스키마·소스 전체의 적합성은 미확인입니다. 2026-11-19 제공된 OVA 결과에서는 `nodeHost.mcp.servers`의 서버 2개 선언과 그중 kg-memory의 실제 목록을 읽었습니다. → [필드 매핑 1-1](docs/field-mapping.md#1-1-등록-영역-선택---registry-path)
 - `nodeHost.mcp`가 없는 설정(예: SNAP-1 Node 설정)은 `registry_absent`입니다. 서버 0개가 아닙니다.
 
 ### 플러그인 manifest의 서버 선언 수집
@@ -586,7 +586,7 @@ SDK `mcp`는 2026-07-28 규격을 지원하는 정식 2.x 중 **2.3.0**으로 �
 - **Plugin ↔ MCP 서버**: 같은 매니페스트의 `mcpServers`를 기존 수집기로 읽어 `mcp_servers`에 연결합니다. 선언이 있다는 뜻이며 실행·등록 성공이 아닙니다. `id`나 이름이 같다는 이유만으로 항목을 합치지 않고, 런타임 관측은 `id`+`rootDir`(플러그인), `SKILL.md` 경로(skill)가 맞을 때만 연결합니다.
 - **Gateway·Node identity**: `linking --observed-identity 라벨=파일`로 붙이면 `--subject`(사용자 입력)와 **별도 필드**(`declaring_subject.observed_identity`)에 기록되고, 둘이 다르면 충돌로 표시하되 어느 쪽도 고르지 않습니다. 옵션을 주지 않으면 기존 출력은 그대로입니다.
 - **Permission/Auth**: 항목마다 설정 위치와 적용 대상(전역·Provider·Agent·발신자 그룹·Gateway·Node·MCP 서버 선언 위치)을 가집니다. MCP 서버 항목은 설정 수집기와 같은 `declaration_path`를 씁니다. 인증정보는 종류(`secret_ref`/`env_ref`/`literal_withheld`)와 참조 이름만 남기고 **원문·길이·해시를 저장하지 않으며**, 발신자 키·허용 사용자 값은 개인 식별정보일 수 있어 종류·개수만 남깁니다.
-- 검증은 **가상 입력**(임시 폴더·설정·출력 파일)으로만 했습니다. 실제 OpenClaw 설치·실제 CLI 출력·팀 테스트베드와는 대조하지 않았습니다.
+- 자동 테스트는 **가상 입력**(임시 폴더·설정·출력 파일)으로 수행합니다. 추가로 코드 `82c7579`의 실제 OVA 파생 환경에서 Plugin·Skill 파일과 OpenClaw Plugin 목록·identity·설정 기반 devices 결과를 확인했습니다. skills 직접 조회는 수행하지 않았습니다.
 
 ## OpenClaw 직접 조회 (`openclaw_direct`) — 지정한 실행 파일에 읽기 조회만 실행합니다
 
@@ -606,7 +606,7 @@ SDK `mcp`는 2026-07-28 규격을 지원하는 정식 2.x 중 **2.3.0**으로 �
 - 셸 문자열이 아니라 **인자 배열**로 실행하고, 허용 목록 밖의 명령·`--url/--token/--password`·초기화·설치·업데이트·페어링·설정 변경은 실행하지 않습니다. PATH에서 찾지 않고 지정한 파일만 실행하며, `--state-dir` 등 범위 경로는 **이미 존재해야** 합니다(새로 만들지 않음).
 - 조회당 시간·stdout 크기 제한을 두고 넘으면 프로세스 **트리**(손자 포함)를 종료합니다. 자식에게는 최소 환경 + 명시한 범위 + **이름을 지정한** 환경변수만 전달하고 값은 기록하지 않습니다. 출력 원문은 파일·로그에 쓰지 않습니다.
 - 결과에는 명령, 설치 버전(`--version`), 조회 범위, 관측 시각(`scanner_clock_at_query`)이 기록되며 **사용자 제공 / 저장된 출력 / 직접 조회**가 서로 다른 필드로 구분됩니다.
-- **가짜 CLI로만 검증했습니다.** 이 PC에는 OpenClaw가 없고 설치하지 않았으며, **실제 OpenClaw 실행 검증은 없습니다(미확인).**
+- 자동 테스트는 **가짜 CLI**를 사용합니다. 실제 OpenClaw 2026.9.6의 Plugin 목록·identity·설정 기반 devices 조회는 실행 담당자가 제공한 코드 `82c7579`의 OVA 결과 ZIP으로 추가 확인했습니다. 명시 URL devices 인증 제약과 미수행 항목은 [검증 절차서](docs/ova-test-guide.md)에 기록했습니다.
 
 ## 실제 MCP 서버 목록 조회 (`live_discovery`) — 서버 프로세스를 실행하거나 접속합니다
 
@@ -621,20 +621,20 @@ SDK `mcp`는 2026-07-28 규격을 지원하는 정식 2.x 중 **2.3.0**으로 �
 ```
 
 - 설정의 서버를 자동으로 고르거나 모두 실행하지 않습니다. `--server`(키 하나)와 `--allow-launch`/`--allow-connect`가 모두 있어야 움직이며, 해석할 수 없는 참조(`${VAR}`·SecretRef·`$include`)가 있거나 OAuth·SSE·비루프백 호스트(`--allow-host` 없이)·비루프백 평문 http면 **실행·접속하지 않고** 사유와 함께 거부합니다. 토큰은 `--bearer-env 환경변수이름`, 인증 헤더는 `--auth-header-env 헤더이름=환경변수이름`으로 실행 때 읽고 결과에는 이름만 남깁니다.
-- **원격 HTTPS**(Streamable HTTP + Bearer·인증 헤더): 인증서 체인·호스트 이름 검증은 **항상 켜져 있고 끌 수 없습니다.** 사설 CA는 `--ca-bundle`로 신뢰 저장소에 **추가**만 합니다. 리다이렉트는 따라가지 않고 다른 출처 요청은 헤더를 보내기 전에 막아 인증 헤더가 다른 호스트로 가지 않으며, 프록시·인증서 환경변수는 읽지 않습니다. 실패는 `tls_certificate_untrusted`·`tls_hostname_mismatch`·`tls_certificate_expired`·`connect_refused`·`connect_rejected`(401·403)·`redirect_not_followed` 등으로 구분합니다. **OAuth 로그인과 SSE는 지원하지 않으며 후속 작업입니다**([live-discovery 10장](docs/live-discovery.md#10-원격-https-streamable-http-연결-2026-11-13-추가)). 로컬 HTTPS 시험 서버와 테스트용 CA로만 검증했고 실제 원격 서버는 확인하지 못했습니다.
+- **원격 HTTPS**(Streamable HTTP + Bearer·인증 헤더): 인증서 체인·호스트 이름 검증은 **항상 켜져 있고 끌 수 없습니다.** 사설 CA는 `--ca-bundle`로 신뢰 저장소에 **추가**만 합니다. 리다이렉트는 따라가지 않고 다른 출처 요청은 헤더를 보내기 전에 막아 인증 헤더가 다른 호스트로 가지 않으며, 프록시·인증서 환경변수는 읽지 않습니다. 실패는 `tls_certificate_untrusted`·`tls_hostname_mismatch`·`tls_certificate_expired`·`connect_refused`·`connect_rejected`(401·403)·`redirect_not_followed` 등으로 구분합니다. **OAuth 로그인과 SSE는 지원하지 않으며 후속 작업입니다**([live-discovery 10장](docs/live-discovery.md#10-원격-https-streamable-http-연결-2026-11-13-추가)). 자동 테스트 외에 코드 `82c7579`의 OVA 파생 환경에서 사설 CA·Bearer를 사용한 HTTPS 목록 조회를 확인했습니다. 공인 CA·실제 외부 도메인·프록시 환경은 미확인입니다.
 - 협상된 `protocol_version`을 기록하고, **SDK가 통신할 수 있는 버전**(`2024-11-05`~`2026-07-28`)과 **스캐너가 응답을 읽을 수 있는 버전**(`2025-11-25`·`2026-07-28`)을 구분합니다. 파서가 읽지 못하는 버전이면 목록을 요청하지 않습니다.
 - 목록마다 `complete`(빈 목록 포함)·`partial`·`failed`·`unsupported`(첫 응답 -32601)·`not_performed`(능력 미선언·세션 종료·연결 실패 등)를 구분합니다. 요청하지 않은 목록을 0개나 실패로 채우지 않습니다.
 - 페이지·항목 수·시간 제한을 적용하고 프로세스와 포트를 정리합니다. 이름이 같은 서로 다른 서버·유형의 항목은 자동으로 합치지 않으며, 설정 선언과의 연결은 지정한 키(`declaration_link`)와 `--config-scan-ref`를 쓴 기존 `linking` 규칙으로만 합니다.
-- **개발용 시험 서버(`dev_lists_server`)로만 실제 통신을 검증했습니다.** 팀 테스트베드·외부 서버 검증이 아니며, 허용하지 않은 호출이 없었는지는 시험 서버가 받은 요청의 메서드 이름 기록으로 확인했습니다.
+- 자동 테스트는 **개발용 시험 서버(`dev_lists_server`)**를 사용하며 받은 요청의 메서드 이름을 확인합니다. 추가로 코드 `82c7579`의 OVA 파생 환경에서 stdio 2개·HTTPS 1개 서버의 실제 목록 조회 결과를 확인했습니다. 실제 자산 실행·본문 조회 검증은 하지 않았습니다.
 
 ## 이번 단계에서 하지 않은 것 / 후속 확인
 
-- 실제 팀 테스트베드 OpenClaw 설정 원본으로 수집 확인 (`openclaw config schema`와 필드 대조 포함). 사양 정정본 수령 후 진행
+- 코드 `82c7579`의 OVA 설정 선언 수집은 확인했습니다. `openclaw config schema`와 전체 필드의 적합성 대조는 별도 확인 대상입니다.
 - 테스트베드의 환경변수 기본값 문법이 현행 공개 문서(`${A:-${B}}` → 안쪽 `B`만 참조)와 같은지 확인
 - `$include` 파일 읽기와 병합, 환경변수·SecretRef 해석(값은 계속 저장하지 않음)
-- 실제 OpenClaw 설치 환경에서 얻은 `plugins list --json`·`skills list --json`·`node identity`·`gateway call` 출력과 번들 플러그인 전체로의 검증 (가상 입력으로만 검증함)
+- 실제 `plugins list --json`·identity·설정 기반 devices 결과는 코드 `82c7579`로 확인했습니다. `skills list --json` 직접 조회와 `dist/extensions` 수정 후 번들 설치본 전체 대조는 대기입니다.
 - 설정 대조·수집률·누락 계산, `DECLARES` 관계, 공통 자산 ID, 공통 스키마(`InventorySnapshot`) 변환 (팀 협의 대기)
-- 팀 테스트베드 서버·**실제 원격 서버의 HTTPS 조회**(로컬 시험 서버의 TLS 통신만 검증함), OAuth·SSE 서버(지원하지 않음, 후속 작업), `tools/call`·`resources/read`·`prompts/get`
+- OVA 파생 환경의 stdio 2개·사설 CA HTTPS 1개 조회는 코드 `82c7579`로 확인했습니다. 일반 외부 도메인·프록시 환경, OAuth·SSE 서버(미지원), `tools/call`·`resources/read`·`prompts/get`은 확인 범위 밖입니다.
 
 ### 테스트베드 OpenClaw 버전 표기 (확인된 것과 대기 중인 것)
 
