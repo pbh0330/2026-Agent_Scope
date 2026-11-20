@@ -1,0 +1,24 @@
+# systemd 사용자 서비스: ~/.config/systemd/user/agentscope-usage-api.service (install-usage-api.sh가 복사)
+# 사용 현황 API(대시보드 백엔드)를 실시간 모드로 띄운다. Collector 스팬 파일이 바뀌면 15초 안에 다시 계산한다.
+# 0.0.0.0:8088: VMware NAT 안이라 호스트 PC(대시보드 UI)와 같은 NAT의 VM에서만 접속된다.
+[Unit]
+Description=AgentScope usage API (dashboard backend, live mode)
+After=agentscope-collector.service
+
+[Service]
+# environment_id / profile_id: 팀 스캐너 스냅샷 값(agentscope-testbed / tb-openclaw). 스냅샷을 연결할 때 다르면 시작 실패.
+Environment=AS_ENV=agentscope-testbed
+Environment=AS_PROFILE=tb-openclaw
+ExecStart=%h/agentscope/bin/agentscope-usage-api --live \
+  --env ${AS_ENV} --profile ${AS_PROFILE} \
+  --input %h/agentscope/data/agentscope-traces*.jsonl \
+  --tool-results %h/.openclaw/agentscope/agentscope-tool-results.jsonl \
+  --include-cache-in-prompt \
+  --addr 0.0.0.0:8088
+# --include-cache-in-prompt: Anthropic API는 캐시된 입력을 input_tokens에서 빼고 따로 보고하므로 합쳐서 계산한다.
+# 스캐너 스냅샷을 연결하려면 ExecStart 끝에 추가: --inventory %h/agentscope/snapshot.json
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

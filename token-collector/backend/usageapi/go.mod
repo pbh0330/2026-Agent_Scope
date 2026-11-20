@@ -1,0 +1,13 @@
+module github.com/pbh0330/2026-Agent_Scope/token-collector/backend/usageapi
+
+go 1.24
+
+require (
+	github.com/pbh0330/2026-Agent_Scope/token-collector/backend/attribution v0.0.0
+	github.com/pbh0330/2026-Agent_Scope/token-collector/backend/usagereport v0.0.0
+)
+
+replace (
+	github.com/pbh0330/2026-Agent_Scope/token-collector/backend/attribution => ../attribution
+	github.com/pbh0330/2026-Agent_Scope/token-collector/backend/usagereport => ../usagereport
+)

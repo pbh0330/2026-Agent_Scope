@@ -1,0 +1,119 @@
+[
+ {
+  "trace_id": "53bf60163238b8722553b289e11415ec",
+  "run_id": "bf4596f611b05e9f",
+  "tool_span_id": "ca7923b9b77e3f65",
+  "tool_name": "ls",
+  "pattern": "sequential",
+  "approx_tokens": 19,
+  "duration_ms": 54.0
+ },
+ {
+  "trace_id": "53bf60163238b8722553b289e11415ec",
+  "run_id": "bf4596f611b05e9f",
+  "tool_span_id": "ee872a5a2fe7effb",
+  "tool_name": "exec",
+  "pattern": "sequential",
+  "approx_tokens": 43,
+  "duration_ms": 899.0
+ },
+ {
+  "trace_id": "53bf60163238b8722553b289e11415ec",
+  "run_id": "bf4596f611b05e9f",
+  "tool_span_id": "fdb5be0d1ba80e24",
+  "tool_name": "exec",
+  "pattern": "sequential",
+  "approx_tokens": 150,
+  "duration_ms": 643.0
+ },
+ {
+  "trace_id": "53bf60163238b8722553b289e11415ec",
+  "run_id": "bf4596f611b05e9f",
+  "tool_span_id": "bc08e56ecfcc6900",
+  "tool_name": "exec",
+  "pattern": "sequential",
+  "approx_tokens": 14,
+  "duration_ms": 774.0
+ },
+ {
+  "trace_id": "53bf60163238b8722553b289e11415ec",
+  "run_id": "bf4596f611b05e9f",
+  "tool_span_id": "f8b73321d3630f3c",
+  "tool_name": "exec",
+  "pattern": "sequential",
+  "approx_tokens": 13,
+  "duration_ms": 638.0
+ },
+ {
+  "trace_id": "53bf60163238b8722553b289e11415ec",
+  "run_id": "bf4596f611b05e9f",
+  "tool_span_id": "8ed0f72598449afe",
+  "tool_name": "exec",
+  "pattern": "sequential",
+  "approx_tokens": 45,
+  "duration_ms": 659.0
+ },
+ {
+  "trace_id": "53bf60163238b8722553b289e11415ec",
+  "run_id": "bf4596f611b05e9f",
+  "tool_span_id": "8e887c45b0323e2b",
+  "tool_name": "exec",
+  "pattern": "sequential",
+  "approx_tokens": 64,
+  "duration_ms": 642.0
+ },
+ {
+  "trace_id": "53bf60163238b8722553b289e11415ec",
+  "run_id": "bf4596f611b05e9f",
+  "tool_span_id": "5ae935f81cf92d7b",
+  "tool_name": "exec",
+  "pattern": "sequential",
+  "approx_tokens": 24,
+  "duration_ms": 651.0
+ },
+ {
+  "trace_id": "53bf60163238b8722553b289e11415ec",
+  "run_id": "bf4596f611b05e9f",
+  "tool_span_id": "df0657b73ed5635c",
+  "tool_name": "exec",
+  "pattern": "sequential",
+  "approx_tokens": 296,
+  "duration_ms": 571.0
+ },
+ {
+  "trace_id": "209f57bb15f2e101732ece8c926cdbe9",
+  "run_id": "70ad2ed69e86803b",
+  "tool_span_id": "4d364d00944f4974",
+  "tool_name": "fs__read_text_file",
+  "pattern": "batch",
+  "approx_tokens": null,
+  "duration_ms": 31.0
+ },
+ {
+  "trace_id": "209f57bb15f2e101732ece8c926cdbe9",
+  "run_id": "70ad2ed69e86803b",
+  "tool_span_id": "285d31e2cec5aee5",
+  "tool_name": "fs__read_text_file",
+  "pattern": "batch",
+  "approx_tokens": null,
+  "duration_ms": 12.0
+ },
+ {
+  "trace_id": "209f57bb15f2e101732ece8c926cdbe9",
+  "run_id": "70ad2ed69e86803b",
+  "tool_span_id": "8f3ed6d3253bcac9",
+  "tool_name": "fs__read_text_file",
+  "pattern": "batch",
+  "approx_tokens": null,
+  "duration_ms": 14.0
+ },
+ {
+  "trace_id": "209f57bb15f2e101732ece8c926cdbe9",
+  "run_id": "70ad2ed69e86803b",
+  "tool_span_id": "efdd1c8b09309587",
+  "tool_name": "fs__read_text_file",
+  "pattern": "batch",
+  "approx_tokens": null,
+  "duration_ms": 9.0
+ }
+]
